@@ -237,11 +237,9 @@
     <Content Include="src\components\HomepageFeatures\styles.module.css" />
     <Content Include="src\css\custom.css" />
     <Content Include="src\pages\examples\markdownPageExample.mdx" />
-    <Content Include="src\pages\examples\noIndex.mdx" />
     <Content Include="src\pages\index.module.css" />
     <Content Include="src\pages\markdown-page.md" />
     <Content Include="src\pages\styles.module.css" />
-    <Content Include="src\pages\tests.mdx" />
     <Content Include="static\.nojekyll" />
     <Content Include="static\css\pure.css" />
     <Content Include="static\css\pure-min.css" />
@@ -985,7 +983,6 @@
     <TypeScriptCompile Include="src\pages\examples\_myComponent.tsx" />
     <TypeScriptCompile Include="src\pages\index.tsx" />
     <TypeScriptCompile Include="src\pages\my-react-page.tsx" />
-    <TypeScriptCompile Include="src\pages\versions.tsx" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <ProjectExtensions>

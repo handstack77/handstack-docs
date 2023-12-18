@@ -131,19 +131,19 @@ const config: Config = {
                     items: [
                         {
                             label: '시작하기',
-                            to: '/docs/startup/intro',
+                            to: '/docs/startup/개요',
                         },
                         {
                             label: '참고하기',
-                            to: '/docs/reference/intro',
-                        },
-                        {
-                            label: '도입사례',
-                            to: '/docs/showcase/intro',
+                            to: '/docs/category/환경설정',
                         },
                         {
                             label: '커뮤니티',
-                            to: '/docs/community/intro',
+                            to: '/docs/category/커뮤니티',
+                        },
+                        {
+                            label: '블로그',
+                            to: '/blog',
                         },
                     ],
                 },
@@ -173,7 +173,7 @@ const config: Config = {
                     items: [
                         {
                             label: '큐씨엔 및 파트너',
-                            to: '/qcn',
+                            href: 'https://www.qcn.co.kr/',
                         },
                         {
                             label: '프로젝트 개발 및 지원 정책',
