@@ -1,0 +1,83 @@
+---
+sidebar_position: 7
+---
+
+# syn.$k
+
+풀 사이즈 배열(100%, 104키)을 기준으로 하여 다음과 같이 키보드 단축키 기능을 제공합니다.
+
+## 데모
+
+<iframe src="/sample/syn/keyboard.html" className="w:100% h:800px"></iframe>
+
+## 참조 Key Codes
+
+### 숫자
+| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 |
+
+### 숫자 키패드
+| numpad0 | numpad1 | numpad2 | numpad3 | numpad4 | numpad5 | numpad6 | numpad7 | numpad8 | numpad9 | multiply | add | subtract | decimal | divide |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 96 | 97 | 98 | 99 | 100 | 101 | 102 | 103 | 104 | 105 | 106 | 107 | 109 | 110 | 111 |
+
+### 특수문자
+| backspace | tab | enter | shift | control | alt | capslock | escape | space | pageup | pagedown | end | home | left | up | right | down | delete | semicolon | colon | equal | plus | comma | less | minus | underscore | period | greater | slash | questionmark | backtick | tilde | openingsquarebracket | openingcurlybracket | backslash | pipe | closingsquarebracket | closingcurlybracket | singlequote | doublequote | clear | meta | contextmenu |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 8 | 9 | 13 | 16 | 17 | 18 | 20 | 27 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 | 46 | 186 | 186 | 187 | 187 | 188 | 188 | 189 | 189 | 190 | 190 | 191 | 191 | 192 | 192 | 219 | 219 | 220 | 220 | 221 | 221 | 222 | 222 | 12 | 91 | 93 |
+
+### 영문자
+| a   | b   | c   | d   | e   | f   | g   | h   | i   | j   | k   | l   | m   | n   | o   | p   | q   | r   | s   | t   | u   | v   | w   | x   | y   | z   |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 65  | 66  | 67  | 68  | 69  | 70  | 71  | 72  | 73  | 74  | 75  | 76  | 77  | 78  | 79  | 80  | 81  | 82  | 83  | 84  | 85  | 86  | 87  | 88  | 89  | 90  |
+
+### 기능키
+| f1  | f2  | f3  | f4  | f5  | f6  | f7  | f8  | f9  | f10 | f11 | f12 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 112 | 113 | 114 | 115 | 116 | 117 | 118 | 119 | 120 | 121 | 122 | 123 |
+
+## Javascript 예제
+
+```javascript
+'use strict';
+let $keyboard = {
+    extends: [
+        'parsehtml'
+    ],
+
+    hook: {
+        pageLoad() {
+            syn.$l.get('txt_version').value = syn.$k.version;
+
+            syn.$l.addEvent('txt_version', 'keypress', (evt) => {
+                console.log(evt.keyCode);
+            });
+        }
+    },
+
+    event: {
+        btn_setElement_click() {
+            syn.$k.setElement('txt_setElement');
+            syn.$l.get('txt_setElement').value = '설정 되었습니다';
+        },
+
+        btn_addKeyCode_click() {
+            syn.$k.setElement('txt_setElement');
+            syn.$k.addKeyCode('keydown', syn.$k.keyCodes.a, function (evt) {
+                alert(evt.keyCode);
+            });
+
+            syn.$k.addKeyCode('keyup', syn.$k.keyCodes.c, function (evt) {
+                alert(evt.keyCode);
+            });
+        },
+
+        removeKeyCode_click() {
+            syn.$k.setElement('txt_setElement');
+            syn.$k.removeKeyCode('keydown', syn.$k.keyCodes.a);
+        }
+    }
+};
+```
+소스) syn.$k Javascript 예제

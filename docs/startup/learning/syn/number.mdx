@@ -1,0 +1,56 @@
+---
+sidebar_position: 17
+---
+
+# $number
+
+Javascript Number 객체에 대한 확장 함수를 제공합니다.
+
+## 데모
+
+<iframe src="/sample/syn/extension_number.html" className="w:100% h:100vh"></iframe>
+
+## Javascript 예제
+
+```javascript
+'use strict';
+let $extension_number = {
+    extends: [
+        'parsehtml'
+    ],
+
+    hook: {
+        pageLoad() {
+            syn.$l.get('txt_version').value = $number.version;
+        }
+    },
+
+    event: {
+        btn_duration_click() {
+            syn.$l.get('txt_duration').value = $number.duration(100000000);
+        },
+
+        btn_toByteString_click() {
+            syn.$l.get('txt_toByteString').value = $number.toByteString(100000000);
+        },
+
+        btn_random_click() {
+            syn.$l.get('txt_random').value = $number.random(1, 10000);
+        },
+
+        btn_isRange_click() {
+            syn.$l.get('txt_isRange').value = $number.isRange($number.random(1, 100), 30, 80);
+        },
+
+        btn_limit_click() {
+            syn.$l.get('txt_limit').value = $number.limit($number.random(1, 100), 30, 80);
+        },
+
+        btn_percent_click() {
+            syn.$l.get('txt_percent').value = $number.percent($number.random(1, 10000), 10000);
+        }
+    }
+};
+
+```
+소스) $number Javascript 예제

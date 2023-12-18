@@ -1,0 +1,30 @@
+---
+sidebar_position: 1
+---
+
+# syn.js 소개
+
+syn.js 라이브러리는 HandStack 화면의 동작과 업무 구현을 위해 반복적인 코드를 좀 더 쉽고 일관성 있도록 하는 공통 기능 모음입니다. 최소한의 학습으로 실무에 적용 가능하도록 설계 되었으며 다음과 같은 특징이 있습니다.
+
+* ECMAScript 2017 스펙 이상을 사용하는 표준 Javascript입니다. (Internet Explorer 미지원)
+* 단독 사용 가능한 종속성이 없는 독립적인 라이브러리 입니다.
+* 화면과 기능에 대한 업무 로직을 Javascript 객체 기반으로 만듭니다.
+* 어떠한 외부 프레임워크와 라이브러리(jQuery, prototype, Vue, React 등등)의 통합이 가능합니다.
+* 화면 개발 이후 유지보수 및 운영에 필요한 일관적인 소스 코드 품질을 만듭니다.
+
+## syn.js 라이브러리의 주요 기능
+
+|약어|파일명|설명|
+|---|---|---|
+|[syn.$b](browser)|syn.browser.js|브라우저 정보 확인 기능 제공|
+|[syn.$m](manipulation)|syn.manipulation.js|DOM (Document Object Model) 조작 기능 제공|
+|[syn.$d](dimension)|syn.dimension.js|HTML Element 크기, 위치 제어 기능 제공|
+|[syn.$c](crytography)|syn.crytography.js|base64, sha256 및 암호화 기능 제공|
+|[syn.$k](keyboard)|syn.keyboard.js|키보드 단축키 기능 제공|
+|[syn.$v](validation)|syn.validation.js|유효성 검사 기능 제공|
+|[syn.$l](library)|syn.library.js|공통 라이브러리 기능 제공|
+|[syn.$w](webform)|syn.webform.js|화면 개발 및 거래 업무 기능 제공|
+|[syn.$r](request)|syn.request.js|http 요청 및 URL, Cookie 조작 기능 제공|
+|[syn.$n](network)|syn.network.js|iframe 화면 간에 양방향 통신 기능을 제공|
+|[$date](date), [$array](array), [$string](string), [$number](number), [$object](object)|syn.extension.js|기본 데이터 타입 확장 기능 제공|
+

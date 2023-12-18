@@ -1,0 +1,8 @@
+{
+    "label": "환경설정",
+    "position": 2,
+    "link": {
+        "type": "generated-index",
+        "description": "정보를 중점으로 구성되며 기능 동작을 확인 할 수 있는 내용의 문서입니다."
+    }
+}

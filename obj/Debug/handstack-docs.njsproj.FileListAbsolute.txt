@@ -1,0 +1,3 @@
+C:\projects\handstack77\handstack-docs\obj\Debug\handstack-docs.njsproj.AssemblyReference.cache
+C:\projects\handstack77\handstack-docs\obj\Debug\handstack-docs.njsproj.CoreCompileInputs.cache
+C:\projects\handstack77\handstack-docs\bin\Microsoft.NodejsTools.WebRole.dll

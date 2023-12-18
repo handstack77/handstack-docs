@@ -1,0 +1,111 @@
+---
+sidebar_position: 12
+---
+
+# syn.$n
+
+iframe 화면 간에 양방향 통신 기능을 제공합니다.
+
+## 데모
+
+<iframe src="/sample/syn/iframe_main.html" className="w:100% h:380"></iframe>
+
+## Javascript 예제
+
+```javascript
+'use strict';
+let $iframe_main = {
+    event: {
+        btnChildrenConnect_click() {
+            var channelID = 'channelID';
+            var iframeChannel = syn.$w.channels.find(function (item) { return item.id == channelID });
+            if (iframeChannel == undefined) {
+                var iframe = syn.$l.get('ifmChildren');
+                var contentWindow = iframe.contentWindow;
+                var frameMessage = {
+                    id: channelID,
+                    channel: syn.$n.rooms.connect({
+                        debugOutput: true,
+                        window: contentWindow,
+                        origin: '*',
+                        scope: channelID
+                    })
+                };
+
+                frameMessage.channel.bind('response', function (evt, val) {
+                    alert('iframe_main ' + val);
+                });
+
+                syn.$w.channels.push(frameMessage);
+            }
+        },
+
+        btnChildrenLoad_click() {
+            var iframe = syn.$l.get('ifmChildren');
+            iframe.src = 'iframe_child.html';
+        },
+
+        btnParent2Children_click() {
+            var channelID = 'channelID';
+            var length = syn.$w.channels.length;
+            for (var i = 0; i < length; i++) {
+                var frameMessage = syn.$w.channels[i];
+
+                if (channelID == frameMessage.id) {
+                    frameMessage.channel.call({
+                        method: 'request',
+                        params: ['request data'],
+                        error(error, message) {
+                            alert('iframe_main request ERROR: ' + error + ' (' + message + ')');
+                        },
+                        success(val) {
+                            alert('iframe_main request function returns: ' + val);
+                        }
+                    });
+                }
+            }
+        }
+    }
+}
+```
+소스) iframe_main.js Javascript 예제
+
+```javascript
+'use strict';
+let $iframe_child = {
+    prop: {
+        childrenChannel: null
+    },
+
+    hook: {
+        pageLoad() {
+            var channelID = 'channelID';
+            if (window != window.parent && channelID) {
+                $this.prop.childrenChannel = syn.$n.rooms.connect({ window: window.parent, origin: '*', scope: channelID });
+                $this.prop.childrenChannel.bind('request', function (evt, params) {
+                    alert('iframe_child ' + params);
+                });
+            }
+        }
+    },
+
+    event: {
+        btnChildren2Parent_click() {
+            if ($this.prop.childrenChannel != null) {
+                $this.prop.childrenChannel.emit({
+                    method: 'response',
+                    params: ['response data'],
+                    error(error, message) {
+                        alert('iframe_child response ERROR: ' + error + ' (' + message + ')');
+                    },
+                    success(val) {
+                        alert('iframe_child response function returns: ' + val);
+                    }
+                });
+            }
+        }
+    }
+}
+
+```
+소스) iframe_child.js Javascript 예제

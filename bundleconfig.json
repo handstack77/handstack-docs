@@ -1,0 +1,26 @@
+[
+  {
+    "outputFileName": "static/js/syn.loader.min.js",
+    "inputFiles": [
+      "static/js/syn.loader.js"
+    ]
+  },
+  {
+    "outputFileName": "static/js/syn.domain.min.js",
+    "inputFiles": [
+      "static/js/syn.domain.js"
+    ]
+  },
+  {
+    "outputFileName": "static/js/syn.min.js",
+    "inputFiles": [
+      "static/js/syn.js"
+    ]
+  },
+  {
+    "outputFileName": "static/js/syn.domain.src.min.js",
+    "inputFiles": [
+      "static/js/syn.domain.src.js"
+    ]
+  }
+]
