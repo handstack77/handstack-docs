@@ -10,6 +10,7 @@
 
 # Misc
 bin/
+obj/
 .vs/
 .DS_Store
 .env.local
