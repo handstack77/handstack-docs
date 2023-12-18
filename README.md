@@ -1,64 +1,14 @@
-# Website
+## [블로그 준비중...](https://handstack.kr)
 
 ```bash
-[INFO] Inside that directory, you can run several commands:
+`npm start`
+개발 서버를 시작합니다.
 
-  `npm start`
-    Starts the development server.
+`npm run build`
+문서를 웹 사이트 프로덕션용 정적 파일로 번들링합니다.
 
-  `npm run build`
-    Bundles your website into static files for production.
-
-  `npm run serve`
-    Serves the built website locally.
-
-  `npm run deploy`
-    Publishes the website to GitHub pages.
-
-We recommend that you begin by typing:
-
-  `cd handstack-docs`
-  `npm start`
-
-Happy building awesome websites!
+`npm run serve`
+번들링된 웹 사이트를 로컬로 서비스합니다.
 ```
 
-This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
-
-### Installation
-
-```
-$ yarn
-```
-
-### Local Development
-
-```
-$ yarn start
-```
-
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
-
-### Build
-
-```
-$ yarn build
-```
-
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
-
-### Deployment
-
-Using SSH:
-
-```
-$ USE_SSH=true yarn deploy
-```
-
-Not using SSH:
-
-```
-$ GIT_USER=<Your GitHub username> yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+HandStack 문서 웹 사이트는 최신 정적 웹사이트 생성기인 [다큐사우루스](https://docusaurus.io/)를 사용하여 제작되었습니다.
