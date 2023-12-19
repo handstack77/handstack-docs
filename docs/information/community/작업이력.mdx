@@ -434,11 +434,11 @@ In-process / Out-process 메시징
 ![CQRS 패턴의 명령](img/high-level-writes-side.png)
 
 ```txt
-"HDS|ZZW|D|T": "http://localhost:8080/dbclient/api/query",
+"HDS|ZZW|D|T": "http://localhost:8000/dbclient/api/query",
 "HDS|ZZW|D|D": "event://dbclient.Events.DbClientRequest",
-"HDS|ZZW|F|D": "http://localhost:8080/function/api/execution",
-"HDS|ZZW|R|D": "http://localhost:8080/repository/api/request",
-"HDS|ZZD|D|T": "http://localhost:8080/dbclient/api/query",
+"HDS|ZZW|F|D": "http://localhost:8000/function/api/execution",
+"HDS|ZZW|R|D": "http://localhost:8000/repository/api/request",
+"HDS|ZZD|D|T": "http://localhost:8000/dbclient/api/query",
 "HDS|ZZD|D|D": "event://dbclient.Events.DbClientRequest",
 ```
 

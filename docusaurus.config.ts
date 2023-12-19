@@ -152,7 +152,7 @@ const config: Config = {
                     items: [
                         {
                             label: '토론',
-                            href: 'https://github.com/Junworks77/handstack/discussions',
+                            href: 'https://github.com/handstack77/handstack/discussions',
                         },
                         {
                             label: '디스코드',
