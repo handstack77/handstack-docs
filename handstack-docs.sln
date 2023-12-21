@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34321.82
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "handstack-docs", "handstack-docs.njsproj", "{C2551BB6-BFA4-40E0-B280-6927B3D60B6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "handstack-docs", "handstack-docs.csproj", "{2C80271E-BF73-4B61-ADB6-3EBDEFB5599C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C2551BB6-BFA4-40E0-B280-6927B3D60B6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C2551BB6-BFA4-40E0-B280-6927B3D60B6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C2551BB6-BFA4-40E0-B280-6927B3D60B6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C2551BB6-BFA4-40E0-B280-6927B3D60B6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C80271E-BF73-4B61-ADB6-3EBDEFB5599C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C80271E-BF73-4B61-ADB6-3EBDEFB5599C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C80271E-BF73-4B61-ADB6-3EBDEFB5599C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C80271E-BF73-4B61-ADB6-3EBDEFB5599C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
