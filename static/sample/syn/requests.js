@@ -8,10 +8,6 @@ let $requests = {
         pageLoad() {
             syn.$l.get('txt_version').value = syn.$r.version;
             syn.$l.get('txt_params').value = JSON.stringify(syn.$r.params);
-
-            setTimeout(() => {
-                window.scrollTo(0, document.body.scrollHeight);
-            }, 200);
         }
     },
 

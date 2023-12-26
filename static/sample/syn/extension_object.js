@@ -7,9 +7,6 @@ let $extension_object = {
     hook: {
         pageLoad() {
             syn.$l.get('txt_version').value = $object.version;
-            setTimeout(() => {
-                window.scrollTo(0, document.body.scrollHeight);
-            }, 200);
         }
     },
 
