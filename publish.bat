@@ -1,7 +1,7 @@
 @echo off
 chcp 65001
 
-REM publish.bat win build Debug
+REM publish.bat win Debug
 
 REM win, linux, osx
 set os_mode=%1
