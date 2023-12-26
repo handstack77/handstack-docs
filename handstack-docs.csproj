@@ -39,6 +39,6 @@
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Condition="'$(OS)'=='Windows_NT'" Command="rmdir /s /q $(TargetDir)docs&#xD;&#xA;rmdir /s /q $(TargetDir)static&#xD;&#xA;move $(TargetDir)build $(TargetDir)wwwroot" />
-		<Exec Condition="'$(OS)'!='Windows_NT'" Command="rm -rf $(TargetDir)docs&#xD;&#xA;rm -rf $(TargetDir)static&#xD;&#xA;move $(TargetDir)build $(TargetDir)wwwroot" />
+		<Exec Condition="'$(OS)'!='Windows_NT'" Command="rm -rf $(TargetDir)docs&#xD;&#xA;rm -rf $(TargetDir)static&#xD;&#xA;mv $(TargetDir)build $(TargetDir)wwwroot" />
 	</Target>
 </Project>
