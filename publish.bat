@@ -19,5 +19,5 @@ echo os_mode: %os_mode%, configuration_mode: %configuration_mode%, arch_mode: %a
 
 call npm run build
 
-rmdir /s /q C:\publish\%os_mode%-%arch_mode%\handstack-docs
-dotnet build handstack-docs.csproj --configuration %configuration_mode% --arch %arch_mode% --os %os_mode% --output C:/publish/%os_mode%-%arch_mode%/handstack-docs
+rmdir /s /q publish\%os_mode%-%arch_mode%\handstack-docs
+dotnet build handstack-docs.csproj --configuration %configuration_mode% --arch %arch_mode% --os %os_mode% --output publish/%os_mode%-%arch_mode%/handstack-docs

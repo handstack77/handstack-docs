@@ -16,8 +16,7 @@ if [ -z "$arch_mode" ]; then arch_mode=x64; fi
 
 echo "os_mode: $os_mode, configuration_mode: $configuration_mode, arch_mode: $arch_mode"
 
-cd /home/qcn/handstack-docs
 npm run build
 
-rm -rf /home/qcn/publish/$os_mode-$arch_mode/handstack-docs
-dotnet build /home/qcn/handstack-docs/handstack-docs.csproj --configuration $configuration_mode --arch $arch_mode --os $os_mode --output /home/qcn/publish/$os_mode-$arch_mode/handstack-docs
+rm -rf publish/$os_mode-$arch_mode/handstack-docs
+dotnet build handstack-docs.csproj --configuration $configuration_mode --arch $arch_mode --os $os_mode --output publish/$os_mode-$arch_mode/handstack-docs
