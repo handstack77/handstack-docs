@@ -6,9 +6,15 @@
 		<RootNamespace>qrame_docs</RootNamespace>
 	</PropertyGroup>
 	<ItemGroup>
-		<None Include="build\**" />
-		<None Update="build\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		<None Include="build/**" />
+		<None Update="build/**">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="publish/**" />
+		<None Update="publish/**">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 	<ItemGroup>
