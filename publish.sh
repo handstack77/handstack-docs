@@ -19,4 +19,4 @@ echo "os_mode: $os_mode, configuration_mode: $configuration_mode, arch_mode: $ar
 npm run build
 
 rm -rf /home/qcn/publish/$os_mode-$arch_mode/handstack-docs
-dotnet build handstack-docs.csproj --configuration $configuration_mode --arch $arch_mode --os $os_mode --output /home/qcn/publish/$os_mode-$arch_mode/handstack-docs
+dotnet build /home/qcn/handstack-docs/handstack-docs.csproj --configuration $configuration_mode --arch $arch_mode --os $os_mode --output /home/qcn/publish/$os_mode-$arch_mode/handstack-docs
