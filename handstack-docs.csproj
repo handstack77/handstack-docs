@@ -45,10 +45,8 @@
 	</ItemGroup>
 
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-		<Exec Condition="'$(OS)'=='Windows_NT'" Command="rmdir /s /q $(TargetDir)" />
-		<Exec Condition="'$(OS)'=='Windows_NT'" Command="if not exist $(ProjectDir)build mkdir $(ProjectDir)build" />
-		<Exec Condition="'$(OS)'!='Windows_NT'" Command="rm -rf $(TargetDir)" />
-		<Exec Condition="'$(OS)'!='Windows_NT'" Command="mkdir -p $(ProjectDir)build" />
+		<Exec Condition="'$(OS)'=='Windows_NT'" Command="rmdir /s /q $(TargetDir)&#xD;&#xA;if not exist $(ProjectDir)build mkdir $(ProjectDir)build" />
+		<Exec Condition="'$(OS)'!='Windows_NT'" Command="rm -rf $(TargetDir)&#xD;&#xA;mkdir -p $(ProjectDir)build" />
 	</Target>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
