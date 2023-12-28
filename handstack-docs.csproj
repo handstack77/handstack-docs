@@ -6,15 +6,21 @@
 		<RootNamespace>qrame_docs</RootNamespace>
 	</PropertyGroup>
 	<ItemGroup>
-		<None Include="build/**" />
-		<None Update="build/**">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		<None Include="bulid/**" />
+		<None Update="bulid/**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-	</ItemGroup>
-	<ItemGroup>
-		<None Include="publish/**" />
-		<None Update="publish/**">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		<None Include="blog/**" />
+		<None Update="blog/**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="static/**" />
+		<None Update="static/**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="docs/**" />
+		<None Update="docs/**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 	<ItemGroup>
@@ -40,11 +46,13 @@
 
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec Condition="'$(OS)'=='Windows_NT'" Command="rmdir /s /q $(TargetDir)" />
+		<Exec Condition="'$(OS)'=='Windows_NT'" Command="if not exist $(ProjectDir)build mkdir $(ProjectDir)build" />
 		<Exec Condition="'$(OS)'!='Windows_NT'" Command="rm -rf $(TargetDir)" />
+		<Exec Condition="'$(OS)'!='Windows_NT'" Command="mkdir -p $(ProjectDir)build" />
 	</Target>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Condition="'$(OS)'=='Windows_NT'" Command="rmdir /s /q $(TargetDir)docs&#xD;&#xA;rmdir /s /q $(TargetDir)static&#xD;&#xA;move $(TargetDir)build $(TargetDir)wwwroot" />
-		<Exec Condition="'$(OS)'!='Windows_NT'" Command="rm -rf $(TargetDir)docs&#xD;&#xA;rm -rf $(TargetDir)static&#xD;&#xA;mv $(TargetDir)build $(TargetDir)wwwroot" />
+		<Exec Condition="'$(OS)'=='Windows_NT'" Command="move $(ProjectDir)build $(TargetDir)wwwroot" />
+		<Exec Condition="'$(OS)'!='Windows_NT'" Command="mv $(ProjectDir)build $(TargetDir)wwwroot" />
 	</Target>
 </Project>
