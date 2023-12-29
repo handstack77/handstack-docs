@@ -50,7 +50,7 @@
 	</Target>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Condition="'$(OS)'=='Windows_NT'" Command="move $(ProjectDir)build $(TargetDir)wwwroot" />
-		<Exec Condition="'$(OS)'!='Windows_NT'" Command="mv $(ProjectDir)build $(TargetDir)wwwroot" />
+		<Exec Condition="'$(OS)'=='Windows_NT'" Command="move $(ProjectDir)build $(TargetDir)&#xD;&#xA;rename $(TargetDir)build wwwroot" />
+		<Exec Condition="'$(OS)'!='Windows_NT'" Command="mv $(ProjectDir)build/ $(TargetDir)wwwroot" />
 	</Target>
 </Project>
