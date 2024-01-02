@@ -90,7 +90,7 @@ const config: Config = {
             title: 'HandStack',
             logo: {
                 alt: 'HandStack Logo',
-                src: 'img/logo.svg',
+                src: 'img/logo.jpg',
             },
             items: [
                 {
