@@ -66,7 +66,7 @@ const FeatureList: FeatureItem[] = [
     },
 ];
 
-function Feature({ title, src, Svg, description }: FeatureItem) {
+function Feature({ title, src, description }: FeatureItem) {
     return (
         <div className={clsx('col col--4')}>
             <div className="text--center">
