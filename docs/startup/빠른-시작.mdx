@@ -4,33 +4,54 @@ sidebar_position: 1
 
 # 빠른 시작
 
-환영합니다! HandStack은 기업의 비즈니스에 필요한 관리와 업무에 대한 앱을 합리적인 방법으로 개발 및 운영하는 개발 솔루션입니다.
+환영합니다! HandStack은 앱 개발과 운영 과정을 최대한 간소화하고 개인화된 개발 경험을 제공함으로써 개발자와 엔지니어가 칼 퇴근이 가능하도록 돕습니다.
 
-## 전달 하고자 하는 주요 내용은 다음과 같습니다
+HandStack은 2명의 컨설턴트와 개발자의 메인 협업과 주변의 도움으로 개발 중인 오픈 소스 프로젝트 입니다. 오랜 기간 크고 작은 프로젝트를 수행하며 얻은 지식과 노하우를 기업의 비즈니스에 필요한 관리와 업무에 대한 앱을 합리적인 방법으로 개발 및 운영하는 방안으로 만들어 제공합니다.
+
+> 개발자와 엔지니어를 위한 한 줄의 코드나 문서는 앞으로의 의미와 가치를 생각합니다.
+
+## 왜 개발자와 엔지니어를 구분할까요?
+
+똑같이 소스 코드 확인하며 개발 업무를 수행하는 면에서는 언뜻 비슷해보이는 역할이지만 업무와 책임에 따라 구분됩니다.
+
+* 개발자 (Developer): 주로 소프트웨어 개발에 중점을 둡니다. 코드를 작성하고 애플리케이션을 구축하는 데 초점을 둡니다.
+* 엔지니어 (Engineer): 더 광범위한 역할을 할 수 있으며, 엔지니어링이나 시스템 아키텍처 설계, 개발, 유지보수하는 데 중점을 둡니다.
+
+특정 조직이나 프로젝트에서는 "개발자"와 "엔지니어" 용어를 특별한 의미로 사용할 수 있습니다.
+
+HandStack 에서는 개발자는 git clone 소스 코드를 내려받아 Windows, Linux, macOS 및 Docker 기반으로 프로그램 빌드를 해보며 실행 및 디버깅을 해보는 것을 권장하고 엔지니어는 주요 버전에 따라 릴리즈된 실행 프로그램에서 비즈니스 앱의 contracts 계약 디렉토리의 화면과 기능 소스 코드를 확인 해보는 것을 권장합니다.
+
+## 문서의 주요 내용은 다음과 같습니다
+
 * 필수 설치 프로그램 다운로드 정보
 * HandStack 프로그램 시작 및 확인
-* 주요 기능 정보 바로가기
+* 테스트 화면 실행하기
+* 주요 정보 바로가기
 
-## .NET 8.x 버전과 Node.js 18.x LTS 버전 설치
+## .NET 8.x 버전과 Node.js 20.x LTS 버전 설치하기
 
-HandStack은 LTS 장기 지원을 기반으로 개발중입니다. .NET, Node.js 환경은 x86, x64, Arm 실행 환경을 제공하며, 다음과 같이 온프레미스와 클라우드 네이티브 서비스에 적합한 기술 스택입니다.
+HandStack은 비즈니스 앱을 구동하는 **프로그램**과 화면과 서버 기능 개발에 필요한 **공통 기능 라이브러리**를 제공합니다. 사용 중인 오픈 소스들은 LTS (장기 지원) 이거나 잘 알려진 버전으로 개발합니다. 기반이 되는 .NET Core, Node.js 환경은 x86, x64, Arm 실행 환경을 제공하며, 온프레미스와 클라우드 네이티브 서비스에 적합한 실행 환경입니다. 개발되는 비즈니스 앱은 다음 분야에 적합합니다.
 
 |주요 분야|설명|
 |---|---|
 |웹|Windows, Linux, macOS 및 Docker용 웹 앱 및 서비스를 빌드합니다|
-|모바일 및 데스크톱|하이브리드 앱 방식으로 단일 코드를 사용하여 Windows, Linux, macOS, iOS 및 Android용 기본 앱을 빌드합니다|
+|모바일 및 데스크톱|하이브리드 앱 방식으로 단일 코드를 사용하여 Windows, Linux, macOS 앱을 빌드합니다|
 |클라우드|모든 주요 클라우드 공급자에서 실행되는 확장 가능하고 복원력 있는 클라우드 네이티브 앱을 빌드합니다|
 |마이크로 서비스|Docker 컨테이너에서 실행되는 독립적으로 배포 가능한 마이크로 서비스를 만듭니다|
 
-기업 IT의 업그레이드에는 성능과 개선, 안정성 향상이 기본이기 때문에 간소화된 기술 스택이 필요합니다.
+IT 시스템은 신뢰를 기본으로 운영 되기 때문에 지속적인 업그레이드에는 성능과 개선, 안정성 향상이 필수 입니다. 그래서 비즈니스 앱을 구축하기 위한 간소화된 기술 스택이 필요합니다.
 
-> HandStack의 HAND는 HTML5 + ASP.NET Core + Node.js + Docker의 기술 스택을 정의하며, 고객과 수행사의 신뢰를 의미합니다.
-
-최근 운영체제 환경은 보안 및 성능 향상을 위해 기본적으로 x64 (64비트) 환경을 권장하고 있습니다. 이 문서는 x64를 전제로 설명합니다.
+> HandStack의 HAND는 HTML5 + ASP.NET Core + Node.js + Docker의 기반 스택을 정의합니다.
 
 ## Windows 환경에서 시작하기
 
+2023년 12월 기준, 대한민국에서 데스크탑 운영체제의 점유율은 88 % 입니다. [Desktop Operating System Market Share Republic Of Korea](https://gs.statcounter.com/os-market-share/desktop/south-korea)
+
+macOS, Linux 환경의 경우 설치 옵션이 다양합니다. 관련 자료는 외부 링크로 제공합니다
+
 ### .NET SDK 설치 관리자 설치하기
+
+최근 대부분의 환경은 보안 및 성능 향상을 위해 기본적으로 x64 (64비트) 환경을 권장하고 있습니다. 이 문서는 x64를 전제로 설명합니다.
 
 * 웹 브라우저로 [.NET SDK 설치 관리자](https://dotnet.microsoft.com/ko-kr/download/dotnet/thank-you/sdk-8.0.100-windows-x64-installer) 프로그램을 다운로드 하세요.
 * 다운로드가 완료되면 설치 프로그램을 실행하고 컴퓨터에 .NET을 설치하는 단계를 완료하세요. ![설치 프로그램 실행](img/sdk-installer-windows.png)
@@ -42,31 +63,129 @@ HandStack은 LTS 장기 지원을 기반으로 개발중입니다. .NET, Node.js
 * 다운로드가 완료되면 설치 프로그램을 실행하고 컴퓨터에 Node.js을 설치하는 단계를 완료하세요. ![설치 프로그램 실행](img/nodesdk-installer-windows.png)
 * 설치 프로그램이 완료되면 새 명령 프롬프트를 열고 `node -v` 명령을 실행합니다. ![설치 확인](img/nodesdk-verify-windows.png)
 
-### HandStack 설치하기
+## HandStack 다운로드 및 설치하기
 
-> 공식 문서는 HandStack의 releases 압축 파일을 C:\home\handstack 디렉토리에 압축 파일을 해제하는 것으로 가이드 됩니다.
-
-* 웹 브라우저로 [HandStack 최신 Release](https://nodejs.org/dist/v20.9.0/node-v20.9.0-x64.msi) 압축 파일을 다운로드 하세요.
-* 다운로드가 완료되면 압축 파일을 해제합니다. 압축 해제 경로는 향후 macOS, Linux에도 동일한 경로를 만들기 위해 `C:/home/handstack` 를 권장합니다.<br />![압축 해제 경로](img/handstack-extract-windows.png)
-* 압축 해제가 완료되면 새 명령 프롬프트를 열고 압축 해제한 디렉토리로 이동 하여 `npm install` 명령을 실행합니다. Node.js 기반 Function 기능을 위한 라이브러리가 설치됩니다.
-* ack 디렉토리로 이동 하여 `ack` 명령을 실행합니다. ![설치 확인](img/handstack-verify-windows.png)
+* 웹 브라우저로 [HandStack 최신 Releases](https://github.com/handstack77/handstack/releases) 압축 파일을 다운로드 하세요. (압축 파일은 주요 버전에 따른 운영체제별 실행 프로그램과 소스입니다.)
+* 실행 프로그램 압축 파일 다운로드가 완료되면 압축 파일을 해제합니다. 압축 해제 경로는 향후 macOS, Linux에도 동일한 경로를 만들기 위해 `C:/home/[사용자 ID]/handstack` 를 권장합니다.<br />![압축 해제 경로](img/handstack-extract-windows.png)
+* 압축 해제가 완료되면 관리자 권한으로 터미널(명령 프롬프트)을 열고 압축 해제한 디렉토리로 이동 하여 `install.bat` 명령을 실행합니다. 번들러 및 Node.js 기반 Function 기능을 위한 라이브러리가 설치됩니다.
+* app 디렉토리로 이동 하여 `ack` 명령을 실행합니다. ![설치 확인](img/handstack-verify-windows.png)
 * HandStack 서버가 실행되면 웹 브라우저를 실행하여 `http://localhost:8000/module.html` 주소를 연결합니다. ![설치 확인](img/handstack-hello-windows.png)
+
+축하합니다. 이제 비즈니스 앱을 개발하기 위한 모든 준비가 되었습니다.
+
+## 테스트 화면 실행하기
 
 HandStack 디렉토리는 다음을 의미합니다. 이외에도 업무에 따라 추가적으로 하위 디렉토리가 실시간으로 생성됩니다.
 
-* ack: HandStack 서버 실행 프로그램이 있습니다. Windows, Linux, macOS를 지원하며, 기본 포트로 8080을 사용합니다
-* contracts: 프론트엔드, 백엔드에 대한 모든 계약, 설정, 소스가 있습니다.
+* app: HandStack 서버 실행 프로그램이 있습니다. Windows, Linux, macOS를 지원하며, 기본 포트로 8000을 사용합니다
+* contracts: 비즈니스 앱에 필요한 프론트엔드, 백엔드에 대한 모든 설정과 소스가 있습니다.
 * modules: HandStack 필수 기능 제공을 위한 .NET Core 기반 공식 모듈 들이 있습니다.
-* src: 도메인 업무 기능을 위한 .NET Core 기반 모듈이 있습니다.
 
-## 마치며
+### 비즈니스 앱에 필요한 모든 설정과 소스
 
-이제 웹 앱을 개발 하기 위한 환경이 만들어졌습니다. 맞춤형 기술 스택으로 직접 앱이나 서비스를 구축하는 것은 많은 비용이 듭니다. HandStack은 오픈소스 기반으로 기업에서 자유롭게 사용할 수 있으며 공식 문서로 자습서와 핸즈온랩, 참조 자료 및 리소스를 지속적으로 업데이트 합니다.
+Visual Studio Code 또는 Nodepad++ 와 같은 편집기를 실행하여 작업 디렉토리로 `C:\home\[사용자 ID]\handstack\contracts` 를 열면 다음과 같은 5개의 디렉토리가 있으며 다음과 같은 파일들이 있습니다.
 
-## 참고자료
-* .NET 8.x 다운로드: https://dotnet.microsoft.com/ko-kr/download/dotnet/8.0
-* Windows에 .NET 설치: https://learn.microsoft.com/ko-kr/dotnet/core/install/windows?tabs=net80
-* macOS에 .NET 설치: https://learn.microsoft.com/ko-kr/dotnet/core/install/macos
-* Linux에 .NET 설치: https://learn.microsoft.com/ko-kr/dotnet/core/install/linux
-* Node.js 다운로드: https://nodejs.org/en/download
-* HandStack 다운로드: https://github.com/handstack77/handstack/releases
+|contract 디렉토리|설명|
+|---|---|
+|dbclient|데이터베이스 연동 (SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite) 및 XML 계약 문서로 SQL을 관리|
+|function|C# 또는 Node.js 기반 Function 개발 기능 관리|
+|repository|단일, 다중, 이미지, 첨부파일 등등 파일 업로드/다운로드 관리|
+|transact|거래 요청 검증 및 접근 제어 관리와 요청 정보를 dbclient, function 등등 module로 라우팅 기능 관리|
+|wwwroot|웹 공통 static assets 및 화면 단위 소스 호스팅 관리|
+
+> 각 디렉토리내의 구조는 다음의 규칙을 가지고 있습니다 프로그램 ID > 프로젝트 ID > 파일 ID
+
+```bash
+C:\home\[사용자 ID]\handstack\contracts
+│  file.log
+│  
+├─dbclient
+│  └─HDS
+│      ├─TAG
+│      │      TAG010.xml
+│      │      
+│      └─TST
+│              MYS010.xml
+│              ORA010.xml
+│              PGS010.xml
+│              SLT010.xml
+│              SQS010.xml
+│              
+├─function
+│  ├─csharp
+│  │  └─HDS
+│  │      └─TST
+│  │          └─CSF010
+│  │                  featureMain.cs
+│  │                  featureMeta.json
+│  │                  
+│  └─javascript
+│      └─HDS
+│          └─TST
+│              └─JSF010
+│                      featureMain.js
+│                      featureMeta.json
+│                      
+├─repository
+│  └─HDS
+│          storage.json
+│          
+├─transact
+│  └─HDS
+│      ├─STR
+│      │      STR010.json
+│      │      STR011.json
+│      │      
+│      └─TST
+│              CSF010.json
+│              JSF010.json
+│              MYS010.json
+│              ORA010.json
+│              PGS010.json
+│              SLT010.json
+│              SQS010.json
+│              
+└─wwwroot
+    │  index.html
+    │  
+    └─TST
+            CSF010.html
+            CSF010.js
+            JSF010.html
+            JSF010.js
+            MYS010.html
+            MYS010.js
+            ORA010.html
+            ORA010.js
+            PGS010.html
+            PGS010.js
+            SLT010.html
+            SLT010.js
+            SQS010.html
+            SQS010.js
+```
+
+wwwroot 디렉토리의 소스를 웹 브라우저에서 테스트 할 수 있습니다. (MSSQL, Oracle, MariaDB, PostgreSQL 데이터베이스 거래 테스트는 환경에 따라 오류가 발생합니다.)
+
+* [CSharp 함수 거래 테스트](http://localhost:8000/view/TST/CSF010.html)
+* [Node.js 함수 거래 테스트](http://localhost:8000/view/TST/JSF010.html)
+* [SQLite 데이터베이스 거래 테스트](http://localhost:8000/view/TST/SLT010.html)
+* [MariaDB 데이터베이스 거래 테스트](http://localhost:8000/view/TST/MYS010.html)
+* [Oracle 데이터베이스 거래 테스트](http://localhost:8000/view/TST/ORA010.html)
+* [PostgreSQL 데이터베이스 거래 테스트](http://localhost:8000/view/TST/PGS010.html)
+* [SqlServer 데이터베이스 거래 테스트](http://localhost:8000/view/TST/SQS010.html)
+
+> MSSQL, Oracle, MariaDB, PostgreSQL 데이터베이스에 서버 시간과 서버명을 조회하는 거래 테스트에 필요한 환경을 구성하려면 [docker 기반 개발용 데이터베이스 설치하기](https://handstack.kr/docs/startup/handsonlab/docker-%EA%B8%B0%EB%B0%98-%EA%B0%9C%EB%B0%9C%EC%9A%A9-%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B2%A0%EC%9D%B4%EC%8A%A4-%EC%84%A4%EC%B9%98%ED%95%98%EA%B8%B0) 문서를 참고하세요.
+
+## 주요 정보 바로가기
+
+이제 비즈니스 앱을 개발 하기 위한 기본적인 환경이 만들어졌습니다. 맞춤형 기술 스택으로 직접 앱이나 서비스를 구축하는 것은 많은 비용이 듭니다. HandStack은 오픈 소스 기반으로 기업에서 자유롭게 사용할 수 있으며 공식 문서로 자습서와 핸즈온랩, 참조 자료 및 리소스를 지속적으로 업데이트 합니다.
+
+* [기본 모듈 소개](https://handstack.kr/docs/startup/learning/%EA%B8%B0%EB%B3%B8-modules-%EC%86%8C%EA%B0%9C)
+* [화면 개발 시작하기](https://handstack.kr/docs/startup/learning/%ED%99%94%EB%A9%B4-%EA%B0%9C%EB%B0%9C-%EC%8B%9C%EC%9E%91%ED%95%98%EA%B8%B0)
+* [.NET 8.x 다운로드](https://dotnet.microsoft.com/ko-kr/download/dotnet/8.0)
+* [Windows에 .NET 설치](https://learn.microsoft.com/ko-kr/dotnet/core/install/windows?tabs=net80)
+* [macOS에 .NET 설치](https://learn.microsoft.com/ko-kr/dotnet/core/install/macos)
+* [Linux에 .NET 설치](https://learn.microsoft.com/ko-kr/dotnet/core/install/linux)
+* [Node.js 다운로드](https://nodejs.org/en/download)
+* [HandStack 다운로드](https://github.com/handstack77/handstack/releases)
