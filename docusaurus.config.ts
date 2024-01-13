@@ -66,7 +66,7 @@ const config: Config = {
                     postsPerPage: 10,
                 },
                 gtag: {
-                    trackingID: 'GTM-PXS54W8L',
+                    trackingID: 'G-G6PRQRS4K3',
                     anonymizeIP: true,
                 },
                 theme: {
