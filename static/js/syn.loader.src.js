@@ -445,7 +445,6 @@
                     '/uicontrols/RadioButton/RadioButton.css',
                     '/uicontrols/TextArea/TextArea.css',
                     '/uicontrols/TextBox/TextBox.css',
-                    '/uicontrols/TextButton/TextButton.css',
                     '/uicontrols/HtmlEditor/HtmlEditor.css',
                     '/uicontrols/JsonEditor/JsonEditor.css',
                     '/uicontrols/TreeView/TreeView.css',
