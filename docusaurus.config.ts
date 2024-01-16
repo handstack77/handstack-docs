@@ -115,7 +115,7 @@ const config: Config = {
                     type: 'docSidebar',
                     sidebarId: 'twelvefactorSidebar',
                     position: 'left',
-                    label: '12 Factors',
+                    label: '12-Factors',
                 },
                 {
                     to: '/blog',
