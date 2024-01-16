@@ -1,0 +1,8 @@
+{
+    "label": "8.동시성",
+    "position": 9,
+    "link": {
+        "type": "generated-index",
+        "description": "모든 일을 처리하는 단일 프로세스와 기능별로 분리된 프로세스 실행 방법을 설명합니다."
+    }
+}

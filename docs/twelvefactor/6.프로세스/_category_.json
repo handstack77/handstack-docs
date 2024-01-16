@@ -1,0 +1,8 @@
+{
+    "label": "6.프로세스",
+    "position": 7,
+    "link": {
+        "type": "generated-index",
+        "description": "실행 환경에서 앱은 하나 이상의 프로세스로 실행 방법을 설명합니다."
+    }
+}

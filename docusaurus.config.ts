@@ -112,6 +112,12 @@ const config: Config = {
                     label: '추가정보',
                 },
                 {
+                    type: 'docSidebar',
+                    sidebarId: 'twelvefactorSidebar',
+                    position: 'left',
+                    label: '12 Factors',
+                },
+                {
                     to: '/blog',
                     label: '블로그',
                     position: 'left'

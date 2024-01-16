@@ -1,0 +1,8 @@
+{
+    "label": "3.설정",
+    "position": 4,
+    "link": {
+        "type": "generated-index",
+        "description": "모든 설정 정보는 코드로부터 분리된 공간에 저장되어야 하고, 런타임에서 코드에 의해 불러오는 방법을 설명합니다."
+    }
+}

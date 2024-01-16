@@ -1,0 +1,8 @@
+{
+    "label": "12.관리작업",
+    "position": 13,
+    "link": {
+        "type": "generated-index",
+        "description": "관리 목적으로 실행되는 일회성 작업 방법들을 설명합니다."
+    }
+}

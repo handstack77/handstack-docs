@@ -1,0 +1,8 @@
+{
+    "label": "7.포트 바인딩",
+    "position": 8,
+    "link": {
+        "type": "generated-index",
+        "description": "외부 애플리케이션에서 접근할 수 있도록 필요한 포트 바인딩을 설명합니다."
+    }
+}

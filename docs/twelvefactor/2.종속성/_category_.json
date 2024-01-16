@@ -1,0 +1,8 @@
+{
+    "label": "2.종속성",
+    "position": 3,
+    "link": {
+        "type": "generated-index",
+        "description": "애플리케이션의 모든 종속성을 명시적으로 선언하여 사용합니다."
+    }
+}

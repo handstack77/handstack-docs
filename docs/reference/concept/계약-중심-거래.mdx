@@ -4,14 +4,329 @@ sidebar_position: 3
 
 # 계약 중심 거래
 
+거래의 사전적 의미는 '주고 받는 것 또는 사고 파는 것'이지만 처리 방식 또는 업무에 따라 차이가 있습니다. 예를 들어 거래를 영어 단어로 Transaction로 표현하며, 일반적으로 돈이나 물건을 주고 받는 것을 의미하지만, IT 업계의 데이터베이스 분야에서는 데이터의 상태를 변화시키기 위해 수행하는 논리적인 작업 단위를 의미합니다.
 
-## 준비 중입니다
+HandStack은 거래의 의미를 출발지와 도착지간의 시스템 간 거래에 사용되는 헤더(설명)과 바디(정보)로 구성된 메시지 구조를 주고 받는 작업 단위를 정의합니다. 이에 대해 화면 및 업무 개발자나 엔지니어가 소통하기 위해 다음과 같이 표현할 수 있습니다.
 
+* 클라이언트에서 업무 서버간에 거래를 합니다.
+* 업무 서버에서 어플리케이션 서버간에 거래를 합니다.
+* 어플리케이션 서버에서 데이터베이스 서버간에 거래를 합니다.
+* 어플리케이션 서버에서 외부 서비스간에 거래를 합니다.
 
-## 전달 하고자 하는 주요 내용은 다음과 같습니다
+> 다양한 시스템 간 거래를 위해 클라이언트와 서버간에는 반드시 어떻게 요청과 응답이 이뤄질 것인지 JSON/XML 포맷으로 되어진 계약을 정의 해야 합니다.
 
+각 시스템간의 요청/응답 거래가 정상적으로 이뤄졌는지 아닌지에 따라 어느 구간에서 거래 에 이슈가 있는지 일관된 방식으로 처리를 하기 때문에 개발자와 엔지니어는 메시지 구조에 대해 알아두면 좋습니다.
 
-## 마치며
+## transact 모듈 거래 전문 프로토콜
 
+HandStack 기반의 모든 거래 메시지는 transact 모듈에 있는 하나의 Endpoint에서 처리합니다. 그래서 올바른 요청과 정확한 응답에 대한 처리를 검증하기 위한 계약 정보를 JSON 파일로 정의합니다.
 
-## 참고자료
+이러한 방식은 API를 더욱 빠르고 유연하게 개발자 친화적으로 거래 처리를 위한 기능을 만들기 위해 설계되었습니다. 개발자가 단일 API 호출로 다양한 데이터 소스에서 데이터를 CRUD 처리를 구성하는 기능을 구현 할 수 있도록 지원하고 엔지니어에게 기존 운영에 영향을 미치지 않고 API를 추가하거나 폐기할 수 있는 유연성을 부여합니다.
+
+개발자는 업무 기능을 SQL/Batch/OpenAPI/C#/Node.js 등등 선호하는 방식으로 API를 빌드할 수 있으며, transact 모듈 거래 전문 프로토콜은 이러한 API가 예측 가능한 방식으로 작동하도록 보장합니다. 이는 효과적인 API 관리를 위한 핵심 사항입니다.
+
+> transact 모듈은 거래를 할 때 최소한의 네트워크 왕복으로 클라이언트에서 원하는 데이터를 응답 받을 수 있도록 하는 업무에 목적을 두고 있습니다. 이 방식은 클라이언트/서버 개발 담당자의 협업 방식에도 영향을 줍니다. (기본적으로 화면 개발자는 서버 개발자가 작성한 API의 요청과 응답 형식에 의존하게 됩니다.)
+
+## 요청 거래 전문정보
+
+클라이언트와 서버간에 전송되는 거래 전문 데이터 포맷으로 JSON을 사용하며 성능, 보안, 호환성 등등 다양한 이슈에 대응하기 위해 TSV (Tabluar Separated Values) 정보 데이터를 사용합니다. 다음과 같이 헤더(설명)와 바디(정보)가 하나로 되어있는 단일 메시지 구조를 가지고 있습니다.
+
+|명칭|역할|설명|필수여부|
+|---|---|---|:-:|
+|global|헤더|환경, 인증, 식별 정보|O|
+|system|헤더|요청 시스템 정보|O|
+|interface|헤더|거래 통신 정보|O|
+|transaction|헤더|거래 업무 정보|O|
+|payLoad|본문|요청 거래 정보||
+
+```json
+{
+    "accessToken": "",
+    "action": "SYN",
+    "kind": "BIZ",
+    "clientTag": "HANDSTACK|WebClient|ack|D",
+    "loadOptions": {
+        "encryptionType": "P",
+        "encryptionKey": "G",
+        "platform": "Win32",
+        "dynamic": "Y",
+        "authorize": "N",
+        "commandType": "D",
+        "returnType": "Json",
+        "transactionScope": "N",
+        "transactionLog": "Y"
+    },
+    "requestID": "LD00000HDSHMLHML010LD01W76M6JH160600",
+    "version": "001",
+    "environment": "D",
+    "system": {
+        "programID": "HDS",
+        "version": "1.0.0",
+        "routes": [
+            {
+                "systemID": "HANDSTACK",
+                "requestTick": 1700809560524
+            }
+        ],
+        "localeID": "ko-KR",
+        "hostName": "localhost:8000",
+        "pathName": "/handsup/view/TST/TST010.html"
+    },
+    "interface": {
+        "devicePlatform": "browser",
+        "interfaceID": "WEB",
+        "sourceIP": "192.168.0.45",
+        "sourcePort": 0,
+        "sourceMAC": "",
+        "connectionType": "4g",
+        "timeout": 180000
+    },
+    "transaction": {
+        "globalID": "LD00000HDSHMLHML010LD01S76M6JH160600",
+        "businessID": "HML",
+        "transactionID": "HML010",
+        "functionID": "LD01",
+        "commandType": "D",
+        "simulationType": "P",
+        "terminalGroupID": "undefined|undefined",
+        "operatorID": "handstack@handstack.kr",
+        "screenID": "HML010",
+        "startTraceID": "",
+        "dataFormat": "J",
+        "compressionYN": "N"
+    },
+    "payLoad": {
+        "property": {},
+        "dataMapInterface": "Row|Grid",
+        "dataMapCount": [
+            1
+        ],
+        "dataMapSet": [
+            [
+                {
+                    "id": "ApplicationNo",
+                    "value": "08dbcde8520ce00cca91a85e00064bf7"
+                }
+            ]
+        ],
+        "dataMapSetRaw": []
+    }
+}
+```
+소스) 요청 데이터
+
+### global 헤더 환경, 인증, 식별 정보
+
+|필드 ID|필드 명|설명|데이터타입|기본값|필수|
+|---|---|---|:-:|:-:|:-:|
+|accessToken|인증토큰|사용자 인증 및 권한 확인을 위한 토큰 정보|string||O|
+|action|실행의도|요청의 실행 의도 정보: SYN(요청/응답), PSH(응답없는 요청), ACK(구독수신 요청)|string|SYN|O|
+|kind|거래의도|요청 거래의 성격을 위한 의도 정보: BIZ(업무), DBG(디버깅), URG(긴급), FIN(완료)|string|BIZ|O|
+|clientTag|클라이언트 식별 구분 ID|시스템ID + 호스트 명 + 프로그램 명 + 환경구분 정보|string||O|
+|requestID|요청 ID|거래 추적을 위한 고유 요청 ID|string||O|
+|version|전문 버전|호환성 유지를 위한 요청 전문 버전|string|1.0.0|O|
+|environment|환경구분|요청 시스템 환경정보: D(Development), P(Production), T(Test), S(Staging)|string|D|O|
+
+### system 헤더 요청 시스템 정보
+
+|필드 ID|필드 명|설명|데이터타입|기본값|필수|
+|---|---|---|:-:|:-:|:-:|
+|programID|프로그램 ID|요청 프로그램 식별 ID|string|syn.Config.ApplicationID|O|
+|version|시스템 버전|요청 시스템 버전|string|syn.Config.SystemVersion|O|
+|routes|라우트 목록|메시지가 거쳐온 시스템 ID, 시간 정보|string|자동부여||
+|localeID|언어권 ID|요청/응답에 우선 적용할 언어권 ID|string|syn.Config.Program.LocaleID||
+|hostName|호스트 명|요청 호스트 식별 정보|string|자동부여||
+|pathName|요청 경로|요청 화면 정보|string|자동부여||
+
+### interface 헤더 거래 통신 정보
+
+|필드 ID|필드 명|설명|데이터타입|기본값|필수|
+|---|---|---|:-:|:-:|:-:|
+|devicePlatform|단말 플랫폼명|거래 요청 단말의 실행 플랫폼 명 (browser, android, ios, node)|string|browser||
+|interfaceID|인터페이스 ID|WEB/WIN/SVC등 전송 매체 코드|string|syn.Config.Transaction.MachineTypeID||
+|sourceIP|클라이언트 IP|IPv4/IPv6 기반 클라이언트 IP 주소|string|자동부여||
+|sourcePort|클라이언트 Port|클라이언트 Port 번호|string|자동부여||
+|sourceMAC|클라이언트 MAC|구분값이 없는 16진수 클라이언트 MAC 주소|string|자동부여||
+|connectionType|연결구분 ID|클라이언트와 서버간의 네트워크 신호를 주고받는 방법 구분|string|자동부여||
+|timeout|제한시간|요청후 응답 시간까지 대기 가능한 의도된 제한시간|string|syn.Config.TransactionTimeout||
+
+### transaction 헤더 거래 업무 정보
+
+|필드 ID|필드 명|설명|데이터타입|기본값|필수|
+|---|---|---|:-:|:-:|:-:|
+|globalID|전역 거래 ID|거래 추적을 위한 고유 전역 ID|string|자동부여|O|
+|businessID|업무 ID|업무 분류 ID|string||O|
+|transactionID|거래 ID|업무 실행 ID|string||O|
+|functionID|기능 ID|업무 단위 ID|string||O|
+|commandType|명령구분|D: 데이터베이스, F: 함수, B: 배치, A: API 등 명령 구분 ID|string|D||
+|simulationType|시뮬레이션 ID|개발: D, 운영: P, 테스트: T 목적을 표현하는 구분 ID|string|syn.Config.Transaction.SimulationType||
+|terminalGroupID|단말그룹 ID|클라이언트의 단말 그룹 정보|string|syn.Config.Program.BranchCode||
+|operatorID|사용자 ID|사용자 식별자 ID 또는 프로그램 명 정보|string|자동부여||
+|screenID|화면 ID|거래 요청 화면 ID 정보|string|자동부여|O|
+|startTraceID|거래 추적 ID|검증 및 결과 확인 목적으로 부여된 거래 추적 ID|string|||
+|dataFormat|데이터 포맷|payLoad 본문 데이터 형식 구분 ID (J: Json, T: Tabluar Separated Values)|string|syn.Config.Transaction.DataFormat|O|
+|compressionYN|데이터 압축 여부|payLoad 본문 데이터 압축 여부 Y/N|string|syn.Config.Transaction.CompressionYN||
+
+### payLoad 본문 요청 거래 정보
+
+|필드 ID|필드 명|설명|데이터타입|기본값|필수|
+|---|---|---|:-:|:-:|:-:|
+|property|클라이언트속성|키와 값으로 구성된 옵션 정보|string|||
+|dataMapInterface|데이터 구성|요청/응답 데이터 구조 정보|string||O|
+|dataMapCount|데이터 셋 건수|요청 데이터 셋들의 건수 정보|string||O|
+|dataMapSet|JSON 데이터 셋|JSON 요청 데이터 목록 정보|string|||
+|dataMapSetRaw|TSV 데이터 셋|TSV 요청 데이터 목록 정보|string|||
+
+## 응답 거래 전문정보
+
+요청에 의한 서버에서 내려 줄 수 있는 응답 정보는 크게 4가지로 분류됩니다.
+
+* 정확한 응답
+* 의도된 오류
+* 예기치 못한 예외
+* 서버 장애
+
+응답 정보 분류에 따라 표현 할 수 있는 데이터 포맷과 구성이 달라 질 수 있는 부분을 HandStack 에서는 서버 장애가 발생하지 않는 한 어떠한 분류의 응답이든 클라이언트에서 일관된 처리를 보장하기 위해 다음과 같은 응답을 반환합니다.
+
+```json
+{
+    "system": {
+        "programID": "HDS",
+        "version": "",
+        "routes": [
+            {
+                "systemID": "HANDSTACK",
+                "hostName": "HOSTNAME",
+                "environment": "",
+                "requestTick": 1700809560524,
+                "acceptTick": 1700809560531,
+                "responseTick": 1700809560566
+            }
+        ],
+        "localeID": "ko-KR",
+        "hostName": "",
+        "pathName": ""
+    },
+    "transaction": {
+        "globalID": "LD00000HDSHMLHML010LD01S76M6JH160600",
+        "businessID": "HML",
+        "transactionID": "HML010",
+        "functionID": "LD01",
+        "commandType": "D",
+        "simulationType": "P",
+        "terminalGroupID": "",
+        "operatorID": "",
+        "screenID": "",
+        "startTraceID": "",
+        "dataFormat": "J",
+        "compressionYN": "N"
+    },
+    "message": {
+        "responseStatus": "N",
+        "mainCode": "T200",
+        "mainText": "(성공): 서버가 요청을 제대로 처리",
+        "additions": []
+    },
+    "result": {
+        "property": null,
+        "outputAction": null,
+        "responseType": "0",
+        "dataSetMeta": [],
+        "dataMapCount": [],
+        "dataSet": [
+            {
+                "id": "GridData0",
+                "value": [
+                    {
+                        "CompanyName": "큐씨엔",
+                        "JoinAt": null,
+                        "ExpiredAt": "2024-11-13",
+                        "Options": null,
+                        "CreatedMemberNo": "",
+                        "CreatedMemberName": null,
+                        "CreatedAt": "2023-11-13",
+                        "ModifiedMemberNo": null,
+                        "ModifiedMemberName": null,
+                        "ModifiedAt": null
+                    }
+                ]
+            }
+        ]
+    },
+    "acceptDateTime": "2023-11-24T16:06:00.5313296+09:00",
+    "acknowledge": 1,
+    "correlationID": "LD00000HDSHMLHML010LD01W76M6JH160600",
+    "exceptionText": "",
+    "rowsAffected": 0,
+    "responseID": "HANDSTACKHOSTNAMED2023112416062400",
+    "loadOptions": {},
+    "version": "001",
+    "environment": "D"
+}
+```
+
+소스) 응답 데이터
+
+### global 헤더 환경, 인증, 식별 정보
+
+|필드 ID|필드 명|설명|데이터타입|기본값|필수|
+|---|---|---|:-:|:-:|:-:|
+|acceptDateTime|요청수신시간|클라이언트 요청이 수신된 시간 정보|string|자동부여|O|
+|acknowledge|응답구분|응답에 대한 구분 정보 (1: 정상, 0: 오류)|string|자동부여|O|
+|correlationID|전역 거래 ID|거래 추적을 위한 요청 전역 ID|string|자동부여|O|
+|exceptionText|예외정보|요청 처리 중 예외 발생 정보|string|자동부여|O|
+|rowsAffected|총 영향 건수|요청 처리후 영향을 받은 총 건수 정보|string|자동부여|O|
+|responseID|응답 ID|거래 추적을 위한 고유 응답 ID (시스템 ID + 호스트 명 + 환경구분 + 응답시간)|string|자동부여|O|
+|loadOptions|응답 옵션|응답 데이터를 수신하기 위해 필요한 옵션 정보|string||O|
+|version|전문 버전|호환성 유지를 위한 응답 전문 버전|string|1.0.0|O|
+|environment|환경구분|응답 시스템 환경정보: D(Development), P(Production), T(Test), S(Staging)|string|D|O|
+
+### system 헤더 응답 시스템 정보
+
+|필드 ID|필드 명|설명|데이터타입|기본값|필수|
+|---|---|---|:-:|:-:|:-:|
+|programID|프로그램 ID|요청 프로그램 식별 ID|string|syn.Config.ApplicationID|O|
+|version|시스템 버전|요청 시스템 버전|string|syn.Config.SystemVersion|O|
+|routes|라우트 목록|메시지가 거쳐온 시스템 ID, 시간 정보|string|자동부여||
+|localeID|언어권 ID|요청/응답에 우선 적용할 언어권 ID|string|자동부여||
+|hostName|호스트 명|응답 호스트 식별 정보|string|자동부여||
+|pathName|요청 경로|응답 컨트롤러 정보|string|자동부여||
+
+### transaction 헤더 거래 업무 정보
+
+|필드 ID|필드 명|설명|데이터타입|기본값|필수|
+|---|---|---|:-:|:-:|:-:|
+|globalID|전역 거래 ID|거래 추적을 위한 고유 전역 ID|string|request.Transaction.GlobalID|O|
+|businessID|업무 ID|업무 분류 ID|string|request.Transaction.BusinessID|O|
+|transactionID|거래 ID|업무 실행 ID|string|request.Transaction.TransactionID|O|
+|functionID|기능 ID|업무 단위 ID|string|request.Transaction.FunctionID|O|
+|commandType|명령구분|D: 데이터베이스, F: 함수, B: 배치, A: API 등 명령 구분 ID|string|request.Transaction.CommandType||
+|simulationType|시뮬레이션 ID|개발: D, 운영: P, 테스트: T 목적을 표현하는 구분 ID|string|request.Transaction.SimulationType||
+|terminalGroupID|단말그룹 ID|클라이언트의 단말 그룹 정보|string|request.Transaction.TerminalGroupID||
+|operatorID|사용자 ID|사용자 식별자 ID 또는 프로그램 명 정보|string|request.Transaction.OperatorID||
+|screenID|화면 ID|거래 요청 화면 ID 정보|string|request.Transaction.ScreenID|O|
+|startTraceID|거래 추적 ID|검증 및 결과 확인 목적으로 부여된 거래 추적 ID|string|request.Transaction.StartTraceID||
+|dataFormat|데이터 포맷|payLoad 본문 데이터 형식 구분 ID (J: Json, T: Tabluar Separated Values)|string|request.Transaction.DataFormat|O|
+|compressionYN|데이터 압축 여부|payLoad 본문 데이터 압축 여부 Y/N|string|request.Transaction.CompressionYN||
+
+### message 헤더 응답 부가 메시지 정보
+
+|필드 ID|필드 명|설명|데이터타입|기본값|필수|
+|---|---|---|:-:|:-:|:-:|
+|responseStatus|응답 상태 ID|응답 메시지 부가 정보 (N: Normal, W: Warning, E: Error)|string|N||
+|mainCode|메시지 코드|HandStack 응답 메시지 코드|string|자동부여|O|
+|mainText|메시지 설명|HandStack 응답 메시지 설명|string|자동부여|O|
+|additions|추가 정보|Type, Code, Text로 구성된 거래 응답 추가 메시지 정보|string||O|
+
+### result 본문 응답 거래 정보
+
+|필드 ID|필드 명|설명|데이터타입|기본값|필수|
+|---|---|---|:-:|:-:|:-:|
+|property|서버 속성|키와 값으로 구성된 옵션 정보|string|||
+|outputAction|응답 실행 정보|클라이언트 응답 정보 수신후 실행할 정보|string|||
+|responseType|응답 데이터 분류|응답 데이터 포맷 (Json, Scalar, NonQuery, SQLText, SchemeOnly, CodeHelp, Xml, DynamicJson) 정보|string|자동부여|O|
+|dataSetMeta|응답 데이터 타입|TSV 응답 데이터 타입 목록 정보|string|자동부여||
+|dataMapCount|데이터 셋 건수|응답 데이터 셋들의 건수 정보|string|자동부여|O|
+|dataMapSet|JSON 데이터 셋|JSON 응답 데이터 목록 정보|string|자동부여||
+|dataMapSetRaw|TSV 데이터 셋|TSV 요청 데이터 목록 정보|string|자동부여||
+

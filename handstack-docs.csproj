@@ -19,6 +19,18 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Include="docs/**" />
+		<Content Remove="docs\twelvefactor\1.코드베이스\_category_.json" />
+		<Content Remove="docs\twelvefactor\10.실행환경\_category_.json" />
+		<Content Remove="docs\twelvefactor\11.로그\_category_.json" />
+		<Content Remove="docs\twelvefactor\12.관리작업\_category_.json" />
+		<Content Remove="docs\twelvefactor\2.종속성\_category_.json" />
+		<Content Remove="docs\twelvefactor\3.설정\_category_.json" />
+		<Content Remove="docs\twelvefactor\4.백엔드서비스\_category_.json" />
+		<Content Remove="docs\twelvefactor\5.빌드-릴리즈-실행\_category_.json" />
+		<Content Remove="docs\twelvefactor\6.프로세스\_category_.json" />
+		<Content Remove="docs\twelvefactor\7.포트-바인딩\_category_.json" />
+		<Content Remove="docs\twelvefactor\8.동시성\_category_.json" />
+		<Content Remove="docs\twelvefactor\9.폐기가능성\_category_.json" />
 		<None Update="docs/**">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
@@ -42,6 +54,9 @@
 		<Content Update="versionsArchived.json">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="docs\reference\concept\img\" />
 	</ItemGroup>
 
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">

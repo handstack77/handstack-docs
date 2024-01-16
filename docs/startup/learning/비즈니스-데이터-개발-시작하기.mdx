@@ -206,12 +206,10 @@ Postman 실행 후 다음의 정보를 입력하여 테스트 합니다.
         "screenID": "HML010",
         "startTraceID": "",
         "dataFormat": "J",
-        "compressionYN": "N",
-        "maskings": []
+        "compressionYN": "N"
     },
     "payLoad": {
         "property": {},
-        "mapID": "",
         "dataMapInterface": "Row|Grid",
         "dataMapCount": [
             1
@@ -263,8 +261,7 @@ Postman 실행 후 다음의 정보를 입력하여 테스트 합니다.
         "screenID": "",
         "startTraceID": "",
         "dataFormat": "J",
-        "compressionYN": "N",
-        "maskings": []
+        "compressionYN": "N"
     },
     "message": {
         "responseStatus": "N",
@@ -282,7 +279,6 @@ Postman 실행 후 다음의 정보를 입력하여 테스트 합니다.
             "reportOptions": "",
             "screenID": ""
         },
-        "mapID": "",
         "responseType": "0",
         "dataSetMeta": [],
         "dataMapCount": [],
@@ -319,7 +315,7 @@ Postman 실행 후 다음의 정보를 입력하여 테스트 합니다.
 ```
 소스) 응답 데이터
 
-위와 같은 요청/응답 데이터 구조는 HandStack 기반 화면이나 프로그램, 각 서비스 간에 자동으로 만들고 전달 되는 전문 프로토콜입니다. 일반적으로 개발자가 위와 같은 데이터를 작성하지 않습니다.
+> 시스템간의 거래 메시지는 크게 헤더(설명)와 바디(정보)로 구성되어 전달되어집니다. 위와 같은 요청/응답 데이터 구조는 HandStack 기반 화면이나 프로그램, 각 서비스 간에 자동으로 만들고 전달 되는 전문 프로토콜입니다. 디버깅, 테스트, 이상거래 파악 등등 각 항목에 대한 의미와 적용 가능한 값을 알아두는 것을 권장합니다. [계약 중심 거래 확인하기](/docs/reference/concept/계약-중심-거래)
 
 ## 참고자료
 
