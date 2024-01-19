@@ -34,7 +34,9 @@ docker run --name mssql -p 1433:1433 -d -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD
 
 ![](img/docker-mssql.png)
 
-> Data Source=localhost;Initial Catalog=master;User ID=sa;Password=Strong@Passw0rd;
+```plaintext
+Data Source=localhost;Initial Catalog=master;User ID=sa;Password=Strong@Passw0rd;
+```
 
 ### Oracle 12c
 
@@ -44,7 +46,9 @@ docker run --name oracle -p 1521:1521 -d -e ORACLE_SID=ORCL -e ORACLE_PWD=Strong
 
 ![](img/docker-oracle.png)
 
-> Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SID=ORCL)));User Id=system;Password=Strong@Passw0rd;
+```plaintext
+Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SID=ORCL)));User Id=system;Password=Strong@Passw0rd;
+```
 
 ### MariaDB 10.3
 
@@ -54,7 +58,9 @@ docker run --name mariadb -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=Strong@Passw0rd
 
 ![](img/docker-mariadb.png)
 
-> Server=localhost;Port=3306;Uid=root;Pwd=Strong@Passw0rd;PersistSecurityInfo=True;SslMode=none;Charset=utf8;Allow User Variables=True;
+```plaintext
+Server=localhost;Port=3306;Uid=root;Pwd=Strong@Passw0rd;PersistSecurityInfo=True;SslMode=none;Charset=utf8;Allow User Variables=True;
+```
 
 ### PostgreSQL 9.6
 
@@ -64,7 +70,9 @@ docker run --name postgres -d -p 5432:5432 -e POSTGRES_PASSWORD=Strong@Passw0rd 
 
 ![](img/docker-postgresql.png)
 
-> Host=localhost;Port=5432;Database=postgres;User ID=postgres;Password=Strong@Passw0rd;
+```plaintext
+Host=localhost;Port=5432;Database=postgres;User ID=postgres;Password=Strong@Passw0rd;
+```
 
 > 처음 Docker를 설치하고 스크립트를 실행하면 대용량의 Docker Image 파일을 다운 받기 때문에 시간이 네트워크 환경에 따라 많이 소요될 수 있습니다.
 
@@ -72,4 +80,6 @@ docker run --name postgres -d -p 5432:5432 -e POSTGRES_PASSWORD=Strong@Passw0rd 
 
 SQLite는 오픈소스 관계형 데이터베이스 관리 시스템(RDBMS)입니다. SQLite는 서버가 필요 없는 내장형 데이터베이스 엔진으로, 모든 것을 하나의 물리적 파일에 저장합니다.
 
-> URI=file:../sqlite/HDS/dbclient/HDS.db;Journal Mode=MEMORY;Cache Size=4000;Synchronous=Normal;Page Size=4096;Pooling=True;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;
+```plaintext
+URI=file:../sqlite/HDS/dbclient/HDS.db;Journal Mode=MEMORY;Cache Size=4000;Synchronous=Normal;Page Size=4096;Pooling=True;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;
+```
