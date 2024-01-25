@@ -1028,7 +1028,20 @@ wwwroot > BOD
 
 ## 게시판 화면 데모 확인하기
 
-웹 브라우저로 다음 주소를 확인하세요. https://handstack.kr/view/BOD/BOD010.html
+### 로컬 PC 에서 화면 데모 확인하기
+
+자신의 운영체제에 적합한 [최신 HandStack Releases](https://github.com/handstack77/handstack/releases)를 다운로드 하여 적절한 디렉토리에 압축을 해제합니다.
+
+* Windows 운영체제 에서는 [압축해제한 디렉토리]\handstack\app\ack.exe 를 실행합니다.
+* Linux, macOS 운영체제 에서는 [압축해제한 디렉토리]/handstack/app/ack 를 실행합니다.
+
+웹 브라우저로 다음 주소를 확인하세요. http://localhost:8000/view/BOD/BOD010.html
+
+> 처음 데모를 시작하면 다음과 같은 오류가 발생합니다. "SQL logic error no such table: Board" SQLite 에 Board 테이블이 없어서 발생하는 것이며 "게시판 Board 테이블 초기화" 버튼을 클릭하여 게시판 테이블과 기초 데이터를 생성하면 정상적으로 동작합니다.
+
+![](img/BOD010-database-empty-error.png)
+
+### 스크린 샷
 
 ![](img/BOD010.png)
 ![](img/BOD011.png)
