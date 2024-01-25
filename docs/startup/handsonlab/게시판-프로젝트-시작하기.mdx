@@ -16,16 +16,16 @@ IT 분야에서 요즘 대세로 사용 중인 생성형 AI (Copilot)를 게시�
 
 ## 사용자 스토리 만들기
 
-개발 프로젝트를 위해 제일 먼저 해야 할 것은 무엇일까요? 즉흥적으로 개념을 증명할 코드를 만들거나 유사한 프로젝트를 벤치마킹 또는 R&D를 하는 것거나 업무를 먼저 이해하는 걸수도 있습니다. 무엇이든 정답이 될 수 있습니다.
+개발 프로젝트를 위해 제일 먼저 해야 할 것은 무엇일까요? 즉흥적으로 개념을 증명할 코드를 만들거나 유사한 프로젝트를 벤치마킹 또는 R&D를 진행할 수도 있고 요구사항이나 업무를 먼저 이해해야 하는 걸수도 있습니다. 무엇이든 정답이 될 수 있습니다.
 
-일반적으로 IT 프로젝트 기획에서 제일 먼저 해야 하는 것은 "페르소나 정하기" 입니다. 페르소나를 정하는 이유는 다음과 같습니다.
+일반적으로 IT 프로젝트에서 제일 먼저 해야 하는 것은 "페르소나 정하기" 입니다. 페르소나를 정하는 이유는 다음과 같습니다.
 
 * 사용자의 이해: 페르소나를 만들어 놓으면 사용자들의 요구 사항, 경험, 행동, 목표 등을 이해하는 데 있어서 도움이 됩니다.
 * 소통의 효율성: 프로젝트의 페르소나를 설정하면 조직원들이 공통의 타깃을 이해하고 커뮤니케이션을 효율적으로 진행할 수 있다는 이점도 있습니다.
 
 > 게시판 프로젝트의 사용자는 "개발자" 본인 1명으로 한정합니다.
 
-그래서 게시판의 기능은 로그인/권한 기능, 파일 첨부 등등 다양한 고급 기능은 고려하지 않습니다. 대신 너무 기본에 충실한 게시판은 재미가 없으니 개발자가 원하는 게시판의 주요 기능을 다음과 같이 설정했습니다.
+그래서 게시판의 기능은 로그인/권한 기능, 파일 첨부 등등 다양한 고급 기능은 일부러 고려하지 않습니다. 대신 너무 기본에 충실한 게시판은 재미가 없으니 개발자가 원하는 게시판의 주요 요구 사항을 다음과 같이 설정했습니다.
 
 * 개발자가 작성하는 글은 글꼴, 컬러, 크기, 서식을 지정해야 하며 글 내용에 외부 이미지나 로컬 PC의 이미지를 보여 줄 수 있어야 합니다.
 * 개발자가 게시 글을 작성할 때 "정보, 강좌, 소식"과 같이 분류하는 글을 작성합니다. 글에 대한 그룹과 조회 기능의 편의를 위해 필요합니다.
@@ -51,9 +51,9 @@ IT 분야에서 요즘 대세로 사용 중인 생성형 AI (Copilot)를 게시�
   * 제목, 본문, 작성자 항목을 편집하는 기능
   * 경고 팝업 후 게시글을 삭제하는 기능
 
-대략적으로 3개의 화면과 6 ~ 8개 정도의 주요 기능이 필요한 것을 알 수 있습니다. 이러한 요구 사항들은 HandStack 에서 기본 제공하는 기능들로 대부분 개발이 가능합니다. 물론 이에 대한 약간의 학습 비용이 필요하며 여기에서는 자세히 다루지 않습니다. 자세한 내용은 [자습서 튜토리얼](https://handstack.kr/docs/category/%EC%9E%90%EC%8A%B5%EC%84%9C-%ED%8A%9C%ED%86%A0%EB%A6%AC%EC%96%BC)을 참고하세요. 
+대략적으로 3개의 화면과 6 ~ 8개 정도의 주요 기능이 필요한 것을 알 수 있습니다. 이러한 요구 사항들은 HandStack 에서 기본 제공하는 기능들로 대부분 개발이 가능합니다. 물론 이에 대한 약간의 학습 비용이 필요하며 여기에서는 자세히 다루지 않습니다. 자세한 내용은 [자습서 튜토리얼](/docs/category/%EC%9E%90%EC%8A%B5%EC%84%9C-%ED%8A%9C%ED%86%A0%EB%A6%AC%EC%96%BC)을 참고하세요. 
 
-앞으로 나올 예제 코드들은 모두 표준 언어와 문법으로 사용하기 때문에 의사코드(슈도코드, Pseudo Code)로서 각 모듈이 작동하는 논리를 표현하기 위한 코드로 생각하면 좀 더 편하게 읽으실 수 있습니다.
+앞으로 나올 예제 코드들은 모두 표준 언어와 문법으로 사용하기 때문에 의사코드(Pseudo Code)로서 각 모듈이 작동하는 논리를 표현하기 위한 코드로 생각하면 좀 더 편하게 읽으실 수 있습니다.
 
 > 학습 자료는 지속적으로 추가합니다. 알고 싶거나 찾고자 하는 내용이 있으시면 handstack77@gmail.com 로 피드백을 주시면 우선적으로 적용하겠습니다.
 
@@ -68,9 +68,9 @@ BOD: 게시판 프로젝트 ID
 └-BOD012: 게시글 편집 및 삭제 ID
 ```
 
-개인적으로 개발자가 만드는 소스 코드는 신뢰를 바탕으로 합의에 의한 결과를 만들어내야 하는 계약이라고 생각합니다. 그래서 화면/기능에 대한 설정과 코드는 contracts 디렉토리 하위에 관리합니다.
+개인적으로 개발자가 만드는 소스 코드는 신뢰를 바탕으로 합의에 의한 결과를 만들어내야 하는 계약이라고 생각합니다. 그래서 화면/기능에 대한 전체 설정과 코드는 contracts 디렉토리 하위에 관리합니다.
 
-이 항목 ID로 게시판에 필요한 모든 소스의 디렉토리와 파일에 대한 구성은 다음과 같습니다.
+작업 항목 ID로 분류한 게시판에 필요한 모든 소스의 디렉토리와 파일 구성은 다음과 같습니다.
 
 ```
 contracts
@@ -92,7 +92,7 @@ contracts
        ├─BOD010.js
        ├─BOD011.html
        ├─BOD011.js
-       └─BOD012.html
+       ├─BOD012.html
        └─BOD012.js
 ```
 
@@ -194,11 +194,11 @@ HandStack은 공식적으로 SQL Server, Oracle, MySQL/MariaDB, PostgreSQL, SQLi
 
 ---
 
-Copilot의 도움으로 게시판을 만들고 관리하기 위해 참고용 SQL이 충분히 만들어져 있지만 업무에 맞게 조금 다듬어 이후 예제에 활용 하겠습니다.
+게시판을 만들고 관리하기 위해 참고용 SQL이 충분히 만들어져 있지만 업무에 맞게 조금 다듬어 이후 예제에 활용 하겠습니다.
 
 ## 테이블 DDL 및 CRUD 쿼리 적용하기
 
-생성된 쿼리를 게시판의 주요 기능에 적절하게 관리하기 위해 간단한 규칙을 만들어 기능 ID 값을 생성합니다. 예를 들어 기능 ID는 다음과 같습니다.
+Copilot의 도움으로 생성된 쿼리를 게시판의 주요 기능에 적절하게 관리하기 위해 간단한 규칙을 만들어 기능 ID 값을 생성합니다. 예를 들어 기능 ID는 다음과 같습니다.
 
 * LD01
 * LD02
@@ -208,7 +208,7 @@ Copilot의 도움으로 게시판을 만들고 관리하기 위해 참고용 SQL
 
 명령구분 1자리 + 기능 1자리 + 순번 2자리 = "LD01" 4자리로 구성된 이 규칙은 하나의 화면에 CRUD에 대한 각각의 기능이 99개가 넘지 않는 것을 전제로 만들었습니다.
 
-> 실제로 아무리 복잡한 화면도 이 전제를 넘어서는 경우는 무언가 잘못된 설계나 유지보수 비용을 고려하여 리펙토링이 필요할 거라 생각합니다.
+> 실제로 아무리 복잡한 화면도 이 전제를 넘어서는 경우는 무언가 잘못된 설계나 유지보수 비용을 고려하여 화면이나 기능을 좀 더 세분화하는 리펙토링이 필요할 거라 생각합니다.
 
 | 명령구분 | 명칭 | 설명 |
 | --- | --- | --- |
@@ -265,7 +265,7 @@ INSERT INTO Board (Category, Title, Content, Author, DatePosted) VALUES ('강좌
 INSERT INTO Board (Category, Title, Content, Author, DatePosted) VALUES ('소식', '소식 게시물 제목1', '소식 게시물 내용1', '개발자', datetime('now', 'localtime', '-1 day'));
 ......
 INSERT INTO Board (Category, Title, Content, Author, DatePosted) VALUES ('소식', '소식 게시물 제목30', '소식 게시물 내용30', '개발자', datetime('now', 'localtime', '-30 day'));
-			]]>
+            ]]>
         </statement>
         
         <statement id="LD01" seq="0" use="Y" timeout="0" desc="분류, 기간, 제목을 기준으로 게시글 조회">
@@ -292,7 +292,7 @@ ORDER BY (CASE @Sequence WHEN 'ASC' THEN CASE @OrderBy
         WHEN 'Title' THEN Title 
         WHEN 'Author' THEN Author END
     END) DESC;
-			]]>
+            ]]>
             <param id="@Category" type="String" length="-1" value="" />
             <param id="@Title" type="String" length="-1" value="" />
             <param id="@StartDate" type="String" length="-1" value="" />
@@ -334,7 +334,7 @@ VALUES
     , @Author
     , CASE WHEN @CreateDate = '' THEN datetime('now', 'localtime') ELSE (@CreateDate || ' ' || strftime('%H:%M:%S', 'now', 'localtime')) END
 );
-			]]>
+            ]]>
             <param id="@Category" type="String" length="-1" value="" />
             <param id="@Title" type="String" length="-1" value="" />
             <param id="@Content" type="String" length="-1" value="" />
@@ -369,7 +369,7 @@ SELECT B.ID
     , B.DatePosted
 FROM Board B 
 WHERE B.ID = @ID;
-			]]>
+            ]]>
             <param id="@ID" type="String" length="-1" value="" />
         </statement>
 
@@ -381,7 +381,7 @@ SET Category = @Category
     , Content = @Content
     , Author = @Author
 WHERE ID = @ID;
-			]]>
+            ]]>
             <param id="@ID" type="String" length="-1" value="" />
             <param id="@Category" type="String" length="-1" value="" />
             <param id="@Title" type="String" length="-1" value="" />
@@ -393,7 +393,7 @@ WHERE ID = @ID;
             <![CDATA[
 DELETE FROM Board
 WHERE ID = @ID;
-			]]>
+            ]]>
             <param id="@ID" type="String" length="-1" value="" />
         </statement>
 	</commands>
@@ -592,7 +592,7 @@ HandStack 기반의 화면에서 모든 요청은 단일 EndPoint으로 호출�
 }
 ```
 
-> 이 규칙을 벗어나는 요청이 들어올 경우 transact 모듈에서는 잘못된 요청 처리 응답을 반환합니다. transact 모듈에 전달되어 지는 전문 구조에 대해 자세한 정보는 [계약 중심 거래](https://handstack.kr/docs/reference/concept/%EA%B3%84%EC%95%BD-%EC%A4%91%EC%8B%AC-%EA%B1%B0%EB%9E%98)를 참고하세요
+> 이 규칙을 벗어나는 요청이 들어올 경우 transact 모듈에서는 잘못된 요청 처리 응답을 반환합니다. transact 모듈에 전달되어 지는 전문 구조에 대해 자세한 정보는 [계약 중심 거래](/docs/reference/concept/%EA%B3%84%EC%95%BD-%EC%A4%91%EC%8B%AC-%EA%B1%B0%EB%9E%98)를 참고하세요
 
 정리하면 게시판을 위한 거래 구성을 다음과 같이 3개의 파일에 6개의 요청/응답 설정으로 정리했습니다.
 
@@ -737,11 +737,17 @@ HandStack 의 화면은 syn.loader.js 자바스크립트를 통해 필요한 리
 
 HTML 요소에 syn-events, syn-datafield, syn-options 속성을 활용하여 요청/응답에 필요한 설정을 정의하면 거래 실행시 자동으로 화면 내 각 항목의 데이터를 가져와 서버로 전달하며, 서버에 응답받은 데이터를 화면의 각 항목에 보여줍니다. 
 
-업무 로직은 Javascript 객체로 만듭니다. 필요 없는 부분은 선언 하지 않아도 되며, 화면 개발에 필요한 스크립트는 일관성을 가질 수 있습니다. 기본적으로 다음과 같이 구성됩니다.
+게시글 목록 HTML 소스 코드에는 syn_datepicker, syn_grid 와 같은 UI 컴포넌트들을 사용합니다. 이러한 컴포넌트들로 화면 개발 생산성에 도움을 주며 자세한 내용은 다음을 참고하세요.
+
+* [syn.controls.js 가이드](/docs/startup/learning/syn.controls.js-%EA%B0%80%EC%9D%B4%EB%93%9C)
+* [syn.controls.js 라이브러리](/docs/reference/api/syn.controls.js-%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC)
+* [UI 컨트롤 주요 사용법](/docs/category/ui-%EC%BB%A8%ED%8A%B8%EB%A1%A4-%EC%A3%BC%EC%9A%94-%EC%82%AC%EC%9A%A9%EB%B2%95)
+
+업무 로직은 Javascript 객체로 객체명은 $ 접두어와 항목 ID를 붙여서 "$XXX010" 과 같이 만듭니다. 객체에는 예약어로 사용되는 속성들로 구성되어 있으며 필요 없는 속성은 선언 하지 않아도 되며, 이러한 방식으로 화면 개발에 필요한 코드들은 자연스럽게 일관성을 가질 수 있습니다. 기본적으로 화면 업무 로직을 구성하는 Javascript 객체는 다음과 같이 구성됩니다.
 
 ```js
 'use strict';
-let $BOD010 = {
+let $XXX010 = {
     // 공통 기능 상속 선언
     extends: [
     ],
@@ -989,7 +995,7 @@ let $BOD011 = {
 
 게시글 편집 및 삭제 화면의 BOD012.html, BOD012.js은 신규 등록화면과 비슷하여 GitHub 에서 데모 소스 확인하면 좋을 듯합니다.
 
-> 화면 소스 코드내에 사용 중인 함수들에 대한 자세한 정보는 [syn.js 라이브러리](https://handstack.kr/docs/category/synjs-%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC)를 참고하세요.
+> 화면 소스 코드내에 사용 중인 함수들에 대한 자세한 정보는 [syn.js 라이브러리](/docs/category/synjs-%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC)를 참고하세요.
 
 ```
 contracts
@@ -1047,6 +1053,6 @@ wwwroot > BOD
 ![](img/BOD011.png)
 ![](img/BOD012.png)
 
-이와 같이 게시판 프로젝트 예제를 보며 텍스트 편집기 만으로 만들수 있고 컴파일 과정이 필요없이 정적 웹 서버, CDN, 하이브리드 앱 등등 자유롭게 배포할 수 있는 간소화된 방법을 확인 했습니다. 이 예제는 HelloWorld 수준의 간단한 예제이며 기업에 필요한 다양한 시나리오의 요구사항에 대응하는 기능들을 제공합니다.
+이와 같이 게시판 프로젝트 예제를 보며 비즈니스 앱을 텍스트 편집기 만으로 컴파일 과정 없이 만들수 있고 정적 웹 서버, CDN, 하이브리드 앱 등등 자유롭게 배포할 수 있는 간소화된 방법을 확인 했습니다. 이 예제는 HelloWorld 수준의 간단한 예제이며 기업에 필요한 다양한 시나리오의 요구사항에 대응하는 기능들을 제공합니다.
 
 HandStack은 순수한 웹 표준 기술 (HTML, Javascript)과 SQL 만으로 비즈니스 앱을 개발하고 운영할 수 있는 **오픈소스 솔루션**입니다. 이러한 개발 및 운영 절차는 기존의 Java, ASP.NET, PHP, Node.js, Go, Python 등등 다양한 개발 기술들과 비교 하여 개발자들의 개발 지식 학습 및 운영 비용 절감에 분명한 장점을 제공합니다.
