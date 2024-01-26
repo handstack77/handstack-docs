@@ -37,7 +37,7 @@ HandStack 도 Low-Code 개발 솔루션 분야에 포함되며 일단 <U>**개�
 
 > 게시판 예제는 아마도 기존의 개발 방식과 소스 코드가 생소할 겁니다. 어렵다는게 아니라 "이렇게 어플리케이션을 개발 할 수도 있는거야?" 싶을 정도로 개발 접근법이 조금 다르기 때문입니다.
 
-가볍게 봐주시면 좋겠네요. 자세한 내용은 [게시판 프로젝트 시작하기](https://handstack.kr/docs/startup/handsonlab/%EA%B2%8C%EC%8B%9C%ED%8C%90-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EC%8B%9C%EC%9E%91%ED%95%98%EA%B8%B0)을 참고하세요.
+가볍게 봐주시면 좋겠네요. 자세한 내용은 [게시판 프로젝트 시작하기](https://handstack.kr/docs/startup/handsonlab/%EA%B2%8C%EC%8B%9C%ED%8C%90-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EC%8B%9C%EC%9E%91%ED%95%98%EA%B8%B0)를 참고하세요.
 
 [HandStack 확인하기](https://github.com/handstack77/handstack)
 
