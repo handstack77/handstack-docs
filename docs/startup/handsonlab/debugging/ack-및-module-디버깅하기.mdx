@@ -10,6 +10,8 @@ sidebar_position: 2
 
 그래서 고급 개발자로 나아가기 위해 그리고 팀 전체의 성공을 위해 시니어 개발자는 자신의 경험과 지식을 공유하여, 주니어 개발자가 디버깅 기술을 향상시키는 데 도움을 줘야 합니다.
 
+> 이 문서는 .NET 8.0 기반으로 개발된 HandStack 솔루션의 ack 프로그램과 module 프로그램을 디버깅하는 방법을 설명합니다. 이 문서는 Visual Studio 2022를 기준으로 작성되었으며, .NET Core 에 대한 경험이 있어야 합니다.
+
 ## 사전 요구 사항
 
 HandStack 솔루션에서 서버 프로그램을 담당하는 ack 프로그램은 .NET Core 8.0 기반으로 개발 되었습니다. .NET Core 프로젝트는 Windows, macOS, Linux 에서 개발 할 수 있으며 주어진 상황에 따라 다음과 같은 개발 도구 들로 개발 가능합니다.
@@ -43,8 +45,25 @@ ASP.NET Core 개발을 위해 Visual Studio 에서 선택해야 하는 워크로
 
 일반적으로 ack 프로그램은 크게 2가지 방법으로 다운로드 하여 실행합니다.
 
-* `gh repo clone handstack77/handstack` CLI 명령어로 로컬 PC에 최신 소스 코드를 복제하여 빌드 후 실행
-* https://github.com/handstack77/handstack/releases 에서 최신 빌드를 운영체제에 맞게 소스 코드와 프로그램을 다운로드 하여 실행
+### 최신 소스 코드를 복제하여 빌드 후 실행
+
+Git CLI 명령어로 로컬 PC에 최신 소스를 유지하며 개발을 진행할 수 있습니다. .NET 경험이 있는 경우 권장됩니다. 이 방법은 많은 자유도를 제공하며 다음과 같은 이점이 있습니다.
+
+* HandStack 에서 제공하는 프로그램과 프레임워크의 내부 구조를 확인 할 수 있습니다.
+* 오픈소스와 상용소스를 활용한 추가 기능 확장 modules 에 대한 개발과 커스터마이징이 가능합니다.
+* 개발자가 직접 소스 코드를 수정하여 버그를 수정하거나 새로운 기능을 추가할 수 있습니다.
+
+```bash
+gh repo clone handstack77/handstack
+```
+
+### GitHub Releases 에서 다운로드 하여 실행
+
+.NET 경험이 없고 비즈니스 앱을 개발하는 경우 권장됩니다. 주요 버전에 맞춰 최신 빌드를 운영체제에 맞게 소스 코드와 프로그램을 제공하며 이 방법은 다음과 같은 이점이 있습니다.
+
+* 운영체제 별로 제공되는 ack 프로그램과 modules을 실행할 수 있습니다.
+* 소스 코드가 제공되기 때문에 동일한 환경에서 비즈니스 앱에 대한 지원이 가능합니다.
+* 프로그램을 위한 추가 기능 개발과 커스터마이징을 제공 할 수 있습니다.
 
 .NET Core 프로그램은 크게 Debug, Release 모드로 컴파일되어 배포되며, Release 모드의 컴파일은 보안 및 약간의 성능 향상을 기대할 수 있지만 Debug 모드에 비해 디버그 하기가 어렵습니다.
 
@@ -59,26 +78,28 @@ ASP.NET Core 개발을 위해 Visual Studio 에서 선택해야 하는 워크로
 * Visual Studio에서 이를 구성하려면 프로젝트를 마우스 오른쪽 단추로 클릭하고 속성 > 빌드 > 고급 > 디버깅 정보 를 선택합니다.
 * 디버깅을 수행하면 모든 프로세스 업무가 중단되기 때문에 미리 운영 환경과 동일한 개발 또는 테스트 환경에 작업할 수 있도록 사전에 인프라 환경을 만들어 두는 것을 권장합니다.
 
-소스 코드는 다음과 같은 구조를 가지고 있으며기본 디렉토리에 있는 `handstack.sln` 솔루션 파일을 개발 도구로 실행합니다
+기본 디렉토리에 있는 `handstack.sln` 솔루션 파일을 개발 도구로 실행합니다.
+
+소스 코드는 다음과 같은 구조를 가지고 있으며 각각의 디렉토리는 다음과 같은 역할을 수행합니다.
 
 ```txt
 .
-├─1.WebHost
+├─1.WebHost - 서버 프로그램 및 태넌트 앱 실행을 위한 프로젝트
 │  ├─ack
 │  └─forbes
-├─2.Modules
+├─2.Modules - 모듈러 모놀리식 아키텍처 기반 모듈 단위 프로그램
 │  ├─dbclient
 │  ├─function
 │  ├─logger
 │  ├─repository
 │  ├─transact
 │  └─wwwroot
-├─3.Infrastructure
+├─3.Infrastructure - 공통 라이브러리 프로젝트
 │  ├─Assemblies
 │  ├─HandStack.Core
 │  ├─HandStack.Data
 │  └─HandStack.Web
-└─4.Tool
+└─4.Tool - CLI 도구 프로젝트
     └─CLI
         └─handstack
 ```
