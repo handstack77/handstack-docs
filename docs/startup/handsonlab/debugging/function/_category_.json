@@ -1,0 +1,8 @@
+{
+    "label": "서버리스 Function 디버깅하기",
+    "position": 3,
+    "link": {
+        "type": "generated-index",
+        "description": "CSharp, Node.js 기반 서버 함수를 디버깅하는 방법을 따라합니다."
+    }
+}
