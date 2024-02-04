@@ -161,10 +161,6 @@ const config: Config = {
                             href: 'https://github.com/handstack77/handstack/discussions',
                         },
                         {
-                            label: '디스코드',
-                            href: 'https://discordapp.com/invite/handstack',
-                        },
-                        {
                             label: '블로그',
                             to: '/blog',
                         },
@@ -177,10 +173,6 @@ const config: Config = {
                 {
                     title: '더보기',
                     items: [
-                        {
-                            label: '큐씨엔 및 파트너',
-                            href: 'https://www.qcn.co.kr/',
-                        },
                         {
                             label: '프로젝트 개발 및 지원 정책',
                             href: 'https://github.com/handstack77/handstack',
