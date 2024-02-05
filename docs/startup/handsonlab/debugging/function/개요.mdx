@@ -153,12 +153,12 @@ TransactionException:
 ### Node.js 서버리스 함수의 예
 
 ```javascript
-var qaf = require('qaf');
+var syn = require('syn');
 var qs = require('qs');
 var axios = require('axios');
 
 module.exports = {
-    IF01: (callback, moduleID, dynamicParameters, isTransaction, functionSeq) => {
+    IF01: (callback, moduleID, parameters, dataContext) => {
         (async () => {
             var result = {
                 DataTable1: [{
@@ -175,7 +175,6 @@ module.exports = {
             };
 
             try {
-                var parameters = JSON.parse(dynamicParameters);
                 var companyNo = $array.getValue(parameters, 'COMPANY_NO');
                 var userID = $array.getValue(parameters, 'USER_ID');
                 var toPhoneNumber = $array.getValue(parameters, 'PHONE_NO').replace(/-/g, '');
@@ -195,7 +194,7 @@ module.exports = {
 
                 var config = {
                     method: 'get',
-                    url: 'http://localhost:8000/api/MessageSender/SendAlarmTalkDirect?companyNo={0}&userNo={1}&templateCode={2}&phoneNo={3}&isForceEasyworkSenderKey={4}&content={5}'
+                    url: 'http://localhost:8000/easywork/api/message-sender/SendAlarmTalkDirect?companyNo={0}&userNo={1}&templateCode={2}&phoneNo={3}&isForceEasyworkSenderKey={4}&content={5}'
                         .format(companyNo, userID, messageTempleteID, toPhoneNumber, isForceEasyworkSenderKey, encodeURI(contents))
                 };
 
@@ -215,10 +214,10 @@ module.exports = {
                             sqlParameters.RETURN_RESULT = '알림톡 발송 실패';
                         }
 
-                        $s.executeQuery(moduleID, 'I01', sqlParameters, function (error, queryResult) {
+                        syn.$s.executeQuery(moduleID, 'I01', sqlParameters, function (error, queryResult) {
                             if (error) {
                                 result.DataTable1[0].ErrorMessage = 'executeQuery I01 - ' + error.message;
-                                $l.moduleEventLog(moduleID, 'IF01', 'Message: {0}, Error: {1}'.format(sqlParameters.RETURN_RESULT, error.message), 'Error');
+                                syn.$l.moduleEventLog(moduleID, 'IF01', 'Message: {0}, Error: {1}'.format(sqlParameters.RETURN_RESULT, error.message), 'Error');
                             }
 
                             return callback(null, result);
@@ -226,13 +225,13 @@ module.exports = {
                     })
                     .catch(function (error) {
                         var errorMessage = 'Url: {0} - Message: {1}'.format(config.url, error.message);
-                        $l.moduleEventLog(moduleID, 'IF01', errorMessage, 'Error');
+                        syn.$l.moduleEventLog(moduleID, 'IF01', errorMessage, 'Error');
                         sqlParameters.RETURN_RESULT = errorMessage;
 
-                        $s.executeQuery(moduleID, 'I01', sqlParameters, function (error, queryResult) {
+                        syn.$s.executeQuery(moduleID, 'I01', sqlParameters, function (error, queryResult) {
                             if (error) {
                                 result.DataTable1[0].ErrorMessage = errorMessage;
-                                $l.moduleEventLog(moduleID, 'IF01', 'Message: {0}, Error: {1}'.format(sqlParameters.RETURN_RESULT, error.message), 'Error');
+                                syn.$l.moduleEventLog(moduleID, 'IF01', 'Message: {0}, Error: {1}'.format(sqlParameters.RETURN_RESULT, error.message), 'Error');
                             }
 
                             return callback(null, result);
@@ -240,14 +239,14 @@ module.exports = {
                     });
             } catch (error) {
                 var errorMessage = 'Unhandle Message: {0}'.format(error.message);
-                $l.moduleEventLog(moduleID, 'IF01', errorMessage, 'Error');
+                syn.$l.moduleEventLog(moduleID, 'IF01', errorMessage, 'Error');
                 result.DataTable1[0].ErrorMessage = errorMessage;
                 sqlParameters.RETURN_RESULT = errorMessage;
 
-                $s.executeQuery(moduleID, 'I01', sqlParameters, function (error, queryResult) {
+                syn.$s.executeQuery(moduleID, 'I01', sqlParameters, function (error, queryResult) {
                     if (error) {
                         result.DataTable1[0].ErrorMessage = 'executeQuery I01 - ' + error.message;
-                        $l.moduleEventLog(moduleID, 'IF01', 'Message: {0}, Error: {1}'.format(sqlParameters.RETURN_RESULT, error.message), 'Error');
+                        syn.$l.moduleEventLog(moduleID, 'IF01', 'Message: {0}, Error: {1}'.format(sqlParameters.RETURN_RESULT, error.message), 'Error');
                     }
 
                     return callback(null, result);
