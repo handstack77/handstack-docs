@@ -4,14 +4,171 @@ sidebar_position: 2
 
 # 데이터 게더링(Gatering)과 바인딩(Binding)
 
+## 거래 메시지는 무엇일까요?
 
-## 준비 중입니다
+거래 메시지는 요청 주체(클라이언트)와 응답 주체(서버)간의 데이터를 주고 받는 "**계약**"된 데이터 단위를 의미합니다.
 
+법률용어사전에서는 계약을 "서로 대립하는 두 개 이상의 의사표시의 합치"로 성립하는 법률행위로 합리적인 거래 관계의 발생을 목적으로 한다고 정의합니다. 
 
-## 전달 하고자 하는 주요 내용은 다음과 같습니다
+HandStack 에서는 업무를 처리하는 구현의 방법과는 상관없이 클라이언트와 서버가 반드시 준수 해야 할 전문 프로토콜을 정의하여 거래 메시지를 전달합니다.
 
+전문 프로토콜을 준수 한다면 클라이언트와 서버는 서로 다른 언어, 플랫폼, 기술을 사용하여도 서로 통신이 가능하며, JSON, CSV, Binary 등 데이터 포맷에 상관없이 서로 다른 업무를 처리하는 서버와 클라이언트가 서로 통신이 가능하도록 하는 것을 의미합니다.
 
-## 마치며
+## 거래 메시지의 구성
 
+논리적인 관점에서 거래 메시지는 요청과 응답으로 구성됩니다. 이것을 프로그램 관점에서는 Request와 Response로 구분하여 사용하거나 Input과 Output으로 구분하여 사용합니다.
 
-## 참고자료
+요청과 응답은 각각의 메시지에 대한 고유한 ID를 가지고 있으며, 이것을 통해 서버는 클라이언트의 요청에 대한 적절한 응답 처리를 하게 되며, 거래 메시지에 대한 추적이 가능하게 되어 이슈 발생시 빠르게 대응을 할 수 있습니다.
+
+거래는 하나의 요청에 하나의 응답을 가지고 있으며 요청에 따라 응답이 여러개인 경우도 있습니다. 그래서 요청 데이터가 단일 값인지 여러 값인지 응답 데이터가 단일 값인지 여러 값인지에 따라 클라이언트 화면과 서버 기능이 처리해야 할 코드가 달라집니다.
+
+일반적으로 어떠한 기술과 프로토콜을 이용하여 개발을 하던 요청과 응답을 개별적으로 만듭니다. 이것은 클라이언트와 서버가 서로 밀접하게 통합 되는 하는 것을 의미하며, 스케일 업과 스케일 아웃 비용을 증가시키는 원인이 됩니다.
+
+> 요청 값은 Row, List로 구분하여 전달되며, 응답 값은 Form, Grid으로 구분하여 사용합니다. 그리고 응답 값에는 부가적인 기능을 위해 Dynamic, Addition 형식으로 데이터를 전달 할 수 있다면 개발 및 운영 비용을 절감할 수 있다는 아이디어에서 데이터의 게더링과 바인딩을 구성합니다.
+
+**inputs** : 사용자의 입력 데이터를 Row 또는 List 형식으로 지정합니다.
+
+| input type | 내용 |
+| --- | --- |
+| Row | 하나의 데이터 셋을 데이터로 넘길 때 사용 |
+| List | 여러 개의 데이터 셋을 데이터로 넘길 때 사용 |
+
+**outputs** : 서버에서 내려받는 응답 데이터를 Form 또는 Grid 형식으로 지정합니다.
+
+| output type | 내용 |
+| --- | --- |
+| Form | 화면내 서식에 바인딩할 경우에 사용 하며, 단일 건의 데이터 셋이 응답 |
+| Grid | Grid, Chart, List 형식의 컨트롤에 사용 되며, 여러 건의 데이터 셋이 응답 |
+
+HandStack에서는 한 거래에 여러 건의 **inputs**와 **outputs**의 데이터 셋이 클라이언트에서 거래 메시지로 전달됩니다. 서버에서는 거래 메시지를 정의하여 개발자가 거래 메시지를 정의하고, 이를 기반으로 단일 EndPoint로 클라이언트와 서버가 최소한의 통신으로 거래가 이뤄지도록 합니다.
+
+## 클라이언트 화면 거래 요청/응답 방법
+
+사용자의 화면에서 입력된 데이터를 서버로 전달하기 위해서는 다음과 같이 메시지에 대한 구성을 한 다음 syn.$w.transactionAction() 함수 호출합니다.
+
+```html
+<form autocomplete="off" id="form1" syn-datafield="MainForm">
+    <input type="hidden" id="txtDocumentNo" syn-datafield="DocumentNo" syn-options="{belongID: ['GD01', 'MD01', 'DD01']}">
+    <input type="text" id="txtFormID" syn-datafield="FormID" value="A03" syn-options="{belongID: ['GD01', 'MD01']}">
+</form>
+
+<syn_grid id="grdDetailItems1" syn-datafield="DetailItems1" syn-options="{
+    height: 500,
+    wordWrap: true,
+    columns: [
+        ['DetailNo', '상세항목 NO', 100, true, 'text', false, 'left', 'MD01'],
+        ['DocumentNo', '문서 NO', 100, true, 'text', false, 'left', 'MD01'],
+        ['DateName', '구분', 80, false, 'text', false, 'left', 'MD01'],
+        ['ExecutionWorkName', '업무 내용', 230, false, 'text', true, 'center', 'MD01'],
+        ['Objective', '목표', 170, false, 'text', false, 'left', 'MD01'],
+        ['KeyResult', '주요성과', 170, false, 'text', false, 'center', 'MD01'],
+    ]
+}" syn-events="['afterSelectionEnd', 'afterChange']"></syn_grid>
+```
+
+```javascript
+let $TST010 = {
+    transaction: {
+        GD01: {
+            inputs: [{ type: 'Row', dataFieldID: 'MainForm' }],
+            outputs: [
+                { type: 'Form', dataFieldID: 'MainForm' },
+                { type: 'Grid', dataFieldID: 'DetailItems1' }
+            ]
+        }
+    }
+};
+
+syn.$w.transactionAction('GD01');
+```
+
+어떠한 방법으로 구성된 거래 메시지라도 위와 같은 방식으로 모든 요청과 응답을 자동화 하게 되면 클라이언트 화면과 서버에서 처리 해야할 논리에 집중 할 수 있고 반복적인 코드의 양을 줄일 수 있어 개발 및 운영 비용을 절감 할 수 있습니다.
+
+## 메시지 서버란?
+
+메시지 서버는 클라이언트 요청 데이터를 응답하는 결과를 효율적으로 처리하는 것을 목적으로 하며 다음과 같은 기술적인 특징이 있습니다.
+
+* 데이터베이스 CRUD 쿼리: 비즈니스 앱의 대부분의 업무는 데이터베이스의 CRUD 쿼리를 수행합니다.
+* 외부 서비스 Web API 요청/응답 처리: 메일, 문자메시지, 카카오톡, 네이버, 구글 등의 외부 서비스와 연계하여 데이터를 주고 받습니다.
+* Console 배치 프로그램 호출: 서버에서 정기 업무 처리, 대용량 업무 처리 또는 기능 장애 발생시 웹 응용 프로그램의 안정성 보장이 필요할 경우 선택합니다.
+* 파일 업로드/다운로드 요청: 직접적인 파일 업로드 및 다운로드는 파일 서버가 담당하고, 업로드된 파일 정보에 대한 관리는 메시지 서버가 담당합니다.
+
+## 메시지 전문 프로토콜
+
+메시지 서버에서는 요청과 응답에 대해 데이터베이스에서의 Stored Procedure 개념과 유사한 전용 전문 프로토콜을 정의합니다. 이 방식은 업무/메시지 개발 담당자의 협업 방식에도 영향을 주며, 기본적으로 업무 개발자는 메시지 개발자가 작성한 API의 요청과 응답 형식에 의존하게 됩니다.
+
+거래 서버/메시지 서버간에 전송되는 거래 전문 데이터 포맷은 JSON을 사용합니다.
+
+## 요청 메시지 헤더 전문정보
+
+|명칭|설명|필수여부|
+|---|---|:-:|
+|AccessTokenID|메시지 서버에 요청하기 위한 토큰ID||
+|Action|REPLY, ONEWAY 등 응답에 필요한 방법을 설정|O|
+|ClientTag|클라이언트 시스템의 태그 정보||
+|Environment|메시지의 실행 환경이 개발, 테스트, 운영인지 구분 정보||
+|IsTransaction|메시지 요청이 ACID 특성이 필요한지 구분 정보|O|
+|LoadOptions|메시지에 대한 추가 옵션 정보||
+|RequestID|메시지에 대한 글로벌 ID|O|
+|ReturnType|DataSet, Json, Scalar, NonQuery, SQLText, SchemeOnly, CodeHelp 형식의 응답 포맷|O|
+|Version|메시지 프로토콜 버전|O|
+
+```json
+{
+  "AccessTokenID": "",
+  "Action": "REPLY",
+  "ClientTag": null,
+  "Environment": null,
+  "IsTransaction": false,
+  "LoadOptions": [],
+  "RequestID": "1d1474f2-9f29-4dd9-a961-1634ec78697e",
+  "ReturnType": 1,
+  "Version": "001"
+}
+```
+
+---
+
+### 요청 메시지 본문 전문정보
+|명칭|설명|필수여부|
+|---|---|:-:|
+|QueryID|어플리케이션ID + 프로젝트ID + 거래ID + 서비스ID + 순번2자리로 구성되는 요청ID||
+|JsonObject|Form, Grid, jqGrid, Chart, DataSet, Dynamic, Addition 형식의 JSON 포맷|O|
+|JsonObjects|Form, Grid, jqGrid, Chart, DataSet, Dynamic, Addition 형식의 JSON 포맷 배열|O|
+|Parameters.ParameterName|매개변수 명|O|
+|Parameters.Value|매개변수 값|O|
+|Parameters.DbType|데이터 타입|O|
+|Parameters.Length|데이터 길이|O|
+
+```json
+{
+    "DynamicObjects": [
+        {
+            "QueryID": "HDS|TST|TST010|GD0100",
+            "JsonObject": 0,
+            "JsonObjects": [
+                1
+            ],
+            "Parameters": [
+                {
+                    "ParameterName": "DocumentNo",
+                    "Value": "",
+                    "DbType": "String",
+                    "Length": 0
+                },
+                {
+                    "ParameterName": "FormID",
+                    "Value": "",
+                    "DbType": "String",
+                    "Length": 0
+                }
+            ],
+            "DecryptParameters": null,
+            "BaseFieldMappings": []
+        }
+    ]
+}
+```
+요청 거래 메시지 예제
+
+이러한 전문 프로토콜을 기준으로 dbclient, function, task, webapi 등의 모듈을 구성하게 되며 개발 및 운영 비용을 절감 할 수 있습니다.

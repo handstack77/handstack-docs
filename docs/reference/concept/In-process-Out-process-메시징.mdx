@@ -4,14 +4,132 @@ sidebar_position: 5
 
 # In-process / Out-process 메시징
 
+**In-process 메시징**과 **Out-process 메시징**은 분산 시스템에서 컴포넌트 간의 통신 방식을 나타냅니다.
 
-## 준비 중입니다
+* **In-process 메시징**: 이 방식에서는 컴포넌트들이 같은 프로세스 내에서 실행되며, 서로 통신하기 위해 로컬 메소드 호출을 사용합니다. 이 방식은 성능이 우수하며, 추가적인 네트워크 통신이나 프로세스 모니터링이 필요하지 않기 때문에 리소스 사용이 적습니다.
+* **Out-process 메시징**: 이 방식에서는 컴포넌트들이 서로 다른 프로세스에서 실행되며, 서로 통신하기 위해 원격 프로시저 호출 메커니즘을 사용해야 합니다³. 이 방식은 디버깅이나 문제 해결에 유리하며, 동일한 애플리케이션의 다른 배포 사이에서 유연한 호환성을 원할 때 유용합니다.
+
+In-process와 Out-process 중 어떤 메시징 방식을 선택할지는 애플리케이션의 요구 사항과 상황에 따라 달라집니다. 예를 들어, 성능이 중요한 경우에는 In-process 메시징을, 디버깅이나 문제 해결이 필요한 경우에는 Out-process 메시징을 선택할 수 있습니다.
+
+## HandStack 모듈 간의 In-process 메시징
+
+모듈러 모놀리식 아키텍처에서 컴포넌트 간의 통신이 In-process 방식을 사용하는 주요 이유는 다음과 같습니다.
+
+* **성능**: 모듈이 동일한 프로세스 내에서 실행되므로, 네트워크 호출이 필요 없습니다. 이로 인해 통신이 빠르고 효율적입니다.
+* **단순성**: 모듈 간 통신은 직접적인 메소드 호출이나 함수 호출을 통해 이루어집니다. 이는 추가적인 통신 프로토콜이나 도구가 필요 없으므로 통신 과정이 단순해집니다.
+* **유지 관리**: 모듈이 동일한 프로세스 내에서 실행되므로, 모듈 간의 의존성 관리가 용이합니다. 이는 모듈 간의 변경 사항이 전체 시스템에 미치는 영향을 최소화하고, 개발 주기를 단축시키는 데 도움이 됩니다.
+* **모듈 간의 독립성**: 모듈 내의 모든 것을 내부적으로 유지함으로써 모듈 외부에서의 컴포넌트 사용을 방지할 수 있습니다. 이는 모듈 간의 독립성을 보장하고, 모듈 간의 결합도를 낮춥니다.
+
+ack 프로그램에서는 이러한 이유로 인해 컴포넌트 간의 통신이 In-process 방식을 사용 가능하도록 [MediatR](https://github.com/jbogard/MediatR) 오픈 소스를 활용 합니다. ack 프로그램을 단일 모놀리식 방식으로 운영할 경우 권장됩니다.
+
+> MediatR 패키지는 메시지 전송과 처리를 분리하기 위해 만들어진 중재자 패턴의 .NET 구현체입니다.
+
+예를 들어 SMS 를 발송하는 모듈이 있을 경우 In-process 메시징을 사용하는 모듈 간의 통신은 다음과 같이 이루어집니다.
+
+## module.json 환경설정
+
+```json
+{
+    "ModuleID": "sourcemodule",
+    "Name": "sourcemodule",
+    "IsBundledWithHost": false,
+    "Version": "1.0.0",
+    "ModuleConfig": {
+        ...
+        "EventAction": ["ncloudsender.Events.PublishSMSText"], // 현재 모듈에서 호출할 대상 모듈 이벤트 정의
+        "SubscribeAction": []
+        ...
+    }
+}
+```
+설정) 소스 모듈에서 호출할 대상 모듈 이벤트 정의
 
 
-## 전달 하고자 하는 주요 내용은 다음과 같습니다
+```json
+{
+    "ModuleID": "targetmodule",
+    "Name": "targetmodule",
+    "IsBundledWithHost": false,
+    "Version": "1.0.0",
+    "ModuleConfig": {
+        ...
+        "EventAction": [],
+        "SubscribeAction": ["ncloudsender.Events.PublishSMSText"] // 다른 모듈에서 현재 모듈을 호출할 이벤트 정의
+        ...
+    }
+}
+```
+설정) 대상 모듈에서 현재 모듈을 호출할 이벤트 정의
 
+## 모듈 간의 통신
 
-## 마치며
+```csharp
+var mediatorRequest = new MediatorRequest()
+{
+    ActionModuleID = ModuleConfiguration.ModuleID,
+    SubscribeEventID = "ncloudsender.Events.PublishSMSText"
+};
 
+mediatorRequest.Parameters = new Dictionary<string, object?>();
+mediatorRequest.Parameters.Add("SenderGroupID", "MessageSender");
+mediatorRequest.Parameters.Add("PhoneNo", "01012345678");
+mediatorRequest.Parameters.Add("Content", "sourcemodule 모듈에서 targetmodule의 이벤트를 호출합니다");
 
-## 참고자료
+await mediatorClient.PublishAsync(mediatorRequest);
+```
+코드) 소스 모듈에서 대상 모듈로 이벤트 호출
+
+```csharp
+public class PublishSMSHandler : INotificationHandler<PublishSMSText>
+{
+    private readonly IConfiguration configuration;
+    private readonly ISMSSender iSMSSender;
+    private readonly ILogger logger;
+    private readonly HttpContext? httpContext;
+
+    public PublishSMSHandler(IConfiguration configuration, ISMSSender iSMSSender, ILogger logger, IHttpContextAccessor httpContextAccessor)
+    {
+        this.configuration = configuration;
+        this.iSMSSender = iSMSSender;
+        this.logger = logger;
+        this.httpContext = httpContextAccessor.HttpContext;
+    }
+
+    public async Task Handle(PublishSMSText publishText, CancellationToken cancellationToken)
+    {
+        List<SMSMessage> smsMessages = new List<SMSMessage>();
+
+        SMSMessage smsMessage = new SMSMessage();
+        smsMessage.to = publishText.PhoneNo;
+        smsMessages.Add(smsMessage);
+
+        switch (publishText.SendType)
+        {
+            case "SMS":
+                if (string.IsNullOrEmpty(publishText.PhoneNo) == false && string.IsNullOrEmpty(publishText.Content) == false)
+                {
+                    var sendSMSResult = await iSMSSender.SendSMSMessageAsync(publishText.SenderGroupID, publishText.RegisterUserNo, publishText.Content, smsMessages);
+                    if (sendSMSResult == null || string.IsNullOrEmpty(sendSMSResult.errorText) == false)
+                    {
+                        logger.Error("[{LogCategory}] " + $"SMS 거래오류: {sendSMSResult?.errorText}", "PublishSMSHandler/Handle");
+                    }
+                }
+                break;
+            case "LMS":
+                var sendLMSResult = await iSMSSender.SendLMSMessageAsync(publishText.SenderGroupID, publishText.RegisterUserNo, publishText.Subject.ToStringSafe(), publishText.Content, smsMessages);
+                if (sendLMSResult == null || string.IsNullOrEmpty(sendLMSResult.errorText) == false)
+                {
+                    logger.Error("[{LogCategory}] " + $"LMS 거래오류: {sendLMSResult?.errorText}", "PublishSMSHandler/Handle");
+                }
+                break;
+        }
+    }
+}
+```
+코드) 대상 모듈에서 이벤트 호출에 대한 처리
+
+## HandStack 기반 모듈 간의 명령 프로세스 파이프라인
+
+샘플 구현인 SMS 메시지 발송에서는 중재자(Mediator) 패턴을 기반으로 In-process 파이프라인을 사용하여 명령 수집을 유도하고 명령을 메모리 내에서 실행 할 수 있는 방법을 제공합니다. 이러한 방식은 모듈 간의 통신을 단순화하고, 모듈 간의 결합도를 낮추어 유지 관리성을 높이는 데 도움이 됩니다.
+
+예를 들어 하나의 기능을 위와 같이 만들어두면 모든 모듈 기반에서 SMS 발송을 위한 명령을 수집하고, 이를 처리할 수 있기 때문입니다.
