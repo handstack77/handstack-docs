@@ -19,7 +19,6 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Include="docs/**" />
-		<Content Remove="docs\startup\handsonlab\debugging\function\_category_.json" />
 		<None Update="docs/**">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
@@ -43,9 +42,6 @@
 		<Content Update="versionsArchived.json">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="docs\startup\handsonlab\debugging\function\img\" />
 	</ItemGroup>
 
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
