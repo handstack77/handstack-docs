@@ -1227,12 +1227,34 @@ globalRoot.syn = syn;
             return height;
         },
 
-        measureSize(text, fontSize) {
+        measureSize(text, fontSize, maxWidth) {
+            maxWidth = maxWidth || '800px';
+            if ($object.isNumber(maxWidth) == true) {
+                maxWidth = maxWidth.toString() + 'px';
+            }
+
             if ($object.isNullOrUndefined(text) == true) {
                 return null;
             }
 
             var width = syn.$d.measureWidth(text, fontSize);
+            if (width.endsWith('px') == true && $string.isNullOrEmpty(maxWidth) == false) {
+                var calcWidth = $string.toNumber(width.substring(0, width.indexOf('px')));
+
+                if (maxWidth.endsWith('px') == true) {
+                    maxWidth = $string.toNumber(maxWidth.substring(0, maxWidth.indexOf('px')));
+                }
+                else {
+                    maxWidth = $string.toNumber(maxWidth);
+                }
+
+                if (isNaN(maxWidth) == false) {
+                    if (calcWidth > maxWidth) {
+                        width = maxWidth.toString() + 'px';
+                    }
+                }
+            }
+
             return {
                 width: width,
                 height: syn.$d.measureHeight(text, width, fontSize)
@@ -4885,6 +4907,10 @@ globalRoot.syn = syn;
                         globalRoot.$logger.trace(value);
                         break;
                 }
+
+                if (globalRoot.console) {
+                    console.log(`${logLevelText}: ${value}`);
+                }
             }
             else {
                 value = syn.$l.eventLogCount.toString() +
@@ -4932,6 +4958,25 @@ globalRoot.syn = syn;
             }
 
             syn.$l.eventLogCount++;
+        },
+
+        getBasePath(basePath, defaultPath) {
+            const path = require('path');
+            let entryBasePath = process.cwd();
+
+            if (!basePath) {
+                basePath = '';
+            } else if (basePath.startsWith('.')) {
+                basePath = path.resolve(entryBasePath, basePath);
+            } else {
+                basePath = path.resolve(basePath);
+            }
+
+            if (!basePath && defaultPath) {
+                basePath = defaultPath;
+            }
+
+            return basePath;
         },
 
         moduleEventLog(moduleID, event, data, logLevel) {
@@ -4984,6 +5029,10 @@ globalRoot.syn = syn;
                         logger.trace(value);
                         break;
                 }
+
+                if (globalRoot.console) {
+                    console.log(`${logLevelText}: ${value}`);
+                }
             }
             else {
                 console.log('ModuleID 확인 필요 - {0}'.format(moduleID));
@@ -5011,6 +5060,7 @@ globalRoot.syn = syn;
         delete syn.$l.getElementsByTagName;
     }
     else {
+        delete syn.$l.getBasePath;
         delete syn.$l.moduleEventLog;
 
         context.onevent = syn.$l.addEvent;
@@ -6302,26 +6352,6 @@ globalRoot.syn = syn;
                     syn.$l.deepFreeze(syn.$w.Variable);
                 }
 
-                var hidden = null;
-                if (document.forms) {
-                    for (var i = 0; i < document.forms.length; i++) {
-                        var form = document.forms[i];
-                        hidden = form.getAttribute('hidden');
-                        if ($object.isNullOrUndefined(hidden) == false && $string.toBoolean(hidden) == false) {
-                            form.removeAttribute('hidden');
-                            syn.$m.removeClass(form, 'hidden');
-                            form.style.display = '';
-                        }
-                    }
-                }
-
-                hidden = document.body.getAttribute('hidden');
-                if ($object.isNullOrUndefined(hidden) == false && $string.toBoolean(hidden) == false) {
-                    document.body.removeAttribute('hidden');
-                    syn.$m.removeClass(document.body, 'hidden');
-                    document.body.style.display = '';
-                }
-
                 if (mod && mod.context.synControls && ($object.isNullOrUndefined(mod.context.tabOrderControls) == true || mod.context.tabOrderControls.length == 0)) {
                     var synTagNames = [];
                     var syn_tags = document.body.outerHTML.match(/<(syn_).+?>/gi);
@@ -6341,7 +6371,7 @@ globalRoot.syn = syn;
                     for (var idx = 0; idx < length; idx++) {
                         var el = findElements[idx];
                         if (el && el.style && el.style.display == 'none' || el.type == 'hidden') {
-                            if (el.id && el.tagName.toUpperCase() == 'SELECT' && (el.getAttribute('syn-datafield') != null || el.getAttribute('syn-datafield') != undefined)) {
+                            if (el.id && el.tagName.toUpperCase() == 'SELECT' && $string.isNullOrEmpty(el.getAttribute('syn-datafield')) == false) {
                                 els.push(el);
                             }
                             else {
@@ -6352,7 +6382,7 @@ globalRoot.syn = syn;
                             if (el.id && el.id.includes('btn_syneditor_') == false && el.id.includes('chk_syngrid_') == false && el.id.includes('_hidden') == false) {
                                 els.push(el);
                             }
-                            else if (el.id && el.tagName.toUpperCase() == 'SELECT' && (el.getAttribute('syn-datafield') != null || el.getAttribute('syn-datafield') != undefined)) {
+                            else if (el.id && el.tagName.toUpperCase() == 'SELECT' && $string.isNullOrEmpty(el.getAttribute('syn-datafield')) == false) {
                                 els.push(el);
                             }
                             else if (el.id && el.tagName.includes('SYN_') == true) {
@@ -6394,7 +6424,7 @@ globalRoot.syn = syn;
                                 });
                             }
                         }
-                        else if (el.id && el.tagName.toUpperCase() == 'SELECT' && (el.getAttribute('syn-datafield') != null || el.getAttribute('syn-datafield') != undefined)) {
+                        else if (el.id && el.tagName.toUpperCase() == 'SELECT' && $string.isNullOrEmpty(el.getAttribute('syn-datafield')) == false) {
                             var offset = null;
                             if (el.getAttribute('multiple') === false) {
                                 var control = syn.uicontrols.$select.getControl(el.id);
@@ -6570,7 +6600,7 @@ globalRoot.syn = syn;
                                         controlType = 'button';
                                         break;
                                     case 'INPUT':
-                                        controlType = synControl.getAttribute('type').toLowerCase();
+                                        controlType = synControl.getAttribute('type') == null ? 'text' : synControl.getAttribute('type').toLowerCase();
                                         switch (controlType) {
                                             case 'hidden':
                                             case 'text':
@@ -6685,7 +6715,10 @@ globalRoot.syn = syn;
 
                     try {
                         var el = syn.$l.get(synControl.id + '_hidden') || syn.$l.get(synControl.id);
-                        options = eval('(' + el.getAttribute('syn-options') + ')');
+                        var synOptions = el.getAttribute('syn-options') || null;
+                        if (synOptions != null) {
+                            options = eval('(' + synOptions + ')');
+                        }
                     } catch (error) {
                         syn.$l.eventLog('$w.contentLoaded', 'elID: "{0}" syn-options 확인 필요'.format(synControl.id) + error.message, 'Warning');
                     }
@@ -6694,7 +6727,11 @@ globalRoot.syn = syn;
                         if ($object.isString(options.transactConfig.triggerEvent) == true) {
                             syn.$l.addEvent(elID, options.transactConfig.triggerEvent, function (evt) {
                                 var el = $webform.activeControl(evt);
-                                var options = eval('(' + el.getAttribute('syn-options') + ')');
+                                var synOptions = el.getAttribute('syn-options') || null;
+                                if (synOptions != null) {
+                                    options = eval('(' + synOptions + ')');
+                                }
+
                                 var transactConfig = null;
                                 if (options && options.transactConfig) {
                                     transactConfig = options.transactConfig;
@@ -6708,7 +6745,11 @@ globalRoot.syn = syn;
                         else if ($object.isArray(options.transactConfig.triggerEvent) == true) {
                             var triggerFunction = function (evt) {
                                 var el = $webform.activeControl(evt);
-                                var options = eval('(' + el.getAttribute('syn-options') + ')');
+                                var synOptions = el.getAttribute('syn-options') || null;
+                                if (synOptions != null) {
+                                    options = eval('(' + synOptions + ')');
+                                }
+
                                 var transactConfig = null;
                                 if (options && options.transactConfig) {
                                     transactConfig = options.transactConfig;
@@ -6728,17 +6769,16 @@ globalRoot.syn = syn;
 
                     if (options && options.triggerConfig && options.triggerConfig.triggerEvent) {
                         if ($object.isString(options.triggerConfig.triggerEvent) == true) {
-                            syn.$l.addEvent(elID, options.triggerConfig.triggerEvent, function (triggerConfig) {
+                            syn.$l.addEvent(elID, options.triggerConfig.triggerEvent, function (evt) {
+                                var triggerConfig = null;
                                 var el = $webform.activeControl(evt);
-                                if (triggerConfig && $object.isNullOrUndefined(triggerConfig.triggerEvent) == true) {
-                                    var options = eval('(' + el.getAttribute('syn-options') + ')');
-                                    triggerConfig = options.triggerConfig;
+                                var synOptions = el.getAttribute('syn-options') || null;
+                                if (synOptions != null) {
+                                    options = eval('(' + synOptions + ')');
                                 }
-                                else {
-                                    var options = eval('(' + el.getAttribute('syn-options') + ')');
-                                    if (options && options.triggerConfig) {
-                                        triggerConfig = options.triggerConfig;
-                                    }
+
+                                if (options && options.triggerConfig) {
+                                    triggerConfig = options.triggerConfig;
                                 }
 
                                 if (triggerConfig) {
@@ -6747,17 +6787,16 @@ globalRoot.syn = syn;
                             });
                         }
                         else if ($object.isArray(options.triggerConfig.triggerEvent) == true) {
-                            var triggerFunction = function (triggerConfig) {
+                            var triggerFunction = function (evt) {
+                                var triggerConfig = null;
                                 var el = $webform.activeControl(evt);
-                                if (triggerConfig && $object.isNullOrUndefined(triggerConfig.triggerEvent) == true) {
-                                    var options = eval('(' + el.getAttribute('syn-options') + ')');
-                                    triggerConfig = options.triggerConfig;
+                                var synOptions = el.getAttribute('syn-options') || null;
+                                if (synOptions != null) {
+                                    options = eval('(' + synOptions + ')');
                                 }
-                                else {
-                                    var options = eval('(' + el.getAttribute('syn-options') + ')');
-                                    if (options && options.triggerConfig) {
-                                        triggerConfig = options.triggerConfig;
-                                    }
+
+                                if (options && options.triggerConfig) {
+                                    triggerConfig = options.triggerConfig;
                                 }
 
                                 if (triggerConfig) {
@@ -7734,7 +7773,7 @@ globalRoot.syn = syn;
         */
         transactionDirect(directObject, callback, options) {
             directObject.transactionResult = $object.isNullOrUndefined(directObject.transactionResult) == true ? true : directObject.transactionResult === true;
-            directObject.systemID = directObject.systemID || $this.config.systemID;
+            directObject.systemID = directObject.systemID || (globalRoot.devicePlatform == 'browser' ? $this.config.systemID : '');
 
             var transactionObject = syn.$w.transactionObject(directObject.functionID, 'Json');
 
@@ -8169,8 +8208,8 @@ globalRoot.syn = syn;
                                         var responseFieldID = dataMapItem['id'];
                                         var outputData = dataMapItem['value'];
 
-                                        if ($this.outputDataBinding) {
-                                            $this.outputDataBinding(functionID, responseFieldID, outputData);
+                                        if ($this.hook.outputDataBinding) {
+                                            $this.hook.outputDataBinding(functionID, responseFieldID, outputData);
                                         }
 
                                         if (outputMapping.responseType == 'Form') {
@@ -9260,6 +9299,8 @@ globalRoot.syn = syn;
                 moduleName = moduleUrl;
             }
 
+            moduleName = moduleName.replaceAll('-', '_');
+
             var moduleScript;
             if ($string.isNullOrEmpty(moduleName) == false) {
                 try {
@@ -9520,8 +9561,6 @@ globalRoot.syn = syn;
                     url = '{0}://{1}{2}'.format(apiService.Protocol, apiService.IP, apiService.Path);
                 }
 
-                url = '/transact/api/transaction/execute';
-
                 var installType = syn.$w.Variable && syn.$w.Variable.InstallType ? syn.$w.Variable.InstallType : 'L';
                 var environment = syn.Config && syn.Config.Environment ? syn.Config.Environment.substring(0, 1) : 'D';
                 var machineTypeID = syn.Config && syn.Config.Transaction ? syn.Config.Transaction.MachineTypeID.substring(0, 1) : 'W';
@@ -9565,7 +9604,7 @@ globalRoot.syn = syn;
                     loadOptions: {
                         encryptionType: syn.Config.Transaction.EncryptionType, // "P:Plain, F:Full, H:Header, B:Body",
                         encryptionKey: syn.Config.Transaction.EncryptionKey, // "P:프로그램, K:KMS 서버, G:GlobalID 키",
-                        platform: syn.$b.platform
+                        platform: globalRoot.devicePlatform == 'browser' ? syn.$b.platform : globalRoot.devicePlatform
                     },
                     requestID: requestID,
                     version: syn.Config.Transaction.ProtocolVersion,
@@ -9608,7 +9647,6 @@ globalRoot.syn = syn;
                     },
                     payLoad: {
                         property: {},
-                        mapID: '',
                         dataMapInterface: '',
                         dataMapCount: [],
                         dataMapSet: []
@@ -9726,7 +9764,7 @@ globalRoot.syn = syn;
                     }
                 }
 
-                if (transactionRequest.action == 'PSH') {
+                if (globalThis.devicePlatform != 'node' && transactionRequest.action == 'PSH') {
                     var blob = new Blob([JSON.stringify(transactionRequest)], { type: 'application/json; charset=UTF-8' });
                     navigator.sendBeacon(url, blob);
 
@@ -9801,7 +9839,6 @@ globalRoot.syn = syn;
                                         var jsonResult = [];
                                         var message = transactionResponse.message;
                                         if (transactionResponse.result.dataSet != null && transactionResponse.result.dataSet.length > 0) {
-                                            var mapID = transactionResponse.result.mapID;
                                             var dataMapItem = transactionResponse.result.dataSet;
                                             var length = dataMapItem.length;
                                             for (var i = 0; i < length; i++) {
@@ -9947,7 +9984,6 @@ globalRoot.syn = syn;
                                         if (transactionResponse && transactionResponse.acknowledge && transactionResponse.acknowledge == 1) {
                                             try {
                                                 if (transactionResponse.result.dataSet != null && transactionResponse.result.dataSet.length > 0) {
-                                                    var mapID = transactionResponse.result.mapID;
                                                     var dataMapItem = transactionResponse.result.dataSet;
                                                     var length = dataMapItem.length;
                                                     for (var i = 0; i < length; i++) {

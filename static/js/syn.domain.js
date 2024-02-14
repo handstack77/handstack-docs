@@ -290,7 +290,7 @@
         },
 
         executeChannelMessage(executeName, methodName, parameters, callback, channelID) {
-            var frameMessage = syn.$w.channels.find(function (item) { return item.id == (channelID || $this.channelID) });
+            var frameMessage = syn.$w.channels.find(function (item) { return item.id == (channelID || $this.prop.channelID) });
             if ($object.isNullOrUndefined(frameMessage) == false) {
                 frameMessage.channel[executeName]({
                     method: methodName,
@@ -372,10 +372,10 @@
                         }
 
                         var mod = globalThis[syn.$w.pageScript];
-                        if (mod['afterTransaction']) {
+                        if (mod.hook['afterTransaction']) {
                             var addtionalData = {};
                             addtionalData.exceptionText = exceptionText;
-                            mod['afterTransaction'](null, response.transaction.functionID, null, addtionalData);
+                            mod.hook['afterTransaction'](null, response.transaction.functionID, null, addtionalData);
                         }
                         return false;
                     }
@@ -553,8 +553,8 @@
 
                         if (contentType === 'warning') {
                             var mod = window[syn.$w.pageScript];
-                            if (mod['serviceClientException']) {
-                                mod['serviceClientException'](url, jsonObject, xhr);
+                            if (mod.hook['serviceClientException']) {
+                                mod.hook['serviceClientException'](url, jsonObject, xhr);
                             }
                             else {
                                 alert('ServiceID : ' + serviceID + '\n' + jsonObject.Result);
@@ -738,8 +738,8 @@
                 if (tabID) {
                     parent.$main.method.focusTabUI(tabID);
                     var pageWindow = parent.$main.method.getActiveTabContent(tabID);
-                    if (pageWindow) {
-                        var pageScript = pageWindow[pageWindow['$w'].pageScript];
+                    if (pageWindow && pageWindow.syn) {
+                        var pageScript = pageWindow[pageWindow.syn.$w.pageScript];
                         var targetFunction = pageScript[func];
 
                         if (targetFunction) {
@@ -829,13 +829,21 @@
         transactionLoadOptions(loadOptions) {
             try {
                 if (location.pathname.startsWith((syn.Config.TenantAppRequestPath ? `/${syn.Config.TenantAppRequestPath}/` : '/app/')) == true) {
-                    loadOptions['app-id'] = location.pathname.split('/')[2];
+                    var paths = location.pathname.split('/');
+                    loadOptions['work-id'] = paths[2];
+                    loadOptions['app-id'] = paths[3];
                 }
                 else if (syn.$r.query('app-id') == true) {
                     loadOptions['app-id'] = syn.$r.query('app-id');
+                    if (syn.$r.query('work-id') == true) {
+                        loadOptions['work-id'] = syn.$r.query('work-id');
+                    }
                 }
                 else if ($this && $this.prop && $this.prop.selectedAppID) {
                     loadOptions['app-id'] = $this.prop.selectedAppID;
+                    if ($this && $this.prop && $this.prop.selectedUserWorkID) {
+                        loadOptions['work-id'] = $this.prop.selectedUserWorkID;
+                    }
                 }
             } catch (error) {
                 syn.$l.eventLog('transactionLoadOptions', error, 'Error');
@@ -898,13 +906,28 @@
         },
 
         statusMessage(val) {
-            if (parent.$main) {
+            if (parent.$mainframe) {
                 var tabInfo = syn.$w.getCurrentTabInfo();
                 if (tabInfo) {
-                    parent.$main.method.setStatusMessage(tabInfo.tabID, val);
+                    parent.$layout.method.setStatusMessage(tabInfo.tabID, val);
                 }
                 else {
                     syn.$l.eventLog('statusMessage', val, 'Information');
+                }
+            }
+
+            if (window == top || syn.$w.pageScript == '$mainframe') {
+                var tabInfo = syn.$w.getCurrentTabInfo();
+                if (tabInfo) {
+                    parent.$layout.method.setStatusMessage(tabInfo.tabID, val);
+                }
+                else {
+                    syn.$l.eventLog('statusMessage', val, 'Information');
+                }
+            }
+            else {
+                if (window.parent) {
+                    window.parent.syn.$w.statusMessage(val);
                 }
             }
         },
@@ -1134,11 +1157,11 @@
                         options.minWidth = textWidth;
                     }
 
-                    if (textHeight > (options.minHeight - 160)) {
+                    if (textHeight > (options.minHeight - 200)) {
                         if (textHeight > 600) {
                             textHeight = 600;
                         }
-                        options.minHeight = textHeight + 160;
+                        options.minHeight = textHeight + 200;
                         options.textHeight = textHeight;
                     }
 
@@ -1149,7 +1172,7 @@
             if (options && options.stack) {
                 var elStack = syn.$m.append(el, 'div');
                 var textHeight = options.textHeight ? options.textHeight + 'px' : '100%';
-                syn.$m.addCssText(elStack, 'margin: 15px; height: {0}; overflow: auto; color: #000'.format(textHeight));
+                syn.$m.addCssText(elStack, 'margin: 15px; height: {0}; overflow: auto; color: #000; background-color: #eee;'.format(textHeight));
                 elStack.innerHTML = options.stack.replace(/(\n|\r\n)/gm, '<br />');
             }
 
@@ -1269,10 +1292,6 @@
                     syn.$m.addClass(button3, 'btn-default');
                     syn.$l.addEvent(button3, 'click', buttonCallback);
                 }
-
-                button1 = null;
-                button2 = null;
-                button3 = null;
             }
 
             if (options) {
@@ -1292,12 +1311,6 @@
                 syn.$w.isShowAlert = true;
                 parent.$main.prop.buttonAction = false;
             }
-
-            el = null;
-            elCaption = null;
-            elText = null;
-            elIcon = null;
-            elButtons = null;
         },
 
         showDialog(el, options, callback) {
@@ -1554,7 +1567,7 @@
                     windowHandle.attr('channelID', channelID ? channelID : '');
                     windowHandle.attr('baseELID', popupOptions.baseELID);
                     if (popupOptions.isModal == true) {
-                        var overlayEL = syn.$m.createElement('div');
+                        var overlayEL = document.createElement('div');
                         var overlayZIndex = windowHandle.css('zIndex');
                         windowHandle.attr('overlayZIndex', overlayZIndex);
                         overlayEL.id = elID + '_overlay';
@@ -1897,17 +1910,17 @@
                     var businessID = '';
                     var transactionID = '';
                     var featureID = 'LD01';
-                    var codeHelpID = window.Environment ? Environment.Application.CodeHelpID : '';
+                    var codeHelpID = syn.Environment ? syn.Environment.Application.CodeHelpID : '';
                     if ($string.isNullOrEmpty(codeHelpID) == false) {
                         var items = codeHelpID.split('|');
                         if (items.length == 3) {
-                            applicationID = syn.$w.ManagedApp.ApplicationID;
+                            applicationID = (location.pathname.startsWith((syn.Config.TenantAppRequestPath ? `/${syn.Config.TenantAppRequestPath}/` : '/app/')) == true) ? syn.$w.ManagedApp.ApplicationID : syn.Config.ApplicationID;
                             businessID = items[0];
                             transactionID = items[1];
                             featureID = items[2];
                         }
                         else {
-                            syn.$w.alert(`호스트 앱 환경변수의 코드헬프 값 확인이 필요합니다. '${codeHelpID}'`, '정보');
+                            syn.$w.alert(`앱 환경변수의 코드헬프 값 확인이 필요합니다. '${codeHelpID}'`, '정보');
                             return;
                         }
                     }
@@ -1956,7 +1969,7 @@
                     }
 
                     var inputObjects = [];
-                    inputObjects.push({ prop: 'ApplicationID', val: 1 });
+                    inputObjects.push({ prop: 'ApplicationID', val: transactionObject.programID });
                     inputObjects.push({ prop: 'CodeHelpID', val: dataSourceID });
                     inputObjects.push({ prop: 'Parameters', val: parameters });
 
@@ -2439,10 +2452,13 @@ function domainLibraryLoad() {
         UserName: '',
         Email: '',
         Roles: [],
-        Claims: []
+        Claims: {}
     };
 
-    syn.$w.User.WorkCompanyNo = (syn.$r.query('companyNo') || syn.$r.query('CompanyNo') || syn.$r.query('companyNO') || syn.$r.query('CompanyNO') || syn.$r.query('COMPANYNO') || syn.$r.query('companyno')) || null;
+    syn.$w.User.Claims = syn.$w.User.Claims || {};
+    syn.$w.User.Claims.UserWorkID = syn.$w.User.Claims.UserWorkID || '';
+    syn.$w.User.Claims.TenantAppRequestPath = syn.$w.User.Claims.TenantAppRequestPath || 'app';
+    syn.$w.User.WorkCompanyNo = (syn.$r.query('companyNo') || syn.$r.query('CompanyNo') || syn.$r.query('companyNO') || syn.$r.query('CompanyNO') || syn.$r.query('COMPANYNO') || syn.$r.query('companyno')) || syn.$w.User.CompanyNo;
     syn.$w.User.WorkUserNo = (syn.$r.query('employeeNo') || syn.$r.query('EmployeeNo') || syn.$r.query('employeeNO') || syn.$r.query('EmployeeNO') || syn.$r.query('EMPLOYEENO') || syn.$r.query('employeeno')) || null;
 
     syn.$w.Variable = syn.$w.getVariable() || {
@@ -2458,6 +2474,7 @@ function domainLibraryLoad() {
         ApplicationID: '',
         ApplicationName: '',
         MemberNo: '',
+        UserWorkID: '',
         ExpiredAt: new Date()
     };
     syn.$w.ManagedApp.ExpiredAt = new Date(syn.$w.ManagedApp.ExpiredAt);
@@ -2530,6 +2547,26 @@ function domainPageLoad() {
     var pageStyleLoadedIntervalID = setInterval(function () {
         if (checkCount > 200 || (window.pageStyleLoaded != undefined && window.pageStyleLoaded == true)) {
             clearInterval(pageStyleLoadedIntervalID);
+
+            var hidden = null;
+            if (document.forms) {
+                for (var i = 0; i < document.forms.length; i++) {
+                    var form = document.forms[i];
+                    hidden = form.getAttribute('hidden');
+                    if ($object.isNullOrUndefined(hidden) == false && $string.toBoolean(hidden) == false) {
+                        form.removeAttribute('hidden');
+                        syn.$m.removeClass(form, 'hidden');
+                        form.style.display = '';
+                    }
+                }
+            }
+
+            hidden = document.body.getAttribute('hidden');
+            if ($object.isNullOrUndefined(hidden) == false && $string.toBoolean(hidden) == false) {
+                document.body.removeAttribute('hidden');
+                syn.$m.removeClass(document.body, 'hidden');
+            }
+
             if (document.forms) {
                 for (var i = 0; i < document.forms.length; i++) {
                     var form = document.forms[i];
@@ -2543,10 +2580,13 @@ function domainPageLoad() {
                 document.body.style.display = '';
             }
 
-            var mod = window[syn.$w.pageScript];
-            if (mod && mod['$grid']) {
-                for (var i = 0; i < mod.$grid.gridControls.length; i++) {
-                    mod.$grid.gridControls[i].hot.render();
+            if (document.body.style.visibility == 'hidden') {
+                document.body.style.visibility = '';
+            }
+
+            if (syn.uicontrols && syn.uicontrols.$grid) {
+                for (var i = 0; i < syn.uicontrols.$grid.gridControls.length; i++) {
+                    syn.uicontrols.$grid.gridControls[i].hot.render();
                 }
             }
 

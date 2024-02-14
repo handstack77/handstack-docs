@@ -162,6 +162,10 @@
             if (synLoader.scriptFiles.length > 0) {
                 synLoader.loadScript(0);
             }
+
+            if (synLoader.styleFiles.length == 0) {
+                window.pageStyleLoaded = true;
+            }
         },
 
         loadScript(i) {
@@ -255,7 +259,7 @@
                 else if (synLoader.endsWith(resource, '.js')) {
                     synLoader.scriptFiles.push(resource);
                 }
-                else if (resource.indexOf('/template/') > -1 || resource.indexOf('/TPL/') > -1) {
+                else if (resource.indexOf('/template/') > -1 || resource.indexOf('/TPL') > -1) {
                     synLoader.templateFiles.push(resource);
                 }
                 else {
@@ -325,7 +329,7 @@
 
     window.synConfigName = sessionStorage.getItem('synConfigName') || 'syn.config.json';
     var cacheSynConfig = sessionStorage.getItem('synConfig');
-    if (window.synConfigName == 'syn.config.json' && cacheSynConfig) {
+    if (window.synConfigName == 'syn.config.json' && cacheSynConfig && cacheSynConfig.Environment == 'Production') {
         window.synConfig = JSON.parse(cacheSynConfig);
         if (window.synConfig.CreatedAt) {
             var diffHours = Math.abs(new Date() - new Date(window.synConfig.CreatedAt)) / 3600000;
@@ -342,25 +346,27 @@
 
     var loaderRequest = async function () {
         if (location.pathname.startsWith((synConfig.TenantAppRequestPath ? `/${synConfig.TenantAppRequestPath}/` : '/app/')) == true) {
-            var hostAppName = location.pathname.split('/')[2];
-            var cacheAppConfig = sessionStorage.getItem(`${hostAppName}Config`);
-            if (cacheAppConfig) {
+            var userWorkID = location.pathname.split('/')[2];
+            var applicationID = location.pathname.split('/')[3];
+            var tenantID = `${userWorkID}|${applicationID}`;
+            var cacheAppConfig = sessionStorage.getItem(`${tenantID}Config`);
+            if (cacheAppConfig && cacheSynConfig.Environment == 'Production') {
                 window.Configuration = JSON.parse(cacheAppConfig);
                 if (window.Configuration.CreatedAt) {
                     var diffHours = Math.abs(new Date() - new Date(window.Configuration.CreatedAt)) / 3600000;
                     if (diffHours >= 1) {
                         window.Configuration = null;
-                        sessionStorage.removeItem(`${hostAppName}Config`);
+                        sessionStorage.removeItem(`${tenantID}Config`);
                     }
                 }
                 else {
                     window.Configuration = null;
-                    sessionStorage.removeItem(`${hostAppName}Config`);
+                    sessionStorage.removeItem(`${tenantID}Config`);
                 }
             }
 
             if (window.Configuration == null || window.Configuration == undefined) {
-                var appConfigName = `/app/${hostAppName}/app.environment.json`;
+                var appConfigName = `/app/${userWorkID}/${applicationID}/wwwroot/app.environment.json`;
                 var response = await fetch(appConfigName, { cache: 'no-cache' });
                 if (response.status === 200) {
                     window.Configuration = await response.json();
@@ -370,7 +376,7 @@
                     window.Configuration = { Application: {}, Cookie: {}, Header: {}, Definition: { Scripts: [], Styles: [], Controls: [] } };
                 }
 
-                sessionStorage.setItem(`${hostAppName}Config`, JSON.stringify(window.Configuration));
+                sessionStorage.setItem(`${tenantID}Config`, JSON.stringify(window.Configuration));
             }
         }
         else {
@@ -405,21 +411,15 @@
                     // syn.scripts.js
                     '/lib/tabler@1.0.0-beta20/css/tabler.syn.css',
                     '/lib/handsontable-13.1.0/dist/handsontable.full.css',
-                    // '/lib/datatable-1.10.21/datatables.css',
-                    // '/lib/datatable-1.10.21/dataTables.checkboxes.css',
                     '/lib/tail.select-0.5.15/css/default/tail.select-light.css',
                     '/lib/ispin-2.0.1/ispin.css',
-                    // '/lib/flatpickr-4.6.3/flatpickr.css',
-                    '/lib/filedrop-1.0.0/filedrop.css',
                     '/lib/css-checkbox-1.0.0/checkboxes.css',
                     '/lib/color-picker-1.0.0/color-picker.css',
                     '/lib/codemirror-5.50.2/codemirror.css',
-                    // '/lib/fancytree-2.38.0/skin-win8/ui.fancytree.css',
-                    // '/lib/jquery-ui-contextmenu-1.18.1/jquery-ui.css',
-                    // '/lib/orgchart-3.1.1/jquery.orgchart.css',
-                    // '/lib/printjs-1.6.0/print.min.css',
-                    // '/lib/intro.js-6.0.0/minified/introjs.min.css',
-                    // '/lib/jsoneditor-9.10.0/jsoneditor.css',
+                    "/lib/fancytree-2.38.0/skin-win8/ui.fancytree.css",
+                    "/lib/jquery-ui-contextmenu-1.18.1/jquery-ui.css",
+                    "/lib/orgchart-3.1.1/jquery.orgchart.css",
+                    "/lib/printjs-1.6.0/print.min.css",
                     '/lib/notifier-1.0.0/notifier.css',
 
                     // syn.domain.js
@@ -431,7 +431,7 @@
                     '/css/uicontrols/Control.css',
 
                     // syn.controls.js
-                    '/uicontrols/Chart/ChartJS.css',
+                    '/uicontrols/Chart/Chart.css',
                     '/uicontrols/CheckBox/CheckBox.css',
                     '/uicontrols/ColorPicker/ColorPicker.css',
                     '/uicontrols/ContextMenu/ContextMenu.css',
@@ -441,12 +441,12 @@
                     '/uicontrols/DropDownList/DropDownList.css',
                     '/uicontrols/FileClient/FileClient.css',
                     '/uicontrols/GridList/GridList.css',
-                    '/uicontrols/OrganizationView/OrganizationView.css',
                     '/uicontrols/RadioButton/RadioButton.css',
                     '/uicontrols/TextArea/TextArea.css',
                     '/uicontrols/TextBox/TextBox.css',
+                    '/uicontrols/SourceEditor/SourceEditor.css',
                     '/uicontrols/HtmlEditor/HtmlEditor.css',
-                    '/uicontrols/JsonEditor/JsonEditor.css',
+                    '/uicontrols/OrganizationView/OrganizationView.css',
                     '/uicontrols/TreeView/TreeView.css',
                     '/uicontrols/WebGrid/WebGrid.css',
 
@@ -485,7 +485,7 @@
         }
 
         jsFiles.push(loaderPath);
-        
+
         if (synConfig.Environment == 'Development') {
             var moduleFile = '';
             if (window.moduleFile) {
