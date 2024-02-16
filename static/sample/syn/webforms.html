@@ -190,6 +190,41 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="row p-2 mt-1 b:1|solid|#e5e5e5 pseudoStyle">
+                                <div class="col-12">
+                                    <label class="form-label">syn.$w.pseudoStyle()</label>
+                                    <input type="text" id="txt_pseudoID" class="form-control" value="styFormStyle" />
+                                    <input type="text" id="txt_selector" class="form-control" value="div.pseudoStyle div *" />
+                                    <textarea id="txt_pseudoStyle" class="form-control" rows="5">color: red;
+text-decoration: underline;
+font-weight: 600;
+cursor: pointer;</textarea>
+                                    <button type="button" id="btn_pseudoStyle" class="mt-2 btn btn-primary" syn-events="['click']">확인</button>
+                                    <div class="form-text">
+                                        웹 페이지에 동적으로 CSS 클래스 스타일을 적용합니다.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row p-2 mt-1 b:1|solid|#e5e5e5 pseudoStyles">
+                                <div class="col-12">
+                                    <label class="form-label">syn.$w.pseudoStyles()</label>
+                                    <input type="text" id="txt_pseudoIDs" class="form-control" value="styFormStyle" />
+                                    <textarea id="txt_pseudoStyles" class="form-control" rows="5">[
+    {
+        selector: 'div.pseudoStyle div *', 
+        cssText: `color: blue;text-decoration: underline;font-weight: 300;`
+    },
+    {
+        selector: 'div.pseudoStyles div *', 
+        cssText: `color: red;text-decoration: underline;font-weight: 600;`
+    }
+]</textarea>
+                                    <button type="button" id="btn_pseudoStyles" class="mt-2 btn btn-primary" syn-events="['click']">확인</button>
+                                    <div class="form-text">
+                                        웹 페이지에 동적으로 여러 CSS 클래스 스타일을 적용합니다.
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

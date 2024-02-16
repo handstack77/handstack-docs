@@ -175,6 +175,21 @@ let $webforms = {
         async btn_fetchJson_click() {
             var result = await syn.$w.fetchJson('sample.json');
             syn.$l.get('txt_fetchJson').value = JSON.stringify(result);
+        },
+
+        btn_pseudoStyle_click() {
+            var pseudoID = syn.$l.get('txt_pseudoID').value;
+            var selector = syn.$l.get('txt_selector').value;
+            var pseudoStyle = syn.$l.get('txt_pseudoStyle').value;
+
+            syn.$w.pseudoStyle(pseudoID, selector, pseudoStyle);
+        },
+
+        btn_pseudoStyles_click() {
+            var pseudoID = syn.$l.get('txt_pseudoIDs').value;
+            var pseudoStyle = syn.$l.get('txt_pseudoStyles').value;
+
+            syn.$w.pseudoStyles(pseudoID, eval(pseudoStyle));
         }
     }
 };
