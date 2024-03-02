@@ -19,7 +19,7 @@ HandStack 에서 태넌트 앱을 개발 및 운영하기 위해 checkup 모듈�
 * 고객이 원하는 것은 무엇인가?
 * 개발자가 원하는 것은 무엇인가?
 
-## 태넌트 앱으로 대안을	찾다
+## 태넌트 앱으로 대안을	찾았습니다
 
 클라우드 컴퓨팅 및 소프트웨어 개발에서 주로 사용되는 "태넌트"라는 용어가 있습니다.
 
@@ -33,11 +33,77 @@ HandStack 에서 태넌트 앱을 개발 및 운영하기 위해 checkup 모듈�
 
 ## 비용을 절감하고 효율성을 높이는 방법
 
-태넌트 앱은 다음과 같은 기본 구성요소를 포함합니다.
+태넌트 앱은 다음과 같은 디렉토리로 소스를 관리합니다.
 
+```bash
+tenent-app
+├─.managed
+│  ├─sqlite
+│  └─storage
+├─dbclient
+│  └─PJT
+├─function
+│  ├─csharp
+│  └─javascript
+├─transact
+│  └─PJT
+└─wwwroot
+    ├─assets
+    └─view
+        └─PJT
+```
 
+이번에 배포한 handstack 1.0.0.beta2 에는 태넌트 앱을 개발하기 위한 기초 코드와 화면을 추가하였습니다. 실행 방법과 이번에 개발된 주요 정보들은 차주에 문서로 정리하여 공개 하겠습니다.
 
+### 스크린 샷
+
+![](img/screenshot1.png)
+그림) 사용자 로그인 및 프로젝트 선택 화면
+
+![](img/screenshot2.png)
+그림) 프로젝트 정보 관리 화면
+
+![](img/screenshot3.png)
+그림) 프로젝트 소스 관리 화면
+
+![](img/screenshot4.png)
+그림) 프로젝트 미리보기 화면
 
 ## 한 주간의 여정 (2024-02-26 ~ 2024-03-01)
 
 * handstack 1.0.0.beta2 출시
+* dbclient 태넌트 쿼리 요청 처리 기능 개선
+* 태넌트 앱용 기초코드, 코드도움 화면 개발
+* 파일 추가시 코드도움 데이터 정보 조회 개선
+* $grid checkEmptyValueCol 함수 버그 수정
+* repository MediatR Event 요청 처리 기능 개발
+* repository 태넌트 앱 파일 저장 기능 개선
+* transact MediatR Event 요청 처리 기능 개발
+* transact BearerToken 정보 무결성 확인 개선
+* 데이터 모델 관리 화면 버그 수정
+* board, empty, helloworld, uicontrols forbes 추가 및 개선
+* 태넌트 앱 추가시 메타 데이터 복사 기능 개선
+* 태넌트 앱 인증 기능 개선
+* wwwroot 모듈에 ID, GUID, ClientIP, SHA256Hash 조회 api 추가
+* transact 모듈 Route 환경 변수 로드 기능 개선
+* meta.xml 생성 API 추가
+* handstack CLI 기본값 적용 기능 개선
+* 태넌트 앱 기본 테이블 생성 추가
+* checkup 모듈 로그인 기능 개발
+* HandStack publish 기능 개선
+* 태넌트 앱별 거래 로그 관리 기능 개선
+* 태넌트 앱 삭제 기능 추가
+* 서버 함수 처리 중 HttpContext 접근 버그 수정
+* 태넌트 앱 추가시 메타 정보 복사 기능 개선
+* checkup 모듈 개발
+* checkup 업무 데이터베이스 ERD 초안 설계
+* 운영체제에 따라 배치 스크립트 파일 경로 치환 개선
+* ubuntu-22.04 설치 참조 스크립트
+* handsup 운영 서버 테스트
+* handstack CLI 프로그램 개선
+* 프록시 서버 Forwarded Headers 개선
+* apiService load 기능 개선
+* 서버 배포 bundling CLI 프로그램 view 화면 압축 자동화 적용
+* handsup 운영 서버 테스트
+
+https://github.com/handstack77/handstack
