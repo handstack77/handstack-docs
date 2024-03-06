@@ -4,10 +4,93 @@ sidebar_position: 4
 
 # syn.uicontrols.$list
 
-```html
+syn_list 컨트롤은 DataTables 1.10.24를 이용하여 개발됩니다.
 
+```html
+<div>
+    <syn_list id="lstDataTable" syn-options="{
+        checkbox: true,
+        pageLength: 50,
+		columns: [
+            { title: 'ID', data: 'id', visible: true, width: '30px' },
+            { title: 'Name', data: 'name', width: '200px' },
+            { title: 'Position', data: 'position', width: '100px' },
+            { title: 'Office', data: 'office', width: '100px' },
+            { title: 'Extn.', data: 'extn', width: '100px' },
+            { title: 'Start date', data: 'start_date', width: '100px' },
+            { title: 'Salary', data: 'salary', width: '100px' }
+		]
+	}" syn-events="['select']" style="width: 100%; border: 1px solid;"></syn_list>
+</div>
+<div>
+    <input type="button" id="btnGetValue" value="getValue" syn-events="['click']" />
+    <input type="button" id="btnSetValue" value="setValue" syn-events="['click']" />
+    <input type="button" id="btnClear" value="clear" syn-events="['click']" />
+    <input type="button" id="btnchk" value="chkBtn" syn-events="['click']" />
+    <input type="button" id="btnGetControl" value="getControl" syn-events="['click']" />
+</div>
 ```
 
 ```javascript
+'use strict';
+let $gridlist = {
+    prop: {
+        dataSet: [
+            {
+                "id": "1",
+                "name": "Tiger Nixon",
+                "position": "System Architect",
+                "salary": "$320,800",
+                "start_date": "2011/04/25",
+                "office": "Edinburgh",
+                "extn": "5421"
+            },
+            {
+                "id": "2",
+                "name": "Garrett Winters",
+                "position": "Accountant",
+                "salary": "$170,750",
+                "start_date": "2011/07/25",
+                "office": "Tokyo",
+                "extn": "8422"
+            },
+            {
+                "id": "3",
+                "name": "Ashton Cox",
+                "position": "Junior Technical Author",
+                "salary": "$86,000",
+                "start_date": "2009/01/12",
+                "office": "San Francisco",
+                "extn": "1562"
+            }
+        ]
+    },
+    event: {
+        btnGetValue_click() {
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$list.getValue('lstDataTable')));
+        },
 
+        btnSetValue_click() {
+            syn.uicontrols.$list.setValue('lstDataTable', $this.prop.dataSet);
+        },
+
+        btnClear_click() {
+            syn.uicontrols.$list.clear('lstDataTable');
+        },
+
+        btnchk_click() {
+            var result = syn.uicontrols.$list.getControl('lstDataTable').table.column(0).checkboxes.selected().toArray();
+            console.log("선택된 데이터: " + result);
+        },
+
+        btnGetControl_click() {
+            var listDataTable = syn.uicontrols.$list.getControl('lstDataTable');
+            // https://datatables.net/upgrade/1.10-convert#API 참조
+        },
+
+        lstDataTable_select(data, e, dt, type, indexes) {
+            // dt.cell(2, 5).data('<span><a>[ - ]</a></span>').draw();
+        }
+    }
+}
 ```

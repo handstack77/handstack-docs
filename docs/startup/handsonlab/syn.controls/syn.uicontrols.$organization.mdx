@@ -4,10 +4,198 @@ sidebar_position: 4
 
 # syn.uicontrols.$organization
 
-```html
+syn_organization 컨트롤은 OrgChart를 이용하여 개발됩니다.
 
+```html
+<div>
+    <syn_organization id="orgChartView" syn-options="{
+        draggable: true,
+        nodeTitle: 'name',
+        nodeContent: 'title',
+        reduceMap: {
+            key: 'id',
+            title: 'title',
+            parentID: 'parentId',
+        },
+        nodeTemplate: '$this.event.orgChartView_nodeTemplate',
+        createNode: '$this.event.orgChartView_createNode'
+    }" syn-events="['nodedrop', 'select', 'click']"></syn_organization>
+</div>
+<div>
+    <div>기능</div>
+    <input type="button" id="btnGetValue" value="getValue" syn-events="['click']" />
+    <input type="button" id="btnSetValue" value="setValue" syn-events="['click']" />
+    <input type="button" id="btnClear" value="clear" syn-events="['click']" />
+    <input type="button" id="btnGetControl" value="getControl" syn-events="['click']" />
+    <input type="button" id="btnGetHierarchy" value="GetHierarchy" syn-events="['click']" />
+    <input type="button" id="btnAddParent" value="AddParent" syn-events="['click']" />
+    <input type="button" id="btnAddSiblings" value="AddSiblings" syn-events="['click']" />
+    <input type="button" id="btnAddChildren" value="AddChildren" syn-events="['click']" />
+    <input type="button" id="btnRemoveNode" value="RemoveNode" syn-events="['click']" />
+</div>
 ```
 
 ```javascript
+'use strict';
+let $organization = {
+    event: {
+        orgChartView_nodeTemplate(data) {
+            return '<div class="title">' + data.data.name + '</div><div class="content">' + data.title + '</div>';
+        },
+
+        orgChartView_createNode($node, data) {
+            console.log(data);
+            $node[0].id = ['organID + elID'];
+            $node.html('custom html template');
+            $node.children('.title').html('custom html template');
+
+            $node.on('click', function (event) {
+                if (!$(event.target).is('.edge, .toggleBtn')) {
+                    var that = $(this);
+                    var $chart = that.closest('.orgchart');
+                    console.log(data);
+                }
+            });
+            
+            var secondMenuIcon = $('<i>', {
+                'class': 'oci oci-info-circle second-menu-icon',
+                click() {
+                    $(this).siblings('.second-menu').toggle();
+                }
+            });
+            var secondMenu = '<div class="second-menu"><img class="avatar" src="https://dabeng.github.io/OrgChart/img/avatar/' + data.id + '.jpg"></div>';
+            $node.append(secondMenuIcon).append(secondMenu);
+        },
+
+        orgChartView_nodedrop(evt, params) {
+            syn.$l.eventLog('orgChartView_nodedrop', 'draggedNode:' + params.draggedNode.children('.title').text()
+                + ', dragZone:' + params.dragZone.children('.title').text()
+                + ', dropZone:' + params.dropZone.children('.title').text());
+        },
+
+        orgChartView_select(evt, node) {
+            debugger;
+            var nodeText = node.find('.title').text();
+            syn.$l.eventLog('orgChartView_select', nodeText);
+        },
+
+        orgChartView_click(evt, focusNodes) {
+            debugger;
+            syn.$l.eventLog('orgChartView_click', focusNodes);
+        },
+
+        btnGetValue_click() {
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$organization.getValue('orgChartView')));
+        },
+
+        btnSetValue_click() {
+            var dataSource = [ 
+                {
+                    "id": 12,
+                    "parentId": 6,
+                    "typeId": 0,
+                    "name": "London",
+                    "title": 5546919.064936,
+                    "field3": 12667955.381901
+                },
+                {
+                    "id": 1,
+                    "parentId": 7,
+                    "typeId": 0,
+                    "name": "New York",
+                    "className": "middle-level",
+                    "title": 2297941.24812,
+                    "field3": 7451762.537854
+                },
+                {
+                    "id": 2,
+                    "parentId": 5,
+                    "typeId": 0,
+                    "name": "Dubai",
+                    "title": 9832458.096596,
+                    "field3": 32491698.248662
+                },
+                {
+                    "id": 3,
+                    "parentId": 6,
+                    "typeId": 0,
+                    "name": "Paris",
+                    "title": 22700818.88167,
+                    "field3": 76902823.758745
+                },
+                {
+                    "id": 4,
+                    "parentId": 8,
+                    "typeId": 0,
+                    "name": "Stockholm",
+                    "title": 3742748.296602,
+                    "field3": 10250567.674588
+                },
+                {
+                    "id": 5,
+                    "parentId": 9,
+                    "typeId": 0,
+                    "name": "Middle East",
+                    "title": 9832458.096596,
+                    "field3": 32491698.248662
+                },
+                {
+                    "id": 6,
+                    "parentId": 9,
+                    "typeId": 0,
+                    "name": "Europe",
+                    "title": 31990486.243208,
+                    "field3": 99821346.815234
+                },
+                {
+                    "id": 7,
+                    "parentId": 9,
+                    "typeId": 0,
+                    "name": "NorthAmerica",
+                    "title": 2297941.24812,
+                    "field3": 7451762.537854
+                },
+                {
+                    "id": 8,
+                    "parentId": 6,
+                    "typeId": 0,
+                    "name": "Scandinavia",
+                    "title": 3742748.296602,
+                    "field3": 10250567.674588
+                },
+                {
+                    "id": 9,
+                    "parentId": null,
+                    "className": "top-level",
+                    "typeId": 0,
+                    "name": "World",
+                    "title": 44120885.587924,
+                    "field3": 139764807.60175
+                },
+                {
+                    "id": 10,
+                    "parentId": 12,
+                    "typeId": 1,
+                    "name": "BOND-1001",
+                    "title": 3985.331955,
+                    "node2": 2,
+                    "field3": 20567.245997,
+                    "node3": 3,
+                    "field4": 1
+                }
+            ];
+
+            syn.uicontrols.$organization.setValue('orgChartView', dataSource);
+        },
+
+        btnClear_click() {
+            syn.uicontrols.$organization.clear('orgChartView');
+        },
+
+        btnGetControl_click() {
+            var orgChartView = syn.uicontrols.$organization.getControl('orgChartView');
+        }
+    }
+}
 
 ```

@@ -4,10 +4,76 @@ sidebar_position: 4
 
 # syn.uicontrols.$textarea
 
-```html
+textarea 태그에 통합되어 있는 다중 행 편집을 지원하는 컨트롤입니다. codemirror를 이용하여 개발됩니다.
 
+```html
+<div>
+    <div>예시</div>
+    <div class="syn-textarea" style="width: 800px;">
+        <textarea id="txtTextarea" syn-options="{width: '800px'}" syn-events="[]" style="width: 800px; height:240px;" maxlength="15" maxlengthB="10">
+using System;
+
+namespace Example
+{
+/// &lt;summary>
+/// Represents a person employed at the company
+/// &lt;/summary>
+public class Employee : Person
+{
+    #region Properties
+
+    /// &lt;summary>
+    /// Gets or sets the first name.
+    /// &lt;/summary>
+    /// &lt;value>The first name.&lt;/value>
+public string FirstName {get; set; }
+
+    #endregion
+
+    /// &lt;summary>
+    /// Calculates the salary.
+    /// &lt;/summary>
+    /// &lt;param name="grade">The grade.&lt;/param>
+    /// &lt;returns>&lt;/returns>
+    public decimal CalculateSalary(int grade)
+{
+    if (grade > 10)
+        return 1000;
+    return 500;
+}
+}
+}
+</textarea>
+    </div>
+</div>
+<hr />
+<div>
+    <div>기능</div>
+    <input type="button" id="btnGetValue" value="getValue" syn-events="['click']" />
+    <input type="button" id="btnSetValue" value="setValue" syn-events="['click']" />
+    <input type="button" id="btnClear" value="clear" syn-events="['click']" />
+</div>
 ```
 
 ```javascript
+'use strict';
+let $textarea = {
+    event: {
+        btnGetValue_click() {
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$textarea.getValue('txtTextarea')));
+        },
 
+        btnSetValue_click() {
+            syn.uicontrols.$textarea.setValue('txtTextarea', '안녕하세요');
+        },
+
+        btnClear_click() {
+            syn.uicontrols.$textarea.clear('txtTextarea');
+        },
+
+        txtTextarea_blur() {
+            syn.uicontrols.$textarea.setValue('txtTextarea', '안녕하세요');
+        }
+    }
+}
 ```

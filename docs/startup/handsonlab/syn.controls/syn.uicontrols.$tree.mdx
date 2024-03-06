@@ -4,10 +4,134 @@ sidebar_position: 4
 
 # syn.uicontrols.$tree
 
-```html
+syn_tree 컨트롤은 fancytree를 이용하여 개발됩니다.
 
+```html
+<div>
+    <syn_tree id="tvlTreeView" syn-options="{
+        checkbox: false,
+        itemID: 'key',
+        parentItemID: 'parentID',
+        childrenID: 'children',
+        reduceMap: {
+            key: 'PROGRAMID',
+            title: 'PROGRAMNAME',
+            parentID: 'PARENTID',
+            folder: 'FOLDERYN',
+            icon: false
+        }
+	}" syn-events="['click', 'focus', 'dblclick']"></syn_tree>
+</div>
+<div>
+    <input type="button" id="btnGetValue" value="getValue" syn-events="['click']" />
+    <input type="button" id="btnSetValue" value="setValue" syn-events="['click']" />
+    <input type="button" id="btnClear" value="clear" syn-events="['click']" />
+    <input type="button" id="btnGetControl" value="getControl" syn-events="['click']" />
+</div>
 ```
 
 ```javascript
+'use strict';
+let $treeview = {
+    prop: {
+        dataSet: [
+            {
+                "PROGRAMID": 1,
+                "PROGRAMNAME": "루트 디렉토리",
+                "PARENTID": null,
+                "PARENTNM": "",
+                "VIEWYN": "1",
+                "FOLDERYN": "1",
+                "ASSEMBLYNAME": "DWP",
+                "CLASSNAME": "",
+                "SEQ": 1
+            },
+            {
+                "PROGRAMID": 101,
+                "PROGRAMNAME": "AI 서비스",
+                "PARENTID": 1,
+                "PARENTNM": "루트 디렉토리",
+                "VIEWYN": "1",
+                "FOLDERYN": "1",
+                "ASSEMBLYNAME": "DWP",
+                "CLASSNAME": "",
+                "SEQ": 100
+            },
+            {
+                "PROGRAMID": 110,
+                "PROGRAMNAME": "AI 서비스",
+                "PARENTID": 101,
+                "PARENTNM": "AI 서비스",
+                "VIEWYN": "1",
+                "FOLDERYN": "1",
+                "ASSEMBLYNAME": "DWP",
+                "CLASSNAME": "",
+                "SEQ": 100
+            },
+            {
+                "PROGRAMID": 111,
+                "PROGRAMNAME": "AI 서비스 관리",
+                "PARENTID": 110,
+                "PARENTNM": "AI 서비스",
+                "VIEWYN": "1",
+                "FOLDERYN": "0",
+                "ASSEMBLYNAME": "DWP",
+                "CLASSNAME": "AIS010",
+                "SEQ": 100
+            },
+            {
+                "PROGRAMID": 112,
+                "PROGRAMNAME": "학습 모델 관리",
+                "PARENTID": 110,
+                "PARENTNM": "AI 서비스",
+                "VIEWYN": "1",
+                "FOLDERYN": "0",
+                "ASSEMBLYNAME": "DWP",
+                "CLASSNAME": "AIM010",
+                "SEQ": 100
+            }
+        ]
+    },
 
+    event: {
+        btnGetValue_click() {
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$tree.getValue('tvlTreeView')));
+        },
+
+        btnSetValue_click() {
+            syn.uicontrols.$tree.setValue('tvlTreeView', $this.prop.dataSet);
+        },
+
+        btnClear_click() {
+            syn.uicontrols.$tree.clear('tvlTreeView');
+        },
+
+        btnGetControl_click() {
+            var tvlTreeView = syn.uicontrols.$tree.getControl('tvlTreeView');
+        },
+
+        tvlTreeView_click(evt, data) {
+            syn.$l.eventLog('tvlTreeView_click', '');
+        },
+
+        tvlTreeView_dblclick(evt, data) {
+            syn.$l.eventLog('tvlTreeView_dblclick', '');
+        },
+
+        tvlTreeView_select(evt, data) {
+            syn.$l.eventLog('tvlTreeView_select', '');
+            // syn.uicontrols.$tree.setSelectedAll('tvlTreeView', data.node);
+        },
+
+        ctxTreeItem_beforeOpen(evt, ui) {
+            var node = $.ui.fancytree.getNode(ui.target);
+            syn.$l.eventLog('ctxTreeItem_beforeOpen', 'before open ' + ui.cmd + ' on ' + node);
+        },
+
+        ctxTreeItem_select(evt, ui) {
+            var node = $.ui.fancytree.getNode(ui.target);
+            syn.$l.eventLog('ctxTreeItem_select', 'select ' + ui.cmd + ' on ' + node);
+        }
+    }
+}
 ```

@@ -5,9 +5,45 @@ sidebar_position: 4
 # syn.uicontrols.$textbox
 
 ```html
-
+<div>
+	txtApplicationID - <input id="txtApplicationID" type="text" syn-options="{editType: 'numeric', formatNumber: false, dataType: 'int'}" value="0">
+	txtSpinnerID - <input id="txtSpinnerID" type="text" syn-options="{editType: 'spinner', dataType: 'int', minCount: -10, maxCount: 10}" value="0">
+	txtCreateDate - <input id="txtCreateDate" type="text" syn-options="{editType: 'date'}">
+	txtHour - <input id="txtHour" type="text" syn-options="{editType: 'hour'}">
+	txtMinute - <input id="txtMinute" type="text" syn-options="{editType: 'minute'}">
+	txtYearMonth - <input id="txtYearMonth" type="text" syn-options="{editType: 'yearmonth'}">
+	txtHomePhone - <input id="txtHomePhone" type="text" syn-options="{editType: 'homephone'}">
+	txtMobilePhone - <input id="txtMobilePhone" type="text" syn-options="{editType: 'mobilephone'}">
+	txtEmail - <input id="txtEmail" type="text" syn-options="{editType: 'email'}">
+	txtCodeGroupID - <input id="txtCodeGroupID" type="text" syn-options="{editType: 'text'}">
+	txtJuminID - <input id="txtJuminID" type="text" syn-options="{editType: 'juminno'}">
+	txtBusinessID - <input id="txtBusinessID" type="text" syn-options="{editType: 'businessno'}">
+	txtCustomFormat - <input id="txtCustomFormat" type="text" syn-options="{editType: 'text', maskPattern: '(99) SSSS-AAAA'}">
+	txtMaxLength - <input id="txtMaxLength" maxlengthB="10" type="text" syn-options="{editType: 'text'}">
+</div>
+<hr />
+<div>
+	<input type="button" id="btnGetValue" value="getValue" syn-events="['click']" />
+	<input type="button" id="btnSetValue" value="setValue" syn-events="['click']" />
+	<input type="button" id="btnClear" value="clear" syn-events="['click']" />
+</div>
 ```
 
 ```javascript
+'use strict';
+let $textbox = {
+    event: {
+        btnGetValue_click() {
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$textbox.getValue('txtApplicationID')));
+        },
 
+        btnSetValue_click() {
+            syn.uicontrols.$textbox.setValue('txtApplicationID', '안녕하세요');
+        },
+
+        btnClear_click() {
+            syn.uicontrols.$textbox.clear('txtApplicationID');
+        }
+    },
+}
 ```

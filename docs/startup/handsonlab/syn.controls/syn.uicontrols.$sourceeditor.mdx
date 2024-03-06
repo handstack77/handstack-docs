@@ -4,10 +4,35 @@ sidebar_position: 4
 
 # syn.uicontrols.$sourceeditor
 
-```html
+syn_sourceeditor 컨트롤은 monaco-editor를 이용하여 개발됩니다.
 
+```html
+<div>
+    <syn_sourceeditor id="txtEditor1" syn-options="{contents: 'hello world',language:'javascript', minimap: {enabled: true}}"></syn_sourceeditor>
+</div>
+<div>
+    <input type="button" id="btnGetValue" value="getValue" syn-events="['click']" />
+    <input type="button" id="btnSetValue" value="setValue" syn-events="['click']" />
+    <input type="button" id="btnClear" value="clear" syn-events="['click']" />
+</div>
 ```
 
 ```javascript
+'use strict';
+let $sourceeditor = {
+    event: {
+        btnGetValue_click() {
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$sourceeditor.getValue('txtEditor1')));
+        },
+
+        btnSetValue_click() {
+            syn.uicontrols.$sourceeditor.setValue('txtEditor1', 'function hello() {\n\talert("Hello world!");\n}');
+        },
+
+        btnClear_click() {
+            syn.uicontrols.$sourceeditor.clear('txtEditor1');
+        }
+    }
+}
 
 ```

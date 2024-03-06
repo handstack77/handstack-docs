@@ -5,9 +5,55 @@ sidebar_position: 4
 # syn.uicontrols.$radio
 
 ```html
-
+<div>
+    <input id="rdoUseYN1" name="rdoUseYN" type="radio" syn-datafield="RadioUseYN" value="value 1" syn-events="['change']" syn-options="{textContent: '사용', toSynControl: true}">
+    <input id="rdoUseYN2" name="rdoUseYN" type="radio" syn-datafield="RadioUseYN" value="value 2" syn-events="['change']" syn-options="{textContent: '미사용', toSynControl: true}">
+    <input id="rdoUseYN3" name="rdoUseYN" type="radio" syn-datafield="RadioUseYN" value="value 3" syn-events="['change']" checked="checked" syn-options="{textContent: '알수없음', toSynControl: true}">
+</div>
+<div>
+    <input type="button" id="btnGetValue" value="getValue" syn-events="['click']" />
+    <input type="button" id="btnSetValue" value="setValue" syn-events="['click']" />
+    <input type="button" id="btnClear" value="clear" syn-events="['click']" />
+    <input type="button" id="btnSelectedValue" value="selectedValue" syn-events="['click']" />
+    <input type="button" id="btnGetGroupNames" value="getGroupNames" syn-events="['click']" />
+</div>
 ```
 
 ```javascript
+'use strict';
+let $radiobutton = {
+    event: {
+        btnGetValue_click() {
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$radio.getValue('rdoUseYN1')));
+        },
 
+        btnSetValue_click() {
+            syn.uicontrols.$radio.setValue('rdoUseYN1', true);
+        },
+
+        btnClear_click() {
+            syn.uicontrols.$radio.clear('rdoUseYN1');
+        },
+
+        btnSelectedValue_click() {
+            syn.uicontrols.$radio.selectedValue('rdoUseYN', 'value 2');
+        },
+
+        btnGetGroupNames_click() {
+            syn.$l.eventLog('btnGetGroupNames_click', JSON.stringify(syn.uicontrols.$radio.getGroupNames()));
+        },
+
+        rdoUseYN1_change() {
+            console.log('rdoUseYN1_change');
+        },
+
+        rdoUseYN2_change() {
+            console.log('rdoUseYN2_change');
+        },
+
+        rdoUseYN3_change() {
+            console.log('rdoUseYN3_change');
+        }
+    }
+}
 ```

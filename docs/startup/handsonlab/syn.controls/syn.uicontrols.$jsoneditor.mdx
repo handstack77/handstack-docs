@@ -4,10 +4,49 @@ sidebar_position: 4
 
 # syn.uicontrols.$jsoneditor
 
-```html
+syn_jsoneditor 컨트롤은 JSON Editor를 이용하여 개발됩니다. https://github.com/josdejong/jsoneditor
 
+```html
+<div>
+    <div>예시</div>
+    <syn_jsoneditor id="txtEditor" syn-options="{contents: '{}'}"></syn_jsoneditor>
+</div>
+<hr />
+<div>
+    <div>기능</div>
+    <input type="button" id="btnGetValue" value="getValue" syn-events="['click']" />
+    <input type="button" id="btnSetValue" value="setValue" syn-events="['click']" />
+    <input type="button" id="btnClear" value="clear" syn-events="['click']" />
+</div>
 ```
 
 ```javascript
+'use strict';
+let $jsoneditor = {
+    event: {
+        btnGetValue_click() {
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$jsoneditor.getValue('txtEditor')));
+        },
 
+        btnSetValue_click() {
+            var defaultSetting = {
+                width: '100%',
+                height: '240px',
+                mode: 'code',
+                modes: ['code', 'tree'],
+                indentation: 4,
+                escapeUnicode: false,
+                dataType: 'string',
+                belongID: null,
+                transactConfig: null,
+                triggerConfig: null
+            }
+            syn.uicontrols.$jsoneditor.setValue('txtEditor', JSON.stringify(defaultSetting));
+        },
+
+        btnClear_click() {
+            syn.uicontrols.$jsoneditor.clear('txtEditor');
+        }
+    }
+}
 ```
