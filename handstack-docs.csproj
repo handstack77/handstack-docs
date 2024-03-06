@@ -43,9 +43,6 @@
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="blog\2024-03-01-어플리케이션위에-실행되는-태넌트-앱\img\" />
-	</ItemGroup>
 
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec Condition="'$(OS)'=='Windows_NT'" Command="rmdir /s /q $(TargetDir)&#xD;&#xA;if not exist $(ProjectDir)build mkdir $(ProjectDir)build" />

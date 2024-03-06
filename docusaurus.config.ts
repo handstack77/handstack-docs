@@ -170,23 +170,19 @@ const config: Config = {
                         },
                     ],
                 },
-                {
-                    title: '더보기',
-                    items: [
-                        {
-                            label: '프로젝트 개발 및 지원 정책',
-                            href: 'https://github.com/handstack77/handstack',
-                        },
-                        {
-                            label: '컨설팅 및 PoC 지원',
-                            href: 'https://github.com/handstack77/handstack',
-                        },
-                        {
-                            label: '아이콘 제작 Flaticon',
-                            href: 'https://www.flaticon.com/kr/free-icons',
-                        },
-                    ],
-                },
+                // {
+                //     title: '더보기',
+                //     items: [
+                //         {
+                //             label: 'HandStack 컨설팅 및 PoC 지원',
+                //             href: 'https://github.com/handstack77/handstack',
+                //         },
+                //         {
+                //             label: '아이콘 제작 Flaticon',
+                //             href: 'https://www.flaticon.com/kr/free-icons',
+                //         },
+                //     ],
+                // },
             ],
             copyright: `Copyright © ${new Date().getFullYear()} HandStack`,
         },

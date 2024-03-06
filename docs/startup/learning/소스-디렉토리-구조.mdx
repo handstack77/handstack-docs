@@ -1,0 +1,108 @@
+---
+sidebar_position: 10
+---
+
+# 소스 디렉토리 구조
+
+HandStack 디렉토리는 다음을 의미합니다. 이외에도 업무에 따라 추가적으로 하위 디렉토리가 실시간으로 생성됩니다.
+
+* app: HandStack 서버 실행 프로그램이 있습니다. Windows, Linux, macOS를 지원하며, 기본 포트로 8000을 사용합니다
+* contracts: 비즈니스 앱에 필요한 프론트엔드, 백엔드에 대한 모든 설정과 소스가 있습니다.
+* modules: HandStack 필수 기능 제공을 위한 .NET Core 기반 공식 모듈 들이 있습니다.
+
+### 비즈니스 앱에 필요한 모든 설정과 소스
+
+Visual Studio Code 또는 Nodepad++ 와 같은 편집기를 실행하여 작업 디렉토리로 `C:\home\[사용자 ID]\handstack\contracts` 를 열면 다음과 같은 5개의 디렉토리가 있으며 다음과 같은 파일들이 있습니다.
+
+|contract 디렉토리|설명|
+|---|---|
+|checkup|태넌트 앱 개발 및 운영 기능 관리|
+|dbclient|데이터베이스 연동 (SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite) 및 XML 계약 문서로 SQL을 관리|
+|function|C# 또는 Node.js 기반 Function 개발 기능 관리|
+|repository|단일, 다중, 이미지, 첨부파일 등등 파일 업로드/다운로드 관리|
+|transact|거래 요청 검증 및 접근 제어 관리와 요청 정보를 dbclient, function 등등 module로 라우팅 기능 관리|
+|wwwroot|웹 공통 static assets 및 화면 단위 소스 호스팅 관리|
+
+> 각 디렉토리내의 구조는 다음의 규칙을 가지고 있습니다 프로그램 ID > 프로젝트 ID > 파일 ID
+
+```bash
+C:\home\[사용자 ID]\handstack\contracts
+│  file.log
+│  
+├─dbclient
+│  └─HDS
+│      ├─TAG
+│      │      TAG010.xml
+│      │      
+│      └─TST
+│              MYS010.xml
+│              ORA010.xml
+│              PGS010.xml
+│              SLT010.xml
+│              SQS010.xml
+│              
+├─function
+│  ├─csharp
+│  │  └─HDS
+│  │      └─TST
+│  │          └─CSF010
+│  │                  featureMain.cs
+│  │                  featureMeta.json
+│  │                  
+│  └─javascript
+│      └─HDS
+│          └─TST
+│              └─JSF010
+│                      featureMain.js
+│                      featureMeta.json
+│                      
+├─repository
+│  └─HDS
+│          storage.json
+│          
+├─transact
+│  └─HDS
+│      ├─STR
+│      │      STR010.json
+│      │      STR011.json
+│      │      
+│      └─TST
+│              CSF010.json
+│              JSF010.json
+│              MYS010.json
+│              ORA010.json
+│              PGS010.json
+│              SLT010.json
+│              SQS010.json
+│              
+└─wwwroot
+    │  index.html
+    │  
+    └─TST
+            CSF010.html
+            CSF010.js
+            JSF010.html
+            JSF010.js
+            MYS010.html
+            MYS010.js
+            ORA010.html
+            ORA010.js
+            PGS010.html
+            PGS010.js
+            SLT010.html
+            SLT010.js
+            SQS010.html
+            SQS010.js
+```
+
+wwwroot 디렉토리의 소스를 웹 브라우저에서 테스트 할 수 있습니다. (MSSQL, Oracle, MariaDB, PostgreSQL 데이터베이스 거래 테스트는 환경에 따라 오류가 발생합니다.)
+
+* [CSharp 함수 거래 테스트](http://localhost:8000/view/TST/CSF010.html)
+* [Node.js 함수 거래 테스트](http://localhost:8000/view/TST/JSF010.html)
+* [SQLite 데이터베이스 거래 테스트](http://localhost:8000/view/TST/SLT010.html)
+* ~~[MariaDB 데이터베이스 거래 테스트](http://localhost:8000/view/TST/MYS010.html)~~
+* ~~[Oracle 데이터베이스 거래 테스트](http://localhost:8000/view/TST/ORA010.html)~~
+* ~~[PostgreSQL 데이터베이스 거래 테스트](http://localhost:8000/view/TST/PGS010.html)~~
+* ~~[SqlServer 데이터베이스 거래 테스트](http://localhost:8000/view/TST/SQS010.html)~~
+
+> **MSSQL, Oracle, MariaDB, PostgreSQL 데이터베이스**에 서버 시간과 서버명을 조회하는 거래 테스트에 필요한 환경을 구성하려면 [docker 기반 개발용 데이터베이스 설치하기](https://handstack.kr/docs/startup/handsonlab/docker-%EA%B8%B0%EB%B0%98-%EA%B0%9C%EB%B0%9C%EC%9A%A9-%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B2%A0%EC%9D%B4%EC%8A%A4-%EC%84%A4%EC%B9%98%ED%95%98%EA%B8%B0) 문서를 참고하세요.
