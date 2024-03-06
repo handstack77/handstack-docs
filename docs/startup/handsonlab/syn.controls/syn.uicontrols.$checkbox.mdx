@@ -4,14 +4,41 @@ sidebar_position: 4
 
 # syn.uicontrols.$checkbox
 
+```html
+<div>
+    <div>예시</div>
+    <input id="chkUseYN1" type="checkbox" syn-datafield="UseYN1" value="custom value 1" checked="checked" syn-options="{textContent: '사용여부', toSynControl: false}">
+    <input id="chkUseYN2" type="checkbox" syn-datafield="UseYN2" value="custom value 2" syn-options="{textContent: '사용여부', toSynControl: true}">
+</div>
+<hr />
+<div>
+    <div>기능</div>
+    <input type="button" id="btnGetValue" value="getValue" syn-events="['click']" />
+    <input type="button" id="btnSetValue" value="setValue" syn-events="['click']" />
+    <input type="button" id="btnClear" value="clear" syn-events="['click']" />
+    <input type="button" id="btnToggleValue" value="toggleValue" syn-events="['click']" />
+</div>
+```
 
-## 준비 중입니다
+```javascript
+'use strict';
+let $checkbox = {
+    event: {
+        btnGetValue_click() {
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$checkbox.getValue('chkUseYN1')));
+        },
 
+        btnSetValue_click() {
+            syn.uicontrols.$checkbox.setValue('chkUseYN1', true);
+        },
 
-## 전달 하고자 하는 주요 내용은 다음과 같습니다
+        btnClear_click() {
+            syn.uicontrols.$checkbox.clear('chkUseYN1');
+        },
 
-
-## 마치며
-
-
-## 참고자료
+        btnToggleValue_click() {
+            syn.uicontrols.$checkbox.toggleValue('chkUseYN2');
+        }
+    }
+}
+```

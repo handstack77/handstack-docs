@@ -4,14 +4,43 @@ sidebar_position: 4
 
 # syn.uicontrols.$datepicker
 
+syn_datepicker 컨트롤은 Pikaday를 이용하여 개발됩니다.
 
-## 준비 중입니다
+```html
+<div>
+    <syn_datepicker id="dtpDatePicker" syn-options="{format: 'YYYY-MM-DD'}"></syn_datepicker>
+    <syn_datepicker id="dtpStartDatePicker" syn-options="{format: 'YYYY-MM-DD', useRangeSelect: true, rangeEndControlID: 'dtpEndDatePicker'}"></syn_datepicker>
+    <syn_datepicker id="dtpEndDatePicker" syn-options="{format: 'YYYY-MM-DD', useRangeSelect: true, rangeStartControlID: 'dtpStartDatePicker'}"></syn_datepicker>
+</div>
+<hr />
+<div>
+    <input type="button" id="btnGetValue" value="getValue" syn-events="['click']" />
+    <input type="button" id="btnSetValue" value="setValue" syn-events="['click']" />
+    <input type="button" id="btnClear" value="clear" syn-events="['click']" />
+    <input type="button" id="btnGetControl" value="getControl" syn-events="['click']" />
+</div>
+```
 
+```javascript
+'use strict';
+let $datepicker = {
+    event: {
+        btnGetValue_click() {
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$datepicker.getValue('dtpDatePicker')));
+        },
 
-## 전달 하고자 하는 주요 내용은 다음과 같습니다
+        btnSetValue_click() {
+            syn.uicontrols.$datepicker.setValue('dtpDatePicker', '2020-02-28');
+        },
 
+        btnClear_click() {
+            syn.uicontrols.$datepicker.clear('dtpDatePicker');
+        },
 
-## 마치며
+        btnGetControl_click() {
+            var picker = syn.uicontrols.$datepicker.getControl('dtpDatePicker');
+        }
+    }
+}
 
-
-## 참고자료
+```

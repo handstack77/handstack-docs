@@ -4,14 +4,81 @@ sidebar_position: 4
 
 # syn.uicontrols.$fileclient
 
+HandStack의 파일 업로드 컨트롤은 프로필 이미지, 단일 파일, 멀티 파일, 에디터내 링크등 다양한 형태의 파일 업로드를 제공합니다.
 
-## 준비 중입니다
+repository 모듈내 파일 서버 기능과 연동하여 파일 업로드, 다운로드, 삭제, 파일 정보 조회, 파일 정보 수정등의 기능을 제공합니다.
 
+```html
+<div>
+    <div>단일 파일 업로드 예시</div>
+    txtSingleDependencyID - <input type="text" id="txtSingleDependencyID" value="SingleDependencyID" />
+    <syn_fileclient id="txtSingleFileID" syn-datafield="SingleFileID" syn-options="{
+	repositoryID: 'LFSLS01'
+}"></syn_fileclient>
+</div>
+<div>
+    <div>기능</div>
+    <input type="button" id="btnSingleFileGetValue" value="SingleFileGetValue" syn-events="['click']" />
+    <input type="button" id="btnSingleFileSetValue" value="SingleFileSetValue" syn-events="['click']" />
+    <input type="button" id="btnSingleFileClear" value="SingleFileClear" syn-events="['click']" />
+    <input type="button" id="btnSingleFileUpload" value="SingleFileUpload" syn-events="['click']" />
+    <input type="button" id="btnSingleFileDownload" value="SingleFileDownload" syn-events="['click']" />
+    <input type="button" id="btnSingleGetItem" value="SingleGetItem" syn-events="['click']" />
+    <input type="button" id="btnSingleDeleteItem" value="SingleDeleteItem" syn-events="['click']" />
+    <input type="button" id="btnSingleUpdateDependencyID" value="SingleUpdateDependencyID" syn-events="['click']" />
+</div>
+```
 
-## 전달 하고자 하는 주요 내용은 다음과 같습니다
+```javascript
+'use strict';
+let $files = {
+    event: {
+        btnSingleFileGetValue_click() {
+            syn.$l.eventLog('btnSingleFileGetValue_click', JSON.stringify(syn.uicontrols.$fileclient.getValue('txtSingleFileID')));
+        },
 
+        btnSingleFileSetValue_click() {
+            syn.uicontrols.$fileclient.setValue('txtSingleFileID', 'e9259ffe12534c83957906bdb2ff7d6b');
+        },
 
-## 마치며
+        btnSingleFileClear_click() {
+            syn.uicontrols.$fileclient.clear('txtSingleFileID');
+        },
 
+        btnSingleFileUpload_click() {
+            var uploadOptions = syn.uicontrols.$fileclient.getFileSetting('txtSingleFileID');
+            uploadOptions.fileUpdateCallback = 'fleSingleFile_Callback';
+            uploadOptions.dependencyID = syn.$l.get('txtSingleDependencyID').value != '' ? syn.$l.get('txtSingleDependencyID').value : syn.uicontrols.$fileclient.getTemporaryDependencyID('txtSingleDependencyID');
+            uploadOptions.minHeight = 360;
 
-## 참고자료
+            syn.uicontrols.$fileclient.uploadUI(uploadOptions);
+        },
+
+        btnSingleFileDownload_click() {
+            syn.uicontrols.$fileclient.fileDownload('txtSingleFileID');
+        },
+
+        fleSingleFile_Callback(action, result) {
+            syn.$l.eventLog('btnSingleGetItem_click', action + ', ' + JSON.stringify(result));
+        },
+
+        btnSingleGetItem_click() {
+            syn.uicontrols.$fileclient.getItem('txtSingleFileID', syn.$l.get('txtSingleFileID').value, function (result) {
+                syn.$l.eventLog('btnSingleGetItem_click', JSON.stringify(result));
+            });
+        },
+
+        btnSingleDeleteItem_click() {
+            syn.uicontrols.$fileclient.deleteItem('txtSingleFileID', syn.$l.get('txtSingleFileID').value, function (result) {
+                syn.$l.eventLog('btnSingleDeleteItem_click', JSON.stringify(result));
+            });
+        },
+
+        btnSingleUpdateDependencyID_click() {
+            syn.uicontrols.$fileclient.updateDependencyID('txtSingleFileID', syn.$l.get('txtSingleDependencyID').value, 'targetDependencyID', function (result) {
+                syn.$l.eventLog('btnSingleUpdateDependencyID_click', JSON.stringify(result));
+            });
+        }
+    }
+}
+```

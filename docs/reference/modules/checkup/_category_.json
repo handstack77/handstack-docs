@@ -1,0 +1,8 @@
+{
+    "label": "checkup",
+    "position": 7,
+    "link": {
+        "type": "generated-index",
+        "description": "태넌트 앱을 개발하고 관리하기위한 기능을 제공합니다"
+    }
+}

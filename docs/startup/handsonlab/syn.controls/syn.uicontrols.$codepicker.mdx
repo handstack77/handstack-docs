@@ -4,14 +4,72 @@ sidebar_position: 4
 
 # syn.uicontrols.$codepicker
 
+코드도움은 코드를 선택하는 도움을 제공하는 컨트롤입니다. 기본적으로 데이터베이스에 BaseCode, CodeHelp 테이블을 사용하여 코드를 관리하며 업무 테이블을 활용하여 데이터를 관리 할 수 있습니다.
 
-## 준비 중입니다
+```html
+<div>
+    코드도움
+    <syn_codepicker id="chpSubjectID" syn-datafield="SUBJECTID" syn-options="{belongID: 'LD01', dataSourceID: 'CHP005', local: false, isMultiSelect: false, textBelongID: ['LD01', 'MD01'], textDataFieldID: 'CODETEXT'}"></syn_codepicker>
+    <syn_codepicker id="chpUNIVERSITYCD" syn-datafield="UNIVERSITYCD" syn-options="{belongID: 'MD01', dataSourceID: 'CHP009', local: false, isMultiSelect: false}"></syn_codepicker>
+    <syn_codepicker id="chpMASTERSCHOOLCD" syn-datafield="MASTERSCHOOLCD" syn-options="{belongID: 'MD01', dataSourceID: 'CHP009', local: false, isMultiSelect: true}"></syn_codepicker>
+    <syn_codepicker id="chpTRANSFERSCHOOLCD" syn-datafield="TRANSFERSCHOOLCD" syn-options="{belongID: 'MD01', dataSourceID: 'CHP009', local: false, isMultiSelect: true}"></syn_codepicker>
+</div>
+<div>
+<div>기능</div>
+    <input type="button" id="btnGetValue" value="getValue" syn-events="['click']" />
+    <input type="button" id="btnSetValue" value="setValue" syn-events="['click']" />
+    <input type="button" id="btnClear" value="clear" syn-events="['click']" />
+    <input type="button" id="btnOpen" value="open" syn-events="['click']" />
+    <input type="button" id="btnSetText" value="setText" syn-events="['click']" />
+    <input type="button" id="btnToParameterString" value="toParameterString" syn-events="['click']" />
+    <input type="button" id="btnToParameterObject" value="toParameterObject" syn-events="['click']" />
+</div>
+```
 
+```javascript
+'use strict';
+let $codepicker = {
+    hook: {
+        frameEvent(eventName, jsonObject) {
+            syn.$l.eventLog('ui_event', 'frameEvent - eventName: {0}, jsonObject: {1}'.format(eventName, JSON.stringify(jsonObject)));
+        },
+    },
 
-## 전달 하고자 하는 주요 내용은 다음과 같습니다
+    event: {
+        btnGetValue_click() {
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$codepicker.getValue('chpSubjectID')));
+        },
 
+        btnSetValue_click() {
+            syn.uicontrols.$codepicker.setValue('chpSubjectID', 'HELLO');
+        },
 
-## 마치며
+        btnClear_click() {
+            syn.uicontrols.$codepicker.clear('chpSubjectID');
+        },
 
+        btnOpen_click() {
+            syn.uicontrols.$codepicker.open('chpSubjectID');
+        },
 
-## 참고자료
+        btnSetText_click() {
+            syn.uicontrols.$codepicker.setText('chpSubjectID', 'WORLD');
+        },
+
+        btnToParameterString_click() {
+            var parameterObject = syn.uicontrols.$codepicker.toParameterObject('@ApplicationID:1;@ApplicationName:HELLO WORLD;');
+            syn.$l.eventLog('btnToParameterString_click', JSON.stringify(parameterObject));
+        },
+
+        btnToParameterObject_click() {
+            var parameterObject = syn.uicontrols.$codepicker.toParameterObject('@ApplicationID:1;@ApplicationName:HELLO WORLD;');
+            parameterObject.ApplicationID = '0';
+            var parameterString = syn.uicontrols.$codepicker.toParameterString(parameterObject);
+            syn.$l.eventLog('btnToParameterObject_click', parameterString);
+        },
+
+        chpSubjectID_change(previousValue, previousText, changeValue) {
+        }
+    }
+}
+```

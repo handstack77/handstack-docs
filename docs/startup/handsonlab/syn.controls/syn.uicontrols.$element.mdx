@@ -4,14 +4,10 @@ sidebar_position: 4
 
 # syn.uicontrols.$element
 
+사용자의 입력을 받을 수 없는 html 요소에 거래 요청과 응답을 위한 확장 기능을 부여합니다.
 
-## 준비 중입니다
-
-
-## 전달 하고자 하는 주요 내용은 다음과 같습니다
-
-
-## 마치며
-
-
-## 참고자료
+```html
+<div id="divPanel" syn-datafield="Panel" syn-options="{content: 'html'}">innerHTML 테스트</div>
+<span id="spnLabel" syn-datafield="Label" syn-options="{content: 'text'}">innerText 테스트</span>
+<label id="txtApplicationID" syn-datafield="ApplicationID" syn-options="{content: 'value'}">value 테스트</label>
+```

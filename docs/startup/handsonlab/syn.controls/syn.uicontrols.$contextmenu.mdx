@@ -4,14 +4,60 @@ sidebar_position: 4
 
 # syn.uicontrols.$contextmenu
 
+syn_contextmenu 컨트롤은 https://github.com/mar10/jquery-ui-contextmenu 를 이용하여 개발됩니다.
 
-## 준비 중입니다
+```html
+<div>
+    <div>예시</div>
+    <syn_contextmenu id="ctxButtonControl" syn-options="{
+        target: 'div#divContextAare',
+        menu: [
+            { title: '잘라내기', cmd: 'cut' },
+            { title: '복사하기', cmd: 'copy', uiIcon: 'ui-icon-copy' },
+            { title: '---' },
+            {
+                title: '더보기', children: [
+                    { title: '하위메뉴1', cmd: 'sub1' },
+                    { title: '하위메뉴2', cmd: 'sub2' }
+                ]
+            }
+        ]
+	}" syn-events="['close', 'beforeOpen', 'open', 'select']"></syn_contextmenu>
+</div>
+<hr />
+<div id="divContextAare">
+    <div>기능</div>
+    <input type="button" id="btnGetValue" value="getValue" syn-events="['click']" />
+    <input type="button" id="btnSetValue" value="setValue" syn-events="['click']" />
+    <input type="button" id="btnClear" value="clear" syn-events="['click']" />
+    <input type="button" id="btnGetControl" value="getControl" syn-events="['click']" />
+</div>
+```
 
+```javascript
+'use strict';
+let $contextmenu = {
+    event: {
+        btnGetControl_click() {
+            var ctxButtonControl = syn.uicontrols.$contextmenu.getControl('ctxButtonControl');
+        },
 
-## 전달 하고자 하는 주요 내용은 다음과 같습니다
+        ctxButtonControl_close(evt, ui) {
+            syn.$l.eventLog('ctxButtonControl_close', this.id);
+        },
 
+        ctxButtonControl_beforeOpen(evt, ui) {
+            syn.$l.eventLog('ctxButtonControl_beforeOpen', evt.delegateTarget.id);
+        },
 
-## 마치며
+        ctxButtonControl_open(evt, ui) {
+            syn.$l.eventLog('ctxButtonControl_open', evt.delegateTarget.id);
+        },
 
+        ctxButtonControl_select(evt, ui) {
+            syn.$l.eventLog('ctxButtonControl_select', ui.cmd);
+        }
+    }
+}
 
-## 참고자료
+```

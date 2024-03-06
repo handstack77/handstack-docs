@@ -4,14 +4,216 @@ sidebar_position: 4
 
 # syn.uicontrols.$data
 
+syn_data 컨트롤은 가상의 데이터 소스를 제공합니다. 이 컨트롤은 데이터를 제공하는 역할을 하며, 데이터를 서버에서 가져오거나, 클라이언트에서 생성하거나, 다른 컨트롤에서 가져오거나 다양한 방법으로 활용할 수 있습니다.
 
-## 준비 중입니다
+```html
+<div>
+    <syn_data id="srcException" syn-options="{
+        dataSourceID: 'Exception',
+        storeType: 'Form',
+        columns: [
+            { data: 'Error', dataType: 'string' },
+            { data: 'Level', dataType: 'string' },
+            { data: 'Message', dataType: 'string' },
+            { data: 'StackTrace', dataType: 'string' },
+            { data: 'TypeMember', dataType: 'string' }
+        ]
+    }"></syn_data>
 
+    <syn_data id="srcDataSource" syn-options="{
+        dataSourceID: 'DataSource',
+        storeType: 'Grid',
+        columns: [
+            { data: 'name', dataType: 'string' },
+            { data: 'version', dataType: 'string' },
+            { data: 'resolved', dataType: 'string' }
+        ]
+    }"></syn_data>
 
-## 전달 하고자 하는 주요 내용은 다음과 같습니다
+    <syn_data id="srcForm1" syn-options="{
+        dataSourceID: 'StoreForm',
+        storeType: 'Form',
+        columns: [
+            { data: 'ApplicationID', dataType: 'string', belongID: 'LD01' },
+            { data: 'CodeGroupID', dataType: 'string', belongID: ['LD01', 'MD01'] },
+            { data: 'CodeType', dataType: 'string', belongID: ['LD02', 'MD01'] },
+            { data: 'CodeGroupName', dataType: 'string', belongID: ['LD02', 'MD01'] },
+            { data: 'Description.', dataType: 'string', belongID: ['LD02', 'MD01'] },
+            { data: 'Custom1 date', dataType: 'string', belongID: ['LD02', 'MD01'] },
+            { data: 'UseYN', dataType: 'string', belongID: ['LD02', 'MD01'] },
+            { data: 'CreatePersonID', dataType: 'string', belongID: ['LD02', 'MD01'] },
+            { data: 'CreateDateTime', dataType: 'string', belongID: ['LD02', 'MD01'] }
+        ]
+    }"></syn_data>
 
+    <syn_data id="srcGrid1" syn-options="{
+        dataSourceID: 'StoreGrid',
+        storeType: 'Grid',
+        columns: [
+            { data: 'ApplicationID', dataType: 'string' },
+            { data: 'CodeGroupID', dataType: 'string' },
+            { data: 'CodeID', dataType: 'string' },
+            { data: 'CodeValue', dataType: 'string' },
+            { data: 'Custom1', dataType: 'string' },
+            { data: 'Custom2', dataType: 'string' },
+            { data: 'Custom3', dataType: 'string' },
+            { data: 'SelectYN', dataType: 'bool' },
+            { data: 'SortingOrder', dataType: 'number' },
+            { data: 'UseYN', dataType: 'bool' },
+            { data: 'Remark', dataType: 'string' },
+            { data: 'CreateUserID', dataType: 'number' },
+            { data: 'CreateDateTime', dataType: 'string' }
+        ]
+    }"></syn_data>
 
-## 마치며
+    <syn_grid id="grdGrid" syn-datafield="CodeDetail" syn-options="{
+        bindingID: 'StoreGrid',
+        columns: [
+            ['ApplicationID', 'ApplicationID', 100, false, 'text', false, 'center', 'LD01'],
+            ['CodeGroupID', 'CodeGroupID', 100, false, 'text', false, 'center', 'LD01'],
+            ['CodeID', 'CodeID', 100, false, 'text', false, 'center', 'LD01'],
+            ['CodeValue', 'CodeValue', 100, false, 'text', false, 'center', 'LD01'],
+        ]
+    }"></syn_grid>
+</div>
+```
 
+```javascript
+'use strict';
+let $datasource = {
+    prop: {
+        metaColumns: {
+            "ApplicationID": {
+                "FieldID": "ApplicationID",
+                "DataType": "string"
+            },
+            "CodeGroupID": {
+                "FieldID": "CodeGroupID",
+                "DataType": "string"
+            },
+            "CodeID": {
+                "FieldID": "CodeID",
+                "DataType": "string"
+            },
+            "CodeValue": {
+                "FieldID": "CodeValue",
+                "DataType": "string"
+            }
+        },
 
-## 참고자료
+        tempDataList: [
+            {
+                "ApplicationID": 1,
+                "CodeGroupID": "CMM001",
+                "CodeID": "0",
+                "CodeValue": "권한없음",
+                "Custom1": "",
+                "Custom2": "",
+                "Custom3": "",
+                "SelectYN": false,
+                "SortingOrder": 1,
+                "UseYN": true,
+                "Remark": "",
+                "CreateUserID": 0
+            },
+            {
+                "ApplicationID": 1,
+                "CodeGroupID": "CMM001",
+                "CodeID": "1",
+                "CodeValue": "권한존재",
+                "Custom1": "",
+                "Custom2": "",
+                "Custom3": "",
+                "SelectYN": false,
+                "SortingOrder": 2,
+                "UseYN": true,
+                "Remark": "",
+                "CreateUserID": 0
+            }
+        ],
+
+        dataSet: [
+            {
+                "id": "1",
+                "name": "Tiger Nixon",
+                "position": "System Architect",
+                "salary": "$320,800",
+                "start_date": "2011/04/25",
+                "office": "Edinburgh",
+                "extn": "5421"
+            },
+            {
+                "id": "2",
+                "name": "Garrett Winters",
+                "position": "Accountant",
+                "salary": "$170,750",
+                "start_date": "2011/07/25",
+                "office": "Tokyo",
+                "extn": "8422"
+            },
+            {
+                "id": "3",
+                "name": "Ashton Cox",
+                "position": "Junior Technical Author",
+                "salary": "$86,000",
+                "start_date": "2009/01/12",
+                "office": "San Francisco",
+                "extn": "1562"
+            }
+        ]
+    },
+
+    transaction: {
+        LF01: {
+            inputs: [{ type: 'Row', dataFieldID: 'MainForm' }],
+            outputs: [
+                { type: 'Form', dataFieldID: 'Exception' },
+                { type: 'Grid', dataFieldID: 'DataSource' }
+            ],
+            callback: (error, responseObject, addtionalData, correlationID) => {
+                if ($object.isNullOrUndefined(error) == true) {
+                    if ($string.toBoolean($this.store.Exception.Error) == false) {
+                        var dataSource = {
+                            items: $this.store.DataSource
+                        };
+
+                        $this.method.drawHtmlTemplate('lstProject', 'tplProjectItem', dataSource);
+
+                        if ($this.store.DataSource.length > 0) {
+                            var dataSource = $this.store.DataSource[0];
+                            $this.event.lblNugetItem_click(null, dataSource.name, dataSource.version);
+                        }
+                    }
+                    else {
+                        syn.$w.notify('warning', '연결에 실패했습니다. 오류: ' + $this.store.Exception.Message, dataSourceID);
+                    }
+                }
+            }
+        }
+    },
+
+    event: {
+        btnGetValue_click() {
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$data.getValue('srcGrid1')));
+        },
+
+        btnSetValue_click() {
+            syn.uicontrols.$data.setValue('srcGrid1', $this.prop.dataSet);
+        },
+
+        btnClear_click() {
+            syn.uicontrols.$data.clear('srcGrid1');
+        },
+
+        btnInsertRow_click() {
+            syn.uicontrols.$grid.insertRow('grdGrid', {
+                amount: 1
+            });
+        },
+
+        btnRemoveRow_click() {
+            syn.uicontrols.$grid.removeRow('grdGrid');
+        }
+    }
+}
+```
