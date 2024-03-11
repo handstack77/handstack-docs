@@ -4,14 +4,84 @@ sidebar_position: 2
 
 # syn.config.json 환경설정
 
+syn.loader.js 에 의해 조회되는 웹 서버의 루트 디렉토리의 syn.config.json 파일은 HandStack 화면을 구성하는데 필요한 설정을 담고 있으며, 이를 통해 화면의 동작과 기능을 설정됩니다.
 
-## 준비 중입니다
+기본적으로 처음 화면이 조회 될 때 웹 브라우저의 세션이 유지되는 동안에만 유효하도록 저장되며, 이를 통해 반복적인 요청을	줄이고, 빠른 화면 전환을 가능하게 합니다.
 
+## syn.config.json 파일 구조
 
-## 전달 하고자 하는 주요 내용은 다음과 같습니다
+```json
+{
+    "SystemID": "HANDSTACK",
+    "ApplicationID": "HDS",
+    "ProjectID": "SYS",
+    "SystemVersion": "1.0.0",
+    "TransactionTimeout": 180000,
+    "IsConfiguration": false,
+    "HostName": "WebClient",
+    "SolutionName": "HDS Solution",
+    "UIEventLogLevel": "Verbose",
+    "IsLocaleTranslations": true,
+    "LocaleAssetUrl": "/assets/shared/language/",
+    "IsClientCaching": true,
+    "IsDebugMode": false,
+    "BaseDirectory": "/",
+    "TenantAppRequestPath": "app",
+    "SharedAssetUrl": "/assets/shared/",
+    "IsApiFindServer": false,
+    "DiscoveryApiServerUrl": "http://localhost:8000/api/find",
+    "ReportServer": "http://localhost:8283",
+    "FileManagerServer": "http://localhost:8000",
+    "FindClientIPServer": "/checkip",
+    "FindGlobalIDServer": "",
+    "FileServerType": "L",
+    "FileBusinessIDSource": "None",
+    "CookiePrefixName": "HandStack",
+    "Environment": "Development",
+    "DomainAPIServer": {
+        "ServerID": "SERVERD01",
+        "ServerType": "D",
+        "Protocol": "http",
+        "IP": "localhost",
+        "Port": "8000",
+        "Path": "/transact/api/transaction/execute",
+        "ClientIP": "localhost"
+    },
+    "Program": {
+        "ProgramName": "ack",
+        "ProgramVersion": "1.0.0",
+        "LanguageID": "ko",
+        "LocaleID": "ko-KR",
+        "BranchCode": ""
+    },
+    "Transaction": {
+        "ProtocolVersion": "001",
+        "SimulationType": "P",
+        "DataFormat": "J",
+        "MachineTypeID": "WEB",
+        "EncryptionType": "P",
+        "EncryptionKey": "G",
+        "CompressionYN": "N"
+    },
+    "EnvironmentSetting": {
+        "Application": {
+            "LoaderPath": "/js/syn.domain.js",
+            "IsDebugMode": true,
+            "CodeHelpID": "SYS|SYS010|LD01"
+        },
+        "Cookie": {
+            "CustomCookie1": "ValueCookie1",
+            "CustomCookie2": "ValueCookie2",
+            "CustomCookie3": "ValueCookie3"
+        },
+        "Header": {
+            "CustomHeader1": "ValueHeader1",
+            "CustomHeader2": "ValueHeader2",
+            "CustomHeader3": "ValueHeader3"
+        }
+    }
+}
+```
 
+각 설정에 대한 설명은 다음과 같습니다.
 
-## 마치며
-
-
-## 참고자료
