@@ -1,0 +1,107 @@
+---
+sidebar_position: 10
+---
+
+# $checkup
+
+태넌트 앱을 관리하기 위한 관리 화면과 기능을 제공하는 모듈입니다.
+
+```json
+{
+    "ModuleID": "checkup",
+    "Name": "checkup",
+    "IsBundledWithHost": false,
+    "Version": "1.0.0",
+    "ModuleConfig": {
+        "SystemID": "HANDSTACK",
+        "ManagedAccessKey": "6eac215f2f5e495cad4f2abfdcad7644",
+        "EncryptionAES256Key": "1234567890123456",
+        "AdministratorEmailID": "administrator@handstack.kr",
+        "ModuleConfigurationUrl": "http://localhost:8000/checkup/api/managed/initailize-settings",
+        "BusinessServerUrl": "http://localhost:8000/transact/api/transaction/execute",
+        "CircuitBreakResetSecond": 60,
+        "DefaultCommandTimeout": 180,
+        "IsExceptionDetailText": true,
+        "IsLogServer": true,
+        "IsContractFileUpdateToCaching": true,
+        "LogServerUrl": "http://localhost:8000/api/log",
+        "ModuleLogFilePath": "../log/checkup/module.log",
+        "ModuleBasePath": "../modules/checkup",
+        "WWWRootBasePath": "../modules/checkup/wwwroot/checkup",
+        "EventAction": [ "repository.Events.RepositoryRequest" ],
+        "SubscribeAction": [],
+        "ConnectionString": "URI=file:../sqlite/HDS/dbclient/checkup.db;Journal Mode=MEMORY;Cache Size=4000;Synchronous=Normal;Page Size=4096;Pooling=True;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;"
+    }
+}
+```
+소스) $checkup 환경설정 예제
+
+각 설정에 대한 설명은 다음과 같습니다.
+
+## "SystemID"
+
+운영중인 프로그램의 시스템의 ID를 설정합니다. 거래 요청시 동일한 시스템에서 운영중인지 식별하는데 사용되며 서버에 요청할 때 헤더와 본문에 사용됩니다. 다른 값으로 변경하려면 ack 프로그램의 app.settings.json 그리고 각 모듈의 module.json 내 SystemID와 동일하게 변경해야합니다.
+
+## "ManagedAccessKey"
+
+checkup 모듈내에 관리 목적의 서버에 요청이 있을 경우 검증하기 위한 확인 용도로 사용되며 헤더와 본문에 사용됩니다.
+
+## "EncryptionAES256Key"
+
+checkup 모듈내에 암호화를 위한 키로 사용됩니다.
+
+## "AdministratorEmailID"
+
+처음 checkup 모듈을 포함하는 프로그램 실행시 관리자 계정으로 사용할 이메일 주소로 사용됩니다.
+
+## "ModuleConfigurationUrl"
+
+프로그램 실행시 checkup 모듈의 설정을 초기화하기 위한 URL로 사용됩니다.
+
+## "BusinessServerUrl"
+
+checkup 모듈에서 거래 요청시 사용되는 URL로 사용됩니다.
+
+## "CircuitBreakResetSecond"
+
+checkup 모듈에서 CircuitBreaker가 발동된 후 다시 열리기까지의 시간을 설정합니다.
+
+## "DefaultCommandTimeout"
+
+checkup 모듈에서 거래 요청시 기본적으로 사용되는 타임아웃 시간을 설정합니다.
+
+## "IsExceptionDetailText"
+
+checkup 모듈에서 예외 발생시 상세한 내용을 로그에 남길지 여부를 설정합니다.
+
+## "IsLogServer"
+
+checkup 모듈에서 로그 서버를 사용할지 여부를 설정합니다.
+
+## "LogServerUrl"
+
+checkup 모듈에서 로그 서버를 사용할 경우 로그 서버의 URL을 설정합니다.
+
+## "ModuleLogFilePath"
+
+checkup 모듈에서 로그를 남길 파일의 경로를 설정합니다.
+
+## "ModuleBasePath"
+
+checkup 모듈의 기본 경로를 설정합니다.
+
+## "WWWRootBasePath"
+
+checkup 모듈의 웹 리소스의 기본 경로를 설정합니다.
+
+## "EventAction"
+
+checkup 모듈에서 파일 저장소 액션 이벤트가 발생했을 때 실행할 이벤트 핸들러를 설정합니다.
+
+## "SubscribeAction"
+
+checkup 모듈에서 구독할 이벤트 핸들러를 설정합니다.
+
+## "ConnectionString"
+
+checkup 모듈에서 사용할 SQLite 데이터베이스의 연결 문자열을 설정합니다.

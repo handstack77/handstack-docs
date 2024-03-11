@@ -1,8 +1,0 @@
-{
-    "label": "logger",
-    "position": 3,
-    "link": {
-        "type": "generated-index",
-        "description": "SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite에 대한 데이터 명령을 수행합니다"
-    }
-}

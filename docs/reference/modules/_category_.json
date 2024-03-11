@@ -1,8 +1,0 @@
-{
-    "label": "모듈",
-    "position": 2,
-    "link": {
-        "type": "generated-index",
-        "description": "HandStack이 실행되기 위해 필수적인 모듈에 대한 가이드 입니다"
-    }
-}

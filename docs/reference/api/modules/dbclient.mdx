@@ -1,0 +1,165 @@
+---
+sidebar_position: 20
+---
+
+# $dbclient
+
+SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite 데이터베이스 연동을 관리하기 위한 거래 기능을 제공하는 모듈입니다.
+
+기본적으로 각 데이터베이스 예제 연결문자열을 제공하며, 업무에 맞게 데이터베이스 연결 문자열을 설정해야 합니다.
+
+예제로 제공된 연결문자열에 대한 환경설정은 [docker 기반 개발용 데이터베이스 설치하기](/docs/startup/handsonlab/docker-기반-개발용-데이터베이스-설치하기) 문서를 참고하세요
+
+```json
+{
+    "ModuleID": "dbclient",
+    "Name": "dbclient",
+    "IsBundledWithHost": false,
+    "Version": "1.0.0",
+    "ModuleConfig": {
+        "SystemID": "HANDSTACK",
+        "BusinessServerUrl": "http://localhost:8000/transact/api/transaction/execute",
+        "CircuitBreakResetSecond": 60,
+        "DefaultCommandTimeout": 30,
+        "IsExceptionDetailText": true,
+        "ContractBasePath": [
+            "../contracts/dbclient"
+        ],
+        "IsTransactionLogging": false,
+        "ModuleLogFilePath": "../log/dbclient/module.log",
+        "IsLogServer": true,
+        "LogServerUrl": "http://localhost:8000/logger/api/log/insert",
+        "IsProfileLogging": false,
+        "ProfileLogFilePath": "../log/dbclient/profile.log",
+        "EventAction": [],
+        "SubscribeAction": [],
+        "DataSource": [
+            {
+                "ApplicationID": "HDS",
+                "ProjectID": "*",
+                "DataSourceID": "CHECKUPDB",
+                "DataProvider": "SQLite",
+                "ConnectionString": "URI=file:../sqlite/HDS/dbclient/dbclient.db;Journal Mode=MEMORY;Cache Size=4000;Synchronous=Normal;Page Size=4096;Pooling=True;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
+                "IsEncryption": "N",
+                "Comment": "SQLite 기본 데이터베이스"
+            },
+            {
+                "ApplicationID": "HDS",
+                "ProjectID": "*",
+                "DataSourceID": "DB01",
+                "DataProvider": "SQLite",
+                "ConnectionString": "URI=file:../sqlite/HDS/dbclient/HDS.db;Journal Mode=MEMORY;Cache Size=4000;Synchronous=Normal;Page Size=4096;Pooling=True;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
+                "IsEncryption": "N",
+                "Comment": "SQLite 기본 데이터베이스"
+            },
+            {
+                "ApplicationID": "HDS",
+                "ProjectID": "*",
+                "DataSourceID": "DB02",
+                "DataProvider": "SqlServer",
+                "ConnectionString": "Data Source=localhost;Initial Catalog=master;User ID=sa;Password=Strong@Passw0rd;",
+                "IsEncryption": "N",
+                "Comment": "SqlServer 기본 데이터베이스"
+            },
+            {
+                "ApplicationID": "HDS",
+                "ProjectID": "*",
+                "DataSourceID": "DB03",
+                "DataProvider": "Oracle",
+                "ConnectionString": "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SID=ORCL)));User Id=system;Password=Strong@Passw0rd;",
+                "IsEncryption": "N",
+                "Comment": "Oracle 기본 데이터베이스"
+            },
+            {
+                "ApplicationID": "HDS",
+                "ProjectID": "*",
+                "DataSourceID": "DB04",
+                "DataProvider": "MySQL",
+                "ConnectionString": "Server=localhost;Port=3306;Uid=root;Pwd=Strong@Passw0rd;PersistSecurityInfo=True;SslMode=none;Charset=utf8;Allow User Variables=True;",
+                "IsEncryption": "N",
+                "Comment": "MySQL 기본 데이터베이스"
+            },
+            {
+                "ApplicationID": "HDS",
+                "ProjectID": "*",
+                "DataSourceID": "DB05",
+                "DataProvider": "PostgreSQL",
+                "ConnectionString": "Host=localhost;Port=5432;Database=postgres;User ID=postgres;Password=Strong@Passw0rd;",
+                "IsEncryption": "N",
+                "Comment": "PostgreSQL 기본 데이터베이스"
+            }
+        ]
+    }
+}
+```
+소스) $dbclient 환경설정 예제
+
+각 설정에 대한 설명은 다음과 같습니다.
+
+## "SystemID"
+
+운영중인 프로그램의 시스템의 ID를 설정합니다. 거래 요청시 동일한 시스템에서 운영중인지 식별하는데 사용되며 서버에 요청할 때 헤더와 본문에 사용됩니다. 다른 값으로 변경하려면 ack 프로그램의 app.settings.json 그리고 각 모듈의 module.json 내 SystemID와 동일하게 변경해야합니다.
+
+## "BusinessServerUrl"
+
+dbclient 모듈에서 거래 요청시 사용되는 URL로 사용됩니다.
+
+## "CircuitBreakResetSecond"
+
+dbclient 모듈에서 CircuitBreaker가 발동된 후 다시 열리기까지의 시간을 설정합니다.
+
+## "DefaultCommandTimeout"
+
+dbclient 모듈에서 거래 요청시 기본적으로 사용되는 타임아웃 시간을 설정합니다.
+
+## "IsExceptionDetailText"
+
+dbclient 모듈에서 예외 발생시 상세한 내용을 로그에 남길지 여부를 설정합니다.
+
+## "ContractBasePath"
+
+dbclient 모듈에서 사용되는 계약 파일의 기본 경로를 설정합니다.
+
+## "IsTransactionLogging"
+
+dbclient 모듈에서 거래 로그를 남길지 여부를 설정합니다.
+
+## "IsLogServer"
+
+dbclient 모듈에서 로그 서버를 사용할지 여부를 설정합니다.
+
+## "LogServerUrl"
+
+dbclient 모듈에서 로그 서버를 사용할 경우 로그 서버의 URL을 설정합니다.
+
+## "IsProfileLogging"
+
+dbclient 모듈에서 프로파일링 로그를 남길지 여부를 설정합니다.
+
+## "ProfileLogFilePath"
+
+dbclient 모듈에서 프로파일링 로그를 남길 파일의 경로를 설정합니다.
+
+## "ModuleLogFilePath"
+
+dbclient 모듈에서 로그를 남길 파일의 경로를 설정합니다.
+
+## "ModuleBasePath"
+
+dbclient 모듈의 기본 경로를 설정합니다.
+
+## "WWWRootBasePath"
+
+dbclient 모듈의 웹 리소스의 기본 경로를 설정합니다.
+
+## "EventAction"
+
+dbclient 모듈에서 파일 저장소 액션 이벤트가 발생했을 때 실행할 이벤트 핸들러를 설정합니다.
+
+## "SubscribeAction"
+
+dbclient 모듈에서 구독할 이벤트 핸들러를 설정합니다.
+
+## "DataSource"
+
+dbclient 모듈에서 사용할 데이터베이스 연결 문자열을 설정합니다.
