@@ -45,6 +45,7 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
+	  <Folder Include="docs\reference\api\img\" />
 	  <Folder Include="docs\startup\learning\syn\img\" />
 	</ItemGroup>
 

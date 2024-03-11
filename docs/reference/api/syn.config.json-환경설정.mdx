@@ -6,9 +6,9 @@ sidebar_position: 2
 
 syn.loader.js 에 의해 조회되는 웹 서버의 루트 디렉토리의 syn.config.json 파일은 HandStack 화면을 구성하는데 필요한 설정을 담고 있으며, 이를 통해 화면의 동작과 기능을 설정됩니다.
 
-기본적으로 처음 화면이 조회 될 때 웹 브라우저의 세션이 유지되는 동안에만 유효하도록 저장되며, 이를 통해 반복적인 요청을	줄이고, 빠른 화면 전환을 가능하게 합니다.
+기본적으로 처음 화면이 조회 될 때 웹 브라우저의 세션이 유지되는 동안에만 유효하도록 저장되며, 이를 통해 반복적인 요청을    줄이고, 빠른 화면 전환을 가능하게 합니다.
 
-## syn.config.json 파일 구조
+## syn.config.json 파일 내용
 
 ```json
 {
@@ -187,13 +187,13 @@ transact 모듈의 API 서버 URL을 설정합니다. Protocol, IP, Port, Path�
 
 ```json
 {
-	"ServerID": "SERVERD01",
-	"ServerType": "D", // D: Development, S: Staging, P: Production
-	"Protocol": "http", // http, https
-	"IP": "localhost", // IP Address 또는 도메인명 (예: localhost, www.handstack.kr)
-	"Port": "8000", // Port Number 또는 빈값 (예: 8000, "")
-	"Path": "/transact/api/transaction/execute", // API Server Path
-	"ClientIP": "localhost"
+    "ServerID": "SERVERD01",
+    "ServerType": "D", // D: Development, S: Staging, P: Production
+    "Protocol": "http", // http, https
+    "IP": "localhost", // IP Address 또는 도메인명 (예: localhost, www.handstack.kr)
+    "Port": "8000", // Port Number 또는 빈값 (예: 8000, "")
+    "Path": "/transact/api/transaction/execute", // API Server Path
+    "ClientIP": "localhost"
 }
 ```
 
@@ -203,11 +203,11 @@ transact 모듈의 API 서버 URL을 설정합니다. Protocol, IP, Port, Path�
 
 ```json
 {
-	"ProgramName": "ack",
-	"ProgramVersion": "1.0.0",
-	"LanguageID": "ko",
-	"LocaleID": "ko-KR",
-	"BranchCode": ""
+    "ProgramName": "ack",
+    "ProgramVersion": "1.0.0",
+    "LanguageID": "ko",
+    "LocaleID": "ko-KR",
+    "BranchCode": ""
 }
 ```
 
@@ -217,13 +217,13 @@ transact 모듈의 API 서버 URL을 설정합니다. Protocol, IP, Port, Path�
 
 ```json
 {
-	"ProtocolVersion": "001",
-	"SimulationType": "P", // D: Development, S: Staging, P: Production
-	"DataFormat": "J", // J: JSON, T: Tabluar Data
-	"MachineTypeID": "WEB", // WEB, WIN, SVR, SVC, CMD, MOB, TAB, ETC
-	"EncryptionType": "P", // P:Plain, F:Full, H:Header, B:Body
-	"EncryptionKey": "G", // P:프로그램, K:KMS 서버, G:GlobalID 키
-	"CompressionYN": "N" // Y:압축, N:압축안함
+    "ProtocolVersion": "001",
+    "SimulationType": "P", // D: Development, S: Staging, P: Production
+    "DataFormat": "J", // J: JSON, T: Tabluar Data
+    "MachineTypeID": "WEB", // WEB, WIN, SVR, SVC, CMD, MOB, TAB, ETC
+    "EncryptionType": "P", // P:Plain, F:Full, H:Header, B:Body
+    "EncryptionKey": "G", // P:프로그램, K:KMS 서버, G:GlobalID 키
+    "CompressionYN": "N" // Y:압축, N:압축안함
 }
 ```
 
@@ -233,19 +233,19 @@ transact 모듈의 API 서버 URL을 설정합니다. Protocol, IP, Port, Path�
 
 ```json
 {
-	"Application": {
-		"LoaderPath": "/js/syn.domain.js", // 화면에서 사용하는 기본 도메인 스크립트 경로입니다.
-		"CodeHelpID": "SYS|SYS010|LD01" // 코드도움을 위한 기본 거래 ID입니다.
-	},
-	"Cookie": { // 서버 요청시 추가로 전송할 쿠키 정보입니다.
-		"CustomCookie1": "ValueCookie1",
-		"CustomCookie2": "ValueCookie2",
-		"CustomCookie3": "ValueCookie3"
-	},
-	"Header": { // 서버 요청시 추가로 전송할 헤더 정보입니다.
-		"CustomHeader1": "ValueHeader1",
-		"CustomHeader2": "ValueHeader2",
-		"CustomHeader3": "ValueHeader3"
-	}
+    "Application": {
+        "LoaderPath": "/js/syn.domain.js", // 화면에서 사용하는 기본 도메인 스크립트 경로입니다.
+        "CodeHelpID": "SYS|SYS010|LD01" // 코드도움을 위한 기본 거래 ID입니다.
+    },
+    "Cookie": { // 서버 요청시 추가로 전송할 쿠키 정보입니다.
+        "CustomCookie1": "ValueCookie1",
+        "CustomCookie2": "ValueCookie2",
+        "CustomCookie3": "ValueCookie3"
+    },
+    "Header": { // 서버 요청시 추가로 전송할 헤더 정보입니다.
+        "CustomHeader1": "ValueHeader1",
+        "CustomHeader2": "ValueHeader2",
+        "CustomHeader3": "ValueHeader3"
+    }
 }
 ```
