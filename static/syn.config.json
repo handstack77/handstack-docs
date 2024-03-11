@@ -4,20 +4,17 @@
     "ProjectID": "SYS",
     "SystemVersion": "1.0.0",
     "TransactionTimeout": 180000,
-    "IsConfiguration": false,
     "HostName": "WebClient",
-    "SolutionName": "HDS Solution",
     "UIEventLogLevel": "Verbose",
     "IsClientCaching": true,
     "IsDebugMode": false,
-    "BaseDirectory": "/",
     "AppHostRequestPath": "app",
     "SharedAssetUrl": "/assets/shared/",
     "IsApiFindServer": false,
     "DiscoveryApiServerUrl": "http://localhost:8000/api/find",
     "FileManagerServer": "http://localhost:8000",
-    "FindClientIPServer": "http://localhost:8000/handsup/api/index/client-ip",
-    "FindGlobalIDServer": "http://localhost:8000/wwwroot/api/index/create-id",
+    "FindClientIPServer": "/checkip",
+    "FindGlobalIDServer": "/wwwroot/api/index/create-id",
     "FileServerType": "L",
     "CookiePrefixName": "HandStack",
     "Environment": "Development",
@@ -49,8 +46,7 @@
     "EnvironmentSetting": {
         "Application": {
             "LoaderPath": "/js/syn.domain.min.js",
-            "IsDebugMode": true,
-            "CodeHelpID": "CHP|CHP010|LD01"
+            "CodeHelpID": "SYS|SYS010|LD01"
         },
         "Cookie": {
             "CustomCookie1": "ValueCookie1",

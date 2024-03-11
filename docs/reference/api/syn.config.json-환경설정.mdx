@@ -17,15 +17,12 @@ syn.loader.js 에 의해 조회되는 웹 서버의 루트 디렉토리의 syn.c
     "ProjectID": "SYS",
     "SystemVersion": "1.0.0",
     "TransactionTimeout": 180000,
-    "IsConfiguration": false,
     "HostName": "WebClient",
-    "SolutionName": "HDS Solution",
     "UIEventLogLevel": "Verbose",
     "IsLocaleTranslations": true,
     "LocaleAssetUrl": "/assets/shared/language/",
     "IsClientCaching": true,
     "IsDebugMode": false,
-    "BaseDirectory": "/",
     "TenantAppRequestPath": "app",
     "SharedAssetUrl": "/assets/shared/",
     "IsApiFindServer": false,
@@ -66,7 +63,6 @@ syn.loader.js 에 의해 조회되는 웹 서버의 루트 디렉토리의 syn.c
     "EnvironmentSetting": {
         "Application": {
             "LoaderPath": "/js/syn.domain.js",
-            "IsDebugMode": true,
             "CodeHelpID": "SYS|SYS010|LD01"
         },
         "Cookie": {
@@ -85,3 +81,171 @@ syn.loader.js 에 의해 조회되는 웹 서버의 루트 디렉토리의 syn.c
 
 각 설정에 대한 설명은 다음과 같습니다.
 
+## "SystemID": "HANDSTACK"
+
+운영중인 프로그램의 시스템의 ID를 설정합니다. 화면과 서버가 동일한 시스템에서 운영중인지 식별하는데 사용되며 서버에 요청할 때 헤더와 본문에 사용됩니다. 다른 값으로 변경하려면 ack 프로그램의 app.settings.json 의 SystemID와 동일하게 변경해야합니다.
+
+## "ApplicationID": "HDS"
+
+기본 Application ID를 설정합니다. HandStack 에서 화면과 기능을 [Application ID > Project ID > Transaction ID > Function ID] 로 구성되며, 이 중에서 Application ID는 화면의 기능을 구성하는 최상위 단위입니다. HDS는 HandStack 의 3자리 약어입니다. 다른 값으로 변경하려면 프로젝트 초기에 변경하는 것을 권장합니다.
+
+## "ProjectID": "SYS"
+
+기본 Project ID를 설정합니다. HandStack 에서 화면과 기능을 [Application ID > Project ID > Transaction ID > Function ID] 로 구성되며, 이 중에서 Project ID는 화면의 기능을 구성하는 상위 단위입니다. 일반적으로 Project ID는 화면에 따라 상위 디렉토리명으로 자동으로 부여됩니다.
+
+## "SystemVersion": "1.0.0"
+
+운영중인 프로그램의 정보성의 시스템의 버전을 설정합니다. syn.config.json 세션 캐시를 갱신하는데 사용됩니다.
+
+## "TransactionTimeout": 180000
+
+화면에서 서버로 거래 요청을 보내고 응답을 제한 시간을 설정합니다. 기본값은 180000ms(3분) 입니다.
+
+## "HostName": "WebClient"
+
+클라이언트의 호스트명을 설정합니다. 클라이언트의 단말 식별 단위로 사용되며 화면에서 서버로 요청을 보낼 때 헤더에 사용됩니다.
+
+## "UIEventLogLevel": "Verbose"
+
+화면에서 syn.$l.eventLog 함수로 기록하는 이벤트 로그의 수준을 설정합니다. 기본값은 "Verbose" 입니다. 로그의 수준은 다음과 같습니다.
+
+* Verbose = 0;
+* Debug = 1;
+* Information = 2;
+* Warning = 3;
+* Error = 4;
+* Fatal = 5;
+
+개발 환경에서는 "Verbose" 로 설정하여 모든 로그를 기록하고, 운영 환경에서는 "Warning" 로 설정하여 경고와 오류만 기록하도록 권장합니다.
+
+## "IsClientCaching": true
+
+화면에서 서버의 자원을 요청할 때 캐싱을 사용할지 여부를 설정합니다. 기본값은 true 입니다. 클라이언트 캐싱을 사용하면 화면의 자원을 서버에서 받아오지 않고, 클라이언트에 저장된 자원을 사용하여 화면을 구성합니다. 이를 통해 화면의 구성 속도를 높일 수 있습니다.
+
+## "IsDebugMode": false
+
+개발자 모드를 설정합니다. 기본값은 false 입니다. 개발 환경에서는 true를 운영 환경에서는 false를 권장합니다. 이 설정은 2개의 영향을 줍니다.
+
+* true 일때 syn.$l.eventLog 함수로 로그를 기록할 때 debugger 를 호출하여 크롬 인스펙터 실행중일 때 디버그 상태로 진입합니다.
+* true 일때 syn.bundle.js, syn.bundle.css 파일을 로드하며 false이면 syn.bundle.min.js, syn.bundle.min.css 파일을 로드합니다. 파일 크기가 2배 이상 차이가 나며 보안 향상 및 자원을 절약합니다.
+
+## "AppHostRequestPath": "app"
+
+태넌트 앱의 기본 요청 경로를 설정합니다. 기본값은 "app"입니다. 태넌트 앱은 다수의 사용자가 사용하는 앱을 의미하며, 이를 통해 다수의 사용자가 사용하는 앱을 구분합니다.
+
+## "SharedAssetUrl": "/assets/shared/"
+
+공유 자원의 기본 경로를 설정합니다. 기본값은 "/assets/shared/"입니다. 공유 자원은 모든 모듈과 태넌트 앱의 화면에서 사용하는 자원을 의미합니다.
+
+> wwwroot 모듈의 /wwwroot/assets/shared 경로에 위치한 자원을 사용합니다.
+
+## "IsApiFindServer": false
+
+transact 모듈의 API 서버의 검색 기능을 사용할지 여부를 설정합니다. 기본값은 false입니다. 검색 기능을 사용하면 화면에서 서버의 자원을 검색할 때 DiscoveryApiServerUrl 검색 서버를 사용하여 검색합니다.
+
+## "DiscoveryApiServerUrl": "검색 서버의 URL"
+
+transact 모듈의 API 서버의 검색 기능을 사용할 때 검색 서버의 URL을 설정합니다. 기본값은 "http://localhost:8000/api/find" 입니다. 검색 서버는 화면에서 서버의 자원을 검색할 때 사용합니다.
+
+> 이 기능은 개발 중이며, 추후에 변경될 수 있습니다.
+
+## "FileManagerServer": "http://localhost:8000"
+
+repository 모듈을 호스팅하는 파일 매니저 서버의 URL을 설정합니다. 기본값은 "http://localhost:8000" 입니다. 파일 매니저 서버는 화면에서 파일을 업로드/다운로드할 때 사용합니다.
+
+## "FindClientIPServer": "/checkip"
+
+클라이언트의 IP 주소를 검색하는 서버의 URL을 설정합니다. 기본값은 "/checkip" 입니다. http://localhost:8000/checkip 을 호출하여 클라이언트의 IP 주소를 검색합니다.
+
+## "FindGlobalIDServer": ""
+
+클라이언트의 글로벌 ID를 검색하는 서버의 URL을 설정합니다. 모든 거래 요청의 보안 검증을 위해 사용되며 기본적인 안전을 위해 /wwwroot/api/index/create-id 을 호출하여 클라이언트의 글로벌 ID를 검색합니다.
+
+## "FileServerType": "L"
+
+파일 서버의 타입을 설정합니다. 기본값은 "L"입니다. 파일 서버의 타입은 다음과 같습니다.
+
+* L: Local
+* D: Development
+* P: Production
+
+## "CookiePrefixName": "HandStack"
+
+서버에서 발급하는 쿠키의 접두사를 설정합니다. 기본값은 "HandStack"입니다. 쿠키의 접두사는 쿠키의 이름을 설정할 때 사용됩니다.
+
+## "Environment": "Development"
+
+실행중인 화면의 환경을 설정합니다. 기본값은 "Development"입니다. 환경은 다음과 같습니다.
+
+* Development
+* Staging
+* Production
+
+## "DomainAPIServer": 
+
+transact 모듈의 API 서버 URL을 설정합니다. Protocol, IP, Port, Path의 정보를 주의 깊게 설정 해야 합니다.
+
+```json
+{
+	"ServerID": "SERVERD01",
+	"ServerType": "D", // D: Development, S: Staging, P: Production
+	"Protocol": "http", // http, https
+	"IP": "localhost", // IP Address 또는 도메인명 (예: localhost, www.handstack.kr)
+	"Port": "8000", // Port Number 또는 빈값 (예: 8000, "")
+	"Path": "/transact/api/transaction/execute", // API Server Path
+	"ClientIP": "localhost"
+}
+```
+
+## "Program"
+
+화면에서 서버에 거래 요청에 보내질 프로그램의 정보를 설정합니다. 프로그램의 이름, 버전, 언어, 로케일, 지점 코드를 설정합니다.
+
+```json
+{
+	"ProgramName": "ack",
+	"ProgramVersion": "1.0.0",
+	"LanguageID": "ko",
+	"LocaleID": "ko-KR",
+	"BranchCode": ""
+}
+```
+
+## "Transaction"
+
+화면에서 서버에 거래 요청에 사용할 보안 전문 프로토콜을 설정합니다. 이 값은 클라이언트와 서버 간의 다양한 보안 시나리오에 대응하는 설정입니다. SimulationType, DataFormat, EncryptionType, EncryptionKey, CompressionYN의 정보를 주의 깊게 설정 해야 합니다. 프로그램 수준의 개발자 외에 기본값을 권장합니다.
+
+```json
+{
+	"ProtocolVersion": "001",
+	"SimulationType": "P", // D: Development, S: Staging, P: Production
+	"DataFormat": "J", // J: JSON, T: Tabluar Data
+	"MachineTypeID": "WEB", // WEB, WIN, SVR, SVC, CMD, MOB, TAB, ETC
+	"EncryptionType": "P", // P:Plain, F:Full, H:Header, B:Body
+	"EncryptionKey": "G", // P:프로그램, K:KMS 서버, G:GlobalID 키
+	"CompressionYN": "N" // Y:압축, N:압축안함
+}
+```
+
+## "EnvironmentSetting"
+
+화면에서 서버에 거래 요청에 사용할 환경 설정을 설정합니다. Application, Cookie, Header의 정보를 주의 깊게 설정 해야 합니다.
+
+```json
+{
+	"Application": {
+		"LoaderPath": "/js/syn.domain.js", // 화면에서 사용하는 기본 도메인 스크립트 경로입니다.
+		"CodeHelpID": "SYS|SYS010|LD01" // 코드도움을 위한 기본 거래 ID입니다.
+	},
+	"Cookie": { // 서버 요청시 추가로 전송할 쿠키 정보입니다.
+		"CustomCookie1": "ValueCookie1",
+		"CustomCookie2": "ValueCookie2",
+		"CustomCookie3": "ValueCookie3"
+	},
+	"Header": { // 서버 요청시 추가로 전송할 헤더 정보입니다.
+		"CustomHeader1": "ValueHeader1",
+		"CustomHeader2": "ValueHeader2",
+		"CustomHeader3": "ValueHeader3"
+	}
+}
+```
