@@ -124,11 +124,144 @@ C:\home\[사용자 ID]\handstack\contracts
 ```
 예) 어플리케이션 계약 디렉토리
 
+## 기본 modules API 목록
+
+비즈니스 앱을 개발하기 위해 제공되는 기본 modules API 목록은 다음과 같습니다.
+
+### Account
+
+* GET: /checkup/api/account
+* GET: /checkup/api/account/invite-member
+* GET: /checkup/api/account/login
+* GET: /checkup/api/account/sign-in
+* GET: /checkup/api/account/signal-event
+* GET: /checkup/api/account/is-authenticated
+* GET: /checkup/api/account/logout
+
+### Aggregate
+
+* GET: /transact/api/aggregate/transaction-list
+* GET: /transact/api/aggregate/summary
+
+### Base64
+
+* GET: /dbclient/api/base64/encode
+* GET: /dbclient/api/base64/decode
+* GET: /function/api/base64/encode
+* GET: /function/api/base64/decode
+* GET: /transact/api/base64/encode
+* GET: /transact/api/base64/decode
+
+### Execution
+
+* GET: /function/api/execution/has
+* GET: /function/api/execution/upsert
+* GET: /function/api/execution/refresh
+* GET: /function/api/execution/delete
+* GET: /function/api/execution/get
+* GET: /function/api/execution/retrieve
+* GET: /function/api/execution/meta
+* POST: /function/api/execution
+
+# Index
+
+* GET: /checkup/api/index
+* GET: /checkup/api/index/has-key
+* GET: /checkup/api/index/create-id
+* POST: /checkup/api/index/create-id
+* GET: /checkup/api/index/client-ip
+* GET: /checkup/api/index/sha256hash
+* GET: /checkup/api/index/get-session
+* GET: /checkup/api/index/set-session
+* GET: /checkup/api/index/session-key
+* GET: /checkup/api/index/id
+* GET: /checkup/api/index/guid
+* GET: /checkup/api/index/encode-no
+* GET: /checkup/api/index/decode-no
+* GET: /dbclient/api/index
+* GET: /function/api/index
+* GET: /logger/api/index
+* GET: /repository/api/index
+* GET: /transact/api/index
+* GET: /wwwroot/api/index
+* GET: /wwwroot/api/index/create-id
+* POST: /wwwroot/api/index/create-id
+* GET: /wwwroot/api/index/client-ip
+* GET: /wwwroot/api/index/sha256hash
+* GET: /wwwroot/api/index/id
+* GET: /wwwroot/api/index/guid
+
+### Log
+
+* GET: /logger/api/log/insert
+* POST: /logger/api/log/insert
+* GET: /logger/api/log/list
+* GET: /logger/api/log/detail
+
+### Managed
+
+* GET: /checkup/api/managed/initailize-settings
+* GET: /dbclient/api/managed/reset-contract
+* GET: /dbclient/api/managed/reset-app-contract
+* GET: /function/api/managed/reset-contract
+* GET: /function/api/managed/reset-app-contract
+* GET: /repository/api/managed/reset-app-contract
+* GET: /transact/api/managed/reset-contract
+* GET: /transact/api/managed/reset-app-contract
+* GET: /transact/api/managed/string-encrypt
+* GET: /transact/api/managed/string-decrypt
+
+### Query
+
+* GET: /dbclient/api/query/has
+* GET: /dbclient/api/query/upsert
+* GET: /dbclient/api/query/refresh
+* GET: /dbclient/api/query/delete
+* GET: /dbclient/api/query/get
+* GET: /dbclient/api/query/retrieve
+* GET: /dbclient/api/query/log
+* GET: /dbclient/api/query/meta
+* GET: /dbclient/api/query/reports
+* POST: /dbclient/api/query
+
+### Storage
+
+* GET: /repository/api/storage/get-token
+* GET: /repository/api/storage/get-client-ip
+* GET: /repository/api/storage/action-handler
+* GET: /repository/api/storage/get-repository
+* POST: /repository/api/storage/upload-file
+* POST: /repository/api/storage/upload-files
+* POST: /repository/api/storage/download-file
+* GET: /repository/api/storage/http-download-file
+* GET: /repository/api/storage/virtual-download-file
+* GET: /repository/api/storage/virtual-delete-file
+* GET: /repository/api/storage/get-repositorys
+* GET: /repository/api/storage/remove-item
+* GET: /repository/api/storage/remove-items
+* GET: /repository/api/storage/get-mime-type
+* GET: /repository/api/storage/get-md5hash
+
+### Transaction
+
+* GET: /transact/api/transaction/test
+* GET: /transact/api/transaction/has
+* GET: /transact/api/transaction/add
+* GET: /transact/api/transaction/remove
+* GET: /transact/api/transaction/refresh
+* GET: /transact/api/transaction/cache-clear
+* GET: /transact/api/transaction/cache-keys
+* GET: /transact/api/transaction/get
+* GET: /transact/api/transaction/retrieve
+* GET: /transact/api/transaction/log
+* GET: /transact/api/transaction/meta
+* POST: /transact/api/transaction/execute
+
 ## 참고자료
-* [checkup 모듈 참고하기](http://localhost:3000/docs/category/checkup)
-* [dbclient 모듈 참고하기](http://localhost:3000/docs/category/dbclient)
-* [function 모듈 참고하기](http://localhost:3000/docs/category/function)
-* [repository 모듈 참고하기](http://localhost:3000/docs/category/repository)
-* [transact 모듈 참고하기](http://localhost:3000/docs/category/transact)
-* [logger 모듈 참고하기](http://localhost:3000/docs/category/logger)
-* [wwwroot 모듈 참고하기](http://localhost:3000/docs/category/wwwroot)
+* [checkup 모듈 참고하기](/docs/reference/api/modules/checkup)
+* [dbclient 모듈 참고하기](/docs/reference/api/modules/dbclient)
+* [function 모듈 참고하기](/docs/reference/api/modules/function)
+* [repository 모듈 참고하기](/docs/reference/api/modules/repository)
+* [transact 모듈 참고하기](/docs/reference/api/modules/transact)
+* [logger 모듈 참고하기](/docs/reference/api/modules/logger)
+* [wwwroot 모듈 참고하기](/docs/reference/api/modules/wwwroot)

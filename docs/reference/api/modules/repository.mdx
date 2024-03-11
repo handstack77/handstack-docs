@@ -2,9 +2,9 @@
 sidebar_position: 50
 ---
 
-# $repository
+# repository
 
-블라블라
+파일 업로드/다운로드 및 파일 메타데이터 관리를 위한 모듈입니다.
 
 ```json
 {
@@ -14,7 +14,6 @@ sidebar_position: 50
     "Version": "1.0.0",
     "ModuleConfig": {
         "SystemID": "HANDSTACK",
-        "EncryptionAES256Key": "1234567890123456",
         "FileServerUrl": "http://localhost:8000",
         "BusinessServerUrl": "http://localhost:8000/transact/api/transaction/execute",
         "CircuitBreakResetSecond": 60,
@@ -38,4 +37,82 @@ sidebar_position: 50
     }
 }
 ```
-소스) $repository 환경설정 예제
+소스) repository 환경설정 예제
+
+## 옵션 설명
+
+### SystemID
+
+운영중인 프로그램의 시스템의 ID를 설정합니다. 거래 요청시 동일한 시스템에서 운영중인지 식별하는데 사용되며 서버에 요청할 때 헤더와 본문에 사용됩니다. 다른 값으로 변경하려면 ack 프로그램의 app.settings.json 그리고 각 모듈의 module.json 내 SystemID와 동일하게 변경해야합니다.
+
+### FileServerUrl
+
+클라이언트에서 파일 업로드/다운로드 요청시 파일 상대경로에 사용되는 기본 호스트 URL을 설정합니다.
+
+### BusinessServerUrl
+
+module 내에서 transact 거래 요청시 사용되는 URL를 설정합니다.
+
+### CircuitBreakResetSecond
+
+logger 모듈로 이벤트 로그 기록이 실패할 경우 다시 호출할 때 까지의 시간을 설정합니다.
+
+### DefaultCommandTimeout
+
+거래 요청시 기본적으로 사용되는 타임아웃 시간을 설정합니다.
+
+### IsExceptionDetailText
+
+예외 발생시 상세한 내용을 로그에 남길지 여부를 설정합니다.
+
+### IsLogServer
+
+로그 서버를 사용할지 여부를 설정합니다.
+
+### LogServerUrl
+
+로그 서버를 사용할 경우 로그 서버의 URL을 설정합니다.
+
+### ContractBasePath
+
+사용되는 계약 파일의 기본 경로를 설정합니다.
+
+### ModuleLogFilePath
+
+모듈 로그 파일의 경로를 설정합니다.
+
+### DatabaseContractPath
+
+데이터베이스 계약 파일의 경로를 설정합니다.
+
+### ModuleBasePath
+
+모듈의 기본 경로를 설정합니다.
+
+### EventAction
+
+외부 종속성 없이 프로세스 내에서 이벤트 메시지를 실행할 대상 모듈의 SubscribeAction에 설정된 이벤트 핸들러를 설정합니다.
+
+### SubscribeAction
+
+외부 종속성 없이 프로세스 내에서 dbclient 모듈 업무 처리 이벤트 메시지를 수신할 이벤트 핸들러를 설정합니다.
+
+### AllowMaxFileUploadLength
+
+파일 업로드시 허용되는 최대 파일 크기를 설정합니다. 단위는 바이트입니다. 기본값은 120000000(114MB)입니다.
+
+### PurgeTokenTimeout
+
+파일 업로드/다운로드 요청시 사용되는 토큰의 타임아웃 시간을 설정합니다. 단위는 초입니다.
+
+### TokenGenerateIPCheck
+
+파일 업로드/다운로드 요청시 사용되는 토큰의 IP 체크 여부를 설정합니다.
+
+### XFrameOptions
+
+파일 다운로드 요청시 사용되는 X-Frame-Options 헤더를 설정합니다.
+
+### FileRootPath
+
+파일 업로드/다운로드 요청시 서버에 저장되는 파일의 기본 디렉토리 경로를 설정합니다.

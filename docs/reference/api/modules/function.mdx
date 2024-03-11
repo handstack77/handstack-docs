@@ -2,9 +2,9 @@
 sidebar_position: 30
 ---
 
-# $function
+# function
 
-블라블라
+.NET Core 및 함수를 호스팅하고 관리하는 모듈입니다.
 
 ```json
 {
@@ -99,4 +99,87 @@ sidebar_position: 30
     }
 }
 ```
-소스) $function 환경설정 예제
+소스) function 환경설정 예제
+
+## 옵션 설명
+
+### SystemID
+
+운영중인 프로그램의 시스템의 ID를 설정합니다. 거래 요청시 동일한 시스템에서 운영중인지 식별하는데 사용되며 서버에 요청할 때 헤더와 본문에 사용됩니다. 다른 값으로 변경하려면 ack 프로그램의 app.settings.json 그리고 각 모듈의 module.json 내 SystemID와 동일하게 변경해야합니다.
+
+### BusinessServerUrl
+
+module 내에서 transact 거래 요청시 사용되는 URL를 설정합니다.
+
+### CircuitBreakResetSecond
+
+logger 모듈로 이벤트 로그 기록이 실패할 경우 다시 호출할 때 까지의 시간을 설정합니다.
+
+### DefaultCommandTimeout
+
+함수 거래 요청시 기본적으로 사용되는 타임아웃 시간을 설정합니다. 초 단위로 설정하며 기본값은 180초입니다. 긴 시간이 필요한 경우에는 각각의 함수의 타임아웃 값을 변경하여 사용해야 합니다.
+
+### IsExceptionDetailText
+
+예외 발생시 상세한 메시지를 전송할지 여부를 설정합니다.
+
+### IsLogServer
+
+로그를 서버에 전송할지 여부를 설정합니다.
+
+### LogServerUrl
+
+로그를 전송할 logger 모듈을 호스팅하고 있는 서버의 URL을 설정합니다.
+
+### ContractBasePath
+
+CSharp과 Node.js 함수의 소스와 설정 파일이 저장된 경로를 설정합니다.
+
+### ModuleLogFilePath
+
+모듈의 로그 파일이 저장될 경로를 설정합니다.
+
+### NodeFunctionConfig
+
+Node.js 기반의 함수 설정입니다.
+
+* LocalStoragePath: 함수에서 사용되는 로컬 저장소의 경로를 설정합니다.
+* NodeScriptMapBasePath: 함수에서 사용되는 스크립트 맵의 기본 경로를 설정합니다.
+* LogMinimumLevel: 로그의 최소 레벨을 설정합니다. trace, debug, info, warn, error, fatal 중 하나를 설정할 수 있습니다. 개발 서버에서는 trace를 운영 서버에서는 info를 사용하는 것이 좋습니다.
+* FileLogBasePath: 함수 기능 실행시 로그 파일이 저장될 경로를 설정합니다.
+* TimeoutMS: 함수의 타임아웃 시간을 설정합니다.
+* IsSingleThread: 함수를 단일 스레드로 실행할지 여부를 설정합니다.
+* WatchGracefulShutdown: Graceful Shutdown을 사용할지 여부를 설정합니다.
+* EnableFileWatching: 파일 감시를 사용할지 여부를 설정합니다.
+* WatchFileNamePatterns: 감시할 파일의 패턴을 설정합니다.
+* NodeAndV8Options: Node.js 및 V8 옵션을 설정합니다.
+* EnvironmentVariables: NodeJS 프로세스의 환경 변수를 설정합니다. 환경 변수에 대한 자세한 내용은 [Node.js 공식 문서](https://nodejs.org/api/cli.html#cli_environment_variables)를 참조하세요.
+
+### CSharpFunctionConfig
+
+C# 기반의 함수 설정입니다.
+
+* EnableFileWatching: 파일 감시를 사용할지 여부를 설정합니다.
+* FileLogBasePath: 로그 파일이 저장될 경로를 설정합니다.
+* WatchFileNamePatterns: 감시할 파일의 패턴을 설정합니다.
+
+### EventAction
+
+외부 종속성 없이 프로세스 내에서 이벤트 메시지를 실행할 대상 모듈의 SubscribeAction에 설정된 이벤트 핸들러를 설정합니다.
+
+### SubscribeAction
+
+외부 종속성 없이 프로세스 내에서 function 모듈 업무 처리 이벤트 메시지를 수신할 이벤트 핸들러를 설정합니다.
+
+### FunctionSource
+
+함수에서 접근 가능한 데이터베이스 소스를 설정합니다. 함수 설정에서 DataSourceID를 사용하여 연동 할 수 있는 데이터베이스 소스를 지정할 수 있습니다.
+
+* ApplicationID: 어플리케이션의 ID를 설정합니다.
+* ProjectID: 프로젝트의 ID를 설정합니다.
+* DataSourceID: 데이터 소스의 ID를 설정합니다.
+* DataProvider: 데이터 제공자를 설정합니다.
+* ConnectionString: 데이터 소스의 연결 문자열을 설정합니다.
+* IsEncryption: 암호화를 사용할지 여부를 설정합니다.
+* WorkingDirectoryPath: 작업 디렉토리의 경로를 설정합니다.
+* Comment: 주석을 설정합니다.
