@@ -39,5 +39,5 @@ HandStack은 IT 업무를 필요로 하는 기업이 필연적으로 거쳐야 �
 * easywork 그룹웨어 실행 오류 대응 수정
 * $chart, $list, $organization UI 컨트롤 추가
 * 버그 수정 및 기능 개선
-* CSharp 함수 디버깅하기 문서 추가
+* C# 함수 디버깅하기 문서 추가
 * easywork 그룹웨어 실행 점검

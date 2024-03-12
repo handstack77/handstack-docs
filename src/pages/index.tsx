@@ -36,7 +36,7 @@ export default function Home(): JSX.Element {
             <HomepageHeader />
 
             <div className="container mt:32! text--center">
-                <h1 className="mt:24!">개발자와 엔지니어를 위한 앱 개발 솔루션</h1>
+                <h1 className="mt:24!">개발자와 엔지니어를 위한 앱 개발 환경</h1>
             </div>
 
             <main>

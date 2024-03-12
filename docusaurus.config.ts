@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
     title: 'HandStack',
-    tagline: '앱 개발과 운영을 좀 더 쉽게 만들어 줍니다. 칼 퇴근 가능한 비즈니스 앱 개발 솔루션을 사용하세요',
+    tagline: '앱 개발과 운영을 좀 더 쉽게 만들어 줍니다. 칼 퇴근 가능한 비즈니스 앱 개발 환경을 사용하세요',
     favicon: 'img/favicon.ico',
 
     // Set the production url of your site here
