@@ -60,7 +60,7 @@ const FeatureList: FeatureItem[] = [
         src: require('@site/static/img/6.png').default,
         description: (
             <>
-                웹 브라우저로 비즈니스 앱 프로젝트 개발, 운영, 교육 및 기술 지원 정보를 제공하는 SaaS 서비스를 운영합니다. (2024년 3월 오픈 준비 중)
+                웹 브라우저로 비즈니스 앱 프로젝트 개발, 운영, 교육 및 기술 지원 정보를 제공하는 SaaS 서비스를 운영합니다.
             </>
         ),
     },
