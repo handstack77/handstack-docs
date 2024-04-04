@@ -56,6 +56,7 @@ HandStack에서는 공식 module로서 다음과 같이 기본 제공됩니다.
 |transact|거래 요청 검증 및 접근 제어 관리와 요청 정보를 dbclient, function 등등 module로 라우팅 기능 관리|
 |logger|module 요청/응답 구간 주요 이벤트 로그 수집 관리|
 |wwwroot|웹 공통 static assets 및 화면 단위 소스 호스팅 관리|
+|openapi|데이터베이스 데이터를 Open API로 제공 하기 위한 기능 관리|
 
 > 각 module 디렉토리내에 있는 module.json 설정으로 동작과 기능을 관리 할 수 있습니다. 이에 대한 자세한 사용 정보는 가이드나 참고 문서를 통해 확인 할 수 있습니다. 
 
@@ -210,6 +211,10 @@ C:\home\[사용자 ID]\handstack\contracts
 * GET: /transact/api/managed/reset-app-contract
 * GET: /transact/api/managed/string-encrypt
 * GET: /transact/api/managed/string-decrypt
+* GET: /openapi/api/managed/initialize-settings
+* GET: /openapi/api/managed/delete-api-service
+* GET: /openapi/api/managed/delete-api-data-source
+* GET: /openapi/api/managed/cache-clear
 
 ### Query
 
@@ -257,6 +262,11 @@ C:\home\[사용자 ID]\handstack\contracts
 * GET: /transact/api/transaction/meta
 * POST: /transact/api/transaction/execute
 
+### OpenAPI
+
+* GET: /openapi/api/transaction/remove-cache
+* GET: /openapi/[interfaceID]
+
 ## 참고자료
 * [checkup 모듈 참고하기](/docs/reference/api/modules/checkup)
 * [dbclient 모듈 참고하기](/docs/reference/api/modules/dbclient)
@@ -265,3 +275,4 @@ C:\home\[사용자 ID]\handstack\contracts
 * [transact 모듈 참고하기](/docs/reference/api/modules/transact)
 * [logger 모듈 참고하기](/docs/reference/api/modules/logger)
 * [wwwroot 모듈 참고하기](/docs/reference/api/modules/wwwroot)
+* [openapi 모듈 참고하기](/docs/reference/api/modules/openapi)
