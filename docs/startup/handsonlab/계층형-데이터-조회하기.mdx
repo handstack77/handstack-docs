@@ -1,0 +1,243 @@
+---
+sidebar_position: 50
+---
+
+# 계층형 데이터 조회하기
+
+일반적으로 화면에 필요한 데이터는 행(Row)과 열(Column)로 구성된 표 형태의 2차원 데이터로 정형화 되어있습니다.
+
+이러한 형태의 데이터는 엑셀에서 흔히 볼 수 있으며, 단일 서식 데이터, 테이블, 그리드, AI 학습 데이터로 자주 사용됩니다.
+
+관계형 데이터베이스의 SQL 결과는 기본적으로 이러한 구조를 가지고 있기 때문에 쿼리를 적절하게 만들면 됩니다.
+
+하지만 메뉴, 조직도, 차트와 같이 계층형 (Nested) 형식의 데이터 구조를 필요로 할 때가 있습니다. JSON으로 데이터 표현하면 다음고 같은 구조를 가집니다.
+
+```json
+[{
+    "MenuID": "CFG",
+    "MenuName": "환경설정",
+    "ParentMenuID": "000",
+    "ParentMenuName": "HandStack",
+    "ShowYN": "Y",
+    "MenuType": "D",
+    "_Children": [
+      {
+        "MenuName": "프로그램",
+        "ParentMenuID": "CFG",
+        "ParentMenuName": "환경설정",
+        "ShowYN": "Y",
+        "MenuType": "D",
+        "_Children": null
+      },
+      {
+        "MenuName": "배포",
+        "ParentMenuID": "CFG",
+        "ParentMenuName": "환경설정",
+        "ShowYN": "Y",
+        "MenuType": "D",
+        "_Children": null
+      }
+    ]
+}]
+```
+
+HandStack에서는 이러한 데이터의 구조를 SQL 만으로 구성 가능한 기능을 제공합니다. 다음은 wwwroot, transact, dbclient 모듈내의 주요 코드를 설명합니다.
+
+## dbclient SQL 쿼리
+
+데이터베이스는 SqlServer 쿼리를 사용합니다. 다른 데이터베이스의 경우 계층형 쿼리를 조금 수정할 필요가 있습니다.
+
+```sql
+<statement id="LD10" seq="0" use="Y" timeout="0" desc="계층형 목록 테스트 조회" modified="2023-08-31 00:00:00">
+    <![CDATA[
+SELECT
+    ME.EntityNo
+    , ME.ApplicationNo
+    , ME.EntityID
+    , ME.EntityName
+    , ME.Acronyms
+    , ME.SeedData
+FROM 
+    MetaEntity ME;
+
+SELECT
+    MF.EntityNo
+    , MF.FieldID
+    , MF.FieldName
+    , MF.FieldType
+    , MF.PK
+    , MF.IX
+    , MF.UI
+    , MF.NN
+    , MF.AI
+    , MF.MaxLength
+    , MF.DefaultValue
+    , MF.Comment
+    , MF.SortingNo
+FROM 
+    MetaField MF;
+
+WITH MenuHierarchy AS (
+    SELECT MenuID 
+        , MenuName 
+        , ParentMenuID 
+        , ParentMenuName 
+        , ShowYN 
+        , MenuType 
+    FROM  Menu 
+    WHERE ParentMenuID IS NULL
+    UNION ALL
+    SELECT M.MenuID 
+        , M.MenuName 
+        , M.ParentMenuID 
+        , M.ParentMenuName 
+        , M.ShowYN 
+        , M.MenuType 
+    FROM  Menu M
+    INNER JOIN MenuHierarchy MH ON M.ParentMenuID = MH.MenuID
+)
+
+SELECT * FROM MenuHierarchy;
+    ]]>
+</statement>
+```
+
+## transact 거래 설정
+
+BaseFieldRelation 항목을 구성하여 쿼리 결과를 계층형으로 구성하는 설정을 추가합니다. 설정 항목의 의미는 다음과 같습니다.
+
+* RelationFieldID: 계층형으로 구성되는 데이터를 포함하는 컬럼 ID입니다.
+* BaseSequence: 현재 거래의 SQL 결과는 3개의 데이터 셋을 반환하게 됩니다. 이때 0, 1, 2 와 같은 순서로 계층형 데이터를 추가할 데이터 결과 순번입니다.
+* RelationMappings: 현재 결과를 자식 데이터 소스로 보고 기준 결과의 데이터 관계를 연결할 필수 컬럼 ID를 설정합니다.
+* ColumnNames: 현재 결과중에 계층형 데이터로 내보낼 컬럼 ID을 설정합니다. 빈 값일 경우 모든 컬럼을 내보냅니다.
+* DisposeResult: 현재 결과를 기준 결과에 내보낸 후 삭제 할 것인지 설정합니다.
+
+```sql
+{
+    "ServiceID": "LD10",
+    "ReturnType": "Json",
+    "CommandType": "D",
+    "TransactionScope": false,
+    "Inputs": [
+        {
+            "ModelID": "Dynamic",
+            "Fields": [
+            ],
+            "TestValues": [],
+            "DefaultValues": [],
+            "Type": "Row",
+            "BaseFieldMappings": [],
+            "ParameterHandling": "Rejected"
+        }
+    ],
+    "Outputs": [
+        {
+            "ModelID": "Dynamic",
+            "Fields": [
+            ],
+            "Type": "Grid"
+        },
+        {
+            "ModelID": "Dynamic",
+            "Fields": [
+            ],
+            "Type": "Grid",
+            "BaseFieldRelation": {
+                "RelationFieldID": "EntityFields",
+                "BaseSequence": 0,
+                "RelationMappings": [
+                    {
+                        "BaseFieldID": "EntityNo",
+                        "ChildrenFieldID": "EntityNo"
+                    }
+                ],
+                "ColumnNames": [],
+                "DisposeResult": true
+            }
+        },
+        {
+            "ModelID": "Dynamic",
+            "Fields": [
+            ],
+            "Type": "Grid",
+            "BaseFieldRelation": {
+                "RelationFieldID": "_Children",
+                "BaseSequence": 2,
+                "RelationMappings": [
+                    {
+                        "BaseFieldID": "ParentMenuID",
+                        "ChildrenFieldID": "MenuID"
+                    }
+                ],
+                "ColumnNames": [],
+                "DisposeResult": false
+            }
+        }
+    ]
+}
+```
+
+## wwwroot 화면 개발
+
+계층형 데이터는 비정형 데이터로 구성에 따라 화면에서 다루어야 할 방법이 다르기 때문에 다음과 같이 syn_data 데이터 컨트롤을 선언하여 연계할 수 있습니다.
+
+```html
+<button type="button" id="btnRequestNestedData" syn-events="['click']" class="btn btn-secondary px-4">
+    <i class="ti ti-plus mr-2"></i>
+    계층형 데이터 조회
+</button>
+
+<syn_data id="srcMetaEntity" syn-options="{
+    dataSourceID: 'MetaEntity',
+    storeType: 'Grid',
+	columns: [
+        { data: 'EntityNo', dataType: 'string' },
+        { data: 'ApplicationNo', dataType: 'string' },
+        { data: 'EntityID', dataType: 'string' },
+        { data: 'EntityName', dataType: 'string' },
+        { data: 'Acronyms', dataType: 'string' },
+        { data: 'SeedData', dataType: 'string' },
+        { data: 'EntityFields', dataType: 'object' }
+	]
+}">
+</syn_data>
+<syn_data id="srcMenuHierarchy" syn-options="{
+    dataSourceID: 'MenuHierarchy',
+    storeType: 'Grid',
+	columns: [
+        { data: 'MenuID', dataType: 'string' },
+        { data: 'MenuName', dataType: 'string' },
+        { data: 'ParentMenuID', dataType: 'string' },
+        { data: 'ParentMenuName', dataType: 'string' },
+        { data: 'ShowYN', dataType: 'string' },
+        { data: 'MenuType', dataType: 'string' },
+        { data: '_Children', dataType: 'object' }
+	]
+}">
+</syn_data>
+```
+
+```javascript
+event: {
+    btnRequestNestedData_click() {
+        syn.$w.transactionAction({
+            functionID: 'LD10',
+            inputs: [
+                { type: 'Row', dataFieldID: 'MainForm' }
+            ],
+            outputs: [
+                { type: 'Grid', dataFieldID: 'MetaEntity' },
+                { type: 'Grid', dataFieldID: 'MenuHierarchy' }
+            ],
+            callback: function (error, responseObject, addtionalData) {
+                debugger;
+
+                var metaEntity = $this.store.MetaEntity;
+                var menuHierarchy = $this.store.MenuHierarchy;
+
+                // 메뉴, 조직도, 차트와 같이 계층형 (Nested) 형식의 데이터 활용
+            }
+        });
+    }
+}
+```
