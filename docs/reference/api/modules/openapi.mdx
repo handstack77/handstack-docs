@@ -6,23 +6,6 @@ sidebar_position: 80
 
 데이터베이스 데이터를 Open API로 제공 하기 위한 기능을 제공하는 모듈입니다. 외부 시스템과 연동을 위해 API 서비스 관리, 서비스 키 발급, 접근 권한 제어, API 사용 통계 등의 기능을 제공합니다.
 
-## 주요 기능
-
-* API 서비스 관리
-* 회원 정보 관리
-* 서비스 키 발급
-* 접근 권한 제어
-* API 메타 정보 캐시 관리
-* 로깅 및 거래 횟수 업데이트
-* 거래 제한 조건 적용
-* Json, Xml, Soap, Rss/Atom 출력 포맷 지원
-* 필수 매개변수 및 기본 매개변수 적용 확인
-* 공개, 비밀 키, IP 주소 접근 제어
-* 기간 내 호출 수 제한 및 제한 조건 일별/월별 자동 갱신
-* 응답 결과 캐싱
-* 시간 단위 API 사용 통계
-* SqlServer, Oracle, MySQL, PostgreSQL, SQLite 데이터베이스 지원
-
 ```json
 {
     "ModuleID": "openapi",
@@ -31,10 +14,9 @@ sidebar_position: 80
     "Version": "1.0.0",
     "ModuleConfig": {
         "SystemID": "HANDSTACK",
-        "ManagedAccessKey": "",
         "ModuleBasePath": "../modules/openapi",
-        "ManagerEmailID": "",
-        "ManagerSHA256Password": "",
+        "ManagerEmailID": "manager@handstack.kr",
+        "ManagerSHA256Password": "48c691ca3e9d0e01bdaab5923534a1ebc01dcb52f87bddccbae6e185f3f481d9", // handstack12345
         "ModuleConfigurationUrl": "http://localhost:8000/openapi/api/managed/initialize-settings",
         "BusinessServerUrl": "http://localhost:8000/transact/api/transaction/execute",
         "IsTransactionLogging": false,
