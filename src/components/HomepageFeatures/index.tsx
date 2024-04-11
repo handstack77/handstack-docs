@@ -24,7 +24,7 @@ const FeatureList: FeatureItem[] = [
         src: require('@site/static/img/2.png').default,
         description: (
             <>
-                상업적 사용 제한이 없는 BSD 라이센스를 제공합니다. 업무에 따라 수많은 오픈소스와 상용 라이브러리 도입을 부담없이 검토하세요
+                상업적 사용 제한이 없는 BSD 라이선스를 제공합니다. 업무에 따라 수많은 오픈소스와 상용 라이브러리 도입을 부담없이 검토하세요
             </>
         ),
     },
