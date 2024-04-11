@@ -168,6 +168,10 @@ const config: Config = {
                             label: 'GitHub',
                             href: 'https://github.com/handstack77/handstack',
                         },
+                        {
+                            label: '라이센스',
+                            to: '/docs/라이센스',
+                        },
                     ],
                 },
                 // {
