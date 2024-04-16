@@ -1,0 +1,94 @@
+---
+sidebar_position: 10
+---
+
+# 지원 운영체제
+
+> HandStack은 x64 아키텍처 기반의 Windows 11+, Ubuntu 22.04+, macOS 12+ 에서 개발하고 테스트합니다. 그러나 다음과 같이 운영체제에서도 사용이 가능합니다. 더 많은 자료는 공식 웹 사이트를 참고하세요.
+
+## .NET 8 지원 운영체제
+
+## Windows
+
+|운영체제|버전|아키텍처|지원정보|
+|---|---|---|---|
+|[Windows 10 Client][Windows-client]|버전 1607+|x64, x86, Arm64|[Windows][Windows-lifecycle]|
+|[Windows 11][Windows-client]|버전 22000+|x64, x86, Arm64|[Windows][Windows-lifecycle]|
+|[Windows Server][Windows-Server]|2012+ (*)|x64, x86|[Windows Server][Windows-Server-lifecycle]|
+|[Windows Server Core][Windows-Server]|2012+ (*)|x64, x86|[Windows Server][Windows-Server-lifecycle]|
+|[Nano Server][Nano-Server]|버전 1809+|x64|[Windows Server][Windows-Server-lifecycle]|
+
+[Windows-client]: https://www.microsoft.com/windows/
+[Windows-lifecycle]: https://support.microsoft.com/help/13853/windows-lifecycle-fact-sheet
+[win-client-docker]: https://hub.docker.com/_/microsoft-windows
+[Windows-Server-lifecycle]: https://learn.microsoft.com/windows-server/get-started/windows-server-release-info
+[Nano-Server]: https://learn.microsoft.com/windows-server/get-started/getting-started-with-nano-server
+[Windows-Server]: https://learn.microsoft.com/windows-server/
+
+.NET 8은 Windows 11 Arm64의 x64 에뮬레이터에서 지원됩니다.
+
+## Linux
+
+|운영체제|버전|아키텍처|지원정보|
+|---|---|---|---|
+|[Alpine Linux][Alpine]|3.16+|x64, Arm64, Arm32|[Alpine][Alpine-lifecycle]|
+|[Debian][Debian]|11+|x64, Arm64, Arm32|[Debian][Debian-lifecycle]|
+|[Fedora][Fedora]|38+|x64|[Fedora][Fedora-lifecycle]|
+|[openSUSE][OpenSUSE]|15+|x64|[OpenSUSE][OpenSUSE-lifecycle]|
+|[Oracle Linux][Oracle-Linux]|8+|x64|[Oracle][Oracle-lifecycle]|
+|[Red Hat Enterprise Linux][RHEL]|8+|x64, Arm64|[Red Hat][RHEL-lifecycle]|
+|[SUSE Enterprise Linux (SLES)][SLES]|12 SP5+|x64|[SUSE][SLES-lifecycle]|
+|[Ubuntu][Ubuntu]|20.04+|x64, Arm64, Arm32 |[Ubuntu][Ubuntu-lifecycle]|
+
+[Alpine]: https://alpinelinux.org/
+[Alpine-lifecycle]: https://alpinelinux.org/releases/
+[CentOS]: https://www.centos.org/
+[CentOS-lifecycle]:https://wiki.centos.org/FAQ/General
+[CentOS-docker]: https://hub.docker.com/_/centos
+[CentOS-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-centos8
+[Debian]: https://www.debian.org/
+[Debian-lifecycle]: https://wiki.debian.org/DebianReleases
+[Debian-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-debian10
+[Fedora]: https://getfedora.org/
+[Fedora-lifecycle]: https://fedoraproject.org/wiki/End_of_life
+[Fedora-docker]: https://hub.docker.com/_/fedora
+[Fedora-msft-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-fedora32
+[Fedora-pm]: https://fedoraproject.org/wiki/DotNet
+[OpenSUSE]: https://opensuse.org/
+[OpenSUSE-lifecycle]: https://en.opensuse.org/Lifetime
+[OpenSUSE-docker]: https://hub.docker.com/r/opensuse/leap
+[OpenSUSE-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-opensuse15
+[Oracle-Linux]: https://www.oracle.com/linux/
+[Oracle-Lifecycle]: https://www.oracle.com/a/ocom/docs/elsp-lifetime-069338.pdf
+[RHEL]: https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux
+[RHEL-lifecycle]: https://access.redhat.com/support/policy/updates/errata/
+[RHEL-msft-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-rhel8
+[RHEL-pm]: https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/developing_.net_applications_in_rhel_8/using-net-core-on-rhel_gsg#installing-net-core_gsg
+[SLES]: https://www.suse.com/products/server/
+[SLES-lifecycle]: https://www.suse.com/lifecycle/
+[SLES-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-sles15
+[Ubuntu]: https://ubuntu.com/
+[Ubuntu-lifecycle]: https://wiki.ubuntu.com/Releases
+[Ubuntu-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-ubuntu-2004
+[glibc]: https://www.gnu.org/software/libc/
+[musl]: https://musl.libc.org/
+
+## macOS
+
+|운영체제|버전|아키텍처|
+|---|---|---|
+|[macOS][macOS]|12.0+|x64, Arm64|
+
+M1, M2, M3와 같은 Arm64 CPU가 탑재된 macOS에서 .NET 8은 Rosetta 2 x64 에뮬레이터에서 지원됩니다.
+
+[macOS]: https://support.apple.com/macos
+
+---
+
+## Node.js 20 지원 운영체제
+
+Node.js 20 버전의 알려진 최소 운영체제 요구사항은 다음과 같습니다.
+
+- **Windows**: Windows 7, Windows Server 2008 R2+
+- **Linux**: Ubuntu 18+, RHEL / CentOS 8+, Debian 10+
+- **macOS**: Big Sur(11.x)+
