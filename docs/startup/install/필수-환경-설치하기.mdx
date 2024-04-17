@@ -26,12 +26,6 @@ Git을 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실
 winget install --id Git.Git --silent
 ```
 
-설치가 제대로 되었는지 확인하려면, 명령 프롬프트에 Git 실행을 위한 환경 변수가 적용되기 위해, 새로운 명령 프롬프트 창을 실행해서 아래의 명령어를 입력해보세요.
-
-```bash
-git -v
-```
-
 ### Winget 을 이용한 .NET Core 설치
 
 .NET 8.0을 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 .NET Core 8.0을 설치합니다.
@@ -40,23 +34,12 @@ git -v
 winget install Microsoft.DotNet.SDK.8 --silent
 ```
 
-설치가 제대로 되었는지 확인하려면, 명령 프롬프트에 .NET Core 실행을 위한 환경 변수가 적용되기 위해, 새로운 명령 프롬프트 창을 실행해서 아래의 명령어를 입력해보세요.
-
-```bash
-dotnet --version
-```
-
 ### Winget 을 이용한 Node.js 설치
 
 Node.js LTS를 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 Node.js v20.12.2+ LTS를 설치합니다.
 
 ```bash
 winget install OpenJS.NodeJS.LTS --silent
-```
-설치가 제대로 되었는지 확인하려면, 명령 프롬프트에 Node.js 실행을 위한 환경 변수가 적용되기 위해, 새로운 명령 프롬프트 창을 실행해서 아래의 명령어를 입력해보세요.
-
-```bash
-node -v
 ```
 
 위의 명령어를 입력하면, 출력창에 설치된 Node.js의 버전이 나타납니다.
@@ -83,23 +66,7 @@ winget upgrade --id <package-id> --silent
 
 터미널(Terminal) 창을 열기 위해 Spotlight 검색(Cmd + Space)을 이용하여 Terminal을 찾거나, Finder에서 Applications > Utilities > Terminal을 찾아 실행합니다.
 
-2. Homebrew 를 이용한 .NET Core 설치
-
-```bash
-brew install dotnet
-```
-
-위의 명령어는 .NET Core 8.0+ 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
-
-3. Homebrew 를 이용한 Node.js 설치
-
-```bash
-brew install node@20
-```
-
-위의 명령어는 Node.js v20.12.2 LTS 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
-
-4. Homebrew 를 이용한 Git 설치
+### Homebrew 를 이용한 Git 설치
 
 ```bash
 brew install git
@@ -107,4 +74,84 @@ brew install git
 
 위의 명령어는 Git 2.44을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
 
-## Linux
+### Homebrew 를 이용한 .NET Core 설치
+
+```bash
+brew install dotnet
+```
+
+위의 명령어는 .NET Core 8.0+ 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
+
+### Homebrew 를 이용한 Node.js 설치
+
+```bash
+brew install node@20
+```
+
+위의 명령어는 Node.js v20.12.2 LTS 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
+
+이렇게 하면 CLI 에서 을 macOS 에 설치할 수 있습니다. 이 과정은 관리자 권한이 필요할 수 있습니다.
+
+Homebrew를 사용하여 업데이트가 필요한 패키지의 목록을 확인하려면 brew outdated 명령어를 사용하면 됩니다. 이 명령어는 현재 설치된 패키지 중에서 업데이트가 가능한 패키지의 목록을 보여줍니다.
+
+```bash
+brew outdated
+```
+
+설치 된 패키지를 최신 버전으로 업데이트하는 방법은 다음과 같습니다.
+
+```bash
+brew upgrade <package-id>
+```
+
+## Ubuntu 22.04에서 명령 프롬프트로 설치하기
+
+터미널(Terminal) 창을 열기 위해 Dash 검색(Alt + F2)을 이용하여 Terminal을 찾거나, Show Applications에서 Terminal을 찾아 실행합니다.
+
+### apt 를 이용한 Git 설치
+
+```bash
+sudo apt install git
+```
+
+위의 명령어는 Git 2.44을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
+
+### apt 를 이용한 .NET Core 설치
+
+```bash
+sudo apt install dotnet-sdk-8.0
+```
+
+위의 명령어는 .NET Core 8.0+ 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
+
+### apt 를 이용한 Node.js 설치
+
+```bash
+sudo apt install nodejs
+```
+
+위의 명령어는 Node.js v20.12.2 LTS 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
+
+이렇게 하면 CLI 에서 을 Ubuntu 에 설치할 수 있습니다. 이 과정은 관리자 권한이 필요할 수 있습니다.
+
+apt를 사용하여 업데이트가 필요한 패키지의 목록을 확인하려면 apt list --upgradable 명령어를 사용하면 됩니다. 이 명령어는 현재 설치된 패키지 중에서 업데이트가 가능한 패키지의 목록을 보여줍니다.
+
+```bash
+apt list --upgradable
+```
+
+설치 된 패키지를 최신 버전으로 업데이트하는 방법은 다음과 같습니다.
+
+```bash
+sudo apt upgrade <package-id>
+```
+
+## 프로그램 설치 확인하기
+
+설치가 제대로 되었는지 확인하려면, 명령 프롬프트에 Git, .NET Core, Node.js 실행을 위한 환경 변수가 적용되기 위해, 새로운 명령 프롬프트 창을 실행해서 아래의 명령어를 입력해보세요.
+
+```bash
+git -v
+dotnet --version
+node -v
+```
