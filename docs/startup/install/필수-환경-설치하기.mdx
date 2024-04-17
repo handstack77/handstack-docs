@@ -1,0 +1,110 @@
+---
+sidebar_position: 21
+---
+
+# 필수 환경 설치하기
+
+개발에 필요한 필수 환경 구성을 위한 Git, .NET Core, Node.js는 크로스 플랫폼 개발을 지원하므로 공식 웹 사이트에서 Windows, macOS, Linux에서 실행되는 설치 관리자를 제공합니다. 
+
+* [git 2.44.0+ 다운로드](https://git-scm.com/downloads)
+* [.NET Core 8.0 다운로드](https://dotnet.microsoft.com/ko-kr/download/dotnet/8.0)
+* [Node.js v20.12.2 LTS 다운로드](https://nodejs.org/en/download)
+
+설치 관리자를 이용한 설치는 대부분 간단한 설치 방법을 제공합니다. 만약 버전 업데이트 자동화 기능이 필요하다면 .NET Core와 Node.js같은 프로그램을 설치하는 방법은 각 운영 체제의 특성과 설치 절차를 이해하는 것을 필요로 합니다.
+
+이러한 작업은 사용자의 시스템에 변경을 가하므로 보안 및 권한 문제를 고려해서 자신의 환경에 적합한 안정적이고 신뢰할 수 있는 설치 스크립트를 만들고 테스트해야 합니다. 다음의 패키지 관리자 명령 프롬프트 예시를 참고하세요.
+
+## Windows 10+ 에서 명령 프롬프트로 설치하기
+
+명령 프롬프트 창을 열기 위해 Windows 키 + R을 누르고, 나타나는 창에 cmd.exe를 입력하고 엔터를 누릅니다.
+
+### Winget 을 이용한 Git 설치
+
+Git을 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 2.44.0+을 설치합니다.
+
+```bash
+winget install --id Git.Git --silent
+```
+
+설치가 제대로 되었는지 확인하려면, 명령 프롬프트에 Git 실행을 위한 환경 변수가 적용되기 위해, 새로운 명령 프롬프트 창을 실행해서 아래의 명령어를 입력해보세요.
+
+```bash
+git -v
+```
+
+### Winget 을 이용한 .NET Core 설치
+
+.NET 8.0을 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 .NET Core 8.0을 설치합니다.
+
+```bash
+winget install Microsoft.DotNet.SDK.8 --silent
+```
+
+설치가 제대로 되었는지 확인하려면, 명령 프롬프트에 .NET Core 실행을 위한 환경 변수가 적용되기 위해, 새로운 명령 프롬프트 창을 실행해서 아래의 명령어를 입력해보세요.
+
+```bash
+dotnet --version
+```
+
+### Winget 을 이용한 Node.js 설치
+
+Node.js LTS를 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 Node.js v20.12.2+ LTS를 설치합니다.
+
+```bash
+winget install OpenJS.NodeJS.LTS --silent
+```
+설치가 제대로 되었는지 확인하려면, 명령 프롬프트에 Node.js 실행을 위한 환경 변수가 적용되기 위해, 새로운 명령 프롬프트 창을 실행해서 아래의 명령어를 입력해보세요.
+
+```bash
+node -v
+```
+
+위의 명령어를 입력하면, 출력창에 설치된 Node.js의 버전이 나타납니다.
+
+이렇게 하면 CLI 에서 을 Windows 10+ 에 설치할 수 있습니다. 이 과정은 관리자 권한이 필요할 수 있으며, 설치 중에 권한 상승을 요구하는 메시지가 표시될 수 있습니다.
+
+업데이트 할 패키지를 검색하기 위해 다음 명령을 실행합니다.
+
+```bash
+winget search Microsoft.DotNet
+winget search OpenJS.NodeJS
+winget search Git.Git
+```
+
+설치 된 패키지를 최신 버전으로 업데이트하는 방법은 다음과 같습니다.
+
+```bash
+winget upgrade --id <package-id> --silent
+```
+
+## macOS 에서 명령 프롬프트로 설치하기
+
+> .NET Core 8.0 의 경우 macOS 12+ (Monterey) 이상을 지원합니다. macOS 11 (Big Sur) 포함 이하 버전에서는 Homebrew 와 같은 패키지 관리자에서 설치 오류가 발생하지만 [.NET Core 8.0 다운로드](https://dotnet.microsoft.com/ko-kr/download/dotnet/8.0) 에서 직접 macOS 설치 관리자를 다운로드 받아 설치 할 수 있으나 공식적으로 지원하지 않습니다.
+
+터미널(Terminal) 창을 열기 위해 Spotlight 검색(Cmd + Space)을 이용하여 Terminal을 찾거나, Finder에서 Applications > Utilities > Terminal을 찾아 실행합니다.
+
+2. Homebrew 를 이용한 .NET Core 설치
+
+```bash
+brew install dotnet
+```
+
+위의 명령어는 .NET Core 8.0+ 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
+
+3. Homebrew 를 이용한 Node.js 설치
+
+```bash
+brew install node@20
+```
+
+위의 명령어는 Node.js v20.12.2 LTS 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
+
+4. Homebrew 를 이용한 Git 설치
+
+```bash
+brew install git
+```
+
+위의 명령어는 Git 2.44을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
+
+## Linux
