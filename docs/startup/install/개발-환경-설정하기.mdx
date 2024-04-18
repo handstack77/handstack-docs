@@ -1,0 +1,109 @@
+---
+sidebar_position: 50
+---
+
+# 개발 환경 설정하기
+
+> 이 작업을 위해 [패키지 관리자 설치하기](/docs/startup/install/%ED%8C%A8%ED%82%A4%EC%A7%80-%EA%B4%80%EB%A6%AC%EC%9E%90-%EC%84%A4%EC%B9%98%ED%95%98%EA%B8%B0), [필수 프로그램 설치하기](/docs/startup/install/%ED%95%84%EC%88%98-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%A8-%EC%84%A4%EC%B9%98%ED%95%98%EA%B8%B0) 문서의 내용을 먼저 수행 해야합니다.
+
+GitHub에서 HandStack 소스 코드를 clone 하여 내려 받은 소스를 컴파일 및 번들링 하기 위해 개발 환경을 구성합니다. 구성 내용은 운영체제에 따라 HandStack 소스 코드를 다음의 경로에 배치	했을 경우 방법을 설명합니다.
+
+- Windows 10+: `C:/projects/handstack77/handstack`
+- Linux: `/home/[사용자]/handstack77/handstack`
+- macOS: `/Users/[사용자]/handstack77/handstack`
+
+> **참고**: 이 문서에서는 Windows 10+ 환경을 기준으로 설명합니다. 다른 운영체제의 경우 경로가 다른 것외에 동일하게 작업합니다.
+
+GitHub 프로젝트를 CLI 명령어로 복제(clone)하는 방법은 다음과 같습니다
+
+```bash
+git clone https://github.com/handstack77/handstack handstack77/handstack
+```
+
+이제 GitHub 프로젝트가 로컬 시스템에 복제되었습니다. 이 복제본은 원격 저장소와 동기화할 수 있으며, 이를 통해 프로젝트에 기여하거나 변경 사항을 추적할 수 있습니다.
+
+
+이후 문서에서 언급하는 [HandStack 소스 기본경로]는 `~/handstack77` 여기까지의 경로입니다. Windows 운영체제의 경우 다음과 같습니다.
+
+```bash
+C:/projects/handstack77
+```
+
+## 프로젝트 빌드 및 종속성 및 도구를 복원
+
+HandStack 은 .NET Core 생태계에 있는 추가 기능을 제공하는 NuGet 패키지의 외부 라이브러리를 참조합니다. 
+
+이러한 외부 의존 관계는 프로젝트 파일(.csproj)에서 참조됩니다. 루트 디렉토리 또는 각 프로젝트 파일이 있는 디렉토리에서 명령 프롬프트 또는 터미널을 열어 `dotnet restore` 명령을 실행하면 .NET CLI는 NuGet을 사용하여 이러한 종속성을 찾고 필요한 경우 다운로드합니다. 또한 프로젝트에 필요한 모든 종속성이 서로 호환되고 충돌이 없는지 확인합니다.
+
+처음 소스를 내려받아 build 명령이 완료되면 프로젝트에 필요한 모든 종속성을 로컬 캐시에서 사용할 수 있으며 이후 .NET CLI에서 애플리케이션을 빌드하고 실행하는 데 재 사용 할 수 있습니다.
+
+```bash
+cd [HandStack 소스 기본경로]/handstack77/handstack
+dotnet build
+```
+
+## Gulp 번들링 설정
+
+Gulp는 가장 인기 있는 크로스 플랫폼 스트리밍 작업 러너 중 하나로, HandStack 화면 실행에 필요한 syn.js, syn.bundle.js 파일과 Node.js 기반 서버 함수 실행에 필요한 index.js 파일 번들링 및 축소를 수행합니다.
+
+이러한 작업을 수행하기 위해 다음과 같은 플러그인을 사용합니다.
+
+- del – 파일 및 디렉토리 삭제
+- gulp-concat – 파일 연결
+- gulp-cssmin – CSS 파일 축소
+- gulp-uglify – JavaScript 파일 축소
+
+> 번들링 작업은 먼저 package.json 파일에 있는 Gulp 작업에 필요한 패키지를 한번 설치한 후 gulpfile.js 파일을 실행합니다.
+
+### syn.js 번들링 디렉토리 이동
+
+1. package.json 설치를 시작합니다.
+
+```bash
+cd [HandStack 소스 기본경로]/handstack77/handstack/1.WebHost/ack
+npm install
+```
+
+2. gulpfile.js 파일에 정의 된 작업을 실행합니다.
+
+```bash
+gulp
+```
+
+### syn.bundle.js 번들링 및 복사
+
+1. package.json 설치를 시작합니다.
+
+```bash
+cd [HandStack 소스 기본경로]/handstack77/handstack/2.Modules/wwwroot
+npm install
+```
+
+2. gulpfile.js 파일에 정의 된 작업을 실행합니다.
+
+```bash
+gulp
+```
+
+## Node.js 함수 실행 패키지 설정
+
+### Node.js Function 모듈 package.json 설치
+
+```bash
+cd [HandStack 소스 기본경로]/handstack77/handstack/1.WebHost/build/handstack
+npm install
+```
+
+### index.js 번들링 및 복사
+
+Windows 운영체제의 경우 다음과 같이 `robocopy` 명령을 사용하여 index.js 파일을 복사합니다.
+
+```bash
+robocopy [HandStack 소스 기본경로]/1.WebHost/ack/wwwroot/assets/js [HandStack 소스 기본경로]/1.WebHost/build/handstack/node_modules/syn index.js /copy:dat
+```
+
+Linux, macOS 운영체제의 경우 다음과 같이 `rsync` 명령을 사용하여 index.js 파일을 복사합니다.
+
+```bash
+rsync -av --progress --exclude='*' --include='index.js' [HandStack 소스 기본경로]/1.WebHost/ack/wwwroot/assets/js [HandStack 소스 기본경로]/1.WebHost/build/handstack/node_modules/syn
+```

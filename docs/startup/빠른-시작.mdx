@@ -4,38 +4,7 @@ sidebar_position: 20
 
 # 빠른 시작
 
-이 문서는 Windows 10 이상 운영체제를 대상으로 합니다. macOS 및 Linux 환경에서는 메뉴얼로 필수 프로그램을 설치하여 HandStack을 실행할 수 있습니다.
-
-## [필수] Windows 패키지 관리자 winget 설치
-
-Microsoft에서 제공하는 Windows 패키지 관리자 winget 명령줄 도구는 Windows 11 및 최신 버전의 Windows 10에서 앱 설치 관리자로서 애플리케이션을 검색, 설치, 업그레이드, 제거 및 구성할 수 있습니다.
-
-[앱 설치 관리자 설치하기](https://apps.microsoft.com/detail/9nblggh4nns1?rtc=1&hl=ko-kr&gl=KR#activetab=pivot:overviewtab)
-
-## HandStack 개발 환경을 설정
-
-개발자 PC에 HandStack을 설치하고 실행합니다.
-
-https://git-scm.com/downloads 에서 Git을 다운로드하고 설치합니다.
-
-최신 소스를 다운로드합니다.
-```bash
-git clone https://github.com/handstack77/handstack.git
-```
-
-다운로드한 소스로 이동하여 install.bat 배치 스크립트를 실행합니다.
-```bash
-cd handstack
-install.bat
-```
-
-개발에 필요한 필수 설치 프로그램과 환경을 자동으로 구성합니다. 개발자 PC 사양과 네트워크 상태에 따라 10분 이상 소요될 수 있습니다.
-
-설정이 완료되면 app 폴더로 이동하여 ack.exe 프로그램을 실행합니다.
-```bash
-cd handstack\1.WebHost\build\handstack\app
-ack
-```
+> 이 작업을 위해 [패키지 관리자 설치하기](/docs/startup/install/%ED%8C%A8%ED%82%A4%EC%A7%80-%EA%B4%80%EB%A6%AC%EC%9E%90-%EC%84%A4%EC%B9%98%ED%95%98%EA%B8%B0), [필수 프로그램 설치하기](/docs/startup/install/%ED%95%84%EC%88%98-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%A8-%EC%84%A4%EC%B9%98%ED%95%98%EA%B8%B0) 문서의 내용을 먼저 수행 해야합니다.
 
 ## ack 실행 환경 설정
 
@@ -54,6 +23,23 @@ win-x64.zip 를 다운로드한 후 압축을 해제합니다.
 ```bash
 cd handstack
 install.bat
+```
+
+GitHub에서 clone 하거나 내려 받은 HandStack 소스 코드를 컴파일 및 번들링 하기 위해 개발 환경을 구성합니다. 구성 내용은 운영체제에 따라 HandStack 소스 코드를 다음의 경로에 배치	했을 경우 방법을 설명합니다.
+
+- Windows 10+: `C:/projects/handstack77/handstack`
+- Linux: `/home/[사용자]/handstack77/handstack`
+- macOS: `/Users/[사용자]/handstack77/handstack`
+
+> **참고**: 이 문서에서는 Windows 10+ 환경을 기준으로 설명합니다. 다른 운영체제의 경우 경로가 다른 것외에 동일하게 작업합니다.
+
+이후 문서에서 언급하는 [HandStack 소스 기본경로]는 `~/handstack77` 여기까지의 경로입니다. Windows 운영체제의 경우 다음과 같습니다.
+
+HandStack 화면 실행에 필요한 오픈소스 lib.zip 파일을 내려 받아 실행하기 위해 다음의 경로에 배치합니다. 이 파일의 내용은 libman.json 파일에 정의된 라이브러리를 동일하게 포함합니다.
+
+```bash
+cd [ack 서버 기본경로]/handstack77/handstack
+curl -L -O https://github.com/handstack77/handstack/raw/master/lib.zip
 ```
 
 실행에 필요한 필수 설치 프로그램과 환경을 자동으로 구성합니다. 서버 사양과 네트워크 상태에 따라 10분 이상 소요될 수 있습니다.
