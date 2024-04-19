@@ -87,7 +87,8 @@ unzip -q -o osx-arm64.zip -d handstack
 ```bash
 cd [HandStack 소스 기본경로]
 chmod +x install.sh
-tr -d '\r' < install.sh > install_fixed.sh && mv install_fixed.sh install.sh # 윈도우에서 작성된 스크립트 파일을 macOS에서 실행하기 위해 줄바꿈 문자 제거합니다.
+# 윈도우에서 작성된 스크립트 파일을 macOS 에서 실행하기 위해 줄바꿈 문자 제거합니다. 필요시 실행합니다.
+# tr -d '\r' < install.sh > install_fixed.sh && mv install_fixed.sh install.sh
 ./install.sh
 ```
 
@@ -119,7 +120,8 @@ unzip -q -o linux-x64.zip -d handstack
 ```bash
 cd [HandStack 소스 기본경로]
 chmod +x install.sh
-tr -d '\r' < install.sh > install_fixed.sh && mv install_fixed.sh install.sh # 윈도우에서 작성된 스크립트 파일을 Linux에서 실행하기 위해 줄바꿈 문자 제거합니다.
+# 윈도우에서 작성된 스크립트 파일을 Linux 에서 실행하기 위해 줄바꿈 문자 제거합니다. 필요시 실행합니다.
+# tr -d '\r' < install.sh > install_fixed.sh && mv install_fixed.sh install.sh
 ./install.sh
 ```
 
