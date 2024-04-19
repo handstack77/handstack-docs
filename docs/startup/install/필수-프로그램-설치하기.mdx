@@ -153,7 +153,7 @@ sudo apt-get install -y dotnet-sdk-8.0
 
 위의 명령어는 .NET Core 8.0+ 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
 
-### apt 를 이용한 Node.js 설치
+### apt-get 를 이용한 Node.js 설치
 
 ```bash
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
@@ -245,9 +245,9 @@ sudo dotnet tool install -g Microsoft.Web.LibraryManager.Cli
 }
 ```
 
-이 파일은 프로젝트의 *[handstack 기본경로]\handstack77\handstack\2.Modules\wwwroot\libman.json* 에 있습니다. 라이브러리를 추가하거나 제거하려면 libman.json 파일을 편집하고 libman restore 명령을 실행합니다. 이 명령은 libman.json 파일에 정의된 모든 라이브러리를 다운로드합니다.
+이 파일은 프로젝트의 `handstack/2.Modules/wwwroot/libman.json` 에 있습니다. 라이브러리를 추가하거나 제거하려면 libman.json 파일을 편집하고 libman restore 명령을 실행합니다. 이 명령은 libman.json 파일에 정의된 모든 라이브러리를 다운로드합니다.
 
-> 만약 Visual Studio 2022 를 사용하는 경우, 프로젝트를 열면 libman.json 파일을 인식하여 변경 할 때 마다 자동으로 업데이트 됩니다.
+> 통합 개발 환경으로 Visual Studio 2022 를 사용하는 경우, 프로젝트를 열면 libman.json 파일을 인식하여 변경 할 때 마다 자동으로 업데이트 됩니다.
 
 libman.json 파일의 라이브러리는 HandStack 프로젝트 내부의 다음의 위치에 배치되어야 하며, 이 위치는 libman.json 파일의 destination 속성에 정의되어 있습니다.
 
