@@ -4,8 +4,59 @@ sidebar_position: 21
 
 # HandStack CLI 사용법
 
+HandStack CLI는 HandStack 서비스를 개발 및 운영에 유용한 기능을 제공하기 위한 명령줄 인터페이스(Command Line Interface)입니다.
+
 ## HandStack CLI 소스 위치
 
-## 주요 기능
+https://github.com/handstack77/handstack/tree/master/4.Tool/CLI/handstack
 
-## 사용법
+## 기능 소개 및 사용법
+
+### list
+
+호스트내에 실행 중인 ack 프로세스 목록을 조회합니다. 이 정보에는 프로세스 ID, 시작 시간, 사용 중인 RAM, 및 파일 경로가 포함됩니다. 이 코드는 시스템 모니터링 또는 디버깅에 유용할 수 있습니다.
+
+```bash
+handstack list
+```
+
+### configuration
+
+사전에 정의된 ack 프로그램 및 모듈의 환경설정을 적용합니다. HandStack 의 프로그램의 실행을 위한 환경설정은 다음과 같이 4개로 구성됩니다.
+
+- appsettings: ack 프로그램의 기본 설정을 정의합니다.
+- modulessettings: 모듈의 동작 설정을 정의합니다.
+- nodeconfigs: Node.js 함수의 실행 설정을 정의합니다.
+- synconfigs: 웹 브라우저의 실행 설정을 정의합니다.
+
+ack 프로그램을 실행하는 데 필요한 의도된 설정을 미리 만들어두고 선택적으로 적용할 수 있습니다.
+
+```bash
+handstack configuration --ack=C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack.exe --appsettings=ack.localhost.json
+C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack.exe
+```
+
+### purgecontracts
+
+handstack/app/ack 서버 프로그램이 있는 handstack/contracts 폴더에 있는 모든 중복된 파일을 삭제합니다. 이 명령은 개발 사용자가 원하는 디렉토리에서 업무 화면과 기능을 구현하는 데 사용됩니다.
+
+```bash
+handstack purgecontracts --ack=C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack.exe --directory=C:/projects/myapp/contracts
+```
+
+### startlog
+
+### start
+
+### stop
+
+### encrypt
+
+### decrypt
+
+### compress
+
+### extract
+
+### create
+
