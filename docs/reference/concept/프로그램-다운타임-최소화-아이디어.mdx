@@ -112,14 +112,14 @@ ack 프로그램은 시작시 다음과 같은 모듈을 선택적으로 사용 
 
 ```bash
 # 모놀리식 구성으로 프로그램 실행
-ack.exe --modules=wwwroot,transact,dbclient,function,repository,logger --port=8000
+ack --modules=wwwroot,transact,dbclient,function,repository,logger --port=8000
 
 # 마이크로 서비스 구성으로 프로그램 실행
-ack.exe --modules=wwwroot --port=8001
-ack.exe --modules=repository --port=8002
-ack.exe --modules=logger --port=8003
-ack.exe --modules=transact,dbclient,function --port=8004
-ack.exe --modules=function --port=8005
+ack --modules=wwwroot --port=8001
+ack --modules=repository --port=8002
+ack --modules=logger --port=8003
+ack --modules=transact,dbclient,function --port=8004
+ack --modules=function --port=8005
 ```
 
 ## 화면/기능을 프로그램에서 완벽히 분리

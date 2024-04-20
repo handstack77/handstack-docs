@@ -8,16 +8,12 @@ HandStack CLI는 HandStack 서비스를 개발 및 운영에 유용한 기능을
 
 ## HandStack CLI 프로그램 위치
 
-설정이 완료되면 app 디렉토리로 이동하여 ack 프로그램을 실행합니다.
+ack 프로그램이 배치되어 있는 app 디렉토리의 cli 하위 디렉토리에 위치합니다. 예를 들면 다음과 같습니다.
 
 ```bash
 cd [HandStack 소스 기본경로]/app
-dotnet ack.dll
+handstack --help
 ```
-
-## HandStack CLI 소스 위치
-
-https://github.com/handstack77/handstack/tree/master/4.Tool/CLI/handstack
 
 ## 기능 소개 및 사용법
 
@@ -41,31 +37,88 @@ handstack list
 ack 프로그램을 실행하는 데 필요한 의도된 설정을 미리 만들어두고 선택적으로 적용할 수 있습니다.
 
 ```bash
-handstack configuration --ack=C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack.exe --appsettings=ack.localhost.json
-C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack.exe
+handstack configuration --ack=C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack --appsettings=ack.localhost.json
+C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack
 ```
 
 ### purgecontracts
 
-handstack/app/ack 서버 프로그램이 있는 handstack/contracts 디렉토리에 있는 모든 중복된 파일을 삭제합니다. 이 명령은 개발 사용자가 원하는 디렉토리에서 업무 화면과 기능을 구현하는 데 사용됩니다.
+특정 contracts 디렉토리에 있는 파일들을 기준으로 ack 서버 프로그램이 있는 handstack/contracts 디렉토리에 있는 모든 중복된 파일을 삭제합니다. 이 명령은 업무 개발자가 원하는 디렉토리에서 화면과 기능을 구현하는 데 사용됩니다.
 
 ```bash
-handstack purgecontracts --ack=C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack.exe --directory=C:/projects/myapp/contracts
+handstack purgecontracts --ack=C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack --directory=C:/projects/myapp/contracts
 ```
 
 ### startlog
 
+ack 서버 프로그램이 있는 appsettings.json 의 환경 설정값을 적용하지 않고 전달하는 매개변수로 적용하는 시작하기 위한 명령어를 로그로 출력합니다. 이 명령은 개발 사용자가 원하는 디렉토리에서 업무 화면과 기능을 구현하거나 호스트에서 여러 ack 서버를 운영 하는데 사용됩니다.
+
+```bash
+handstack startlog --ack=C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack --arguments="--debug" --appsettings=ack.localhost.json
+```
+
 ### start
+
+ack 서버 프로그램이 있는 appsettings.json 의 환경 설정값을 적용하지 않고 전달하는 매개변수로 프로그램을 시작합니다. 이 명령은 개발 사용자가 원하는 디렉토리에서 업무 화면과 기능을 구현하거나 호스트에서 여러 ack 서버를 운영 하는데 사용됩니다.
+
+```bash
+handstack start --ack=C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack --arguments="--debug" --appsettings=ack.localhost.json
+```
 
 ### stop
 
+호스트내에서 실행중인 ack 서버 프로그램를 프로세스 ID 정보로 강제 종료합니다.
+
+```bash
+handstack stop --pid=12345
+```
+
 ### encrypt
+
+개발 업무에 필요한 중요한 정보를 암호화 하고 싶을 때 사용합니다. 이 명령은 Base64, SUID, SQIDS, AES256, SYN, SHA256, 데이터베이스 연결문자열 암호화에 필요한 기능입니다.
+
+```bash
+handstack encrypt --format=base64 --value="hello world"
+handstack encrypt --format=suid --value=N
+handstack encrypt --format=sqids --value=12345
+handstack encrypt --format=syn --value="hello world"
+handstack encrypt --format=sha256 --value="hello world"
+handstack encrypt --format=connectionstring --value="[connection string]"
+```
 
 ### decrypt
 
+개발 업무에 필요한 중요한 정보를 복호화 하고 싶을 때 사용합니다. 이 명령은 Base64, SUID, SQIDS, AES256, SYN, SHA256, 데이터베이스 연결문자열 암호화에 필요한 기능입니다.
+
+```bash
+handstack decrypt --format=base64 --value=aGVsbG8gd29ybGQ=
+handstack decrypt --format=suid --value=08dc610a149db47e51479a5190026a0c
+handstack decrypt --format=sqids --value=2pbk0n0i
+handstack decrypt --format=syn --key=b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9 --value=WzE1MiwyMDAsMTYyLDE2NCwxNjQsMTI5LDIxOSwxNjgsMjE2LDE2MSwxNTRdLjBjNjg1YWQ5ZjU2NjAwMGE3ZjNjYmI5YjhkOWFjMzY3MTllNDM3NDcxZmUxYTJhNGQ3Njc4ODRhMDY%3d
+handstack decrypt --format=sha256 --key=b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9 --value="hello world"
+handstack decrypt --format=connectionstring --value=qkQXrQyWlxBNw/ee2lA2mGxU1PJ4DWn7Ynp+NzA1OIo=.NGVhOGZiMTg1MzZjZTJlNTI2NzBkMWIwYjY5MzYzM2Q=.REVTS1RPUC0xUlZSMzBR.41542b92442fa3c716838a7320135e3f37ec203cda045e4446a10955e48a38b7
+```
+
 ### compress
+
+지정된 디렉터리에서 파일 및 디렉터리를 포함하는 Zip 파일을 만듭니다. 이 기능은 다양한 운영체제에서 동일한 명령으로 작업을 수행할 수 있습니다.
+
+```bash
+handstack compress --directory=C:/projects/handstack77/handstack --file=C:/tmp/handstack.zip
+```
 
 ### extract
 
+Zip 압축 파일을 지정된 디렉터리에 해제합니다. 이 기능은 다양한 운영체제에서 동일한 명령으로 작업을 수행할 수 있습니다.
+
+```bash
+handstack extract --file=C:/tmp/handstack.zip --directory=C:/tmp/handstack
+```
+
 ### create
 
+modules, webapp 템플릿 ZIP 파일을 기반으로 프로젝트를 생성합니다. 이 기능은 개발자가 새로운 업무 모듈과 앱을 시작할 때 사용됩니다.
+
+```bash
+handstack create --ack=C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack --file=C:/tmp/handstack.zip --directory=C:/tmp/handstack --find=[template] --replace=[myprojectname]
+```
