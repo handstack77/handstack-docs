@@ -9,11 +9,10 @@ sidebar_position: 21
 * [git 2.44.0+ 다운로드](https://git-scm.com/downloads)
 * [.NET Core 8.0 다운로드](https://dotnet.microsoft.com/ko-kr/download/dotnet/8.0)
 * [Node.js v20.12.2 LTS 다운로드](https://nodejs.org/en/download)
-* [curl 다운로드](https://curl.se/download.html)
 
-curl의 경우, macOS, Ubuntu, Windows 10 버전 1803 이상에서는 대부분 시스템에 포함되어 있습니다. 또한 Git for Windows를 설치하면 curl.exe가 함께 설치됩니다.
+설치 관리자를 이용한 설치는 대부분 권장되며 간단한 설치 방법을 제공합니다. 
 
-설치 관리자를 이용한 설치는 대부분 간단한 설치 방법을 제공합니다. 만약 버전 업데이트 자동화 기능이 필요하다면 .NET Core와 Node.js같은 프로그램을 설치하는 방법은 각 운영 체제의 특성과 설치 절차를 이해하는 것을 필요로 합니다.
+만약 버전 업데이트 자동화 기능이 필요하다면 .NET Core와 Node.js같은 프로그램을 설치하는 방법은 각 운영 체제의 특성과 설치 절차를 이해하는 것을 필요로 합니다.
 
 이러한 작업은 사용자의 시스템에 변경을 가하므로 보안 및 권한 문제를 고려해서 자신의 환경에 적합한 안정적이고 신뢰할 수 있는 설치 스크립트를 만들고 테스트해야 합니다. 다음의 패키지 관리자 명령 프롬프트 예시를 참고하세요.
 
@@ -28,7 +27,7 @@ curl의 경우, macOS, Ubuntu, Windows 10 버전 1803 이상에서는 대부분 
 Git을 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 2.44.0+을 설치합니다.
 
 ```bash
-winget install --id Git.Git --accept-source-agreements --accept-package-agreements --silent
+winget install --id Git.Git
 ```
 
 ### Winget 을 이용한 .NET Core 설치
@@ -36,7 +35,7 @@ winget install --id Git.Git --accept-source-agreements --accept-package-agreemen
 .NET 8.0을 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 .NET Core 8.0을 설치합니다.
 
 ```bash
-winget install Microsoft.DotNet.SDK.8 --accept-source-agreements --accept-package-agreements --silent
+winget install -e --id=Microsoft.DotNet.SDK.8
 ```
 
 ### Winget 을 이용한 Node.js 설치
@@ -44,15 +43,7 @@ winget install Microsoft.DotNet.SDK.8 --accept-source-agreements --accept-packag
 Node.js LTS를 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 Node.js v20.12.2+ LTS를 설치합니다.
 
 ```bash
-winget install OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements --silent
-```
-
-### Winget 을 이용한 cURL 설치
-
-cURL를 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 cURL를 설치합니다.
-
-```bash
-winget install cURL.cURL --accept-source-agreements --accept-package-agreements --silent
+winget install -e --id=OpenJS.NodeJS.LTS
 ```
 
 업데이트 할 패키지를 검색하기 위해 다음 명령을 실행합니다.
@@ -67,7 +58,7 @@ winget search cURL.cURL
 설치 된 패키지를 최신 버전으로 업데이트하는 방법은 다음과 같습니다.
 
 ```bash
-winget upgrade --id <package-id> --silent
+winget upgrade -e --id=<package-id>
 ```
 
 ## macOS 에서 명령 프롬프트로 설치하기
