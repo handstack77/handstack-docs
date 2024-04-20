@@ -48,4 +48,3 @@ SaaS (Software as a Service)나 로우코드 솔루션과 같이 기업이 IT �
 * HandStack CLI 환경설정 배포 기능 테스트
 * 비즈니스 모델 검토
 
-https://github.com/handstack77/handstack

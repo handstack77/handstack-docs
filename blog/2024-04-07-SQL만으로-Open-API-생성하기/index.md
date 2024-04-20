@@ -46,4 +46,3 @@ openapi 모듈은 SqlServer, SQLite 데이터베이스에서 테스트 했으며
 * 시간 단위 API 사용 통계 수집
 * SqlServer, Oracle, MySQL, PostgreSQL, SQLite 데이터베이스 지원
 
-https://github.com/handstack77/handstack

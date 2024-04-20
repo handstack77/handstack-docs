@@ -53,4 +53,3 @@ tags: [handstack]
 * HandStack에 대한 비즈니스 모델 초안 작성 완료
 * 데이터베이스를 Open API로 만들어주는 openapi 모듈 개발 진행중 차주 오픈 예정
 
-https://github.com/handstack77/handstack

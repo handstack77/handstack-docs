@@ -58,4 +58,3 @@ HandStack 을 만들어야 겠다고 생각 했을때 우선적으로 고려했�
 * 컴파일 경고 문구 및 오류 대응 수정
 * HandStack 라이선스 v1.0 게시
 
-https://github.com/handstack77/handstack

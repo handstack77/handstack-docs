@@ -106,4 +106,3 @@ tenent-app
 * 서버 배포 bundling CLI 프로그램 view 화면 압축 자동화 적용
 * handsup 운영 서버 테스트
 
-https://github.com/handstack77/handstack

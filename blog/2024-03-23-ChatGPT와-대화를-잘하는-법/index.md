@@ -99,4 +99,3 @@ ChatGPT 를 이용해서 HandStack 기반 화면과 기능을 개발 하기 위�
 * ChatGPT 기반 소스 생성기를 만들 아이디어를 간단한 POC를 진행
 * 데이터베이스를 Open API로 만들어주는 openapi 모듈 개발 진행중
 
-https://github.com/handstack77/handstack
