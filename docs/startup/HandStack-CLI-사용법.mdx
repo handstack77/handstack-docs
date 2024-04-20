@@ -6,6 +6,15 @@ sidebar_position: 21
 
 HandStack CLI는 HandStack 서비스를 개발 및 운영에 유용한 기능을 제공하기 위한 명령줄 인터페이스(Command Line Interface)입니다.
 
+## HandStack CLI 프로그램 위치
+
+설정이 완료되면 app 디렉토리로 이동하여 ack 프로그램을 실행합니다.
+
+```bash
+cd [HandStack 소스 기본경로]/app
+dotnet ack.dll
+```
+
 ## HandStack CLI 소스 위치
 
 https://github.com/handstack77/handstack/tree/master/4.Tool/CLI/handstack
@@ -38,7 +47,7 @@ C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack.exe
 
 ### purgecontracts
 
-handstack/app/ack 서버 프로그램이 있는 handstack/contracts 폴더에 있는 모든 중복된 파일을 삭제합니다. 이 명령은 개발 사용자가 원하는 디렉토리에서 업무 화면과 기능을 구현하는 데 사용됩니다.
+handstack/app/ack 서버 프로그램이 있는 handstack/contracts 디렉토리에 있는 모든 중복된 파일을 삭제합니다. 이 명령은 개발 사용자가 원하는 디렉토리에서 업무 화면과 기능을 구현하는 데 사용됩니다.
 
 ```bash
 handstack purgecontracts --ack=C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack.exe --directory=C:/projects/myapp/contracts
