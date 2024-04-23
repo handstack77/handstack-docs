@@ -93,10 +93,23 @@ sudo ./install.sh
 
 실행에 필요한 필수 설치 프로그램과 환경을 자동으로 구성합니다. 서버 사양과 네트워크 상태에 따라 10분 이상 소요될 수 있습니다.
 
+ack, handstack 실행 파일에 권한을 부여하여 실행이 가능합니다. 다음과 같이 실행 권한을 부여합니다.
+
+```bash
+cd [HandStack 소스 기본경로]/app
+chmod +x ack
+
+cd [HandStack 소스 기본경로]/app/cli
+chmod +x handstack
+```
+
 설정이 완료되면 app 디렉토리로 이동하여 ack 프로그램을 실행합니다.
+
 ```bash
 cd [HandStack 소스 기본경로]/app
 dotnet ack.dll
+# 또는
+./ack
 ```
 
 ## Linux 운영체제에서 실행하기
@@ -125,10 +138,23 @@ sudo ./install.sh
 
 실행에 필요한 필수 설치 프로그램과 환경을 자동으로 구성합니다. 서버 사양과 네트워크 상태에 따라 10분 이상 소요될 수 있습니다.
 
+ack, handstack 실행 파일에 권한을 부여하여 실행이 가능합니다. 다음과 같이 실행 권한을 부여합니다.
+
+```bash
+cd [HandStack 소스 기본경로]/app
+chmod +x ack
+
+cd [HandStack 소스 기본경로]/app/cli
+chmod +x handstack
+```
+
 설정이 완료되면 app 디렉토리로 이동하여 ack 프로그램을 실행합니다.
+
 ```bash
 cd [HandStack 소스 기본경로]/app
 dotnet ack.dll
+# 또는
+./ack
 ```
 
 ## 웹 브라우저로 HandStack 실행 확인하기

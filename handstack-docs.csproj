@@ -43,6 +43,11 @@
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
+	<ItemGroup>
+	  <None Update="docs\startup\handsonlab\debugging\SSH를-이용한-원격-디버깅.mdx">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec Condition="'$(OS)'=='Windows_NT'" Command="rmdir /s /q $(TargetDir)&#xD;&#xA;if not exist $(ProjectDir)build mkdir $(ProjectDir)build" />
