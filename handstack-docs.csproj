@@ -43,9 +43,6 @@
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="blog\2024-05-22-시맨틱-커널-기반-prompter-모듈-추가\img\" />
-	</ItemGroup>
 
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec Condition="'$(OS)'=='Windows_NT'" Command="rmdir /s /q $(TargetDir)&#xD;&#xA;if not exist $(ProjectDir)build mkdir $(ProjectDir)build" />
