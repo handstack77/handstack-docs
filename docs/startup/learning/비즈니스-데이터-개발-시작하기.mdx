@@ -98,6 +98,70 @@ transact module의 주요 기능은 다음과 같습니다.
 
 > transact module의 계약 기능은 다양한 시나리오에 대응 할 수 있는 더 많은 옵션을 제공합니다. 이 계약 정보는 지속적으로 개선되고 있으며 자세한 정보는 가이드나 참고 정보를 참조하세요.
 
+transact Services의 기본 설정과 고급 설정의 예시는 다음과 같습니다.
+
+## Services 기본 설정
+
+```json
+{
+    "ServiceID": "LD01",
+    "Authorize": false,
+    "ReturnType": "Json",
+    "CommandType": "D",
+    "TransactionScope": false,
+    "Inputs": [],
+    "Outputs": []
+}
+```
+
+---
+
+## Services 고급 설정
+
+```json
+{
+    "ServiceID": "MD01",
+    "Authorize": true,
+    "ReturnType": "Json",
+    "CommandType": "D",
+    "TransactionScope": true,
+    "Inputs": [
+        {
+            "ModelID": "Dynamic",
+            "Fields": [],
+            "TestValues": [],
+            "DefaultValues": [],
+            "Type": "Row",
+            "BaseFieldMappings": [],
+            "ParameterHandling": "Rejected",
+            "IgnoreResult": false
+        },
+        {
+            "ModelID": "Dynamic",
+            "Fields": [],
+            "TestValues": [],
+            "DefaultValues": [],
+            "Type": "List",
+            "BaseFieldMappings": [
+                {
+                    "BaseSequence": 0,
+                    "SourceFieldID": "APPROVAL_LINE_NO",
+                    "TargetFieldID": "APPROVAL_LINE_NO"
+                }
+            ],
+            "ParameterHandling": "ByPassing"
+        }
+    ],
+    "Outputs": [
+        {
+            "ModelID": "Dynamic",
+            "Fields": [],
+            "Type": "Form"
+        }
+    ]
+}
+```
+
 ## dbclient module 기능 계약
 
 업무 프로젝트에서 대부분의 90% 업무는 데이터베이스의 CRUD 쿼리를 수행합니다. dbclient 모듈은 dbclient 모듈의 요청 데이터를 수신하여 데이터베이스의 처리 후 결과를 응답하는 과정을 실행 하는 것을 목적으로 하며, 이러한 업무를 처리하기 위해 다음과 같은 계약을 Xml로 작성합니다.
@@ -109,6 +173,8 @@ transact module의 주요 기능은 다음과 같습니다.
 * MySQL & MariaDB
 * PostgreSQL
 * SQLite 
+
+> %HANDSTACK_SRC%/2.Modules/dbclient/module.json DataSource 항목 에서 데이터베이스 연결문자열을 관리합니다.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -136,6 +202,56 @@ WHERE  C.CertifiedYN = 'N'
 </mapper>
 ```
 소스) dbclient/HDS/TST/TST010.xml 계약 파일
+
+dbclient 모듈의 계약 파일은 다음과 같은 고급 문법을 지원합니다.
+
+- 기본적으로 쿼리 매개변수는 변수화 되어 처리 권장
+- ${}, #{} 치환 변수 기능 제공
+- 사용자 세션 변수 사용: $UserSessionVariable
+- pretreatment 전처리 쿼리 기능 제공
+- BaseFieldMapping 으로 매개변수 값 전달
+- if, foreach 분기 처리 및 bind 변수 기능 제공
+
+## 고급 문법을 활용한 예제
+
+```xml
+<statement id="LD01" seq="0" use="Y" timeout="0">
+    <bind name="decorate_END_DT" value="END_DT + ' 23:59:59'" />
+    <bind name="like_TOKEN_ID" value="'%' + TOKEN_ID + '%'" />
+    SELECT
+        CASE WHEN A.LOG_TYPE = '1' THEN '성공' ELSE '실패' END AS SENDTYPE,
+        A.CREATE_DT,
+        A.MESSAGE_TITLE,
+        A.TOKEN_ID,
+        A.ERROR_MESSAGE
+    FROM
+        CTY_PUSH_DIRECTLOG A
+    WHERE
+        <![CDATA[ A.CREATE_DT < #{START_DT} ]]>
+        AND A.CREATE_DT &lt;= #{decorate_END_DT}
+        <if test="(TOKEN_ID != '')">
+            AND (CASE WHEN #{TOKEN_ID} = '' THEN '' ELSE A.TOKEN_ID END) LIKE #{like_TOKEN_ID}
+        </if>
+        AND A.LOG_TYPE IN ('1', '2')
+        <if test="TOKEN_ID != null">
+            AND TOKEN_ID = #{category}
+        </if>
+        <if test="(TOKEN_ID != null and TOKEN_ID != '')">
+            AND price = ${price}
+            <if test="TOKEN_ID != ''">
+                AND name = 'Fuji'
+            </if>
+        </if>
+    
+    <foreach list="apples" item="name"  open="(" close=")" separator="OR">
+        <if test="name == 'Jonathan' or name == 'Fuji'">
+            name = #{name}
+        </if>
+    </foreach>
+    LIMIT
+    0, 500;
+</statement>
+```
 
 ## 테스트
 
