@@ -16,11 +16,6 @@ sidebar_position: 50
         "SystemID": "HANDSTACK",
         "FileServerUrl": "http://localhost:8000",
         "BusinessServerUrl": "http://localhost:8000/transact/api/transaction/execute",
-        "CircuitBreakResetSecond": 60,
-        "DefaultCommandTimeout": 180,
-        "IsExceptionDetailText": true,
-        "IsLogServer": true,
-        "LogServerUrl": "http://localhost:8000/logger/api/log/insert",
         "ContractBasePath": [
             "../contracts/repository"
         ],
@@ -29,11 +24,8 @@ sidebar_position: 50
         "ModuleBasePath": "../modules/repository",
         "EventAction": [],
         "SubscribeAction": [ "repository.Events.RepositoryRequest" ],
-        "AllowMaxFileUploadLength": 120000000, // 114 MB
-        "PurgeTokenTimeout": 1200,
-        "TokenGenerateIPCheck": false,
         "XFrameOptions": "ALLOW-FROM http://127.0.0.1:8000,http://localhost:8000",
-        "FileRootPath": "../storage"
+        "ContentSecurityPolicy": "frame-ancestors 'self' http://127.0.0.1:8000 http://localhost:8000;"
     }
 }
 ```
@@ -41,78 +33,68 @@ sidebar_position: 50
 
 ## 옵션 설명
 
-### SystemID
+### ModuleID
 
-운영중인 프로그램의 시스템의 ID를 설정합니다. 거래 요청시 동일한 시스템에서 운영중인지 식별하는데 사용되며 서버에 요청할 때 헤더와 본문에 사용됩니다. 다른 값으로 변경하려면 ack 프로그램의 app.settings.json 그리고 각 모듈의 module.json 내 SystemID와 동일하게 변경해야합니다.
+모듈을 식별하는 고유 ID 입니다. 반드시 입력 되어야 합니다.
 
-### FileServerUrl
+### Name
 
-클라이언트에서 파일 업로드/다운로드 요청시 파일 상대경로에 사용되는 기본 호스트 URL을 설정합니다.
+모듈의 정보성 이름을 부여합니다.
 
-### BusinessServerUrl
+### IsBundledWithHost
 
-module 내에서 transact 거래 요청시 사용되는 URL를 설정합니다.
+모듈이 호스트 애플리케이션과 함께 번들로 제공되는지 여부를 나타냅니다. 모놀리식 아키텍처로 개발하는 경우 true로 설정하며, 이는 ack 프로젝트와 연관된 모든 module 프로젝트가 참조로 연결되어 단일 코드 베이스에서 관리됨을 의미합니다. (기본값: false)
 
-### CircuitBreakResetSecond
+### Version
 
-logger 모듈로 이벤트 로그 기록이 실패할 경우 다시 호출할 때 까지의 시간을 설정합니다.
+모듈 버전을 주.부.수 숫자로 관리합니다.
 
-### DefaultCommandTimeout
+### ModuleConfig
 
-거래 요청시 기본적으로 사용되는 타임아웃 시간을 설정합니다.
+#### SystemID
 
-### IsExceptionDetailText
+ack 프로그램에서 운영하는 시스템 식별 ID를 입력합니다. (기본값: HANDSTACK)
 
-예외 발생시 상세한 내용을 로그에 남길지 여부를 설정합니다.
+#### BusinessServerUrl
 
-### IsLogServer
+모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8000/transact/api/transaction/execute)
 
-로그 서버를 사용할지 여부를 설정합니다.
+#### ContractBasePath
 
-### LogServerUrl
+repository 모듈의 거래 파일들이 있는 기본 디렉토리 경로를 입력합니다. 상대경로는 모듈의 기본 디렉토리를 기준으로 설정됩니다.
 
-로그 서버를 사용할 경우 로그 서버의 URL을 설정합니다.
+#### ModuleLogFilePath
 
-### ContractBasePath
+모듈 내에서 작성하는 로그의 파일명을 포함하는 파일 경로입니다.
 
-사용되는 계약 파일의 기본 경로를 설정합니다.
+#### DatabaseContractPath
 
-### ModuleLogFilePath
+업로드/다운로드 되는 항목을 관리하기 위한 dbclient Contracts 기본 디렉토리입니다. 개발 목적외에 변경하는 것을 권장하지 않습니다. (기본값: ../contracts/dbclient)
 
-모듈 로그 파일의 경로를 설정합니다.
+#### ModuleBasePath
 
-### DatabaseContractPath
+repository 모듈의 기본 디렉토리입니다. 개발 목적외에 변경하는 것을 권장하지 않습니다. (기본값: ../modules/repository)
 
-데이터베이스 계약 파일의 경로를 설정합니다.
+#### XFrameOptions
 
-### ModuleBasePath
+X-Frame-Options는 웹 페이지가 iframe, embed 등에서 렌더링될 수 있는지 여부를 파일 업로드/다운로드시 브라우저에 지시하는 HTTP 응답 헤더입니다.
 
-모듈의 기본 경로를 설정합니다.
+#### ContentSecurityPolicy
 
-### EventAction
+Content Security Policy (CSP)는 파일 업로드/다운로드시 웹 애플리케이션이 로드할 수 있는 리소스의 출처를 제어하는 HTTP 응답 헤더입니다.
 
-외부 종속성 없이 프로세스 내에서 이벤트 메시지를 실행할 대상 모듈의 SubscribeAction에 설정된 이벤트 핸들러를 설정합니다.
+#### EventAction
 
-### SubscribeAction
+모듈 간의 Mediator 발신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [대상 모듈 ID].Events.[호출 이벤트 ID]
 
-외부 종속성 없이 프로세스 내에서 dbclient 모듈 업무 처리 이벤트 메시지를 수신할 이벤트 핸들러를 설정합니다.
+#### SubscribeAction
 
-### AllowMaxFileUploadLength
+모듈 간의 Mediator 수신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [공개 모듈 ID].Events.[수신 이벤트 ID]
 
-파일 업로드시 허용되는 최대 파일 크기를 설정합니다. 단위는 바이트입니다. 기본값은 120000000(114MB)입니다.
+## 설정 정보 관리 화면
 
-### PurgeTokenTimeout
+프로그램 실행 후, 자세한 내용은 웹 브라우저에서 다음 URL을 통해 확인할 수 있습니다. 또한, 편집한 환경설정을 가져오기 및 내보내기 기능도 제공합니다.
 
-파일 업로드/다운로드 요청시 사용되는 토큰의 타임아웃 시간을 설정합니다. 단위는 초입니다.
+> http://localhost:8000/repository/module-settings.html
 
-### TokenGenerateIPCheck
-
-파일 업로드/다운로드 요청시 사용되는 토큰의 IP 체크 여부를 설정합니다.
-
-### XFrameOptions
-
-파일 다운로드 요청시 사용되는 X-Frame-Options 헤더를 설정합니다.
-
-### FileRootPath
-
-파일 업로드/다운로드 요청시 서버에 저장되는 파일의 기본 디렉토리 경로를 설정합니다.
+![](img/localhost_8000_repository_module-settings.html.png)

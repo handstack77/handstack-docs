@@ -21,7 +21,6 @@ SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite 데이터베이스 연�
         "BusinessServerUrl": "http://localhost:8000/transact/api/transaction/execute",
         "CircuitBreakResetSecond": 60,
         "DefaultCommandTimeout": 30,
-        "IsExceptionDetailText": true,
         "ContractBasePath": [
             "../contracts/dbclient"
         ],
@@ -32,14 +31,17 @@ SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite 데이터베이스 연�
         "IsProfileLogging": false,
         "ProfileLogFilePath": "../log/dbclient/profile.log",
         "EventAction": [],
-        "SubscribeAction": [],
+        "SubscribeAction": [
+            "dbclient.Events.DbClientRequest",
+            "dbclient.Events.ManagedRequest"
+        ],
         "DataSource": [
             {
                 "ApplicationID": "HDS",
                 "ProjectID": "*",
                 "DataSourceID": "CHECKUPDB",
                 "DataProvider": "SQLite",
-                "ConnectionString": "URI=file:../sqlite/HDS/dbclient/dbclient.db;Journal Mode=MEMORY;Cache Size=4000;Synchronous=Normal;Page Size=4096;Pooling=True;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
+                "ConnectionString": "URI=file:../sqlite/HDS/dbclient/checkup.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
                 "IsEncryption": "N",
                 "Comment": "SQLite 기본 데이터베이스"
             },
@@ -48,7 +50,7 @@ SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite 데이터베이스 연�
                 "ProjectID": "*",
                 "DataSourceID": "DB01",
                 "DataProvider": "SQLite",
-                "ConnectionString": "URI=file:../sqlite/HDS/dbclient/HDS.db;Journal Mode=MEMORY;Cache Size=4000;Synchronous=Normal;Page Size=4096;Pooling=True;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
+                "ConnectionString": "URI=file:../sqlite/HDS/dbclient/HDS.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
                 "IsEncryption": "N",
                 "Comment": "SQLite 기본 데이터베이스"
             },
@@ -98,68 +100,84 @@ SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite 데이터베이스 연�
 
 ### SystemID
 
-운영중인 프로그램의 시스템의 ID를 설정합니다. 거래 요청시 동일한 시스템에서 운영중인지 식별하는데 사용되며 서버에 요청할 때 헤더와 본문에 사용됩니다. 다른 값으로 변경하려면 ack 프로그램의 app.settings.json 그리고 각 모듈의 module.json 내 SystemID와 동일하게 변경해야합니다.
+### ModuleID
 
-### BusinessServerUrl
+dbclient 모듈을 식별하는 고유 ID 입니다. 반드시 입력 되어야 합니다.
 
-module 내에서 transact 거래 요청시 사용되는 URL를 설정합니다.
+### Name
 
-### CircuitBreakResetSecond
+dbclient 모듈의 정보성 이름을 부여합니다.
 
-logger 모듈로 이벤트 로그 기록이 실패할 경우 다시 호출할 때 까지의 시간을 설정합니다.
+### IsBundledWithHost
 
-### DefaultCommandTimeout
+모듈이 호스트 애플리케이션과 함께 번들로 제공되는지 여부를 나타냅니다. 모놀리식 아키텍처로 개발하는 경우 true로 설정하며, 이는 ack 프로젝트와 연관된 모든 module 프로젝트가 참조로 연결되어 단일 코드 베이스에서 관리됨을 의미합니다. (기본값: false)
 
-거래 요청시 기본적으로 사용되는 타임아웃 시간을 설정합니다.
+### Version
 
-### IsExceptionDetailText
+모듈 버전을 주.부.수 숫자로 관리합니다.
 
-예외 발생시 상세한 내용을 로그에 남길지 여부를 설정합니다.
+### ModuleConfig
 
-### ContractBasePath
+#### SystemID
 
-사용되는 계약 파일의 기본 경로를 설정합니다.
+ack 프로그램에서 운영하는 시스템 식별 ID를 입력합니다. (기본값: HANDSTACK)
 
-### IsTransactionLogging
+#### BusinessServerUrl
 
-거래 로그를 남길지 여부를 설정합니다.
+모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8000/transact/api/transaction/execute)
 
-### IsLogServer
+#### CircuitBreakResetSecond
 
-로그 서버를 사용할지 여부를 설정합니다.
+거래 로그 전송 오류시 재시도 할 때 까지 대기하기 위한 초를 입력합니다. (기본값: 60)
 
-### LogServerUrl
+#### DefaultCommandTimeout
 
-로그 서버를 사용할 경우 로그 서버의 URL을 설정합니다.
+데이터베이스에 SQL 명령을 응답 할 때 까지 대기하기 위한 기본 초를 입력합니다. 각 기능의 timeout 속성이 없으면 적용됩니다. (기본값: 30)
 
-### IsProfileLogging
+#### ContractBasePath
 
-프로파일링 로그를 남길지 여부를 설정합니다.
+dbclient 모듈의 거래 파일들이 있는 기본 디렉토리 경로를 입력합니다. 상대경로는 모듈의 기본 디렉토리를 기준으로 설정됩니다.
 
-### ProfileLogFilePath
+#### IsTransactionLogging
 
-프로파일링 로그를 남길 파일의 경로를 설정합니다.
+dbclient 모듈의 요청에서 응답 사이의 SQL 거래 로그를 저장합니다. (기본값: false)
 
-### ModuleLogFilePath
+#### ModuleLogFilePath
 
-로그를 남길 파일의 경로를 설정합니다.
+모듈 내에서 작성하는 로그의 파일명을 포함하는 파일 경로입니다.
 
-### ModuleBasePath
+#### IsLogServer
 
-dbclient 모듈의 기본 경로를 설정합니다.
+dbclient 모듈의 로그를 logger 모듈을 운영하는 서버로 저장합니다. (기본값: false)
 
-### WWWRootBasePath
+#### LogServerUrl
 
-dbclient 모듈의 웹 리소스의 기본 경로를 설정합니다.
+logger 모듈을 운영하는 서버의 URL 경로입니다. (기본값: http://localhost:8000/logger/api/log/insert)
 
-### EventAction
+#### IsProfileLogging
 
-외부 종속성 없이 프로세스 내에서 이벤트 메시지를 실행할 대상 모듈의 SubscribeAction에 설정된 이벤트 핸들러를 설정합니다.
+dbclient 모듈 데이터베이스 서버간의 요청/응답 정보를 파일 로그로 저장합니다. 개발 목적의 용도로 사용해야 하며, 운영 환경에서는 false를 권장합니다. (기본값: false)
 
-### SubscribeAction
+#### ProfileLogFilePath
 
-외부 종속성 없이 프로세스 내에서 dbclient 모듈 업무 처리 이벤트 메시지를 수신할 이벤트 핸들러를 설정합니다.
+요청/응답 정보를 저장하는 파일 경로입니다. (기본값: ../log/dbclient/profile.log)
 
-### DataSource
+#### EventAction
 
-업무에 사용 하는 데이터베이스 연결 문자열을 설정합니다.
+모듈 간의 Mediator 발신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [대상 모듈 ID].Events.[호출 이벤트 ID]
+
+#### SubscribeAction
+
+모듈 간의 Mediator 수신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [공개 모듈 ID].Events.[수신 이벤트 ID]
+
+#### DataSource
+
+dbclient 모듈내 Contract 파일에서 사용하는 (DB01) 데이터 원본 ID 입니다.
+
+## 설정 정보 관리 화면
+
+프로그램 실행 후, 자세한 내용은 웹 브라우저에서 다음 URL을 통해 확인할 수 있습니다. 또한, 편집한 환경설정을 가져오기 및 내보내기 기능도 제공합니다.
+
+> http://localhost:8000/dbclient/module-settings.html
+
+![](img/localhost_8000_dbclient_module-settings.html.png)

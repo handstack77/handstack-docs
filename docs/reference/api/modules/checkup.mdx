@@ -17,20 +17,16 @@ sidebar_position: 10
         "ManagedAccessKey": "6eac215f2f5e495cad4f2abfdcad7644",
         "EncryptionAES256Key": "1234567890123456",
         "AdministratorEmailID": "administrator@handstack.kr",
-        "ModuleConfigurationUrl": "http://localhost:8000/checkup/api/managed/initailize-settings",
+        "ModuleConfigurationUrl": "http://localhost:8000/checkup/api/managed/initialize-settings",
         "BusinessServerUrl": "http://localhost:8000/transact/api/transaction/execute",
-        "CircuitBreakResetSecond": 60,
-        "DefaultCommandTimeout": 180,
-        "IsExceptionDetailText": true,
-        "IsLogServer": true,
-        "IsContractFileUpdateToCaching": true,
-        "LogServerUrl": "http://localhost:8000/api/log",
         "ModuleLogFilePath": "../log/checkup/module.log",
         "ModuleBasePath": "../modules/checkup",
         "WWWRootBasePath": "../modules/checkup/wwwroot/checkup",
-        "EventAction": [ "repository.Events.RepositoryRequest" ],
+        "EventAction": [
+            "repository.Events.RepositoryRequest"
+        ],
         "SubscribeAction": [],
-        "ConnectionString": "URI=file:../sqlite/HDS/dbclient/checkup.db;Journal Mode=MEMORY;Cache Size=4000;Synchronous=Normal;Page Size=4096;Pooling=True;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;"
+        "ConnectionString": "URI=file:../sqlite/HDS/dbclient/checkup.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;"
     }
 }
 ```
@@ -38,70 +34,81 @@ sidebar_position: 10
 
 ## 옵션 설명
 
-### SystemID
+### ModuleID
 
-운영중인 프로그램의 시스템의 ID를 설정합니다. 거래 요청시 동일한 시스템에서 운영중인지 식별하는데 사용되며 서버에 요청할 때 헤더와 본문에 사용됩니다. 다른 값으로 변경하려면 ack 프로그램의 app.settings.json 그리고 각 모듈의 module.json 내 SystemID와 동일하게 변경해야합니다.
+checkup 모듈을 식별하는 고유 ID 입니다. 반드시 입력 되어야 합니다.
 
-### ManagedAccessKey
+### Name
 
-관리 목적의 서버에 요청이 있을 경우 검증하기 위한 확인 용도로 사용되며 헤더와 본문에 사용됩니다.
+checkup 모듈의 정보성 이름을 부여합니다.
 
-### EncryptionAES256Key
+### IsBundledWithHost
 
-암호화를 위한 키로 사용됩니다.
+모듈이 호스트 애플리케이션과 함께 번들로 제공되는지 여부를 나타냅니다. 모놀리식 아키텍처로 개발하는 경우 true로 설정하며, 이는 ACK와 참조 프로젝트의 모든 기능이 단일 코드 베이스에서 관리됨을 의미합니다. (기본값: false)
 
-### AdministratorEmailID
+### Version
 
-처음 checkup 모듈을 포함하는 프로그램 실행시 관리자 계정으로 사용할 이메일 주소로 사용됩니다.
+모듈 버전을 주.부.수 숫자로 관리합니다.
 
-### ModuleConfigurationUrl
+### ModuleConfig
 
-프로그램 실행시 checkup 모듈의 설정을 초기화하기 위한 URL로 사용됩니다.
+#### SystemID
 
-### BusinessServerUrl
+ack 프로그램에서 운영하는 시스템 식별 ID를 입력합니다. (기본값: HANDSTACK)
 
-module 내에서 transact 거래 요청시 사용되는 URL를 설정합니다.
+#### ManagedAccessKey
 
-### CircuitBreakResetSecond
+관리 목적의 모듈 기능 요청 헤더에 필요한 액세스 키를 입력합니다. 이 정보는 내부 시스템간의 요청에 인증을 위한 용도로 사용됩니다.
 
-logger 모듈로 이벤트 로그 기록이 실패할 경우 다시 호출할 때 까지의 시간을 설정합니다.
+#### EncryptionAES256Key
 
-### DefaultCommandTimeout
+모듈 내에서 데이터를 보호하기 위한 AES256 기반 암호화 키 16 자리를 입력합니다.
 
-거래 요청시 기본적으로 사용되는 타임아웃 시간을 설정합니다.
+#### AdministratorEmailID
 
-### IsExceptionDetailText
+모듈 내에서 관리 업무를 담당하는 이메일 ID를 입력합니다. (기본값: administrator@handstack.kr)
 
-예외 발생시 상세한 내용을 로그에 남길지 여부를 설정합니다.
+#### ModuleConfigurationUrl
 
-### IsLogServer
+ack 프로그램이 실행되고 모듈 초기화를 실행하는 Url을 입력합니다. (기본값: http://localhost:8000/checkup/api/managed/initialize-settings)
 
-로그 서버를 사용할지 여부를 설정합니다.
+#### BusinessServerUrl
 
-### LogServerUrl
+모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8000/transact/api/transaction/execute)
 
-로그 서버를 사용할 경우 로그 서버의 URL을 설정합니다.
+#### ModuleLogFilePath
 
-### ModuleLogFilePath
+모듈 내에서 작성하는 로그의 파일명을 포함하는 파일 경로입니다.
 
-로그를 남길 파일의 경로를 설정합니다.
+#### ModuleBasePath
+모듈의
+기본 경로입니다. 개발 목적이 아닌경우 기본값을 적용해야합니다. (기본값: ../modules/qramework)
 
-### ModuleBasePath
+#### WWWRootBasePath
+../modules/checkup/wwwroot/checkup
+모듈의 웹 루트 기본 경로입니다. /assets 디렉토리를 추가 포함되며, 개발 목적이 아닌경우 기본값을 적용해야합니다. (기본값: ../modules/qramework/wwwroot/qramework)
 
-checkup 모듈의 기본 경로를 설정합니다.
+#### EventAction
 
-### WWWRootBasePath
+모듈 간의 Mediator 발신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [대상 모듈 ID].Events.[호출 이벤트 ID]
 
-checkup 모듈의 웹 리소스의 기본 경로를 설정합니다.
+#### SubscribeAction
 
-### EventAction
+모듈 간의 Mediator 수신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [공개 모듈 ID].Events.[수신 이벤트 ID]
 
-파일 저장소 액션 이벤트가 발생했을 때 실행할 이벤트 핸들러를 설정합니다.
+#### ConnectionString
 
-### SubscribeAction
+SQLite 데이터베이스의 연결 문자열을 설정합니다.
 
-구독할 이벤트 핸들러를 설정합니다.
+> URI=file:../sqlite/HDS/dbclient/checkup.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;
 
-### ConnectionString
+데이터베이스 연결문자열 참고자료:
+- [SQLite](https://www.connectionstrings.com/sqlite)
 
-사용할 SQLite 데이터베이스의 연결 문자열을 설정합니다.
+## 설정 정보 관리 화면
+
+프로그램 실행 후, 자세한 내용은 웹 브라우저에서 다음 URL을 통해 확인할 수 있습니다. 또한, 편집한 환경설정을 가져오기 및 내보내기 기능도 제공합니다.
+
+> http://localhost:8000/checkup/module-settings.html
+
+![](img/localhost_8000_checkup_module-settings.html.png)
