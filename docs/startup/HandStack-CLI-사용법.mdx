@@ -38,7 +38,6 @@ ack 프로그램을 실행하는 데 필요한 의도된 설정을 미리 만들
 
 ```bash
 handstack configuration --ack=C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack --appsettings=ack.localhost.json
-C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack
 ```
 
 ### purgecontracts
@@ -121,4 +120,20 @@ modules, webapp 템플릿 ZIP 파일을 기반으로 프로젝트를 생성합�
 
 ```bash
 handstack create --ack=C:/projects/handstack77/handstack/1.WebHost/build/handstack/app/ack --file=C:/tmp/handstack.zip --directory=C:/tmp/handstack --find=[template] --replace=[myprojectname]
+```
+
+### replacetext
+
+텍스트 파일의 특정 문자열을 치환합니다. 소스코드 템플릿을 만들때 사용됩니다.
+
+```bash
+handstack replacetext --file=C:/tmp/handstack.txt --find=handstack --replace=myprojectname
+```
+
+### task
+
+운영체제에 따라 사전에 정의된 배치 스크립트 업무를 수행합니다. 클라이언트와 서버의 운영체제가 다를 경우 프로그램 실행에 필요한 사전 정의 된 스크립트를 실행합니다.
+
+```bash
+handstack task --file=C:/tmp/task.json --value=checkup:build;dbclient:build
 ```
