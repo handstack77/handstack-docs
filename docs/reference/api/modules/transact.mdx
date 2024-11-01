@@ -20,6 +20,8 @@ sidebar_position: 60
         "IsAllowDynamicRequest": true,
         "AllowTenantTransactionCommands": [ "D" ],
         "IsLogServer": true,
+        "LogServerUrl": "http://localhost:8000/logger/api/log/insert",
+        "IsTransactionLogging": true,
         "IsTransactAggregate": true,
         "IsDataMasking": false,
         "MaskingChar": "*",
@@ -28,7 +30,6 @@ sidebar_position: 60
             "../contracts/transact"
         ],
         "AvailableEnvironment": [ "P", "D", "S" ],
-        "LogServerUrl": "http://localhost:8000/logger/api/log/insert",
         "IsCodeDataCache": true,
         "CodeDataCacheTimeout": 20,
         "ModuleBasePath": "../modules/transact",
