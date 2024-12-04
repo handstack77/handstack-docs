@@ -143,6 +143,13 @@ sudo apt-get install -y dotnet-runtime-8.0
 
 위의 명령어는 .NET Core 8.0+ 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
 
+만약 기존 dotnet 버전을 삭제 후 재설치하려면 다음 명령어로 기존 dotnet 버전을 삭제후 설치를 진행하세요.
+
+```bash
+sudo apt-get remove --purge 'dotnet*'
+sudo apt-get autoremove
+```
+
 ### apt-get 를 이용한 Node.js 설치
 
 ```bash
