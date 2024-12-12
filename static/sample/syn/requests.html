@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>request</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/lib/highlight.js@11.6.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet" href="/lib/highlight.js/styles/atom-one-dark.min.css">
 </head>
 <body hidden style="display: none;">
     <div class="container">
@@ -107,6 +107,36 @@
                         </div>
                         <div class="row p-2 mt-1 b:1|solid|#e5e5e5">
                             <div class="col-12">
+                                <label class="form-label">syn.$r.httpRequest()</label>
+                                <input type="text" id="txt_httpRequest" class="form-control mt-2" />
+                                <button type="button" id="btn_httpRequest" class="mt-2 btn btn-primary" syn-events="['click']">확인</button>
+                                <div class="form-text">
+                                    웹 요청을 API 로 호출합니다.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row p-2 mt-1 b:1|solid|#e5e5e5">
+                            <div class="col-12">
+                                <label class="form-label">syn.$r.httpSubmit()</label>
+                                <input type="text" id="txt_httpSubmit" class="form-control mt-2" />
+                                <button type="button" id="btn_httpSubmit" class="mt-2 btn btn-primary" syn-events="['click']">확인</button>
+                                <div class="form-text">
+                                    화면의 FORM 요청을 API 로 호출합니다.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row p-2 mt-1 b:1|solid|#e5e5e5">
+                            <div class="col-12">
+                                <label class="form-label">syn.$r.httpDataSubmit()</label>
+                                <input type="text" id="txt_httpDataSubmit" class="form-control mt-2" />
+                                <button type="button" id="btn_httpDataSubmit" class="mt-2 btn btn-primary" syn-events="['click']">확인</button>
+                                <div class="form-text">
+                                    FormData 요청을 API 로 호출합니다.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row p-2 mt-1 b:1|solid|#e5e5e5">
+                            <div class="col-12">
                                 <label class="form-label">syn.$r.getCookie()</label>
                                 <input type="text" id="txt_getCookie" class="form-control mt-2" />
                                 <button type="button" id="btn_getCookie" class="mt-2 btn btn-primary" syn-events="['click']">확인</button>
@@ -140,8 +170,8 @@
             </div>
         </div>
     </div>
-    <script src="/lib/highlight.js@11.6.0/highlight.min.js"></script>
-    <script src="/lib/showdownjs@2.1.0/showdown.min.js"></script>
+    <script src="/lib/highlight.js/highlight.min.js"></script>
+    <script src="/lib/showdown/showdown.min.js"></script>
     <script src="/js/syn.loader.js"></script>
 </body>
 </html>

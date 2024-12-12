@@ -156,7 +156,7 @@
             opacity: 0,
             overlayId: 'simplemodal-overlay',
             containerId: 'simplemodal-container',
-            closeHTML: '<div class="absolute font:22 right:24 ti ti-x top:8"></div>',
+            closeHTML: '<div class="absolute font:22 right:8 ti ti-x top:8 fg-black"></div>',
             minWidth: 320,
             minHeight: 240,
             modal: true,
@@ -478,7 +478,7 @@
 
         serviceClient(url, jsonObject, callBack, async, token) {
             if (!jsonObject) {
-                alert('서비스 호출에 필요한 jsonObject가 구성되지 않았습니다.');
+                syn.$w.alert('서비스 호출에 필요한 jsonObject가 구성되지 않았습니다.');
                 return;
             }
 
@@ -522,7 +522,7 @@
                     }
                     else if (xhr.status !== 200) {
                         if (xhr.responseText.length > 0) {
-                            alert(xhr.responseText || xhr.statusText);
+                            syn.$w.alert(xhr.responseText || xhr.statusText);
                         }
                     }
 
@@ -557,7 +557,7 @@
                                 mod.hook['serviceClientException'](url, jsonObject, xhr);
                             }
                             else {
-                                alert('ServiceID : ' + serviceID + '\n' + jsonObject.Result);
+                                syn.$w.alert('ServiceID : ' + serviceID + '\n' + jsonObject.Result);
                             }
                         }
                         else if (contentType.indexOf('text') > -1 || contentType.indexOf('json') > -1) {
@@ -573,11 +573,11 @@
                         else {
                             if (syn.$w.serviceClientException) {
                                 if (syn.$w.serviceClientException(url, jsonObject, xhr) === false) {
-                                    alert('ServiceID : ' + serviceID + '\n' + errorText);
+                                    syn.$w.alert('ServiceID : ' + serviceID + '\n' + errorText);
                                 }
                             }
                             else {
-                                alert('ServiceID : ' + serviceID + '\n' + errorText);
+                                syn.$w.alert('ServiceID : ' + serviceID + '\n' + errorText);
                             }
 
                             var mod = window[syn.$w.pageScript];
@@ -654,7 +654,7 @@
             }
         },
 
-        setTabContentHeight: async function (projectID, fileID) {
+        setTabContentHeight: function (projectID, fileID) {
             var tabID = null;
             if (parent.$main) {
                 if (projectID && fileID) {
@@ -670,34 +670,36 @@
                         tabFrame.height = '100%';
                         var scrollHeight = 0;
 
-                        var checkDocumentHeight = function () {
-                            var result = 0;
-                            var pageWrapper = document.querySelector('.page-wrapper');
-                            if (pageWrapper) {
-                                result = pageWrapper.scrollHeight;
+                        setTimeout(async () => {
+                            var checkDocumentHeight = function () {
+                                var result = 0;
+                                var pageWrapper = document.querySelector('.page-wrapper');
+                                if (pageWrapper) {
+                                    result = pageWrapper.scrollHeight;
+                                }
+                                else {
+                                    result = document.body.scrollHeight;
+                                }
+
+                                return result;
+                            };
+
+                            while (scrollHeight == 0) {
+                                scrollHeight = checkDocumentHeight();
+                                await syn.$w.sleep(25);
                             }
-                            else {
-                                result = document.body.scrollHeight;
+
+                            if (tabFrame.height != scrollHeight) {
+                                tabFrame.height = scrollHeight;
+                                tabFrame.style.height = `${scrollHeight}px`;
                             }
 
-                            return result;
-                        };
-
-                        while (scrollHeight == 0) {
-                            scrollHeight = checkDocumentHeight();
-                            await syn.$w.sleep(25);
-                        }
-
-                        if (tabFrame.height != scrollHeight) {
-                            tabFrame.height = scrollHeight;
-                            tabFrame.style.height = `${scrollHeight}px`;
-                        }
-
-                        var frameHeight = syn.$d.getSize(parent.document.body).height - (56 + 57 + 20);
-                        var uiHeight = syn.$d.getSize(tabFrame).height;
-                        if (frameHeight > uiHeight) {
-                            tabFrame.style.height = `${frameHeight}px`;
-                        }
+                            var frameHeight = syn.$d.getSize(parent.document.body).height - (56 + 57 + 24);
+                            var uiHeight = syn.$d.getSize(tabFrame).height;
+                            if (frameHeight > uiHeight) {
+                                tabFrame.style.height = `${frameHeight}px`;
+                            }
+                        }, 100);
                     }
                 }
             }
@@ -872,7 +874,14 @@
             var divProgressBar = syn.$m.create({
                 id: 'divProgressBar',
                 tag: 'div',
-                className: 'progress fixed top:0 border-radius:0 h:2! z:10000'
+                className: 'progress fixed',
+                styles: {
+                    'top': '0',
+                    'left': '0',
+                    'height': '0.125rem',
+                    'border-radius': '0',
+                    'z-index': '10000'
+                }
             });
             divProgressBar.innerHTML = '<div class="progress-bar progress-bar-indeterminate bg-primary"></div><div class="progress-backdrop"></div>';
             syn.$m.appendChild(document.body, divProgressBar);
@@ -1195,31 +1204,35 @@
                 options = $object.clone(syn.$w.alertOptions);
                 // options.icon = 'default'; // debug, information, success, question, error, fatal
                 // options.buttonType = '1'; // 1:OK, 2:OKCancel, 3:YesNo, 4:YesNoCancel (default:1)
+                // options.style = 'font:red!';
                 options.close = false;
             }
 
             if (options.icon) {
                 switch (options.icon) {
                     case 'debug':
-                        syn.$m.addClass(elIcon, 'ti ti-bug');
+                        syn.$m.addClass(elIcon, `ti ti-bug ${options.style}`);
                         break;
                     case 'information':
-                        syn.$m.addClass(elIcon, 'ti ti-info-circle');
+                        syn.$m.addClass(elIcon, `ti ti-info-circle ${options.style}`);
                         break;
                     case 'success':
-                        syn.$m.addClass(elIcon, 'ti ti-circle-check');
+                        syn.$m.addClass(elIcon, `ti ti-circle-check ${options.style}`);
                         break;
                     case 'question':
-                        syn.$m.addClass(elIcon, 'ti ti-help-circle');
+                        syn.$m.addClass(elIcon, `ti ti-help-circle ${options.style}`);
+                        break;
+                    case 'warning':
+                        syn.$m.addClass(elIcon, `ti ti-alert-triangle ${options.style}`);
                         break;
                     case 'error':
-                        syn.$m.addClass(elIcon, 'ti ti-bell-x');
+                        syn.$m.addClass(elIcon, `ti ti-bell-x ${options.style}`);
                         break;
                     case 'fatal':
-                        syn.$m.addClass(elIcon, 'ti ti-urgent');
+                        syn.$m.addClass(elIcon, `ti ti-urgent ${options.style}`);
                         break;
                     default:
-                        syn.$m.addClass(elIcon, 'ti ti-clipboard-text');
+                        syn.$m.addClass(elIcon, `ti ti-clipboard-text ${options.style}`);
                         break;
                 }
             }
@@ -1977,6 +1990,10 @@
                         inputObjects.push({ prop: 'CompanyNo', val: syn.$w.User.WorkCompanyNo });
                     }
 
+                    if (parameters.indexOf('#TenantID') > -1 && parameters.indexOf(`${syn.$w.ManagedApp.UserWorkID}|${syn.$w.ManagedApp.ApplicationID}`) > -1) {
+                        inputObjects.push({ prop: '#TenantID', val: `${syn.$w.ManagedApp.UserWorkID}|${syn.$w.ManagedApp.ApplicationID}` });
+                    }
+
                     transactionObject.inputs.push(inputObjects);
                     transactionObject.inputsItemCount.push(1);
 
@@ -2183,7 +2200,7 @@
                 controlInfo.module == 'syn.uicontrols.$files'
             ) && options.validators && options.validators.length > 0) {
                 var valiationFunc = function (message) {
-                    alert(message);
+                    syn.$w.alert(message);
                     return false;
                 };
 
@@ -2191,7 +2208,7 @@
                 var value = controlModule.getValue(controlInfo.id);
                 if (options.validators.indexOf('require') > -1) {
                     if (value == '' || value == null) {
-                        var message = '{0} 항목은 반드시 입력 해야합니다'.format(controlText);
+                        var message = '{0} 항목은 반드시 입력 해야 합니다'.format(controlText);
                         return valiationFunc(message);
                     }
 
@@ -2246,20 +2263,20 @@
             }
             else if (controlInfo.module == 'syn.uicontrols.$grid' && requestType == 'Row' && options.validators && options.validators.length > 0) {
                 var valiationFunc = function (message) {
-                    alert(message);
+                    syn.$w.alert(message);
                     return false;
                 };
 
                 var controlText = options.controlText;
-                var columnName = controlModule.getColHeader(controlInfo.id, controlModule.propToCol(controlInfo.id, options.data));
+                var columnName = controlModule.getColHeader(controlInfo.id.replace('_hidden', ''), controlModule.propToCol(controlInfo.id.replace('_hidden', ''), options.data));
                 var row = controlModule.getActiveRowIndex(controlInfo.id);
-                var col = controlModule.propToCol(controlInfo.id, options.data);
-                var flag = controlModule.getDataAtCell(controlInfo.id, row, 'Flag');
+                var col = controlModule.propToCol(controlInfo.id.replace('_hidden', ''), options.data);
+                var flag = controlModule.getDataAtCell(controlInfo.id.replace('_hidden', ''), row, 'Flag');
                 if (flag != 'D') {
                     return true;
                 }
                 else {
-                    var value = controlModule.getDataAtCell(controlInfo.id, row, col);
+                    var value = controlModule.getDataAtCell(controlInfo.id.replace('_hidden', ''), row, col);
                     if (options.validators.indexOf('require') > -1) {
                         if (value === '' || value == null) {
                             var message = '{0} 그리드의 {1} 컬럼은 반드시 입력 해야입니다'.format(controlText, columnName);
@@ -2318,14 +2335,14 @@
             }
             else if (controlInfo.module == 'syn.uicontrols.$grid' && requestType == 'List' && options.validators && options.validators.length > 0) {
                 var valiationFunc = function (message) {
-                    alert(message);
+                    syn.$w.alert(message);
                     return false;
                 };
 
                 var controlText = options.controlText;
-                var columnName = controlModule.getColHeader(controlInfo.id, controlModule.propToCol(controlInfo.id, options.data));
-                var flagData = controlModule.getSourceDataAtCol(controlInfo.id, 'Flag');
-                var rowData = controlModule.getSourceDataAtCol(controlInfo.id, options.data);
+                var columnName = controlModule.getColHeader(controlInfo.id.replace('_hidden', ''), controlModule.propToCol(controlInfo.id.replace('_hidden', ''), options.data));
+                var flagData = controlModule.getSourceDataAtCol(controlInfo.id.replace('_hidden', ''), 'Flag');
+                var rowData = controlModule.getSourceDataAtCol(controlInfo.id.replace('_hidden', ''), options.data);
 
                 var vaildateData = [];
                 var length = flagData.length;
@@ -2403,6 +2420,11 @@
     window.$validation = syn.$v || window.$validation || $validation;
 })(window);
 function domainLibraryLoad() {
+    syn.$l.addEvent(window, 'error', (evt) => {
+        var stack = evt.error ? evt.error.stack : '';
+        console.log(`unhandle error - source(${evt.lineno}, ${evt.colno}): ${evt.filename}, message: ${evt.message}, stack: ${stack}`);
+    });
+
     if ($object.isBoolean(syn.Config.IsClientCaching) == true) {
         syn.$r.setCookie('syn.iscache', syn.Config.IsClientCaching, null, '/');
     }
@@ -2412,13 +2434,20 @@ function domainLibraryLoad() {
     }
 
     if (location.pathname.startsWith((syn.Config.TenantAppRequestPath ? `/${syn.Config.TenantAppRequestPath}/` : '/app/')) == true) {
-        syn.$w.cookiePrefixName = location.pathname.split('/')[2];
+        var paths = location.pathname.split('/');
+        syn.$w.tenantUserWorkID = paths[2];
+        syn.$w.tenantApplicationID = paths[3];
+        syn.$w.cookiePrefixName = `${syn.$w.tenantUserWorkID}.${syn.$w.tenantApplicationID}`;
     }
 
     if (syn.Config.Environment == 'Production') {
         syn.$l.addEvent(document, 'selectstart', (evt) => { if (evt.preventDefault) { evt.preventDefault(); } if (evt.stopPropagation) { evt.stopPropagation(); } return false; });
         syn.$l.addEvent(document, 'contextmenu', (evt) => { if (evt.preventDefault) { evt.preventDefault(); } if (evt.stopPropagation) { evt.stopPropagation(); } return false; });
     }
+    else {
+        syn.$w.removeStorage('synConfig');
+    }
+
     syn.$l.addEvent(document, 'keypress', (evt) => {
         var el = (evt && evt.target || evt.srcElement);
         if (el && el.tagName != 'TEXTAREA' && evt.which == '13') {
@@ -2490,28 +2519,7 @@ function domainLibraryLoad() {
 
     syn.$k.setElement(document);
 
-    var apiService = null;
-    var apiServices = syn.$w.getStorage('apiServices', false);
-    if (apiServices) {
-        apiService = apiServices[syn.Config.SystemID + syn.Config.Environment.substring(0, 1)];
-        if ((apiServices.BearerToken == null || apiServices.BearerToken == undefined) && window.bearerToken) {
-            apiServices.BearerToken = window.bearerToken;
-            syn.$w.setStorage('apiServices', apiServices, false);
-        }
-    }
-    else {
-        if (syn.Config.DomainAPIServer != null) {
-            apiService = syn.Config.DomainAPIServer;
-            apiServices = {};
-            if (window.bearerToken) {
-                apiServices.BearerToken = window.bearerToken;
-            }
-            apiServices[syn.Config.SystemID + syn.Config.Environment.substring(0, 1)] = apiService;
-            syn.$w.setStorage('apiServices', apiServices, false);
-        }
-    }
-
-    if (apiService == null && syn.Config.IsApiFindServer == true) {
+    if (syn.Config && $string.toBoolean(syn.Config.IsApiFindServer) == true) {
         var apiFind = syn.$w.xmlHttp();
         apiFind.open('GET', syn.Config.DiscoveryApiServerUrl + '?systemID={0}&serverType={1}'.format(syn.Config.SystemID, syn.Config.Environment.substring(0, 1)), true);
 
@@ -2536,9 +2544,6 @@ function domainLibraryLoad() {
             }
         };
         apiFind.send();
-    }
-    else {
-        syn.$l.eventLog('apiFind', 'systemApi: {0}'.format(JSON.stringify(apiService)), 'Verbose');
     }
 }
 
@@ -2606,6 +2611,10 @@ function domainPageLoad() {
 
 function domainPageComplete() {
     syn.$w.setTabContentHeight();
+
+    if (parent && parent.$this && parent.$this.method && parent.$this.method.tabUIResizing) {
+        parent.$this.method.tabUIResizing($this);
+    }
 }
 
 function domainPageMediaQuery(classInfix) {

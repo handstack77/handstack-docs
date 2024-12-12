@@ -81,7 +81,6 @@
 
             syn.$l.addEvent(syn.$l.get(elID), 'click', function (evt) {
                 var el = evt.target || evt.srcElement;
-                debugger;
                 // var control = $chart.getChartControl(el.id);
                 // if (control) {
                 //     var chart = control.chart;
@@ -100,7 +99,7 @@
             $chart.chartControls.push({
                 id: elID,
                 chart: Highcharts.chart(elID, setting),
-                setting: $objectlection.clone(setting)
+                setting: $object.clone(setting)
             });
 
             if (setting.bindingID && syn.uicontrols.$data) {
@@ -109,7 +108,6 @@
         },
 
         getValue: function (elID, meta) {
-            debugger;
             var result = null;
             var chart = $chart.getChartControl(elID);
             if (chart) {
@@ -127,7 +125,6 @@
         },
 
         setValue: function (elID, value, meta) {
-            debugger;
             var chart = $chart.getChartControl(elID);
             if (chart) {
                 var seriesLength = chart.series.length;
@@ -500,7 +497,7 @@
             });
 
             textboxCode.type = 'text';
-            textboxCode.setAttribute('syn-events', `['keydown']`);
+            textboxCode.setAttribute('syn-events', `['keydown', 'blur']`);
             textboxCode.setAttribute('baseID', elID);
 
             if ($string.isNullOrEmpty(dataField) == false) {
@@ -551,10 +548,6 @@
             });
             buttonOpen.innerHTML = `<i class="ti ti-search"></i>`;
 
-            if ($string.toBoolean(setting.readonly) == true || $string.toBoolean(setting.disabled) == true) {
-                textboxText.setAttribute('disabled', 'disabled');
-            }
-
             syn.$m.insertAfter(buttonOpen, textboxCode);
 
             var textboxText = syn.$m.create({
@@ -564,7 +557,7 @@
             });
 
             textboxText.type = 'text';
-            textboxText.setAttribute('syn-events', `['keydown']`);
+            textboxText.setAttribute('syn-events', `['keydown', 'blur']`);
             textboxText.setAttribute('baseID', elID);
 
             if ($string.isNullOrEmpty(setting.textDataFieldID) == false) {
@@ -617,16 +610,19 @@
                 }
             });
 
-            syn.$l.addEvent(codeEL, 'keydown', function (evt) {
+            var fnCodeChange = function (evt) {
                 var el = evt.currentTarget;
                 var elID = el.id.replace('_Code', '');
 
                 syn.$l.get(elID + '_Text').value = '';
 
-                if (evt.keyCode == 13) {
+                if (evt.keyCode == 13 || evt instanceof FocusEvent) {
                     syn.$l.trigger(syn.$l.get(elID + '_Button'), 'click', evt)
                 }
-            });
+            }
+
+            syn.$l.addEvent(codeEL, 'keydown', fnCodeChange);
+            syn.$l.addEvent(codeEL, 'blur', fnCodeChange);
 
             var synOptions = codeEL.getAttribute('syn-options');
             if ($string.isNullOrEmpty(synOptions) == false) {
@@ -645,16 +641,19 @@
                 }
             });
 
-            syn.$l.addEvent(textEL, 'keydown', function (evt) {
+            var fnTextChange = function (evt) {
                 var el = evt.currentTarget;
                 var elID = el.id.replace('_Text', '');
 
                 syn.$l.get(elID + '_Code').value = '';
 
-                if (evt.keyCode == 13) {
+                if (evt.keyCode == 13 || evt instanceof FocusEvent) {
                     syn.$l.trigger(syn.$l.get(elID + '_Button'), 'click', evt)
                 }
-            });
+            }
+
+            syn.$l.addEvent(textEL, 'keydown', fnTextChange);
+            syn.$l.addEvent(textEL, 'blur', fnTextChange);
 
             synOptions = textEL.getAttribute('syn-options');
             if ($string.isNullOrEmpty(synOptions) == false) {
@@ -746,9 +745,11 @@
             var dialogOptions = $object.clone(syn.$w.dialogOptions);
             dialogOptions.minWidth = 640;
             dialogOptions.minHeight = 480;
-            dialogOptions.caption = (setting.controlText || setting.columnText || setting.dataSourceID) + ' 코드도움';
+            dialogOptions.close = true;
+            dialogOptions.caption = (setting.controlText || setting.columnText || setting.headerText || setting.dataSourceID) + ' 코드도움';
 
-            syn.$w.showUIDialog(syn.Config.SharedAssetUrl + 'codehelp/index.html?parameterID={0}'.format(parameterID), dialogOptions, function (result) {
+            var url = $string.isNullOrEmpty(setting.url) == false ? setting.url : syn.Config.SharedAssetUrl + 'codehelp/index.html';
+            syn.$w.showUIDialog(url + '?parameterID={0}'.format(parameterID), dialogOptions, function (result) {
                 if (result && result.length > 0) {
                     var value = '';
                     var text = '';
@@ -775,12 +776,19 @@
                         if (setting.textElementID) {
                             syn.$l.get(setting.textElementID).value = text;
                         }
-                    } else if (setting.viewType == 'grid') {
-                        var $grid = syn.uicontrols.$grid;
-                        var row = $grid.getActiveRowIndex(setting.elID);
-                        $grid.setDataAtCell(setting.elID, row, setting.codeColumnID, value);
+                    }
+                    else if (setting.viewType == 'grid' && syn.uicontrols.$grid) {
+                        var row = syn.uicontrols.$grid.getActiveRowIndex(setting.elID);
+                        syn.uicontrols.$grid.setDataAtCell(setting.elID, row, setting.codeColumnID, value);
                         if (setting.textColumnID) {
-                            $grid.setDataAtCell(setting.elID, row, setting.textColumnID, text);
+                            syn.uicontrols.$grid.setDataAtCell(setting.elID, row, setting.textColumnID, text);
+                        }
+                    }
+                    else if (setting.viewType == 'auigrid' && syn.uicontrols.$auigrid) {
+                        var row = syn.uicontrols.$auigrid.getActiveRowIndex(setting.elID);
+                        syn.uicontrols.$auigrid.setDataAtCell(setting.elID, row, setting.codeColumnID, value);
+                        if (setting.textColumnID) {
+                            syn.uicontrols.$auigrid.setDataAtCell(setting.elID, row, setting.textColumnID, text);
                         }
                     }
                 }
@@ -1434,7 +1442,7 @@
                 var controlModule = null;
                 var controlType = null;
 
-                if (tagName.indexOf('QAF_') > -1) {
+                if (tagName.indexOf('SYN_') > -1) {
                     var moduleName = tagName.substring(4).toLowerCase();
                     controlModule = syn.uicontrols['$' + moduleName];
                     controlType = moduleName;
@@ -1446,7 +1454,7 @@
                             controlType = 'button';
                             break;
                         case 'INPUT':
-                            controlType = el.getAttribute('type').toLowerCase();
+                            controlType = (el.getAttribute('type') || 'text').toLowerCase();
                             switch (controlType) {
                                 case 'hidden':
                                 case 'text':
@@ -1570,7 +1578,7 @@
             maxDate: null,
             bound: true,
             format: 'YYYY-MM-DD',
-            ariaLabel: '날짜를 선택하세요',
+            ariaLabel: '날짜를 선택 하세요',
             i18n: {
                 previousMonth: '이전 달',
                 nextMonth: '다음 달',
@@ -1580,6 +1588,8 @@
             },
             showWeekNumber: false,
             showMonthAfterYear: true,
+            showDaysInNextAndPreviousMonths: true,
+            enableSelectionDaysInNextAndPreviousMonths: true,
             yearSuffix: '년',
             firstDay: 0,
             useRangeSelect: false,
@@ -1630,11 +1640,6 @@
                 }
             }
 
-            setting.elID = elID;
-            el.setAttribute('id', el.id + '_hidden');
-            el.setAttribute('syn-options', JSON.stringify(setting));
-            el.style.display = 'none';
-
             var dataField = el.getAttribute('syn-datafield');
             var events = el.getAttribute('syn-events');
 
@@ -1644,9 +1649,16 @@
                 className: 'form-control'
             });
             textbox.type = 'text';
+
             if ($string.isNullOrEmpty(dataField) == false) {
                 textbox.setAttribute('syn-datafield', dataField);
             }
+
+            setting.elID = elID;
+            el.setAttribute('id', el.id + '_hidden');
+            el.setAttribute('syn-options', JSON.stringify(setting));
+            el.removeAttribute('syn-datafield');
+            el.style.display = 'none';
 
             if ($string.isNullOrEmpty(setting.belongID) == true) {
                 textbox.setAttribute('syn-options', `{editType: 'date', maskPattern: '9999-99-99', dataType: 'string'}`);
@@ -1717,6 +1729,77 @@
                 }
             }, setting);
 
+            if (moment && moment.locale() != 'ko') {
+                moment.locale('ko', {
+                    months: '1월_2월_3월_4월_5월_6월_7월_8월_9월_10월_11월_12월'.split('_'),
+                    monthsShort: '1월_2월_3월_4월_5월_6월_7월_8월_9월_10월_11월_12월'.split(
+                        '_'
+                    ),
+                    weekdays: '일요일_월요일_화요일_수요일_목요일_금요일_토요일'.split('_'),
+                    weekdaysShort: '일_월_화_수_목_금_토'.split('_'),
+                    weekdaysMin: '일_월_화_수_목_금_토'.split('_'),
+                    longDateFormat: {
+                        LT: 'A h:mm',
+                        LTS: 'A h:mm:ss',
+                        L: 'YYYY.MM.DD.',
+                        LL: 'YYYY년 MMMM D일',
+                        LLL: 'YYYY년 MMMM D일 A h:mm',
+                        LLLL: 'YYYY년 MMMM D일 dddd A h:mm',
+                        l: 'YYYY.MM.DD.',
+                        ll: 'YYYY년 MMMM D일',
+                        lll: 'YYYY년 MMMM D일 A h:mm',
+                        llll: 'YYYY년 MMMM D일 dddd A h:mm',
+                    },
+                    calendar: {
+                        sameDay: '오늘 LT',
+                        nextDay: '내일 LT',
+                        nextWeek: 'dddd LT',
+                        lastDay: '어제 LT',
+                        lastWeek: '지난주 dddd LT',
+                        sameElse: 'L',
+                    },
+                    relativeTime: {
+                        future: '%s 후',
+                        past: '%s 전',
+                        s: '몇 초',
+                        ss: '%d초',
+                        m: '1분',
+                        mm: '%d분',
+                        h: '한 시간',
+                        hh: '%d시간',
+                        d: '하루',
+                        dd: '%d일',
+                        M: '한 달',
+                        MM: '%d달',
+                        y: '일 년',
+                        yy: '%d년',
+                    },
+                    dayOfMonthOrdinalParse: /\d{1,2}(일|월|주)/,
+                    ordinal: function (number, period) {
+                        switch (period) {
+                            case 'd':
+                            case 'D':
+                            case 'DDD':
+                                return number + '일';
+                            case 'M':
+                                return number + '월';
+                            case 'w':
+                            case 'W':
+                                return number + '주';
+                            default:
+                                return number;
+                        }
+                    },
+                    meridiemParse: /오전|오후/,
+                    isPM: function (token) {
+                        return token === '오후';
+                    },
+                    meridiem: function (hour, minute, isUpper) {
+                        return hour < 12 ? '오전' : '오후';
+                    },
+                });
+            }
+
             var picker = new Pikaday(setting);
             
             if ($string.isNullOrEmpty(setting.value) == false) {
@@ -1735,7 +1818,7 @@
                     date = $date.addMonth(new Date(), $string.toNumber(value.split(':')[1]));
                 }
                 else if (value.startsWith('year:') == true) {
-                    date = $date.addyear(new Date(), $string.toNumber(value.split(':')[1]));
+                    date = $date.addYear(new Date(), $string.toNumber(value.split(':')[1]));
                 }
 
                 if (date) {
@@ -1856,6 +1939,882 @@
 (function (window) {
     'use strict';
     syn.uicontrols = syn.uicontrols || new syn.module();
+    var $dateperiodpicker = syn.uicontrols.$dateperiodpicker || new syn.module();
+
+    $dateperiodpicker.extend({
+        name: 'syn.uicontrols.$dateperiodpicker',
+        version: '1.0.0',
+        dateControls: [],
+        selectedYear: null,
+        pkaStartDate: null,
+        pkaEndDate: null,
+        periodPickerHtml: '<div class=card-body><div class="row g-1"><div class="col pl-0"><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnThisYear>올해</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnUntilToday>오늘까지</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnToday>오늘</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnPreviousDay>전일</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnWeekly>주간</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnPreviousWeek>전주</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnThisMonth>당월</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnPreviousMonth>이전달</button></div></div><div class="row g-1 mt-1"><div class="col pl-0"><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnPreviousYear>전년도</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnTwoYearAgo>전전년도</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnQuarter1>1분기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnQuarter2>2분기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnQuarter3>3분기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnQuarter4>4분기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnFirstHalf>상반기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnSecondHalf>하반기</button></div></div><div class="row g-1 mt-1"><div class="col pl-0"><div class="w-100 btn-group"role=group><input id=_DatePeriodPicker_chkPeriodMonth1 type=checkbox class=btn-check value=01> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth1>1월</label> <input id=_DatePeriodPicker_chkPeriodMonth2 type=checkbox class=btn-check value=02> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth2>2월</label> <input id=_DatePeriodPicker_chkPeriodMonth3 type=checkbox class=btn-check value=03> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth3>3월</label> <input id=_DatePeriodPicker_chkPeriodMonth4 type=checkbox class=btn-check value=04> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth4>4월</label> <input id=_DatePeriodPicker_chkPeriodMonth5 type=checkbox class=btn-check value=05> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth5>5월</label> <input id=_DatePeriodPicker_chkPeriodMonth6 type=checkbox class=btn-check value=06> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth6>6월</label> <input id=_DatePeriodPicker_chkPeriodMonth7 type=checkbox class=btn-check value=07> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth7>7월</label> <input id=_DatePeriodPicker_chkPeriodMonth8 type=checkbox class=btn-check value=08> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth8>8월</label> <input id=_DatePeriodPicker_chkPeriodMonth9 type=checkbox class=btn-check value=09> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth9>9월</label> <input id=_DatePeriodPicker_chkPeriodMonth10 type=checkbox class=btn-check value=10> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth10>10월</label> <input id=_DatePeriodPicker_chkPeriodMonth11 type=checkbox class=btn-check value=11> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth11>11월</label> <input id=_DatePeriodPicker_chkPeriodMonth12 type=checkbox class=btn-check value=12> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth12>12월</label></div></div></div><div class="row mt-2"><div class="col pl-0"><div class=h:227 id=calStartDate></div><input id=_DatePeriodPicker_txtStartDate type=hidden></div><div class="col pl-0"><div class=h:227 id=calEndDate></div><input id=_DatePeriodPicker_txtEndDate type=hidden></div></div></div><div class="p-2 card-footer"><div class="row align-items-center"><div class=col>선택기간: <span id=spnPeriodDate>0일</span></div><div class=col-auto><div class="btn-list flex-nowrap"><button class="btn w-100 btn-primary"id=_DatePeriodPicker_btnConfirm>확인</button></div></div></div></div>',
+        defaultSetting: {
+            elID: '',
+            width: '100%',
+            value: '',
+            defaultDate: null,
+            setDefaultDate: false,
+            minDate: null,
+            maxDate: null,
+            bound: false,
+            format: 'YYYY-MM-DD',
+            ariaLabel: '날짜를 선택 하세요',
+            i18n: {
+                previousMonth: '이전 달',
+                nextMonth: '다음 달',
+                months: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                weekdays: ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'],
+                weekdaysShort: ['일', '월', '화', '수', '목', '금', '토']
+            },
+            showWeekNumber: false,
+            showMonthAfterYear: true,
+            showDaysInNextAndPreviousMonths: true,
+            enableSelectionDaysInNextAndPreviousMonths: true,
+            yearSuffix: '년',
+            firstDay: 0,
+            numberOfMonths: 1,
+            startDataFieldID: '',
+            endDataFieldID: '',
+            dataType: 'string',
+            belongID: null,
+            getter: false,
+            setter: false,
+            controlText: null,
+            validators: null,
+            transactConfig: null,
+            triggerConfig: null
+        },
+
+        addModuleList(el, moduleList, setting, controlType) {
+            var elementID = el.getAttribute('id');
+            var dataField = el.getAttribute('syn-datafield');
+            var formDataField = el.closest('form') ? el.closest('form').getAttribute('syn-datafield') : '';
+
+            moduleList.push({
+                id: elementID,
+                formDataFieldID: formDataField,
+                field: dataField,
+                module: this.name,
+                type: controlType
+            });
+        },
+
+        controlLoad(elID, setting) {
+            var el = syn.$l.get(elID);
+            setting = syn.$w.argumentsExtend($dateperiodpicker.defaultSetting, setting);
+
+            var mod = window[syn.$w.pageScript];
+            if (mod && mod.hook.controlInit) {
+                var moduleSettings = mod.hook.controlInit(elID, setting);
+                setting = syn.$w.argumentsExtend(setting, moduleSettings);
+            }
+
+            setting.elID = elID;
+            el.setAttribute('id', el.id + '_hidden');
+            el.setAttribute('syn-options', JSON.stringify(setting));
+            el.style.display = 'none';
+
+            var events = el.getAttribute('syn-events');
+
+            var textbox1ID = elID + '_StartedAt';
+            var dataField1ID = setting.startDataFieldID || elID + '_StartedAt';
+
+            var textbox1 = syn.$m.create({
+                id: textbox1ID,
+                tag: 'input',
+                className: 'form-control'
+            });
+
+            textbox1.type = 'text';
+            textbox1.setAttribute('syn-datafield', dataField1ID);
+
+            if ($string.isNullOrEmpty(setting.belongID) == true) {
+                textbox1.setAttribute('syn-options', `{editType: 'date', maskPattern: '9999-99-99', dataType: 'string'}`);
+            }
+            else {
+                if ($object.isArray(setting.belongID) == true) {
+                    textbox1.setAttribute('syn-options', `{editType: 'date', maskPattern: '9999-99-99', dataType: 'string', belongID: ${JSON.stringify(setting.belongID)}}`);
+                }
+                else {
+                    textbox1.setAttribute('syn-options', `{editType: 'date', maskPattern: '9999-99-99', dataType: 'string', belongID: '${setting.belongID}'}`);
+                }
+            }
+
+            if ($object.isNullOrUndefined(events) == false) {
+                textbox1.setAttribute('syn-events', events);
+            }
+
+            syn.$m.insertAfter(textbox1, el);
+
+            syn.$l.addEvent(textbox1, 'blur', (evt) => {
+                var elID = evt.currentTarget.id.replace('_StartedAt', '');
+                var textbox1ID = elID + '_StartedAt';
+                var textbox2ID = elID + '_EndedAt';
+
+                var textbox1Value = syn.$l.get(textbox1ID).value.trim();
+                var textbox2Value = syn.$l.get(textbox2ID).value.trim();
+
+                if (textbox1Value > textbox2Value) {
+                    syn.$l.get(textbox1ID).value = textbox2Value || $date.toString(new Date(), 'd');
+                }
+            });
+
+            var span = syn.$m.create({
+                id: `${elID}_Span`,
+                tag: 'span',
+                className: 'input-group-text p-1 border-0 bg:#fff!'
+            });
+            span.innerHTML = `~`;
+            syn.$m.insertAfter(span, textbox1);
+
+            var textbox2ID = elID + '_EndedAt';
+            var dataField1ID = setting.endDataFieldID || elID + '_EndedAt';
+
+            var textbox2 = syn.$m.create({
+                id: textbox2ID,
+                tag: 'input',
+                className: 'form-control'
+            });
+
+            textbox2.type = 'text';
+            textbox2.setAttribute('syn-datafield', dataField1ID);
+
+            if ($string.isNullOrEmpty(setting.belongID) == true) {
+                textbox2.setAttribute('syn-options', `{editType: 'date', maskPattern: '9999-99-99', dataType: 'string'}`);
+            }
+            else {
+                if ($object.isArray(setting.belongID) == true) {
+                    textbox2.setAttribute('syn-options', `{editType: 'date', maskPattern: '9999-99-99', dataType: 'string', belongID: ${JSON.stringify(setting.belongID)}}`);
+                }
+                else {
+                    textbox2.setAttribute('syn-options', `{editType: 'date', maskPattern: '9999-99-99', dataType: 'string', belongID: '${setting.belongID}'}`);
+                }
+            }
+
+            if ($object.isNullOrUndefined(events) == false) {
+                textbox2.setAttribute('syn-events', events);
+            }
+
+            syn.$m.insertAfter(textbox2, span);
+
+            syn.$l.addEvent(textbox2, 'blur', (evt) => {
+                var elID = evt.currentTarget.id.replace('_EndedAt', '');
+                var textbox1ID = elID + '_StartedAt';
+                var textbox2ID = elID + '_EndedAt';
+
+                var textbox1Value = syn.$l.get(textbox1ID).value.trim();
+                var textbox2Value = syn.$l.get(textbox2ID).value.trim();
+
+                if (textbox1Value > textbox2Value) {
+                    syn.$l.get(textbox2ID).value = textbox1Value || $date.toString(new Date(), 'd');
+                }
+            });
+
+            var button = syn.$m.create({
+                id: `${elID}_Button`,
+                tag: 'button',
+                className: 'btn btn-icon f:20! bg-muted-lt'
+            });
+            button.innerHTML = `<i class="ti ti-calendar"></i>`;
+            syn.$m.insertAfter(button, textbox2);
+
+            syn.uicontrols.$textbox.controlLoad(textbox1ID, eval('(' + syn.$l.get(textbox1ID).getAttribute('syn-options') + ')'));
+            syn.uicontrols.$textbox.controlLoad(textbox2ID, eval('(' + syn.$l.get(textbox2ID).getAttribute('syn-options') + ')'));
+
+            setting.field = el;
+
+            if (syn.$l.get('divPeriodPicker') == null) {
+                var divPeriodPicker = syn.$m.create({
+                    id: 'divPeriodPicker',
+                    tag: 'div',
+                    className: 'card absolute w:568 z-index:100 border-radius:0! border:1px|solid|#ccc! hidden'
+                });
+
+                divPeriodPicker.innerHTML = $dateperiodpicker.periodPickerHtml;
+                divPeriodPicker.style.cssText = `box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.5);`;
+
+                document.body.appendChild(divPeriodPicker);
+
+                syn.$l.addEvent('_DatePeriodPicker_btnThisYear', 'click', $dateperiodpicker._DatePeriodPicker_btnThisYear_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnUntilToday', 'click', $dateperiodpicker._DatePeriodPicker_btnUntilToday_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnToday', 'click', $dateperiodpicker._DatePeriodPicker_btnToday_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnPreviousDay', 'click', $dateperiodpicker._DatePeriodPicker_btnPreviousDay_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnTomorrow', 'click', $dateperiodpicker._DatePeriodPicker_btnTomorrow_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnWeekly', 'click', $dateperiodpicker._DatePeriodPicker_btnWeekly_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnPreviousWeek', 'click', $dateperiodpicker._DatePeriodPicker_btnPreviousWeek_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnThisMonth', 'click', $dateperiodpicker._DatePeriodPicker_btnThisMonth_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnPreviousMonth', 'click', $dateperiodpicker._DatePeriodPicker_btnPreviousMonth_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnPreviousYear', 'click', $dateperiodpicker._DatePeriodPicker_btnPreviousYear_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnTwoYearAgo', 'click', $dateperiodpicker._DatePeriodPicker_btnTwoYearAgo_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnQuarter1', 'click', $dateperiodpicker._DatePeriodPicker_btnQuarter1_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnQuarter2', 'click', $dateperiodpicker._DatePeriodPicker_btnQuarter2_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnQuarter3', 'click', $dateperiodpicker._DatePeriodPicker_btnQuarter3_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnQuarter4', 'click', $dateperiodpicker._DatePeriodPicker_btnQuarter4_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnFirstHalf', 'click', $dateperiodpicker._DatePeriodPicker_btnFirstHalf_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnSecondHalf', 'click', $dateperiodpicker._DatePeriodPicker_btnSecondHalf_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnConfirm', 'click', $dateperiodpicker._DatePeriodPicker_btnConfirm_click);
+                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth1', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth2', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth3', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth4', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth5', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth6', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth7', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth8', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth9', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth10', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth11', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth12', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+
+                $dateperiodpicker.selectedYear = $date.toString(new Date(), 'y');
+
+                var pkaStartSetting = $object.clone(setting);
+                pkaStartSetting.field = syn.$l.get('_DatePeriodPicker_txtStartDate');
+                pkaStartSetting.container = syn.$l.get('calStartDate');
+                pkaStartSetting.onSelect = (date) => {
+                    if ($object.isNullOrUndefined(date) == true) {
+                        return;
+                    }
+
+                    var elID = arguments[0];
+                    var target = window.event && window.event.currentTarget;
+                    if (target && target.id == `${elID}_Button`) {
+                        return;
+                    }
+
+                    var startedAt = $dateperiodpicker.pkaStartDate.getDate();
+                    var endedAt = $dateperiodpicker.pkaEndDate.getDate();
+                    syn.$l.get('spnPeriodDate').innerText = `${($date.diff(startedAt, endedAt) + 1)}일`;
+
+                    $dateperiodpicker.pkaEndDate.setMinDate(startedAt);
+                    $dateperiodpicker.checkPeriodMonth();
+
+                    var popup = syn.$l.get('divPeriodPicker');
+                    if (syn.$m.hasClass(popup, 'hidden') == false) {
+                        var control = $dateperiodpicker.getControl(elID);
+                        if (control) {
+                            var textbox1 = syn.$l.get(control.textbox1ID);
+                            var mod = window[syn.$w.pageScript];
+                            var events = eval(textbox1.getAttribute('syn-events'));
+
+                            var selectFunction = '{0}_onselect'.format(elID);
+                            if (events && events.includes('onselect') && mod && mod.event[selectFunction]) {
+                                mod.event[selectFunction](elID, 'startedAt', date);
+                            }
+                        }
+                    }
+                };
+
+                $dateperiodpicker.pkaStartDate = new Pikaday(pkaStartSetting);
+
+                var pkaEndSetting = $object.clone(setting);
+                pkaEndSetting.field = syn.$l.get('_DatePeriodPicker_txtEndDate');
+                pkaEndSetting.container = syn.$l.get('calEndDate');
+                pkaEndSetting.onSelect = (date) => {
+                    if ($object.isNullOrUndefined(date) == true) {
+                        return;
+                    }
+
+                    var elID = arguments[0];
+                    var target = window.event && window.event.currentTarget;
+                    if (target && target.id == `${elID}_Button`) {
+                        return;
+                    }
+
+                    var startedAt = $dateperiodpicker.pkaStartDate.getDate();
+                    var endedAt = $dateperiodpicker.pkaEndDate.getDate();
+                    syn.$l.get('spnPeriodDate').innerText = `${($date.diff(startedAt, endedAt) + 1)}일`;
+
+                    $dateperiodpicker.pkaStartDate.setMaxDate(endedAt);
+                    $dateperiodpicker.checkPeriodMonth();
+
+                    var popup = syn.$l.get('divPeriodPicker');
+                    if (syn.$m.hasClass(popup, 'hidden') == false) {
+                        var control = $dateperiodpicker.getControl(elID);
+                        if (control) {
+                            var textbox2 = syn.$l.get(control.textbox2ID);
+                            var mod = window[syn.$w.pageScript];
+                            var events = eval(textbox2.getAttribute('syn-events'));
+
+                            var selectFunction = '{0}_onselect'.format(elID);
+                            if (events && events.includes('onselect') && mod && mod.event[selectFunction]) {
+                                mod.event[selectFunction](elID, 'endedAt', date);
+                            }
+                        }
+                    }
+                };
+
+                $dateperiodpicker.pkaEndDate = new Pikaday(pkaEndSetting);
+
+                syn.$l.addEvent(document.body, 'click', (evt) => {
+                    var popup = syn.$l.get('divPeriodPicker');
+                    if (syn.$m.hasClass(popup, 'hidden') == false) {
+                        var elID = popup.getAttribute('elID');
+                        if (popup.contains(evt.target) == false) {
+                            var button = evt.target.closest('button');
+                            if ($string.isNullOrEmpty(evt.target.data) == true && ($object.isNullOrUndefined(button) == true || button.id.startsWith(elID) == false)) {
+                                $dateperiodpicker.hidePopup();
+                            }
+                        }
+                    }
+
+                    evt.returnValue = false;
+                    evt.cancel = true;
+                    if (evt.preventDefault) {
+                        evt.preventDefault();
+                    }
+
+                    if (evt.stopPropagation) {
+                        evt.stopPropagation();
+                    }
+                    return false;
+                });
+            }
+
+            if (moment && moment.locale() != 'ko') {
+                moment.locale('ko', {
+                    months: '1월_2월_3월_4월_5월_6월_7월_8월_9월_10월_11월_12월'.split('_'),
+                    monthsShort: '1월_2월_3월_4월_5월_6월_7월_8월_9월_10월_11월_12월'.split(
+                        '_'
+                    ),
+                    weekdays: '일요일_월요일_화요일_수요일_목요일_금요일_토요일'.split('_'),
+                    weekdaysShort: '일_월_화_수_목_금_토'.split('_'),
+                    weekdaysMin: '일_월_화_수_목_금_토'.split('_'),
+                    longDateFormat: {
+                        LT: 'A h:mm',
+                        LTS: 'A h:mm:ss',
+                        L: 'YYYY.MM.DD.',
+                        LL: 'YYYY년 MMMM D일',
+                        LLL: 'YYYY년 MMMM D일 A h:mm',
+                        LLLL: 'YYYY년 MMMM D일 dddd A h:mm',
+                        l: 'YYYY.MM.DD.',
+                        ll: 'YYYY년 MMMM D일',
+                        lll: 'YYYY년 MMMM D일 A h:mm',
+                        llll: 'YYYY년 MMMM D일 dddd A h:mm',
+                    },
+                    calendar: {
+                        sameDay: '오늘 LT',
+                        nextDay: '내일 LT',
+                        nextWeek: 'dddd LT',
+                        lastDay: '어제 LT',
+                        lastWeek: '지난주 dddd LT',
+                        sameElse: 'L',
+                    },
+                    relativeTime: {
+                        future: '%s 후',
+                        past: '%s 전',
+                        s: '몇 초',
+                        ss: '%d초',
+                        m: '1분',
+                        mm: '%d분',
+                        h: '한 시간',
+                        hh: '%d시간',
+                        d: '하루',
+                        dd: '%d일',
+                        M: '한 달',
+                        MM: '%d달',
+                        y: '일 년',
+                        yy: '%d년',
+                    },
+                    dayOfMonthOrdinalParse: /\d{1,2}(일|월|주)/,
+                    ordinal: function (number, period) {
+                        switch (period) {
+                            case 'd':
+                            case 'D':
+                            case 'DDD':
+                                return number + '일';
+                            case 'M':
+                                return number + '월';
+                            case 'w':
+                            case 'W':
+                                return number + '주';
+                            default:
+                                return number;
+                        }
+                    },
+                    meridiemParse: /오전|오후/,
+                    isPM: function (token) {
+                        return token === '오후';
+                    },
+                    meridiem: function (hour, minute, isUpper) {
+                        return hour < 12 ? '오전' : '오후';
+                    },
+                });
+            }
+
+            if ($string.isNullOrEmpty(setting.value) == false) {
+                var value = setting.value;
+                var number = $string.toNumber(value.split(':')[1]);
+                var date = null;
+                if (value == 'now') {
+                    date = new Date();
+                }
+                else if (value.startsWith('day:') == true) {
+                    date = $date.addDay(new Date(), number);
+                }
+                else if (value.startsWith('week:') == true) {
+                    date = $date.addWeek(new Date(), number);
+                }
+                else if (value.startsWith('month:') == true) {
+                    date = $date.addMonth(new Date(), number);
+                }
+                else if (value.startsWith('year:') == true) {
+                    date = $date.addYear(new Date(), number);
+                }
+
+                if (number < 0) {
+                    if (date) {
+                        var textbox1 = syn.$l.get(textbox1ID);
+                        textbox1.value = $date.toString(date, 'd');
+
+                        var textbox2 = syn.$l.get(textbox2ID);
+                        textbox2.value = $date.toString(new Date(), 'd');
+                    }
+                }
+                else {
+                    if (date) {
+                        var textbox1 = syn.$l.get(textbox1ID);
+                        textbox1.value = $date.toString(new Date(), 'd');
+
+                        var textbox2 = syn.$l.get(textbox2ID);
+                        textbox2.value = $date.toString(date, 'd');
+                    }
+                }
+            }
+
+            syn.$l.addEvent(syn.$l.get(elID + '_Button'), 'click', function (evt) {
+                var elID = evt.currentTarget.id.replace('_Button', '');
+                var today = $date.toString(new Date(), 'd');
+                var control = $dateperiodpicker.getControl(elID);
+                if (control) {
+                    var textbox1 = syn.$l.get(control.textbox1ID);
+                    var startDate = $date.toString(new Date(textbox1.value || today), 'd');
+                    var textbox2 = syn.$l.get(control.textbox2ID);
+                    var endDate = $date.toString(new Date(textbox2.value || today), 'd');
+
+                    $dateperiodpicker.pkaStartDate.setDate(startDate);
+                    $dateperiodpicker.pkaEndDate.setDate(endDate);
+
+                    $dateperiodpicker.setDateRange(startDate, endDate);
+                }
+                else {
+                    $dateperiodpicker.pkaStartDate.setDate(today);
+                    $dateperiodpicker.pkaEndDate.setDate(today);
+
+                    $dateperiodpicker.setDateRange(today, today);
+                }
+
+                $dateperiodpicker.checkPeriodMonth();
+                $dateperiodpicker.showPopup(elID);
+            });
+
+            $dateperiodpicker.dateControls.push({
+                id: elID,
+                textbox1ID: textbox1ID,
+                textbox2ID: textbox2ID,
+                setting: $object.clone(setting)
+            });
+
+            if (setting.bindingID && syn.uicontrols.$data) {
+                syn.uicontrols.$data.bindingSource(elID, setting.bindingID);
+            }
+        },
+
+        showPopup(elID) {
+            var control = $dateperiodpicker.getControl(elID);
+            if (control) {
+                var textbox = syn.$l.get(control.textbox1ID);
+                var popup = syn.$l.get('divPeriodPicker');
+                popup.setAttribute('elID', elID);
+                var rect = textbox.getBoundingClientRect();
+
+                syn.$m.removeClass(popup, 'hidden');
+
+                var positions = [
+                    { top: rect.bottom + window.scrollY, left: rect.left + window.scrollX },
+                    { top: rect.top + window.scrollY - popup.offsetHeight, left: rect.left + window.scrollX }
+                ];
+
+                var bestPosition = positions[0];
+                var viewportWidth = window.innerWidth;
+                var viewportHeight = window.innerHeight;
+
+                for (var i = 0; i < positions.length; i++) {
+                    var pos = positions[i];
+                    if (pos.left >= 0 && pos.left + popup.offsetWidth <= viewportWidth &&
+                        pos.top >= 0 && pos.top + popup.offsetHeight <= viewportHeight) {
+                        bestPosition = pos;
+                        break;
+                    }
+                }
+
+                popup.style.top = bestPosition.top + 'px';
+                popup.style.left = bestPosition.left + 'px';
+            }
+        },
+
+        hidePopup() {
+            var popup = syn.$l.get('divPeriodPicker');
+            syn.$m.addClass(popup, 'hidden');
+        },
+
+        getValue(elID, meta) {
+            var result = null;
+            var dateControl = $dateperiodpicker.getControl(elID);
+
+            if (dateControl) {
+                var startedAt = '';
+                if (dateControl.textbox1ID && syn.$l.get(dateControl.textbox1ID)) {
+                    startedAt = syn.$l.get(dateControl.textbox1ID).value;
+                }
+
+                var endedAt = '';
+                if (dateControl.textbox1ID && syn.$l.get(dateControl.textbox2ID)) {
+                    endedAt = syn.$l.get(dateControl.textbox2ID).value;
+                }
+                result = `${startedAt},${endedAt}`;
+            }
+
+            return result;
+        },
+
+        setValue(elID, value, meta) {
+            var dateControl = $dateperiodpicker.getControl(elID);
+            if (dateControl) {
+                var startedAt = '';
+                var endedAt = '';
+                var splitValue = $string.split(value, ',');
+                if (splitValue.length > 1) {
+                    startedAt = splitValue[0];
+                    endedAt = splitValue[1];
+                }
+                else if (splitValue.length > 0) {
+                    startedAt = splitValue[0];
+                    endedAt = splitValue[0];
+                }
+
+                if (dateControl.textbox1ID && syn.$l.get(dateControl.textbox1ID)) {
+                    syn.$l.get(dateControl.textbox1ID).value = startedAt;
+                }
+
+                if (dateControl.textbox1ID && syn.$l.get(dateControl.textbox2ID)) {
+                    syn.$l.get(dateControl.textbox2ID).value = endedAt;
+                }
+            }
+        },
+
+        clear(elID, isControlLoad) {
+            var dateControl = $dateperiodpicker.getControl(elID);
+            if (dateControl) {
+                if (dateControl.textbox1ID && syn.$l.get(dateControl.textbox1ID)) {
+                    syn.$l.get(dateControl.textbox1ID).value = '';
+                }
+
+                if (dateControl.textbox1ID && syn.$l.get(dateControl.textbox2ID)) {
+                    syn.$l.get(dateControl.textbox2ID).value = '';
+                }
+            }
+        },
+
+        getControl(elID) {
+            var result = null;
+            var length = $dateperiodpicker.dateControls.length;
+            for (var i = 0; i < length; i++) {
+                var item = $dateperiodpicker.dateControls[i];
+
+                if (item.id == elID) {
+                    result = item;
+                    break;
+                }
+            }
+
+            return result;
+        },
+
+        updateStartDate(startPicker, endPicker, startDate) {
+            startPicker.setStartRange(startDate);
+            endPicker.setStartRange(startDate);
+            endPicker.setMinDate(startDate);
+        },
+
+        updateEndDate(startPicker, endPicker, endDate) {
+            startPicker.setEndRange(endDate);
+            startPicker.setMaxDate(endDate);
+            endPicker.setEndRange(endDate);
+        },
+
+        setDateRange(startDate, endDate) {
+            startDate = startDate || $date.toString(new Date(), 'd');
+            endDate = endDate || $date.toString(new Date(), 'd');
+
+            $dateperiodpicker.selectedYear = startDate.substring(0, 4);
+
+            var startedAt = new Date(startDate);
+            var endedAt = new Date(endDate);
+
+            $dateperiodpicker.pkaStartDate.setDate(startDate);
+            $dateperiodpicker.pkaStartDate.setStartRange($date.addDay(startedAt, -1));
+            $dateperiodpicker.pkaStartDate.setEndRange(endedAt);
+            $dateperiodpicker.pkaStartDate.draw();
+
+            $dateperiodpicker.pkaEndDate.setDate(endDate);
+            $dateperiodpicker.pkaEndDate.setStartRange($date.addDay(startedAt, -1));
+            $dateperiodpicker.pkaEndDate.setEndRange(endedAt);
+            $dateperiodpicker.pkaEndDate.draw();
+
+            syn.$l.get('spnPeriodDate').innerText = `${($date.diff(startedAt, endedAt) + 1)}일`;
+        },
+
+        checkSelectedMonth(month) {
+            var date = new Date($dateperiodpicker.selectedYear + `-${month}-01`);
+            var startDate = $date.toString(date, 'd');
+            var endDate = $date.getLastDate(new Date(startDate));
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+            $dateperiodpicker.checkPeriodMonth([$string.toNumber(month)]);
+        },
+
+        checkPeriodMonth(months) {
+            for (var i = 1; i <= 12; i++) {
+                syn.$l.get('_DatePeriodPicker_chkPeriodMonth' + i.toString()).checked = ($object.isArray(months) == true && months.includes(i) == true);
+            }
+        },
+
+        setLocale(elID, translations, control, options) {
+        },
+
+        _DatePeriodPicker_btnThisYear_click() {
+            var date = new Date();
+            var year = $date.toString(date, 'y');
+            var startDate = year + '-01-01';
+            var endDate = year + '-12-31';
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+            $dateperiodpicker.checkPeriodMonth([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        },
+
+        _DatePeriodPicker_btnUntilToday_click() {
+            var date = new Date();
+            var today = $date.toString(date, 'd');
+            var startDate = today.substring(0, 4) + '-01-01';
+            var endDate = today;
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+
+            var thisMonth = parseInt($date.toString(date, 'm'));
+            $dateperiodpicker.checkPeriodMonth(Array(thisMonth).fill().map((_, i) => i + 1));
+        },
+
+        _DatePeriodPicker_btnToday_click() {
+            var date = new Date();
+            var startDate = $date.toString(date, 'd');
+            var endDate = startDate;
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+
+            var thisMonth = parseInt($date.toString(date, 'm'));
+            $dateperiodpicker.checkPeriodMonth([thisMonth]);
+        },
+
+        _DatePeriodPicker_btnPreviousDay_click() {
+            var date = new Date();
+            var startDate = $date.toString($date.addDay(date, -1), 'd');
+            var endDate = startDate;
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+
+            var thisMonth = parseInt($date.toString(date, 'm'));
+            $dateperiodpicker.checkPeriodMonth([thisMonth]);
+        },
+
+        _DatePeriodPicker_btnWeekly_click() {
+            var date = new Date();
+            var today = $date.toString(date, 'd');
+            var weekNumber = $date.toString(date, 'w');
+            var weekIndex = weekNumber - 1;
+            var weekOfMonths = $date.weekOfMonth(today.substring(0, 4), today.substring(5, 7));
+            var week = weekOfMonths[weekIndex];
+            var startDate = week.weekStartDate;
+            var endDate = week.weekEndDate;
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+
+            var thisMonth = parseInt($date.toString(date, 'm'));
+            $dateperiodpicker.checkPeriodMonth([thisMonth]);
+        },
+
+        _DatePeriodPicker_btnPreviousWeek_click() {
+            var date = new Date();
+            var week = null;
+            if ($date.addWeek(date, -1).getMonth() < date.getMonth()) {
+                date = $date.getLastDate($date.addMonth(new Date(), -1));
+            }
+
+            var today = $date.toString(date, 'd');
+            var weekNumber = $date.toString(date, 'w');
+            var weekIndex = weekNumber - 1 - ($date.addWeek(date, -1).getMonth() == date.getMonth() ? 1 : 0);
+            var weekOfMonths = $date.weekOfMonth(today.substring(0, 4), today.substring(5, 7));
+            var week = weekOfMonths[weekIndex];
+
+            var startDate = week.weekStartDate;
+            var endDate = week.weekEndDate;
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+
+            var thisMonth = parseInt($date.toString(date, 'm'));
+            $dateperiodpicker.checkPeriodMonth([thisMonth]);
+        },
+
+        _DatePeriodPicker_btnThisMonth_click() {
+            var date = new Date();
+            var startDate = $date.toString(date, 'ym') + '-01';
+            var endDate = $date.getLastDate(date);
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+
+            var thisMonth = parseInt($date.toString(date, 'm'));
+            $dateperiodpicker.checkPeriodMonth([thisMonth]);
+        },
+
+        _DatePeriodPicker_btnPreviousMonth_click() {
+            var date = $date.addMonth(new Date(), -1);
+            var startDate = $date.toString(date, 'ym') + '-01';
+            var endDate = $date.getLastDate(date);
+            $dateperiodpicker.selectedYear = startDate.substring(0, 4);
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+
+            var thisMonth = parseInt($date.toString(date, 'm'));
+            $dateperiodpicker.checkPeriodMonth([thisMonth]);
+        },
+
+        _DatePeriodPicker_btnPreviousYear_click() {
+            var date = $date.addYear(new Date(), -1);
+            var year = $date.toString(date, 'y');
+            var startDate = year + '-01-01';
+            var endDate = year + '-12-31';
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+            $dateperiodpicker.checkPeriodMonth([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        },
+
+        _DatePeriodPicker_btnTwoYearAgo_click() {
+            var date = $date.addYear(new Date(), -2);
+            var year = $date.toString(date, 'y');
+            var startDate = year + '-01-01';
+            var endDate = year + '-12-31';
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+            $dateperiodpicker.checkPeriodMonth([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        },
+
+        _DatePeriodPicker_btnQuarter1_click() {
+            var date = new Date($dateperiodpicker.selectedYear + '-01-01');
+            var year = $date.toString(date, 'y');
+            var startDate = year + '-01-01';
+            var endDate = $date.getLastDate(new Date(year + '-03-01'));
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+            $dateperiodpicker.checkPeriodMonth([1, 2, 3]);
+        },
+
+        _DatePeriodPicker_btnQuarter2_click() {
+            var date = new Date($dateperiodpicker.selectedYear + '-01-01');
+            var year = $date.toString(date, 'y');
+            var startDate = year + '-04-01';
+            var endDate = $date.getLastDate(new Date(year + '-06-01'));
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+            $dateperiodpicker.checkPeriodMonth([4, 5, 6]);
+        },
+
+        _DatePeriodPicker_btnQuarter3_click() {
+            var date = new Date($dateperiodpicker.selectedYear + '-01-01');
+            var year = $date.toString(date, 'y');
+            var startDate = year + '-07-01';
+            var endDate = $date.getLastDate(new Date(year + '-09-01'));
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+            $dateperiodpicker.checkPeriodMonth([7, 8, 9]);
+        },
+
+        _DatePeriodPicker_btnQuarter4_click() {
+            var date = new Date($dateperiodpicker.selectedYear + '-01-01');
+            var year = $date.toString(date, 'y');
+            var startDate = year + '-10-01';
+            var endDate = $date.getLastDate(new Date(year + '-12-01'));
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+            $dateperiodpicker.checkPeriodMonth([10, 11, 12]);
+        },
+
+        _DatePeriodPicker_btnFirstHalf_click() {
+            var date = new Date($dateperiodpicker.selectedYear + '-01-01');
+            var year = $date.toString(date, 'y');
+            var startDate = year + '-01-01';
+            var endDate = $date.getLastDate(new Date(year + '-06-01'));
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+            $dateperiodpicker.checkPeriodMonth([1, 2, 3, 4, 5, 6]);
+        },
+
+        _DatePeriodPicker_btnSecondHalf_click() {
+            var date = new Date($dateperiodpicker.selectedYear + '-01-01');
+            var year = $date.toString(date, 'y');
+            var startDate = year + '-07-01';
+            var endDate = $date.getLastDate(new Date(year + '-12-01'));
+
+            $dateperiodpicker.setDateRange(startDate, endDate);
+            $dateperiodpicker.checkPeriodMonth([7, 8, 9, 10, 11, 12]);
+        },
+
+        _DatePeriodPicker_btnConfirm_click() {
+            if (syn.$l.get('spnPeriodDate').innerText.startsWith('-') == true) {
+                syn.$w.alert('시작일자가 종료일자 보다 클 수 없습니다.');
+                return;
+            }
+
+            var popup = syn.$l.get('divPeriodPicker');
+            if (syn.$m.hasClass(popup, 'hidden') == false) {
+                var elID = popup.getAttribute('elID');
+
+                var control = $dateperiodpicker.getControl(elID);
+                if (control) {
+                    var startedAt = $dateperiodpicker.pkaStartDate.getDate();
+                    var endedAt = $dateperiodpicker.pkaEndDate.getDate();
+
+                    var textbox1 = syn.$l.get(control.textbox1ID);
+                    textbox1.value = $date.toString(startedAt, 'd');
+
+                    var textbox2 = syn.$l.get(control.textbox2ID);
+                    textbox2.value = $date.toString(endedAt, 'd');
+
+                    var mod = window[syn.$w.pageScript];
+                    var events = eval(textbox1.getAttribute('syn-events'));
+
+                    var confirmFunction = '{0}_onconfirm'.format(elID);
+                    if (events && events.includes('onconfirm') && mod && mod.event[confirmFunction]) {
+                        mod.event[confirmFunction](elID, textbox1.value, textbox2.value);
+                    }
+                }
+
+                $dateperiodpicker.hidePopup();
+            }
+        },
+
+        _DatePeriodPicker_chkPeriodMonth_change(evt) {
+            $dateperiodpicker.checkSelectedMonth(evt.target.value);
+        }
+    });
+    syn.uicontrols.$dateperiodpicker = $dateperiodpicker;
+})(window);
+
+/// <reference path="/js/syn.js" />
+
+(function (window) {
+    'use strict';
+    syn.uicontrols = syn.uicontrols || new syn.module();
     var $multiselect = syn.uicontrols.$multiselect || new syn.module();
 
     $multiselect.extend({
@@ -1963,8 +2922,10 @@
         },
 
         dataRefresh(elID, setting, callback) {
-            setting = syn.$w.argumentsExtend(JSON.parse(syn.$l.get(elID).getAttribute('syn-options')), setting);
+            setting = setting || {};
+            setting.elID = elID;
             setting.storeSourceID = setting.storeSourceID || setting.dataSourceID;
+            setting = syn.$w.argumentsExtend(JSON.parse(syn.$l.get(elID).getAttribute('syn-options')), setting);
 
             var el = syn.$l.get(elID);
             el.setAttribute('syn-options', JSON.stringify(setting));
@@ -2203,41 +3164,54 @@
         },
 
         getSelectedIndex(elID) {
-            var result = '';
+            var result = [];
             var el = syn.$l.get(elID);
             if ($object.isNullOrUndefined(el) == false) {
-                result = el.options.selectedIndex;
+                Array.from(el.options).forEach((option, index) => {
+                    if (option.selected == true) {
+                        result.push(index);
+                    }
+                });
             }
 
             return result;
         },
 
-        setSelectedIndex(elID, index) {
+        setSelectedIndex(elID, value) {
             var el = syn.$l.get(elID);
             if ($object.isNullOrUndefined(el) == false) {
-                el.options.selectedIndex = index;
+                var length = el.options.length;
+                for (var i = 0; i < length; i++) {
+                    if ($object.isNumber(value) == true) {
+                        if (i == value) {
+                            item.selected = true;
+                        }
+                    }
+                    else if ($object.isArray(value) == true) {
+                        if (value.includes(i) > -1) {
+                            item.selected = true;
+                        }
+                    }
+                }
+                $multiselect.controlReload(elID);
             }
         },
 
         getSelectedValue(elID) {
-            var result = '';
+            var result = [];
             var el = syn.$l.get(elID);
             if ($object.isNullOrUndefined(el) == false) {
-                if (el.options.selectedIndex > -1) {
-                    result = el.options[el.options.selectedIndex].value;
-                }
+                result = Array.from(el.selectedOptions).map(option => option.value);
             }
 
             return result;
         },
 
         getSelectedText(elID) {
-            var result = '';
+            var result = [];
             var el = syn.$l.get(elID);
             if ($object.isNullOrUndefined(el) == false) {
-                if (el.options.selectedIndex > -1) {
-                    result = el.options[el.options.selectedIndex].text;
-                }
+                result = Array.from(el.selectedOptions).map(option => option.text);
             }
 
             return result;
@@ -2251,14 +3225,10 @@
                     var item = el.options[i];
 
                     if ($object.isString(value) == true) {
-                        if (item.value == value) {
-                            item.selected = true;
-                        }
+                        item.selected = item.value == value;
                     }
                     else if ($object.isArray(value) == true) {
-                        if (value.indexOf(item.value) > -1) {
-                            item.selected = true;
-                        }
+                        item.selected = value.includes(item.value) == true;
                     }
                 }
                 $multiselect.controlReload(elID);
@@ -2273,14 +3243,10 @@
                     var item = el.options[i];
 
                     if ($object.isString(text) == true) {
-                        if (item.text == text) {
-                            item.selected = true;
-                        }
+                        item.selected = item.text == text;
                     }
                     else if ($object.isArray(text) == true) {
-                        if (text.indexOf(item.text) > -1) {
-                            item.selected = true;
-                        }
+                        item.selected = text.includes(item.text) == true;
                     }
                 }
                 $multiselect.controlReload(elID);
@@ -2487,8 +3453,10 @@
         },
 
         dataRefresh(elID, setting, callback) {
-            setting = syn.$w.argumentsExtend(JSON.parse(syn.$l.get(elID).getAttribute('syn-options')), setting);
+            setting = setting || {};
+            setting.elID = elID;
             setting.storeSourceID = setting.storeSourceID || setting.dataSourceID;
+            setting = syn.$w.argumentsExtend(JSON.parse(syn.$l.get(elID).getAttribute('syn-options')), setting);
 
             var el = syn.$l.get(elID);
             el.setAttribute('syn-options', JSON.stringify(setting));
@@ -2928,6 +3896,17 @@
             custom3: undefined,
             minHeight: 360,
             fileManagerServer: '',
+            fileManagerPath: '/repository/api/storage',
+            pageGetRepository: 'get-repository',
+            pageUploadFile: 'upload-file',
+            pageUploadFiles: 'upload-files',
+            pageActionHandler: 'action-handler',
+            pageRemoveItem: 'remove-item',
+            pageRemoveItems: 'remove-items',
+            pageDownloadFile: 'download-file',
+            pageHttpDownloadFile: 'http-download-file',
+            pageVirtualDownloadFile: 'virtual-download-file',
+            pageVirtualDeleteFile: 'virtual-delete-file',
             dataType: 'string',
             belongID: null,
             getter: false,
@@ -2966,7 +3945,7 @@
             setting.uploadType = null;
             setting.uploadUrl = null;
 
-            if (syn.Config && syn.Config.FileManagerServer) {
+            if ($string.isNullOrEmpty(setting.fileManagerServer) == true && syn.Config && syn.Config.FileManagerServer) {
                 setting.fileManagerServer = syn.Config.FileManagerServer;
             }
 
@@ -3008,7 +3987,7 @@
                 $fileclient.businessID = '0';
             }
 
-            syn.$w.loadJson(setting.fileManagerServer + '/repository/api/storage/get-repository?applicationID={0}&repositoryID={1}'.format($fileclient.applicationID, setting.repositoryID), setting, function (setting, repositoryData) {
+            syn.$w.loadJson(setting.fileManagerServer + setting.fileManagerPath + '/' + setting.pageGetRepository + '?applicationID={0}&repositoryID={1}'.format($fileclient.applicationID, setting.repositoryID), setting, function (setting, repositoryData) {
                 setting.dialogTitle = repositoryData.RepositoryName;
                 setting.storageType = repositoryData.StorageType;
                 setting.isMultiUpload = repositoryData.IsMultiUpload;
@@ -3076,11 +4055,8 @@
         moduleInit() {
             syn.$l.addEvent(window, 'message', function (e) {
                 var repositoryData = e.data;
-                if ((syn.Config.FileManagerServer + '/repository/api/storage').indexOf(e.origin) > -1 && repositoryData && repositoryData.action == 'upload-files') {
-                    if (window.$progressBar) {
-                        $progressBar.close();
-                    }
-
+                var setting = $fileclient.getFileSetting(repositoryData.elementID);
+                if (setting && ($fileclient.getRepositoryUrl()).indexOf(e.origin) > -1 && repositoryData && repositoryData.action == 'upload-files') {
                     if (repositoryData.callback) {
                         var mod = window[syn.$w.pageScript];
                         if (mod) {
@@ -3115,11 +4091,14 @@
                             }
                         }
                     }
+
+                    if ($.modal) {
+                        $.modal.close();
+                    }
                 }
 
-                if ($.modal) {
-                    $.modal.close();
-                }
+                e.stopPropagation();
+                return false;
             });
         },
 
@@ -3138,6 +4117,37 @@
             return result;
         },
 
+        getFileManagerSetting() {
+            var result = null;
+
+            if ($fileclient.fileControls.length > 0) {
+                result = $fileclient.fileControls[0].setting;
+            }
+
+            return result;
+        },
+
+        setPageSetting(pageSettings) {
+            pageSettings = pageSettings || {
+                pageGetRepository: 'get-repository',
+                pageUploadFile: 'upload-file',
+                pageUploadFiles: 'upload-files',
+                pageActionHandler: 'action-handler',
+                pageRemoveItem: 'remove-item',
+                pageRemoveItems: 'remove-items',
+                pageDownloadFile: 'download-file',
+                pageHttpDownloadFile: 'http-download-file',
+                pageVirtualDownloadFile: 'virtual-download-file',
+                pageVirtualDeleteFile: 'virtual-delete-file',
+            };
+
+            var length = $fileclient.fileControls.length;
+            for (var i = 0; i < length; i++) {
+                var item = $fileclient.fileControls[i];
+                item.setting = syn.$w.argumentsExtend(item.setting, pageSettings);
+            }
+        },
+
         getValue(elID, meta) {
             return syn.$l.get(elID).value;
         },
@@ -3154,7 +4164,13 @@
 
         init(elID, fileContainer, repositoryData, fileChangeHandler) {
             var dependencyID = $fileclient.getTemporaryDependencyID(elID);
-            $fileclient.fileManagers.push({ 'elID': elID, 'container': fileContainer, 'datas': repositoryData, 'dependencyID': dependencyID, 'filechange': fileChangeHandler });
+            $fileclient.fileManagers.push({
+                elID: elID,
+                container: fileContainer,
+                datas: repositoryData,
+                dependencyID: dependencyID,
+                filechange: fileChangeHandler
+            });
 
             if (window.File && window.FileList) {
                 $fileclient.isFileAPIBrowser = true;
@@ -3169,27 +4185,18 @@
                         });
                         repositoryTarget.name = 'syn-repository';
                     }
+
                     form.enctype = 'multipart/form-data';
                     form.target = 'syn-repository';
                     form.method = 'post';
-                    form.action = syn.Config.FileManagerServer + '/repository/api/storage';
+                    form.action = $fileclient.getRepositoryUrl();
                 }
             }
         },
 
-        getRepositoryUrl(repositoryID) {
-            var val = null;
-            var container = null;
-            for (var i = 0; i < $fileclient.fileManagers.length; i++) {
-                container = $fileclient.fileManagers[i];
-
-                if (container.datas && container.datas.repositoryID == repositoryID) {
-                    val = container.datas.fileManagerServer + '/repository/api/storage';
-                    break;
-                }
-            }
-
-            return val;
+        getRepositoryUrl() {
+            var setting = $fileclient.getFileManagerSetting();
+            return setting.fileManagerServer + setting.fileManagerPath;
         },
 
         getFileManager(elID) {
@@ -3411,7 +4418,7 @@
                         }
 
                         if (isContinue == false) {
-                            syn.$w.alert('업로드할 파일을 선택해야합니다');
+                            syn.$w.alert('업로드할 파일을 선택 해야 합니다');
                             return;
                         }
                     }
@@ -3421,8 +4428,8 @@
                     if (syn.$l.get('syn-repository') != null) {
                         syn.$r.params = [];
                         var repositoryID = $fileclient.getRepositoryID(elID);
-
-                        syn.$r.path = $fileclient.getRepositoryUrl(repositoryID) + '/upload-files';
+                        var setting = $fileclient.getFileManagerSetting();
+                        syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageUploadFiles;
                         syn.$r.params['elementID'] = fileUploadOptions.elementID;
                         syn.$r.params['repositoryID'] = repositoryID;
                         syn.$r.params['dependencyID'] = $fileclient.getDependencyID(elID);
@@ -3458,10 +4465,10 @@
                 }
                 else {
                     if ($object.isNullOrUndefined(uploadItem) == true) {
-                        syn.$w.alert('이전에 업로드 한 파일을 삭제해야합니다');
+                        syn.$w.alert('업로드할 파일을 선택 해야 합니다');
                     }
                     else {
-                        syn.$w.alert(manager.datas.uploadExtensions + '확장자를 가진 파일을 업로드 해야합니다');
+                        syn.$w.alert(manager.datas.uploadExtensions + '확장자를 가진 파일을 업로드 해야 합니다');
                     }
                 }
             }
@@ -3475,27 +4482,34 @@
                 isSingleUpload = true;
             }
 
-            syn.$r.path = syn.Config.FileManagerServer + '/repository/api/storage/' + (isSingleUpload == true ? 'upload-file' : 'upload-files');
+            var setting = $fileclient.getFileManagerSetting();
+            syn.$r.path = $fileclient.getRepositoryUrl() + '/' + (isSingleUpload == true ? setting.pageUploadFile : setting.pageUploadFiles);
             syn.$r.params['repositoryID'] = repositoryID;
             syn.$r.params['dependencyID'] = dependencyID;
+            syn.$r.params['businessID'] = $fileclient.businessID;
+            syn.$r.params['applicationID'] = $fileclient.applicationID;
             syn.$r.params['responseType'] = 'json';
 
             if (isSingleUpload == true && $string.isNullOrEmpty(fileName) == false) {
                 syn.$r.params['fileName'] = fileName;
             }
 
-            syn.$r.params['applicationID'] = $fileclient.applicationID;
-
             return syn.$r.url();
         },
 
         getFileAction(options, callback) {
-            if ($object.isNullOrUndefined(options.action) == true) {
-                syn.$l.eventLog('getFileAction', '필수 입력 정보 확인 필요', 'Warning');
+            if ($string.isNullOrEmpty(options.repositoryID) == true || $object.isNullOrUndefined(options.action) == true) {
+                syn.$l.eventLog('getFileAction', '요청 정보 확인 필요', 'Warning');
                 return;
             }
 
-            syn.$r.path = syn.Config.FileManagerServer + '/repository/api/storage/action-handler';
+            var setting = $fileclient.getFileManagerSetting();
+            if ($object.isNullOrUndefined(setting) == true) {
+                syn.$l.eventLog('getFileAction', `${options.repositoryID} 정보 확인 필요`, 'Warning');
+                return;
+            }
+
+            syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageActionHandler;
             var action = options.action;
             syn.$r.params['action'] = action;
             switch (action) {
@@ -3518,12 +4532,12 @@
                     syn.$r.params['fileName'] = options.fileName;
                     break;
                 case 'DeleteItem':
-                    syn.$r.path = syn.Config.FileManagerServer + '/repository/api/storage/remove-item';
+                    syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageRemoveItem;
                     syn.$r.params['repositoryID'] = options.repositoryID;
                     syn.$r.params['itemID'] = options.itemID;
                     break;
                 case 'DeleteItems':
-                    syn.$r.path = syn.Config.FileManagerServer + '/repository/api/storage/remove-items';
+                    syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageRemoveItems;
                     syn.$r.params['repositoryID'] = options.repositoryID;
                     syn.$r.params['dependencyID'] = options.dependencyID;
                     break;
@@ -3549,14 +4563,14 @@
             }
 
             if (setting) {
-                syn.$r.path = setting.fileManagerServer + '/repository/api/storage/action-handler';
+                syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageActionHandler;
                 syn.$r.params['action'] = 'GetItem';
                 syn.$r.params['repositoryID'] = setting.repositoryID;
                 syn.$r.params['itemID'] = itemID;
             }
             else {
                 var repositoryID = $fileclient.getRepositoryID(elID);
-                syn.$r.path = $fileclient.getRepositoryUrl(repositoryID) + '/action-handler';
+                syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageActionHandler;
                 syn.$r.params['action'] = 'GetItem';
                 syn.$r.params['repositoryID'] = repositoryID;
                 syn.$r.params['itemID'] = itemID;
@@ -3578,14 +4592,14 @@
             }
 
             if (setting) {
-                syn.$r.path = setting.fileManagerServer + '/repository/api/storage/action-handler';
+                syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageActionHandler;
                 syn.$r.params['action'] = 'GetItems';
                 syn.$r.params['repositoryID'] = setting.repositoryID;
                 syn.$r.params['dependencyID'] = dependencyID;
             }
             else {
                 var repositoryID = $fileclient.getRepositoryID(elID);
-                syn.$r.path = $fileclient.getRepositoryUrl(repositoryID) + '/action-handler';
+                syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageActionHandler;
                 syn.$r.params['action'] = 'GetItems';
                 syn.$r.params['repositoryID'] = repositoryID;
                 syn.$r.params['dependencyID'] = dependencyID;
@@ -3599,7 +4613,7 @@
 
         updateDependencyID(elID, sourceDependencyID, targetDependencyID, callback) {
             var setting = $fileclient.getFileSetting(elID);
-            syn.$r.path = setting.fileManagerServer + '/repository/api/storage/action-handler';
+            syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageActionHandler;
             syn.$r.params['action'] = 'UpdateDependencyID';
             syn.$r.params['repositoryID'] = setting.repositoryID;
             syn.$r.params['sourceDependencyID'] = sourceDependencyID;
@@ -3612,7 +4626,7 @@
 
         updateFileName(elID, itemID, fileName, callback) {
             var setting = $fileclient.getFileSetting(elID);
-            syn.$r.path = setting.fileManagerServer + '/repository/api/storage/action-handler';
+            syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageActionHandler;
             syn.$r.params['action'] = 'UpdateFileName';
             syn.$r.params['repositoryID'] = setting.repositoryID;
             syn.$r.params['itemID'] = itemID;
@@ -3679,9 +4693,16 @@
          */
         fileUpload(el, repositoryID, dependencyID, callback, uploadUrl) {
             var result = null;
+            el = $object.isString(el) == true ? syn.$l.get(el) : el;
+            var setting = $fileclient.getFileSetting(el.id);
+            if ($object.isNullOrUndefined(el) == true || $object.isNullOrUndefined(setting) == true) {
+                syn.$l.eventLog('fileUpload', `요청 정보 확인 필요`, 'Warning');
+                return;
+            }
+
             var url = '';
             if ($object.isNullOrUndefined(uploadUrl) == true) {
-                url = syn.Config.FileManagerServer + '/repository/api/storage/upload-files?repositoryID={0}&dependencyID={1}&responseType=json&callback=none'.format(repositoryID, dependencyID);
+                url = $fileclient.getRepositoryUrl() + '/' + setting.pageUploadFiles + '?repositoryID={0}&dependencyID={1}&responseType=json&callback=none'.format(repositoryID, dependencyID);
             }
             else {
                 url = uploadUrl;
@@ -3694,7 +4715,6 @@
                 url = url + `&applicationID=${syn.uicontrols.$fileclient.applicationID}&businessID=${syn.uicontrols.$fileclient.businessID}`;
             }
 
-            el = $object.isString(el) == true ? syn.$l.get(el) : el;
             if (el && el.type.toUpperCase() == 'FILE') {
                 var formData = new FormData();
                 for (var i = 0; i < el.files.length; i++) {
@@ -3763,7 +4783,13 @@
                 }
             }
 
-            syn.$r.path = (options.fileManagerServer || syn.Config.FileManagerServer) + '/repository/api/storage/download-file';
+            var setting = $fileclient.getFileManagerSetting();
+            if ($object.isNullOrUndefined(setting) == true) {
+                syn.$l.eventLog('fileDownload', `FileManagerSetting 정보 확인 필요`, 'Warning');
+                return;
+            }
+
+            syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageDownloadFile;
 
             var http = syn.$w.xmlHttp();
             http.open('POST', syn.$r.url(), true);
@@ -3803,7 +4829,8 @@
                 repositoryDownload.width = '100%';
             }
 
-            syn.$r.path = syn.Config.FileManagerServer + '/repository/api/storage/HttpDownloadFile';
+            var setting = $fileclient.getFileManagerSetting();
+            syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageHttpDownloadFile;
             syn.$r.params['repositoryID'] = repositoryID;
             syn.$r.params['itemID'] = itemID;
             syn.$r.params['fileMD5'] = fileMD5;
@@ -3823,7 +4850,8 @@
                 repositoryDownload.name = 'repositoryDownload';
             }
 
-            syn.$r.path = syn.Config.FileManagerServer + '/repository/api/storage/virtual-download-file';
+            var setting = $fileclient.getFileManagerSetting();
+            syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageVirtualDownloadFile;
             syn.$r.params['repositoryID'] = repositoryID;
             syn.$r.params['fileName'] = fileName;
             syn.$r.params['subDirectory'] = subDirectory;
@@ -3834,7 +4862,8 @@
         },
 
         virtualDeleteFile(repositoryID, fileName, subDirectory) {
-            syn.$r.path = syn.Config.FileManagerServer + '/repository/api/storage/virtual-delete-file';
+            var setting = $fileclient.getFileManagerSetting();
+            syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageVirtualDeleteFile;
             syn.$r.params['repositoryID'] = repositoryID;
             syn.$r.params['fileName'] = fileName;
             syn.$r.params['subDirectory'] = subDirectory;
@@ -3857,18 +4886,9 @@
                 }
             }
 
-            if (setting) {
-                syn.$r.path = setting.fileManagerServer + '/repository/api/storage/remove-item';
-                syn.$r.params['repositoryID'] = setting.repositoryID;
-                syn.$r.params['itemID'] = itemID;
-            }
-            else {
-                var repositoryID = $fileclient.getRepositoryID(elID);
-                syn.$r.path = $fileclient.getRepositoryUrl(repositoryID) + '/remove-item';
-                syn.$r.params['repositoryID'] = repositoryID;
-                syn.$r.params['itemID'] = itemID;
-            }
-
+            syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageRemoveItem;
+            syn.$r.params['repositoryID'] = setting.repositoryID;
+            syn.$r.params['itemID'] = itemID;
             syn.$r.params['applicationID'] = $fileclient.applicationID;
             syn.$r.params['businessID'] = $fileclient.businessID;
 
@@ -3914,18 +4934,9 @@
                 }
             }
 
-            if (setting) {
-                syn.$r.path = setting.fileManagerServer + '/repository/api/storage/remove-items';
-                syn.$r.params['repositoryID'] = setting.repositoryID;
-                syn.$r.params['dependencyID'] = dependencyID;
-            }
-            else {
-                var repositoryID = $fileclient.getRepositoryID(elID);
-                syn.$r.path = $fileclient.getRepositoryUrl(repositoryID) + '/remove-items';
-                syn.$r.params['repositoryID'] = repositoryID;
-                syn.$r.params['dependencyID'] = dependencyID;
-            }
-
+            syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageRemoveItems;
+            syn.$r.params['repositoryID'] = setting.repositoryID;
+            syn.$r.params['dependencyID'] = dependencyID;
             syn.$r.params['applicationID'] = $fileclient.applicationID;
             syn.$r.params['businessID'] = $fileclient.businessID;
 
@@ -3952,8 +4963,9 @@
                 fileName: null
             }, options);
 
+            var setting = $fileclient.getFileManagerSetting();
             if ($string.isNullOrEmpty(options.repositoryID) == false && $string.isNullOrEmpty(options.dependencyID) == false && options.blobInfo) {
-                syn.$r.path = syn.Config.FileManagerServer + '/repository/api/storage/upload-file';
+                syn.$r.path = $fileclient.getRepositoryUrl() + '/' + setting.pageUploadFile;
                 syn.$r.params['repositoryID'] = options.repositoryID;
                 syn.$r.params['dependencyID'] = options.dependencyID;
                 syn.$r.params['applicationID'] = $fileclient.applicationID;
@@ -4030,7 +5042,7 @@
             }, options);
 
             if ($string.isNullOrEmpty(options.repositoryID) == false && $string.isNullOrEmpty(options.dependencyID) == false && $string.isNullOrEmpty(options.blobUri) == false) {
-                syn.$l.blobUrlToData(options.blobUri, function (blobInfo) {
+                syn.$l.blobUrlToBlob(options.blobUri, function (blobInfo) {
                     options.blobInfo = blobInfo;
                     options.mimeType = options.blobInfo.type;
                     $fileclient.uploadBlob(options, callback);
@@ -4051,7 +5063,6 @@
             uploadOptions = syn.$w.argumentsExtend(dialogOptions, uploadOptions);
             dialogOptions.minWidth = uploadOptions.minWidth;
             dialogOptions.minHeight = uploadOptions.minHeight;
-
             dialogOptions.caption = uploadOptions.dialogTitle;
 
             if (uploadOptions.repositoryID == '' || uploadOptions.uploadUrl == '') {
@@ -4497,6 +5508,491 @@
 (function (window) {
     'use strict';
     syn.uicontrols = syn.uicontrols || new syn.module();
+    var $guide = syn.uicontrols.$guide || new syn.module();
+
+    $guide.extend({
+        name: 'syn.uicontrols.$guide',
+        version: '1.0.0',
+        guideControls: [],
+        itemTemplate: {
+            helpType: '', // I: introJs, T: tippy, P: superplaceholder, U: UI Help & Link
+            selector: '', // querySelector
+            subject: '', // html string
+            sentence: '', // html string
+            options: '', // json string {"contentType":"html"}
+            sortingNo: 0 // step by step
+        },
+        defaultSetting: {
+            items: [],
+            introOptions: {
+                prevLabel: '<svg xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-left"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 6l-6 6l6 6" /></svg>',
+                nextLabel: '<svg xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>',
+                doneLabel: '완료',
+                skipLabel: '<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-x"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>',
+                dontShowAgainLabel: '다시 안보기',
+                exitOnEsc: true,
+                showStepNumbers: true,
+                showBullets: false,
+                tooltipPosition: 'auto',
+                overlayOpacity: 0.2,
+                steps: []
+            },
+            tooltipOptions: {
+                placement: 'top-start',
+                allowHTML: true,
+                animateFill: true,
+                maxWidth: '640px'
+            },
+            placeholderOptions: {
+                letterDelay: 25,
+                sentenceDelay: 1000,
+                startOnFocus: true,
+                loop: false,
+                shuffle: false,
+                showCursor: true,
+                cursor: '|'
+            }
+        },
+
+        addModuleList(el, moduleList, setting, controlType) {
+            var elementID = el.getAttribute('id');
+            var dataField = el.getAttribute('syn-datafield');
+            var formDataField = el.closest('form') ? el.closest('form').getAttribute('syn-datafield') : '';
+
+            moduleList.push({
+                id: elementID,
+                formDataFieldID: formDataField,
+                field: dataField,
+                module: this.name,
+                type: controlType
+            });
+        },
+
+        controlLoad(elID, setting) {
+            var el = syn.$l.get(elID);
+            setting = syn.$w.argumentsExtend($guide.defaultSetting, setting);
+
+            var mod = window[syn.$w.pageScript];
+            if (mod && mod.hook.controlInit) {
+                var moduleSettings = mod.hook.controlInit(elID, setting);
+                setting = syn.$w.argumentsExtend(setting, moduleSettings);
+            }
+
+            el.setAttribute('syn-options', JSON.stringify(setting));
+            el.style.display = 'none';
+            
+            var tooltips = [];
+            var intros = null;
+            var placeholders = [];
+            if (setting.items && setting.items.length > 0) {
+                /*
+                items: [{
+                    helpType: 'U',
+                    selector: '',
+                    subject: '제목입니다.',
+                    sentence: 'https://handstack.kr/docs/startup/install/지원-운영체제',
+                    options: '{&#34;contentType&#34;: &#34;link&#34;}',
+                },{
+                    helpType: 'U',
+                    selector: '',
+                    subject: '제목입니다.',
+                    sentence: '&lt;b&gt;&lt;u&gt;본문&lt;/u&gt;&lt;/b&gt;입니다.',
+                    options: '{&#34;contentType&#34;: &#34;html&#34;}',
+                },
+                {
+                    helpType: 'I',
+                    selector: '#btnNewDataSource',
+                    subject: '신규 데이터 원본을 설정하세요.',
+                    sentence: 'SqlServer, Oracle, MySQL & MariaDB, PostgreSQL, SQLite 데이터베이스를 연동하세요.',
+                },
+                {
+                    helpType: 'I',
+                    selector: '#lstDataSource',
+                    subject: '연결 가능한 데이터 원본입니다.',
+                    sentence: '앱 에서 데이터베이스 요청을 실행하는 dbclient 모듈의 계약 정보에 사용하는 DataSourceID 목록입니다.',
+                },
+                {
+                    helpType: 'I',
+                    selector: '#ddlDataProvider',
+                    subject: '데이터베이스에 접속할 연결문자열을 입력합니다.',
+                    sentence: 'qrame.kr 에서 접근 가능한 개발 및 테스트 목적의 데이터베이스 연결문자열을 입력하세요. SQLite 의 경우 하위 디렉토리 경로만 가능합니다.',
+                },
+                {
+                    helpType: 'I',
+                    selector: '#txtProjectAppender',
+                    subject: '데이터 원본에 접근 허용할 프로젝트 ID를 입력하세요.',
+                    sentence: '화면내 호출 가능한 거래 접근 제어를 위해 콤마를 구분으로 여러 프로젝트 ID 3자리가 입력되며, * 포함시 모든 프로젝트에 허용됩니다.',
+                },
+                {
+                    helpType: 'T',
+                    selector: 'span.badge.bg-primary',
+                    subject: '앱에서 사용하는 기본 데이터베이스 입니다.',
+                    sentence: '기본 데이터 원본 정보는 제공자와 연결 문자열을 편집할 수 없습니다.',
+                    applyDelay: 1000
+                },
+                {
+                    helpType: 'T',
+                    selector: '#lblDataSourceID',
+                    subject: 'dbclient 모듈의 계약 정보에 사용하는 DataSourceID 입니다.',
+                    sentence: '변경 또는 삭제시 사용중인 계약 정보에 영향을 줍니다.',
+                },
+                {
+                    helpType: 'P',
+                    selector: '#txtConnectionString',
+                    subject: '중요',
+                    sentence: '개발 및 테스트 목적의 데이터베이스 연결문자열을 입력해야 합니다. 데이터베이스에 따라 연결문자열에 대한 참고 내용은 https://www.connectionstrings.com 를 확인하세요.',
+                }]
+                */
+                var helpIntros = setting.items.filter(function (item) { return item.helpType == 'I' });
+                if (window.introJs && helpIntros.length > 0) {
+                    var introOptions = setting.introOptions;
+                    var steps = [];
+                    helpIntros = $array.objectSort(helpIntros, 'sortingNo', true);
+                    for (var i = 0; i < helpIntros.length; i++) {
+                        var helpIntro = helpIntros[i];
+                        var introEL = syn.$l.querySelector(helpIntro.selector);
+                        if (introEL == null) {
+                            continue;
+                        }
+
+                        if ($string.isNullOrEmpty(helpIntro.options) == false) {
+                            introOptions = syn.$w.argumentsExtend(introOptions, eval('(' + helpIntro.options + ')'));
+                        }
+
+                        steps.push({
+                            title: helpIntro.subject,
+                            element: introEL,
+                            intro: helpIntro.sentence,
+                            position: helpIntro.position || 'auto'
+                        });
+                    }
+
+                    if (steps.length > 0) {
+                        introOptions = syn.$w.argumentsExtend(introOptions, { steps: steps });
+                        intros = introJs().setOptions(introOptions);
+
+                        if (mod) {
+                            var hookEvents = el.getAttribute('syn-events') || [];
+                            if (hookEvents) {
+                                hookEvents = eval(hookEvents);
+
+                                for (var i = 0, length = hookEvents.length; i < length; i++) {
+                                    var hook = hookEvents[i];
+                                    var eventHandler = mod.event ? mod.event['{0}_{1}'.format(elID, hook)] : null;
+                                    if (eventHandler) {
+                                        switch (hook) {
+                                            case 'complete':
+                                                intros.oncomplete(eventHandler);
+                                                break;
+                                            case 'exit':
+                                                intros.onexit(eventHandler);
+                                                break;
+                                            case 'beforeexit':
+                                                intros.onbeforeexit(eventHandler);
+                                                break;
+                                            case 'change':
+                                                intros.onchange(eventHandler);
+                                                break;
+                                            case 'beforechange':
+                                                intros.onbeforechange(eventHandler);
+                                                break;
+                                            case 'afterchange':
+                                                intros.onafterchange(eventHandler);
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var helpTooltips = setting.items.filter(function (item) { return item.helpType == 'T' });
+                if (window.tippy && helpTooltips.length > 0) {
+                    var tooltipOptions = setting.tooltipOptions;
+                    for (var i = 0; i < helpTooltips.length; i++) {
+                        var helpTooltip = helpTooltips[i];
+                        var applyDelay = $string.toNumber(helpTooltip.applyDelay);
+                        var tooltipEL = syn.$l.querySelector(helpTooltip.selector);
+                        if (tooltipEL == null && applyDelay == 0) {
+                            continue;
+                        }
+
+                        if ($string.isNullOrEmpty(helpTooltip.options) == false) {
+                            tooltipOptions = syn.$w.argumentsExtend(tooltipOptions, eval('(' + helpTooltip.options + ')'));
+                        }
+
+                        tooltipOptions.content = ($string.isNullOrEmpty(helpTooltip.subject) == true ? '' : '<strong>{0}</strong> '.format(helpTooltip.subject)) + helpTooltip.sentence;
+                        if (applyDelay > 0) {
+                            setTimeout((selector, options) => {
+                                tooltips.push(tippy(selector, options)[0]);
+                            }, applyDelay, helpTooltip.selector, $object.clone(tooltipOptions, true));
+                        }
+                        else {
+                            tooltips.push(tippy(helpTooltip.selector, tooltipOptions)[0]);
+                        }
+                    }
+                }
+
+                var helpPlaceHolders = setting.items.filter(function (item) { return item.helpType == 'P' });
+                if (window.superplaceholder && helpPlaceHolders.length > 0) {
+                    for (var i = 0; i < helpPlaceHolders.length; i++) {
+                        var helpPlaceHolder = helpPlaceHolders[i];
+                        var placeholderOptions = {};
+                        placeholderOptions.el = syn.$l.querySelector(helpPlaceHolder.selector);
+                        if (placeholderOptions.el == null) {
+                            continue;
+                        }
+
+                        placeholderOptions.options = setting.placeholderOptions;
+                        if ($string.isNullOrEmpty(helpPlaceHolder.options) == false) {
+                            placeholderOptions.options = syn.$w.argumentsExtend(placeholderOptions.options, eval('(' + helpPlaceHolder.options + ')'));
+                        }
+
+                        if ($object.isString(helpPlaceHolder.sentence) == true) {
+                            placeholderOptions.sentences = [($string.isNullOrEmpty(helpPlaceHolder.subject) == true ? '' : '[{0}] '.format(helpPlaceHolder.subject)) + helpPlaceHolder.sentence];
+                        }
+                        else if ($object.isArray(helpPlaceHolder.sentence) == true) {
+                            if ($string.isNullOrEmpty(helpPlaceHolder.subject) == false) {
+                                for (var i = 0, length = helpPlaceHolder.sentence.length; i < length; i++) {
+                                    helpPlaceHolder.sentence[i] = `[${helpPlaceHolder.subject}] ` + helpPlaceHolder.sentence[i];
+                                }
+                            }
+                            placeholderOptions.sentences = helpPlaceHolder.sentence;
+                        }
+
+                        if ($object.isNullOrUndefined(placeholderOptions.sentences) == false) {
+                            placeholders.push(superplaceholder(placeholderOptions));
+                        }
+                    }
+                }
+            }
+            else {
+                setting.items = [];
+            }
+
+            $guide.guideControls.push({
+                id: elID,
+                items: setting.items,
+                tooltip: tooltips,
+                intro: intros,
+                placeholder: placeholders
+            });
+        },
+
+        getGuideControl(elID) {
+            var result = null;
+
+            var length = $guide.guideControls.length;
+            for (var i = 0; i < length; i++) {
+                var item = $guide.guideControls[i];
+                if (item.id == elID) {
+                    result = item;
+                    break;
+                }
+            }
+
+            return result;
+        },
+
+        introStart(elID) {
+            var guide = $guide.getGuideControl(elID);
+            if (guide) {
+                var intro = guide.intro;
+                if (intro) {
+                    // https://introjs.com/docs/intro/api
+                    intro.start();
+                }
+            }
+        },
+
+        openUIHelp(elID) {
+            var guide = $guide.getGuideControl(elID);
+            if (guide) {
+                var el = syn.$l.get(elID);
+                var help = guide.items.find(function (item) { return item.helpType == 'U' });
+                if ($object.isNullOrUndefined(help) == false) {
+                    var options = help.options && JSON.parse($string.toCharHtml(help.options));
+                    if (options && options.contentType == 'link') {
+                        if ($string.isNullOrEmpty(help.sentence) == false) {
+                            window.open(help.sentence, 'help');
+                        }
+                        else {
+                            syn.$l.eventLog('callProgramHelp', '화면 도움말 링크 확인 필요', 'Warning');
+                        }
+                    }
+                    else {
+                        var helpWindow = window.open('', 'help');
+                        if ($object.isNullOrUndefined(helpWindow) == true) {
+                            syn.$w.alert('"{0}" 내용을 확인하기 위해 팝업을 허용해야 합니다'.format(help.subject));
+                        }
+                        else {
+                            var html = `
+                            <html style="margin: 0;">
+                                <head>
+                                    <link type="text/css" rel="stylesheet" href="/js/tinymce/skins/ui/oxide/content.min.css">
+                                    <link type="text/css" rel="stylesheet" href="/js/tinymce/skins/content/default/content.min.css">
+                                </head>
+                                <body style="margin: 0; width: 100%; padding:8px;" class="mce-content-body">
+                                    <h1>${help.subject}</h1>${help.sentence}
+                                </body>
+                            </html>
+                            `;
+
+                            helpWindow.document.open();
+                            helpWindow.document.write(html);
+                            helpWindow.document.close();
+                        }
+                    }
+                }
+            }
+        },
+
+        dataRefresh(elID, items) {
+            var setting = JSON.parse(syn.$l.get(elID).getAttribute('syn-options'));
+            var guide = $guide.getGuideControl(elID);
+            if (guide && items) {
+                $guide.clear(elID);
+                guide.items = [];
+                guide.tooltip = [];
+                guide.intro = null;
+                guide.placeholder = [];
+
+                var tooltips = [];
+                var intros = null;
+                var placeholders = [];
+                if (items && items.length > 0) {
+                    var helpIntros = items.filter(function (item) { return item.helpType == 'I' });
+                    if (window.introJs && helpIntros.length > 0) {
+                        var introOptions = setting.introOptions;
+                        var steps = [];
+                        helpIntros = $array.objectSort(helpIntros, 'sortingNo', true);
+                        for (var i = 0; i < helpIntros.length; i++) {
+                            var helpIntro = helpIntros[i];
+                            if ($string.isNullOrEmpty(helpIntro.options) == false) {
+                                introOptions = syn.$w.argumentsExtend(introOptions, eval('(' + helpIntro.options + ')'));
+                            }
+
+                            steps.push({
+                                title: helpIntro.subject,
+                                element: syn.$l.querySelector(helpIntro.selector),
+                                intro: helpIntro.sentence
+                            });
+                        }
+
+                        if (steps.length > 0) {
+                            introOptions = syn.$w.argumentsExtend(introOptions, { steps: steps });
+                            intros = introJs().setOptions(introOptions);
+                        }
+                    }
+
+                    var helpTooltips = items.filter(function (item) { return item.helpType == 'T' });
+                    if (window.tippy && helpTooltips.length > 0) {
+                        var tooltipOptions = setting.tooltipOptions;
+                        for (var i = 0; i < helpTooltips.length; i++) {
+                            var helpTooltip = helpTooltips[i];
+                            if ($string.isNullOrEmpty(helpTooltip.options) == false) {
+                                tooltipOptions = syn.$w.argumentsExtend(tooltipOptions, eval('(' + helpTooltip.options + ')'));
+                            }
+
+                            tooltipOptions.content = ($string.isNullOrEmpty(helpTooltip.subject) == true ? '' : '<strong>{0}</strong> '.format(helpTooltip.subject)) + helpTooltip.sentence;
+                            var applyDelay = $string.toNumber(helpTooltip.applyDelay);
+                            if (applyDelay > 0) {
+                                setTimeout((selector, options) => {
+                                    tooltips.push(tippy(selector, options)[0]);
+                                }, applyDelay, helpTooltip.selector, $object.clone(tooltipOptions, true));
+                            }
+                            else {
+                                tooltips.push(tippy(helpTooltip.selector, tooltipOptions)[0]);
+                            }
+                        }
+                    }
+
+                    var helpPlaceHolders = items.filter(function (item) { return item.helpType == 'P' });
+                    if (window.superplaceholder && helpPlaceHolders.length > 0) {
+                        for (var i = 0; i < helpPlaceHolders.length; i++) {
+                            var placeholderOptions = {};
+                            placeholderOptions.options = setting.placeholderOptions;
+                            var helpPlaceHolder = helpPlaceHolders[i];
+                            if ($string.isNullOrEmpty(helpPlaceHolder.options) == false) {
+                                placeholderOptions.options = syn.$w.argumentsExtend(placeholderOptions.options, eval('(' + helpPlaceHolder.options + ')'));
+                            }
+
+                            placeholderOptions.el = syn.$l.querySelector(helpPlaceHolder.selector);
+                            if ($object.isString(helpPlaceHolder.sentence) == true) {
+                                placeholderOptions.sentences = [($string.isNullOrEmpty(helpPlaceHolder.subject) == true ? '' : '[{0}] '.format(helpPlaceHolder.subject)) + helpPlaceHolder.sentence];
+                            }
+                            else if ($object.isArray(helpPlaceHolder.sentence) == true) {
+                                if ($string.isNullOrEmpty(helpPlaceHolder.subject) == false) {
+                                    for (var i = 0, length = helpPlaceHolder.sentence.length; i < length; i++) {
+                                        helpPlaceHolder.sentence[i] = `[${helpPlaceHolder.subject}] ` + helpPlaceHolder.sentence[i];
+                                    }
+                                }
+                                placeholderOptions.sentences = helpPlaceHolder.sentence;
+                            }
+
+                            if ($object.isNullOrUndefined(placeholderOptions.sentences) == false) {
+                                placeholders.push(superplaceholder(placeholderOptions));
+                            }
+                        }
+                    }
+                }
+                else {
+                    items = [];
+                }
+
+                $guide.clear(elID);
+                guide.items = items;
+                guide.tooltip = tooltips;
+                guide.intro = intros;
+                guide.placeholder = placeholders;
+            }
+        },
+
+        getValue(elID) {
+            return syn.$l.get(elID).value;
+        },
+
+        setValue(elID, value) {
+            var el = syn.$l.get(elID);
+            el.value = value ? value : '';
+        },
+
+        clear(elID) {
+            var el = syn.$l.get(elID);
+            el.value = '';
+
+            var guide = $guide.getGuideControl(elID);
+            if (guide) {
+                if ($object.isNullOrUndefined(guide.tooltip) == false) {
+                    for (var i = 0, length = guide.tooltip.length; i < length; i++) {
+                        guide.tooltip[i].destroy();
+                    }
+                }
+
+                if ($object.isNullOrUndefined(guide.intro) == false) {
+                    guide.intro.exit();
+                }
+
+                if ($object.isNullOrUndefined(guide.placeholder) == false) {
+                    for (var i = 0, length = guide.placeholder.length; i < length; i++) {
+                        guide.placeholder[i].destroy();
+                    }
+                }
+            }
+        },
+
+        setLocale(elID, translations, control, options) {
+        }
+    });
+    syn.uicontrols.$guide = $guide;
+})(window);
+
+/// <reference path="/js/syn.js" />
+
+(function (window) {
+    'use strict';
+    syn.uicontrols = syn.uicontrols || new syn.module();
     var $radio = $radio || new syn.module();
 
     $radio.extend({
@@ -4608,13 +6104,27 @@
             return $array.distinct(value);
         },
 
-        getGroupValue(group) {
+        getSelectedByValue(group) {
             var result = null;
             var els = syn.$l.querySelectorAll('input[type="radio"][name="{0}"]'.format(group));
             for (var i = 0; i < els.length; i++) {
                 var el = els[i];
                 if (el.id.indexOf('_hidden') == -1 && el.checked == true) {
                     result = el.value;
+                    break;
+                }
+            }
+
+            return result;
+        },
+
+        getSelectedByID(group) {
+            var result = null;
+            var els = syn.$l.querySelectorAll('input[type="radio"][name="{0}"]'.format(group));
+            for (var i = 0; i < els.length; i++) {
+                var el = els[i];
+                if (el.id.indexOf('_hidden') == -1 && el.checked == true) {
+                    result = el.id;
                     break;
                 }
             }
@@ -4638,6 +6148,7 @@
     });
     syn.uicontrols.$radio = $radio;
 })(window);
+
 /// <reference path="/js/syn.js" />
 
 (function (window) {
@@ -4655,6 +6166,7 @@
             indentUnit: 4,
             lineNumbers: true,
             toSynControl: true,
+            resize: false,
             dataType: 'string',
             belongID: null,
             getter: false,
@@ -4697,9 +6209,14 @@
             el.style.height = setting.height;
 
             el.setAttribute('syn-options', JSON.stringify(setting));
+            el.setAttribute('spellcheck', 'false');
 
             var events = el.getAttribute('syn-events');
             var editor = null;
+
+            if (setting.resize == false) {
+                el.style.resize = 'none';
+            }
 
             if (setting.toSynControl == true) {
                 if (el.getAttribute('maxlength') || el.getAttribute('maxlengthB')) {
@@ -4873,7 +6390,7 @@
 })(window);
 
 /// <reference path="/js/syn.js" />
-/// <reference path="/lib/superplaceholder-1.0.0/superplaceholder.js" />
+/// <reference path="/lib/superplaceholder/superplaceholder.js" />
 
 (function (window) {
     'use strict';
@@ -4968,7 +6485,7 @@
                     syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
                     if (el.offsetWidth) {
-                        el.offsetWidth = el.offsetWidth <= 28 ? 0 : el.offsetWidth - 28;
+                        // el.offsetWidth = el.offsetWidth <= 28 ? 0 : el.offsetWidth - 28;
                     }
 
                     new ISpin(el, {
@@ -5223,7 +6740,9 @@
             var el = evt.target || evt.srcElement || evt;
             var synOptions = JSON.parse(el.getAttribute('syn-options'));
             var allowChars = synOptions.allowChars || [];
-            if (allowChars.length > 0 && allowChars.indexOf(el.value) == -1) {
+            if (allowChars.length > 0 && allowChars.indexOf(el.value) > -1) {
+            }
+            else {
                 el.value = el.value.replace(/[^a-z0-9]/gi, '');
             }
         },
@@ -5499,7 +7018,7 @@
             var val = el.value;
             if (val.length > 0) {
                 el.setAttribute('placeholder', '');
-                if (syn.$w.isBusinessNo(val) == false) {
+                if ($textbox.isBusinessNo(val) == false) {
                     el.setAttribute('placeholder', '사업자번호 확인 필요');
                     el.value = '';
                 }
@@ -5519,7 +7038,7 @@
             var val = el.value;
             if (val.length > 0) {
                 el.setAttribute('placeholder', '');
-                if ($string.isCorporateNo(val) == false) {
+                if ($textbox.isCorporateNo(val) == false) {
                     el.setAttribute('placeholder', '법인번호 확인 필요');
                     el.value = '';
                 }
@@ -5532,6 +7051,56 @@
                     el.value = val;
                 }
             }
+        },
+
+        isBusinessNo(val) {
+            var result = false;
+            var valueMap = val.replace(/-/gi, '').split('').map(function (item) {
+                return parseInt(item, 10);
+            });
+
+            if (valueMap.length === 10) {
+                try {
+                    var multiply = [1, 3, 7, 1, 3, 7, 1, 3, 5];
+                    var checkSum = 0;
+
+                    for (var i = 0; i < multiply.length; ++i) {
+                        checkSum += multiply[i] * valueMap[i];
+                    }
+
+                    checkSum += parseInt((multiply[8] * valueMap[8]) / 10, 10);
+                    result = Math.floor(valueMap[9]) === ((10 - (checkSum % 10)) % 10);
+                } catch (e) {
+                    result = false;
+                }
+            }
+
+            return result;
+        },
+
+        isCorporateNo(val) {
+            var result = false;
+            var corpNo = val.replace(/-/gi, '');
+            corpNo = corpNo.trim();
+
+            var checkID = [1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2];
+            var i, checkSum = 0;
+
+            if (corpNo.length != 13) {
+                return false;
+            }
+
+            for (var i = 0; i < 12; i++) {
+                checkSum += checkID[i] * corpNo.charAt(i);
+            }
+
+            if ((10 - (checkSum % 10)) % 10 != corpNo.charAt(12)) {
+                result = false;
+            } else {
+                result = true;
+            }
+
+            return result;
         },
 
         rangeMoveCaret(evt) {
@@ -5579,7 +7148,7 @@
                     case 'corporateno':
                         var mod = window[syn.$w.pageScript];
                         if (setting.getter === true && mod.hook.frameEvent) {
-                            result = mod.hook.frameEvent('controlGetValue', {
+                            result = mod.hook.frameEvent('controlGetter', {
                                 elID: elID,
                                 value: el.value
                             });
@@ -5627,7 +7196,7 @@
                         case 'corporateno':
                             var mod = window[syn.$w.pageScript];
                             if (setting && setting.setter === true && mod.hook.frameEvent) {
-                                result = mod.hook.frameEvent('controlSetValue', {
+                                result = mod.hook.frameEvent('controlSetter', {
                                     elID: elID,
                                     value: value
                                 });
@@ -5729,7 +7298,7 @@
             lineNumbers: 'on',
             theme: 'vs-dark',
             dataType: 'string',
-            basePath: '/lib/monaco-editor-0.45.0/vs',
+            basePath: '/lib/monaco-editor/min/vs',
             belongID: null,
             controlText: null,
             validators: null,
@@ -5742,36 +7311,41 @@
                 $sourceeditor.lazyControlLoad(elID, setting);
             }
             else {
-                window.require = {
-                    paths: { 'vs': $sourceeditor.defaultSetting.basePath },
-                    'vs/nls': {
-                        availableLanguages: {
-                            '*': 'ko'
-                        }
+                syn.$w.loadScript($sourceeditor.defaultSetting.basePath + '/loader.js', 'monacosourceeditor', () => {
+                    if (window.require) {
+                        require.config({
+                            paths: { 'vs': syn.uicontrols.$sourceeditor.defaultSetting.basePath },
+                            'vs/nls': {
+                                availableLanguages: {
+                                    '*': 'ko'
+                                }
+                            }
+                        });
+
+                        window.MonacoEnvironment = {
+                            getWorkerUrl: function (workerId, label) {
+                                return `data:text/javascript,`;
+                            }
+                        };
+
+                        require(['vs/editor/editor.main', 'vs/nls.messages.ko'], function () {
+                            if (window.monaco) {
+                                var length = $sourceeditor.editorPendings.length;
+                                for (var i = 0; i < length; i++) {
+                                    var item = $sourceeditor.editorPendings[i];
+
+                                    $sourceeditor.lazyControlLoad(item.elID, item.setting);
+                                }
+
+                                $sourceeditor.editorPendings.length = 0;
+                            }
+                        });
                     }
-                };
-                syn.$w.loadScript($sourceeditor.defaultSetting.basePath + '/loader.js');
-                syn.$w.loadScript($sourceeditor.defaultSetting.basePath + '/editor/editor.main.nls.ko.js');
-                syn.$w.loadScript($sourceeditor.defaultSetting.basePath + '/editor/editor.main.js');
-
-                var editorIntervalID = setInterval(function () {
-                    if (window.monaco) {
-                        var length = $sourceeditor.editorPendings.length;
-                        for (var i = 0; i < length; i++) {
-                            var item = $sourceeditor.editorPendings[i];
-
-                            clearInterval(item.intervalID);
-                            $sourceeditor.lazyControlLoad(item.elID, item.setting);
-                        }
-
-                        $sourceeditor.editorPendings.length = 0;
-                    }
-                }, 25);
+                });
 
                 $sourceeditor.editorPendings.push({
                     elID: elID,
-                    setting: setting,
-                    intervalID: editorIntervalID
+                    setting: setting
                 });
             }
         },
@@ -6051,6 +7625,7 @@
     $htmleditor.extend({
         name: 'syn.uicontrols.$htmleditor',
         version: '1.0.0',
+        userWorkID: '',
         applicationID: '',
         editorPendings: [],
         editorControls: [],
@@ -6059,6 +7634,9 @@
             applicationID: '',
             selector: '',
             fileManagerServer: '',
+            fileManagerPath: '/repository/api/storage',
+            pageUploadFile: 'upload-file',
+            pageActionHandler: 'action-handler',
             repositoryID: null,
             dependencyID: null,
             relative_urls: false,
@@ -6067,14 +7645,14 @@
             isNumberTempDependency: true,
             height: 300,
             imageFileSizeLimit: 300000,
-            viewerHtml: '<html><head><base href="/"><style type="text/css">body { font-family: \'맑은 고딕\', 돋움체; font-size: 12px; }</style><link type="text/css" rel="stylesheet" href="/lib/tinymce-5.6.0/skins/ui/oxide/content.min.css"><link type="text/css" rel="stylesheet" href="/lib/tinymce-5.6.0/skins/content/default/content.min.css"></head><body id="tinymce" class="mce-content-body">{0}<script>document.onselectstart = function () { return false; }; document.oncontextmenu = function () { return false; }; document.addEventListener && document.addEventListener("click", function(e) {for (var elm = e.target; elm; elm = elm.parentNode) {if (elm.nodeName === "A" && !(e.ctrlKey && !e.altKey)) {e.preventDefault();}}}, false);</script></body></html>',
+            viewerHtml: '<html><head><base href="/"><style type="text/css">body { font-family: \'맑은 고딕\', 돋움체; font-size: 12px; }</style><link type="text/css" rel="stylesheet" href="/lib/tinymce/skins/ui/oxide/content.min.css"><link type="text/css" rel="stylesheet" href="/lib/tinymce/skins/content/default/content.min.css"></head><body id="tinymce" class="mce-content-body">{0}<script>document.onselectstart = function () { return false; }; document.oncontextmenu = function () { return false; }; document.addEventListener && document.addEventListener("click", function(e) {for (var elm = e.target; elm; elm = elm.parentNode) {if (elm.nodeName === "A" && !(e.ctrlKey && !e.altKey)) {e.preventDefault();}}}, false);</script></body></html>',
             language: 'ko_KR',
             // plugins: [
             //     'autolink link image lists print preview hr anchor pagebreak',
             //     'searchreplace visualblocks visualchars code insertdatetime media nonbreaking',
             //     'table template paste powerpaste export powerpaste advcode help'
             // ],
-            plugins: ['autolink link image lists print hr anchor pagebreak searchreplace visualblocks visualchars code insertdatetime media nonbreaking table paste advcode help'],
+            plugins: ['autolink link image lists print hr anchor pagebreak searchreplace visualblocks visualchars code insertdatetime media nonbreaking table paste help'],
             // toolbar: 'styleselect | bold italic forecolor backcolor table | alignleft aligncenter alignright | bullist numlist outdent indent | link image media | preview export code help',
             toolbar: 'styleselect | bold italic forecolor backcolor table | alignleft aligncenter alignright | link image | code help',
             menubar: false, // 'file edit view insert format tools table help',
@@ -6123,7 +7701,7 @@
             if (window.tinymce) {
             }
             else {
-                syn.$w.loadScript('/lib/tinymce-5.6.0/tinymce.min.js');
+                syn.$w.loadScript('/lib/tinymce/tinymce.min.js');
             }
         },
 
@@ -6148,10 +7726,26 @@
 
                 $htmleditor.editorPendings.push({
                     elID: elID,
-                    setting: setting,
+                    setting: $object.clone(setting),
                     intervalID: editorIntervalID
                 });
             }
+        },
+
+        // var setting = $htmleditor.getEditorSetting(elID);
+        getEditorSetting(elID) {
+            var result = null;
+
+            var length = $htmleditor.editorPendings.length;
+            for (var i = 0; i < length; i++) {
+                var item = $htmleditor.editorPendings[i];
+                if (item.id == elID) {
+                    result = item.setting;
+                    break;
+                }
+            }
+
+            return result;
         },
 
         lazyControlLoad(elID, setting) {
@@ -6198,7 +7792,7 @@
                     syn.uicontrols.$fileclient.businessID = '0';
                 }
 
-                if (syn.Config && syn.Config.FileManagerServer) {
+                if ($string.isNullOrEmpty(setting.fileManagerServer) == true && syn.Config && syn.Config.FileManagerServer) {
                     setting.fileManagerServer = syn.Config.FileManagerServer;
                 }
 
@@ -6220,7 +7814,10 @@
                         var xhr = syn.$w.xmlHttp();
                         xhr.withCredentials = false;
 
-                        var targetUrl = setting.fileManagerServer + '/repository/api/storage/upload-file?RepositoryID={0}&DependencyID={1}'.format(setting.repositoryID, setting.dependencyID);
+                        var targetUrl = setting.fileManagerServer + setting.fileManagerPath + '/' + setting.pageUploadFile + '?RepositoryID={0}&DependencyID={1}'.format(setting.repositoryID, setting.dependencyID);
+                        if ($string.isNullOrEmpty($htmleditor.userWorkID) == false) {
+                            targetUrl = targetUrl + '&userWorkID=' + $htmleditor.userWorkID;
+                        }
 
                         if ($string.isNullOrEmpty($htmleditor.applicationID) == false) {
                             targetUrl = targetUrl + '&applicationID=' + $htmleditor.applicationID;
@@ -6239,10 +7836,14 @@
                                 var response = JSON.parse(xhr.responseText);
 
                                 if (response && response.Result == true) {
-                                    syn.$r.path = setting.fileManagerServer + '/repository/api/storage/action-handler';
+                                    syn.$r.path = setting.fileManagerServer + setting.fileManagerPath + '/' + setting.pageActionHandler;
                                     syn.$r.params['action'] = 'GetItem';
                                     syn.$r.params['repositoryID'] = setting.repositoryID;
                                     syn.$r.params['itemID'] = response.ItemID;
+
+                                    if ($string.isNullOrEmpty($htmleditor.userWorkID) == false) {
+                                        syn.$r.params['userWorkID'] = $htmleditor.userWorkID;
+                                    }
 
                                     if ($string.isNullOrEmpty($htmleditor.applicationID) == false) {
                                         syn.$r.params['applicationID'] = $htmleditor.applicationID;
@@ -6253,7 +7854,7 @@
                                         if (xhrGetItem.readyState === XMLHttpRequest.DONE) {
                                             if (xhrGetItem.status === 200) {
                                                 var result = JSON.parse(xhrGetItem.responseText);
-                                                // response.location = setting.fileManagerServer + '/repository/api/storage/http-download-file?RepositoryID={0}&ItemID={1}'.format(setting.repositoryID, response.ItemID);
+                                                // response.location = setting.fileManagerServer + setting.fileManagerPath + '/http-download-file?RepositoryID={0}&ItemID={1}'.format(setting.repositoryID, response.ItemID);
                                                 response.location = result.AbsolutePath;
                                                 success(response.location);
 
@@ -6520,6 +8121,427 @@
                 }
             };
 
+            tinymce.addI18n('ko_KR', {
+                "Redo": "다시 실행",
+                "Undo": "실행 취소",
+                "Cut": "잘라내기",
+                "Copy": "복사",
+                "Paste": "붙여넣기",
+                "Select all": "전체선택",
+                "New document": "새 문서",
+                "Ok": "확인",
+                "Cancel": "취소",
+                "Visual aids": "시각교재",
+                "Bold": "굵게",
+                "Italic": "기울임꼴",
+                "Underline": "밑줄",
+                "Strikethrough": "취소선",
+                "Superscript": "위 첨자",
+                "Subscript": "아래 첨자",
+                "Clear formatting": "서식 지우기",
+                "Align left": "왼쪽 맞춤",
+                "Align center": "가운데 맞춤",
+                "Align right": "오른쪽 맞춤",
+                "Justify": "양쪽 맞춤",
+                "Bullet list": "글머리 기호 목록",
+                "Numbered list": "번호 매기기 목록",
+                "Decrease indent": "내어쓰기",
+                "Increase indent": "들여쓰기",
+                "Alternative description": "대체 설명문구",
+                "Close": "닫기",
+                "Formats": "서식",
+                "Your browser doesn't support direct access to the clipboard. Please use the Ctrl+X\/C\/V keyboard shortcuts instead.": "브라우저가 클립보드 접근을 지원하지 않습니다. Ctrl+X\/C\/V 단축키를 이용하십시오.",
+                "Headers": "머리글",
+                "Header 1": "머리글 1",
+                "Header 2": "머리글 2",
+                "Header 3": "머리글 3",
+                "Header 4": "머리글 4",
+                "Header 5": "머리글 5",
+                "Header 6": "머리글 6",
+                "Headings": "제목",
+                "Heading 1": "제목 1",
+                "Heading 2": "제목 2",
+                "Heading 3": "제목 3",
+                "Heading 4": "제목 4",
+                "Heading 5": "제목 5",
+                "Heading 6": "제목 6",
+                "Preformatted": "서식 미설정",
+                "Div": "Div",
+                "Pre": "Pre",
+                "Code": "코드",
+                "Paragraph": "단락",
+                "Blockquote": "인용문",
+                "Inline": "인라인",
+                "Blocks": "블록",
+                "Paste is now in plain text mode. Contents will now be pasted as plain text until you toggle this option off.": "스타일복사 끄기. 이 옵션을 끄기 전에는 복사 시, 스타일이 복사되지 않습니다.",
+                "Fonts": "글꼴",
+                "Font Sizes": "글꼴 크기",
+                "Class": "클래스",
+                "Browse for an image": "이미지 찾기",
+                "OR": "또는",
+                "Drop an image here": "여기로 이미지 끌어오기",
+                "Upload": "업로드",
+                "Block": "블록",
+                "Align": "정렬",
+                "Default": "기본",
+                "Circle": "원",
+                "Disc": "원반",
+                "Square": "사각",
+                "Lower Alpha": "알파벳 소문자",
+                "Lower Greek": "그리스어 소문자",
+                "Lower Roman": "로마자 소문자",
+                "Upper Alpha": "알파벳 소문자",
+                "Upper Roman": "로마자 대문자",
+                "Anchor...": "앵커...",
+                "Name": "이름",
+                "Id": "아이디",
+                "Id should start with a letter, followed only by letters, numbers, dashes, dots, colons or underscores.": "아이디는 문자, 숫자, 대시, 점, 콜론 또는 밑줄로 시작해야 합니다.",
+                "You have unsaved changes are you sure you want to navigate away?": "저장하지 않은 정보가 있습니다. 이 페이지를 벗어나시겠습니까?",
+                "Restore last draft": "마지막 초안 복원",
+                "Special character...": "특수 문자...",
+                "Source code": "소스코드",
+                "Insert\/Edit code sample": "코드샘플 삽입\/편집",
+                "Language": "언어",
+                "Code sample...": "코드 샘플...",
+                "Color Picker": "색 선택기",
+                "R": "R",
+                "G": "G",
+                "B": "B",
+                "Left to right": "왼쪽에서 오른쪽",
+                "Right to left": "오른쪽에서 왼쪽",
+                "Emoticons...": "이모티콘...",
+                "Metadata and Document Properties": "메타데이터와 문서 속성",
+                "Title": "제목",
+                "Keywords": "키워드",
+                "Description": "설명",
+                "Robots": "로봇",
+                "Author": "저자",
+                "Encoding": "인코딩",
+                "Fullscreen": "전체화면",
+                "Action": "동작",
+                "Shortcut": "단축키",
+                "Help": "도움말",
+                "Address": "주소",
+                "Focus to menubar": "메뉴에 포커스",
+                "Focus to toolbar": "툴바에 포커스",
+                "Focus to element path": "element path에 포커스",
+                "Focus to contextual toolbar": "켄텍스트 툴바에 포커스",
+                "Insert link (if link plugin activated)": "링크 삽입 (link 플러그인이 활성화된 상태에서)",
+                "Save (if save plugin activated)": "저장 (save 플러그인이 활성화된 상태에서)",
+                "Find (if searchreplace plugin activated)": "찾기(searchreplace 플러그인이 활성화된 상태에서)",
+                "Plugins installed ({0}):": "설치된 플러그인 ({0}):",
+                "Premium plugins:": "고급 플러그인",
+                "Learn more...": "좀 더 살펴보기",
+                "You are using {0}": "{0}를 사용중",
+                "Plugins": "플러그인",
+                "Handy Shortcuts": "단축키",
+                "Horizontal line": "가로",
+                "Insert\/edit image": "이미지 삽입\/수정",
+                "Image description": "이미지 설명",
+                "Source": "소스",
+                "Dimensions": "크기",
+                "Constrain proportions": "작업 제한",
+                "General": "일반",
+                "Advanced": "고급",
+                "Style": "스타일",
+                "Vertical space": "수직 공백",
+                "Horizontal space": "수평 공백",
+                "Border": "테두리",
+                "Insert image": "이미지 삽입",
+                "Image...": "이미지...",
+                "Image list": "이미지 목록",
+                "Rotate counterclockwise": "시계반대방향으로 회전",
+                "Rotate clockwise": "시계방향으로 회전",
+                "Flip vertically": "수직 뒤집기",
+                "Flip horizontally": "수평 뒤집기",
+                "Edit image": "이미지 편집",
+                "Image options": "이미지 옵션",
+                "Zoom in": "확대",
+                "Zoom out": "축소",
+                "Crop": "자르기",
+                "Resize": "크기 조절",
+                "Orientation": "방향",
+                "Brightness": "밝기",
+                "Sharpen": "선명하게",
+                "Contrast": "대비",
+                "Color levels": "색상레벨",
+                "Gamma": "감마",
+                "Invert": "반전",
+                "Apply": "적용",
+                "Back": "뒤로",
+                "Insert date\/time": "날짜\/시간삽입",
+                "Date\/time": "날짜\/시간",
+                "Insert\/Edit Link": "링크 삽입\/편집",
+                "Insert\/edit link": "링크 삽입\/수정",
+                "Text to display": "본문",
+                "Url": "주소",
+                "Open link in...": "...에서 링크 열기",
+                "Current window": "현재 창",
+                "None": "없음",
+                "New window": "새창",
+                "Remove link": "링크삭제",
+                "Anchors": "책갈피",
+                "Link...": "링크...",
+                "Paste or type a link": "링크를 붙여넣거나 입력하세요",
+                "The URL you entered seems to be an email address. Do you want to add the required mailto: prefix?": "현재 E-mail주소를 입력하셨습니다. E-mail 주소에 링크를 걸까요?",
+                "The URL you entered seems to be an external link. Do you want to add the required http:\/\/ prefix?": "현재 웹사이트 주소를 입력하셨습니다. 해당 주소에 링크를 걸까요?",
+                "Link list": "링크 리스트",
+                "Insert video": "비디오 삽입",
+                "Insert\/edit video": "비디오 삽입\/수정",
+                "Insert\/edit media": "미디어 삽입\/수정",
+                "Alternative source": "대체 소스",
+                "Alternative source URL": "대체 원본 URL",
+                "Media poster (Image URL)": "대표 이미지(이미지 URL)",
+                "Paste your embed code below:": "아래에 코드를 붙여넣으세요:",
+                "Embed": "삽입",
+                "Media...": "미디어...",
+                "Nonbreaking space": "띄어쓰기",
+                "Page break": "페이지 구분자",
+                "Paste as text": "텍스트로 붙여넣기",
+                "Preview": "미리보기",
+                "Print...": "인쇄...",
+                "Save": "저장",
+                "Find": "찾기",
+                "Replace with": "교체",
+                "Replace": "교체",
+                "Replace all": "전체 교체",
+                "Previous": "이전",
+                "Next": "다음",
+                "Find and replace...": "찾기 및 바꾸기...",
+                "Could not find the specified string.": "문자를 찾을 수 없습니다.",
+                "Match case": "대소문자 일치",
+                "Find whole words only": "모두 일치하는 문자 찾기",
+                "Spell check": "맞춤법 검사",
+                "Ignore": "무시",
+                "Ignore all": "전체무시",
+                "Finish": "완료",
+                "Add to Dictionary": "사전에 추가",
+                "Insert table": "테이블 삽입",
+                "Table properties": "테이블 속성",
+                "Delete table": "테이블 삭제",
+                "Cell": "셀",
+                "Row": "열",
+                "Column": "행",
+                "Cell properties": "셀 속성",
+                "Merge cells": "셀 합치기",
+                "Split cell": "셀 나누기",
+                "Insert row before": "이전에 행 삽입",
+                "Insert row after": "다음에 행 삽입",
+                "Delete row": "행 지우기",
+                "Row properties": "행 속성",
+                "Cut row": "행 잘라내기",
+                "Copy row": "행 복사",
+                "Paste row before": "이전에 행 붙여넣기",
+                "Paste row after": "다음에 행 붙여넣기",
+                "Insert column before": "이전에 행 삽입",
+                "Insert column after": "다음에 열 삽입",
+                "Delete column": "열 지우기",
+                "Cols": "열",
+                "Rows": "행",
+                "Width": "넓이",
+                "Height": "높이",
+                "Cell spacing": "셀 간격",
+                "Cell padding": "셀 안쪽 여백",
+                "Show caption": "캡션 표시",
+                "Left": "왼쪽",
+                "Center": "가운데",
+                "Right": "오른쪽",
+                "Cell type": "셀 타입",
+                "Scope": "범위",
+                "Alignment": "정렬",
+                "H Align": "가로 정렬",
+                "V Align": "세로 정렬",
+                "Top": "상단",
+                "Middle": "중간",
+                "Bottom": "하단",
+                "Header cell": "헤더 셀",
+                "Row group": "행 그룹",
+                "Column group": "열 그룹",
+                "Row type": "행 타입",
+                "Header": "헤더",
+                "Body": "바디",
+                "Footer": "푸터",
+                "Border color": "테두리 색",
+                "Insert template...": "템플릿 삽입...",
+                "Templates": "템플릿",
+                "Template": "템플릿",
+                "Text color": "문자 색깔",
+                "Background color": "배경색",
+                "Custom...": "직접 색깔 지정하기",
+                "Custom color": "직접 지정한 색깔",
+                "No color": "색상 없음",
+                "Remove color": "색 제거",
+                "Table of Contents": "목차",
+                "Show blocks": "블럭 보여주기",
+                "Show invisible characters": "안보이는 문자 보이기",
+                "Word count": "단어 수",
+                "Count": "개수",
+                "Document": "문서",
+                "Selection": "선택",
+                "Words": "단어",
+                "Words: {0}": "단어: {0}",
+                "{0} words": "{0} 단어",
+                "File": "파일",
+                "Edit": "수정",
+                "Insert": "삽입",
+                "View": "보기",
+                "Format": "포맷",
+                "Table": "테이블",
+                "Tools": "도구",
+                "Powered by {0}": "Powered by {0}",
+                "Rich Text Area. Press ALT-F9 for menu. Press ALT-F10 for toolbar. Press ALT-0 for help": "서식 있는 텍스트 편집기 입니다. ALT-F9를 누르면 메뉴, ALT-F10를 누르면 툴바, ALT-0을 누르면 도움말을 볼 수 있습니다.",
+                "Image title": "이미지 제목",
+                "Border width": "테두리 두께",
+                "Border style": "테두리 스타일",
+                "Error": "오류",
+                "Warn": "경고",
+                "Valid": "유효함",
+                "To open the popup, press Shift+Enter": "팝업을 열려면 Shift+Enter를 누르십시오.",
+                "Rich Text Area. Press ALT-0 for help.": "서식 있는 텍스트 영역. ALT-0을 누르면 도움말을 볼 수 있습니다.",
+                "System Font": "시스템 글꼴",
+                "Failed to upload image: {0}": "이미지 업로드 실패: {0}",
+                "Failed to load plugin: {0} from url {1}": "플러그인 로드 실패:  URL: {1}에서의 {0}",
+                "Failed to load plugin url: {0}": "플러그인 URL 로드 실패: {0}",
+                "Failed to initialize plugin: {0}": "플러그인 초기화 실패: {0}",
+                "example": "예제",
+                "Search": "검색",
+                "All": "모두",
+                "Currency": "통화",
+                "Text": "텍스트",
+                "Quotations": "인용문",
+                "Mathematical": "수학",
+                "Extended Latin": "확장 라틴어",
+                "Symbols": "기호",
+                "Arrows": "화살표",
+                "User Defined": "사용자 정의",
+                "dollar sign": "달러 기호",
+                "currency sign": "통화 기호",
+                "euro-currency sign": "유로화 기호",
+                "colon sign": "콜론 기호",
+                "cruzeiro sign": "크루제이루 기호",
+                "french franc sign": "프랑스 프랑 기호",
+                "lira sign": "리라 기호",
+                "mill sign": "밀 기호",
+                "naira sign": "나이라 기호",
+                "peseta sign": "페세타 기호",
+                "rupee sign": "루피 기호",
+                "won sign": "원 기호",
+                "new sheqel sign": "뉴 세켈 기호",
+                "dong sign": "동 기호",
+                "kip sign": "킵 기호",
+                "tugrik sign": "투그리크 기호",
+                "drachma sign": "드라크마 기호",
+                "german penny symbol": "독일 페니 기호",
+                "peso sign": "페소 기호",
+                "guarani sign": "과라니 기호",
+                "austral sign": "아우스트랄 기호",
+                "hryvnia sign": "그리브나 기호",
+                "cedi sign": "세디 기호",
+                "livre tournois sign": "리브르 트르누아 기호",
+                "spesmilo sign": "스페스밀로 기호",
+                "tenge sign": "텡게 기호",
+                "indian rupee sign": "인도 루피 기호",
+                "turkish lira sign": "터키 리라 기호",
+                "nordic mark sign": "노르딕 마르크 기호",
+                "manat sign": "마나트 기호",
+                "ruble sign": "루블 기호",
+                "yen character": "엔 기호",
+                "yuan character": "위안 기호",
+                "yuan character, in hong kong and taiwan": "대만 위안 기호",
+                "yen\/yuan character variant one": "엔\/위안 문자 변형",
+                "Loading emoticons...": "이모티콘 불러오는 중...",
+                "Could not load emoticons": "이모티콘을 불러올 수 없음",
+                "People": "사람",
+                "Animals and Nature": "동물과 자연",
+                "Food and Drink": "음식과 음료",
+                "Activity": "활동",
+                "Travel and Places": "여행과 장소",
+                "Objects": "물건",
+                "Flags": "깃발",
+                "Characters": "문자",
+                "Characters (no spaces)": "문자(공백 없음)",
+                "{0} characters": "{0} 문자",
+                "Error: Form submit field collision.": "오류: 양식 제출 필드 불일치",
+                "Error: No form element found.": "오류: 양식 항목 없음",
+                "Update": "업데이트",
+                "Color swatch": "색상 견본",
+                "Turquoise": "청록색",
+                "Green": "초록색",
+                "Blue": "파란색",
+                "Purple": "보라색",
+                "Navy Blue": "남색",
+                "Dark Turquoise": "진한 청록색",
+                "Dark Green": "진한 초록색",
+                "Medium Blue": "중간 파란색",
+                "Medium Purple": "중간 보라색",
+                "Midnight Blue": "진한 파란색",
+                "Yellow": "노란색",
+                "Orange": "주황색",
+                "Red": "빨간색",
+                "Light Gray": "밝은 회색",
+                "Gray": "회색",
+                "Dark Yellow": "진한 노란색",
+                "Dark Orange": "진한 주황색",
+                "Dark Red": "진한 빨간색",
+                "Medium Gray": "중간 회색",
+                "Dark Gray": "진한 회색",
+                "Light Green": "밝은 녹색",
+                "Light Yellow": "밝은 노란색",
+                "Light Red": "밝은 빨간색",
+                "Light Purple": "밝은 보라색",
+                "Light Blue": "밝은 파란색",
+                "Dark Purple": "진한 보라색",
+                "Dark Blue": "진한 파란색",
+                "Black": "검은색",
+                "White": "흰색",
+                "Switch to or from fullscreen mode": "전체 화면으로\/에서 전환",
+                "Open help dialog": "도움말 대화창 열기",
+                "history": "기록",
+                "styles": "스타일",
+                "formatting": "포맷팅",
+                "alignment": "정렬",
+                "indentation": "들여쓰기",
+                "permanent pen": "유성펜",
+                "comments": "주석",
+                "Format Painter": "서식 복사",
+                "Insert\/edit iframe": "아이프레임 삽입\/편집",
+                "Capitalization": "대문자화",
+                "lowercase": "소문자",
+                "UPPERCASE": "대문자",
+                "Title Case": "제목을 대문자화",
+                "Permanent Pen Properties": "영구 펜 특성",
+                "Permanent pen properties...": "영구 펜 특성...",
+                "Font": "글꼴",
+                "Size": "크기",
+                "More...": "더 보기...",
+                "Spellcheck Language": "맞춤법 검사 언어",
+                "Select...": "선택...",
+                "Preferences": "환경설정",
+                "Yes": "네",
+                "No": "아니오",
+                "Keyboard Navigation": "키 선택",
+                "Version": "버전",
+                "Anchor": "앵커",
+                "Special character": "특수문자",
+                "Code sample": "코드샘플",
+                "Color": "색상",
+                "Emoticons": "이모티콘",
+                "Document properties": "문서 속성",
+                "Image": "이미지",
+                "Insert link": "링크 삽입 ",
+                "Target": "대상",
+                "Link": "링크",
+                "Poster": "포스터",
+                "Media": "미디어",
+                "Print": "출력",
+                "Prev": "이전",
+                "Find and replace": "찾아서 교체",
+                "Whole words": "전체 단어",
+                "Spellcheck": "문법체크",
+                "Caption": "캡션",
+                "Insert template": "템플릿 삽입"
+            });
+
             $htmleditor.editorControls.push({
                 id: elID,
                 editor: null,
@@ -6678,7 +8700,7 @@
 
         updateDependencyID(elID, targetDependencyID, callback) {
             var setting = $htmleditor.getHtmlSetting(elID);
-            syn.$r.path = setting.fileManagerServer + '/repository/api/storage/action-handler';
+            syn.$r.path = setting.fileManagerServer + setting.fileManagerPath + '/' + setting.pageActionHandler;
             syn.$r.params['action'] = 'UpdateDependencyID';
             syn.$r.params['repositoryID'] = setting.repositoryID;
             syn.$r.params['sourceDependencyID'] = setting.dependencyID;
@@ -7300,7 +9322,7 @@
             var wrapper = document.createElement('div');
             wrapper.style.width = setting.width;
             wrapper.style.height = setting.height;
-            wrapper.className = 'tree-container border';
+            wrapper.className = 'tree-container border overflow-auto';
             wrapper.innerHTML = '<div id="' + elID + '"></div>';
             parent.appendChild(wrapper);
 
@@ -7589,16 +9611,9 @@
                     var elID = hot.rootElement.id;
                     var synOptions = syn.$w.argumentsExtend(syn.uicontrols.$codepicker.defaultSetting, columnInfo);
                     synOptions.elID = elID;
-                    synOptions.controlType = 'grid';
+                    synOptions.viewType = 'grid';
 
                     syn.uicontrols.$codepicker.find(synOptions, function (result) {
-                        if (result && columnInfo.codeColumnID && columnInfo.textColumnID) {
-                            var gridValue = [];
-                            gridValue.push([row, hot.propToCol(columnInfo.codeColumnID), result[0].value]);
-                            gridValue.push([row, col, result[0].text]);
-                            hot.setDataAtCell(gridValue);
-                        }
-
                         var mod = window[syn.$w.pageScript];
 
                         var returnHandler = mod.hook.frameEvent;
@@ -7932,6 +9947,8 @@
         defaultHotSettings: {
             licenseKey: 'non-commercial-and-evaluation',
             language: 'ko-KR',
+            locale: 'ko-KR',
+            imeFastEdit: true,
             data: [],
             colWidths: 120,
             rowHeights: 31,
@@ -8878,9 +10895,10 @@
                 selectedValue: null
             }
 
-            setting = syn.$w.argumentsExtend(defaultSetting, setting);
+            setting = setting || {};
             setting.elID = elID;
             setting.storeSourceID = setting.storeSourceID || setting.dataSourceID;
+            setting = syn.$w.argumentsExtend(defaultSetting, setting);
 
             if (setting.columnName && setting.storeSourceID) {
                 var mod = window[syn.$w.pageScript];
@@ -8895,7 +10913,7 @@
 
                 var dataSource = null;
                 if (mod.config && mod.config.dataSource && mod.config.dataSource[setting.dataSourceID]) {
-                    dataSource = mod.config.dataSource[setting.storeSourceID];
+                    dataSource = mod.config.dataSource[setting.dataSourceID];
                 }
 
                 var hot = $grid.getGridControl(elID);
@@ -9016,27 +11034,38 @@
             for (var i = 0; i < length; i++) {
                 var column = columns[i];
 
+                var columnID = column[0];
+                var columnName = column[1];
+                var width = column[2];
+                var isHidden = column[3];
+                var columnType = column[4];
+                var readOnly = column[5];
+                var alignConstants = column[6];
+                var belongID = column[7];
+                var validators = column[8];
+                var options = column[9];
+
                 var columnInfo = {
-                    data: column[0],
+                    data: columnID,
                     type: 'text',
                     filter: true,
-                    isHidden: column[3],
-                    readOnly: $string.toBoolean(settings.readOnly) == true ? true : column[5],
-                    className: $object.isNullOrUndefined(column[6]) == true ? '' : 'ht' + $string.capitalize(column[6]),
-                    belongID: $object.isNullOrUndefined(column[7]) == true ? '' : column[7],
+                    isHidden: isHidden,
+                    readOnly: $string.toBoolean(settings.readOnly) == true ? true : $string.toBoolean(readOnly),
+                    className: $object.isNullOrUndefined(alignConstants) == true ? '' : 'ht' + $string.capitalize(alignConstants),
+                    belongID: $object.isNullOrUndefined(belongID) == true ? '' : belongID,
                     validators: null
                 }
 
-                if (column.length > 8 && column[8]) {
-                    columnInfo.validators = column[8];
+                if (column.length > 8 && validators) {
+                    columnInfo.validators = validators;
 
                     if (columnInfo.validators.indexOf('require') > -1) {
                         columnInfo.className = columnInfo.className + ' required';
                     }
                 }
 
-                if (column.length > 9 && column[9]) {
-                    var columnOptions = column[9];
+                if (column.length > 9 && options) {
+                    var columnOptions = options;
 
                     if ($string.isNullOrEmpty(columnOptions.placeholder) == false) {
                         columnInfo.placeholder = columnOptions.placeholder;
@@ -9076,7 +11105,7 @@
                 }
 
                 var dataSource = null;
-                var type = column[4];
+                var type = columnType;
                 if ($object.isString(type) == true) {
                     columnInfo.type = type;
                     if ((columnInfo.type == 'dropdown' || columnInfo.type == 'codehelp')) {
@@ -9171,7 +11200,7 @@
                     }
                     else {
                         if (elID) {
-                            type.columnName = column[0];
+                            type.columnName = columnID;
                             if (type.local === true) {
                                 $grid.dataRefresh(elID, type);
                             }
@@ -9205,15 +11234,15 @@
                     columnInfo.storeSourceID = type.storeSourceID || type.dataSourceID;
                     columnInfo.local = type.local;
                     columnInfo.controlText = type.controlText;
-                    columnInfo.codeColumnID = type.codeColumnID ? type.codeColumnID : column[0];
-                    columnInfo.textColumnID = type.textColumnID ? type.textColumnID : column[0];
+                    columnInfo.codeColumnID = type.codeColumnID ? type.codeColumnID : columnID;
+                    columnInfo.textColumnID = type.textColumnID ? type.textColumnID : columnID;
                     columnInfo.parameters = type.parameters ? type.parameters : '';
                 } else if (columnInfo.type == 'date') {
                     columnInfo.dateFormat = type.dateFormat ? type.dateFormat : 'YYYY-MM-DD';
                     columnInfo.correctFormat = true;
                     columnInfo.datePickerConfig = {
                         format: columnInfo.dateFormat,
-                        ariaLabel: '날짜를 선택하세요',
+                        ariaLabel: '날짜를 선택 하세요',
                         i18n: {
                             previousMonth: '이전 달',
                             nextMonth: '다음 달',
@@ -9236,25 +11265,25 @@
                         filter: true,
                         readOnly: true,
                         className: 'htLeft',
-                        belongID: columnInfo.codeBelongID ? columnInfo.codeBelongID : $object.clone(column[7])
+                        belongID: columnInfo.codeBelongID ? columnInfo.codeBelongID : $object.clone(belongID)
                     }
 
                     if (columnInfo.codeColumnHidden == true) {
-                        gridSetting.colHeaders.push(column[1] + '_$HIDDEN');
-                        columnInfo.columnText = column[1] + '_$HIDDEN';
+                        gridSetting.colHeaders.push(columnName + '_$HIDDEN');
+                        columnInfo.columnText = columnName + '_$HIDDEN';
                     }
                     else {
-                        gridSetting.colHeaders.push(column[1] + '_코드');
-                        columnInfo.columnText = column[1] + '_코드';
+                        gridSetting.colHeaders.push(columnName + '_코드');
+                        columnInfo.columnText = columnName + '_코드';
                     }
                     gridSetting.columns.push(hiddenColumnInfo);
-                    gridSetting.colWidths.push(column[2]);
+                    gridSetting.colWidths.push(width);
                 }
 
-                gridSetting.colHeaders.push(column[1]);
-                columnInfo.columnText = column[1];
+                gridSetting.colHeaders.push(columnName);
+                columnInfo.columnText = columnName;
                 gridSetting.columns.push(columnInfo);
-                gridSetting.colWidths.push(column[2]);
+                gridSetting.colWidths.push(width);
             }
 
             var headerLength = gridSetting.colHeaders.length;
@@ -9469,6 +11498,10 @@
 
             var triggerOptions = syn.$w.getTriggerOptions(elID);
             if (triggerOptions) {
+                if (triggerOptions.focusColumnID) {
+                    setting.focusColumnID = triggerOptions.focusColumnID;
+                }
+
                 if (triggerOptions.sourceValueID && triggerOptions.targetColumnID) {
                     var mod = window[syn.$w.pageScript];
                     if (mod) {
@@ -9576,11 +11609,6 @@
                             }
                         }
                     }
-                }
-
-                if (triggerOptions.focusColumnID) {
-                    var col = hot.propToCol(triggerOptions.focusColumnID);
-                    hot.selectCell(row + (amount - 1), col);
                 }
             }
             else {
@@ -9713,12 +11741,17 @@
                     }
                     else {
                         if ($string.isNullOrEmpty(focusColumnIndex) == true) {
-                            focusColumnIndex = 1;
+                            var firstCol = $grid.getFirstShowColIndex(elID);
+                            if (firstCol > 0) {
+                                focusColumnIndex = firstCol;
+                            }
                         }
 
-                        var focusRowIndex = rowIndex - 1;
-                        if (focusRowIndex >= 0) {
-                            $grid.selectCell(elID, rowIndex - 1, focusColumnIndex);
+                        if (focusColumnIndex > 0) {
+                            var focusRowIndex = rowIndex - 1;
+                            if (focusRowIndex >= 0) {
+                                $grid.selectCell(elID, rowIndex - 1, focusColumnIndex);
+                            }
                         }
                     }
 
@@ -10220,6 +12253,17 @@
                             }
                         }
                     }
+
+                    var order = ['D', 'U', 'C'];
+                    result = result.sort(function (a, b) {
+                        var indexA = order.indexOf(a.Flag);
+                        var indexB = order.indexOf(b.Flag);
+
+                        if (indexA === -1) return 1;
+                        if (indexB === -1) return -1;
+
+                        return indexA - indexB;
+                    });
                 }
             } else {
                 syn.$l.eventLog('getUpdateData', 'Input Mapping 설정 없음', 'Debug');
@@ -10678,7 +12722,7 @@
                     newWorksheet['!cols'] = wsCols;
                     XLSX.utils.book_append_sheet(wb, newWorksheet, 'Sheet1');
                     var wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-                    syn.$l.blobToDownload(new Blob([$l.stringToArrayBuffer(wbout)], { type: "application/octet-stream" }), options.filename + '.xlsx');
+                    syn.$l.blobToDownload(new Blob([syn.$l.stringToArrayBuffer(wbout)], { type: "application/octet-stream" }), options.filename + '.xlsx');
                 }
                 else if (options.fileType == 'csv') {
                     var hot = $grid.getGridControl(elID);
@@ -10741,7 +12785,7 @@
 
                             var colIndex = gridSettings.colHeaders.indexOf(value);
                             if (colIndex == -1) {
-                                syn.$w.alert('올바른 형식의 파일이 아닙니다.\n파일을 확인해주세요.'.format(gridSettings.controlText));
+                                syn.$w.alert('올바른 형식의 파일이 아닙니다.\n파일을 확인해주세요.');
                                 return false;
                             }
 
@@ -10842,7 +12886,7 @@
                         var columnText = cell.v;
                         var colIndex = gridSettings.colHeaders.indexOf(columnText);
                         if (colIndex == -1) {
-                            syn.$w.alert('올바른 형식의 파일이 아닙니다.\n파일을 확인해주세요.'.format(gridSettings.controlText));
+                            syn.$w.alert('올바른 형식의 파일이 아닙니다.\n파일을 확인해주세요.');
                             return false;
                         }
 
@@ -10866,7 +12910,7 @@
                             dataType = 'bool';
                             break;
                         case 'numeric':
-                            dataType = 'int';
+                            dataType = 'numeric';
                             break;
                         case 'date':
                             dataType = 'string';
@@ -11020,40 +13064,40 @@
             if (hot) {
                 var gridSettings = hot.getSettings();
                 if (gridSettings && value && value.length > 0) {
-                    var item = value[0];
-                    for (var column in item) {
-                        var isTypeCheck = false;
-                        var metaColumn = metaColumns[column];
-                        if (metaColumn) {
-                            switch (metaColumn.dataType.toLowerCase()) {
-                                case 'string':
-                                    isTypeCheck = item[column] == null || $object.isString(item[column]) || $string.isNumber(item[column]);
-                                    break;
-                                case 'bool':
-                                    isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $object.isBoolean(item[column]);
-                                    break;
-                                case 'number':
-                                case 'int':
-                                    isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $string.isNumber(item[column]) || $object.isNumber(item[column]);
-                                    break;
-                                case 'date':
-                                    isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $object.isDate(item[column]);
-                                    break;
-                                default:
-                                    isTypeCheck = false;
-                                    break;
-                            }
+                    if ($object.isNullOrUndefined(metaColumns) == false) {
+                        var item = value[0];
+                        for (var column in item) {
+                            var isTypeCheck = false;
+                            var metaColumn = metaColumns[column];
+                            if (metaColumn) {
+                                switch (metaColumn.dataType.toLowerCase()) {
+                                    case 'string':
+                                        isTypeCheck = item[column] == null || $object.isString(item[column]) || $string.isNumber(item[column]);
+                                        break;
+                                    case 'bool':
+                                        isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $object.isBoolean(item[column]);
+                                        break;
+                                    case 'number':
+                                    case 'numeric':
+                                        isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $string.isNumber(item[column]) || $object.isNumber(item[column]);
+                                        break;
+                                    case 'date':
+                                        isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $object.isDate(item[column]);
+                                        break;
+                                    default:
+                                        isTypeCheck = false;
+                                        break;
+                                }
 
-                            if (isTypeCheck == false) {
-                                error = '바인딩 데이터 타입과 매핑 정의가 다름, 바인딩 ID - "{0}", 타입 - "{1}"'.format(column, metaColumn.dataType);
-                                break;
+                                if (isTypeCheck == false) {
+                                    syn.$l.eventLog('syn.uicontrols.$grid', '바인딩 데이터 타입과 매핑 정의가 다름, 바인딩 ID - "{0}", 타입 - "{1}"'.format(column, metaColumn.dataType), 'Warning');
+                                    return;
+                                }
+                            } else {
+                                continue;
                             }
-                        } else {
-                            continue;
                         }
-                    }
 
-                    if (error == '') {
                         var columnInfos = gridSettings.columns;
                         var dropdownColumns = [];
 
@@ -11078,17 +13122,14 @@
                                                 break;
                                             }
                                         }
-
                                     }
                                 }
                             }
                         }
-
-                        $grid.loadData(elID, value);
-                        $grid.renderSummary(hot);
-                    } else {
-                        syn.$l.eventLog('syn.uicontrols.$grid', error, 'Debug');
                     }
+
+                    $grid.loadData(elID, value);
+                    $grid.renderSummary(hot);
                 } else {
                     $grid.loadData(elID, []);
                     $grid.renderSummary(hot);
@@ -11205,6 +13246,62 @@
             $grid.loadData(elID, []);
         },
 
+        setTransactionBelongID(elID, belongFlow, transactConfig) {
+            var el = syn.$l.get(elID + '_hidden') || syn.$l.get(elID);
+            var synOptions = JSON.parse(el.getAttribute('syn-options'));
+
+            if (synOptions == null) {
+                return;
+            }
+
+            for (var i = 0; i < synOptions.columns.length; i++) {
+                var column = synOptions.columns[i];
+                var dataType = 'string'
+                switch (column.columnType) {
+                    case 'checkbox':
+                        dataType = 'bool';
+                        break;
+                    case 'numeric':
+                        dataType = 'numeric';
+                        break;
+                    case 'number':
+                        dataType = 'number';
+                        break;
+                    case 'date':
+                        dataType = 'date';
+                        break;
+                }
+
+                if ($object.isNullOrUndefined(transactConfig) == true) {
+                    belongFlow.items[column.data] = {
+                        fieldID: column.data,
+                        dataType: dataType
+                    };
+                }
+                else {
+                    var isBelong = false;
+                    if (column.data == 'Flag') {
+                        isBelong = true;
+                    }
+                    else if (column.belongID) {
+                        if ($object.isString(column.belongID) == true) {
+                            isBelong = transactConfig.functionID == column.belongID;
+                        }
+                        else if ($object.isArray(column.belongID) == true) {
+                            isBelong = column.belongID.indexOf(transactConfig.functionID) > -1;
+                        }
+                    }
+
+                    if (isBelong == true) {
+                        belongFlow.items[column.data] = {
+                            fieldID: column.data,
+                            dataType: dataType
+                        };
+                    }
+                }
+            }
+        },
+
         checkEditValue(elID) {
             return $grid.getDataAtCol(elID, 'Flag').filter((item) => { return $string.isNullOrEmpty(item) == false && item != 'R' }).length > 0;
         },
@@ -11223,10 +13320,15 @@
         checkEmptyValueCol(elID, column, checkValue) {
             var result = false;
             if ($object.isNullOrUndefined(checkValue) == true) {
-                result = $grid.getDataAtCol(elID, column).filter((item) => { return $string.isNullOrEmpty(item) == true }).length > 0;
+                if ($grid.countRows(elID) == 0) {
+                    result = false;
+                }
+                else {
+                    result = $grid.getDataAtCol(elID, column).filter((item) => { return $string.isNullOrEmpty(item) == true }).length > 0;
+                }
             }
             else {
-                result = $grid.getDataAtCol(elID, column).filter((item) => { return $string.isNullOrEmpty(item) == true || item === checkValue }).length > 0;
+                result = $grid.getDataAtCol(elID, column).filter((item) => { return item === checkValue }).length > 0;
             }
             return result;
         },
@@ -11321,19 +13423,20 @@
 
         controlLoad(elID, setting) {
             var el = syn.$l.get(elID);
+            if (el) {
+                setting = syn.$w.argumentsExtend($element.defaultSetting, setting);
 
-            setting = syn.$w.argumentsExtend($element.defaultSetting, setting);
+                var mod = window[syn.$w.pageScript];
+                if (mod && mod.hook.controlInit) {
+                    var moduleSettings = mod.hook.controlInit(elID, setting);
+                    setting = syn.$w.argumentsExtend(setting, moduleSettings);
+                }
 
-            var mod = window[syn.$w.pageScript];
-            if (mod && mod.hook.controlInit) {
-                var moduleSettings = mod.hook.controlInit(elID, setting);
-                setting = syn.$w.argumentsExtend(setting, moduleSettings);
-            }
+                el.setAttribute('syn-options', JSON.stringify(setting));
 
-            el.setAttribute('syn-options', JSON.stringify(setting));
-
-            if (setting.bindingID && syn.uicontrols.$data) {
-                syn.uicontrols.$data.bindingSource(elID, setting.bindingID);
+                if (setting.bindingID && syn.uicontrols.$data) {
+                    syn.uicontrols.$data.bindingSource(elID, setting.bindingID);
+                }
             }
         },
 

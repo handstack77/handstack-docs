@@ -226,7 +226,7 @@ globalRoot.syn = syn;
         isEdge: !!context.chrome && navigator.userAgent.indexOf('Edg') > -1,
         isFF: typeof InstallTrigger !== 'undefined' || navigator.userAgent.indexOf('Firefox') !== -1,
         isSafari: /constructor/i.test(context.HTMLElement) || (function (p) { return p.toString() === '[object SafariRemoteNotification]'; })(!context['safari'] || (typeof safari !== 'undefined' && context['safari'].pushNotification)),
-        isMobile: (navigator.userAgentData && navigator.userAgentData.mobile == true) ? true : /Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i.test(navigator.userAgent),
+        isMobile: () => { return (navigator.userAgentData && navigator.userAgentData.mobile == true) ? true : /Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i.test(navigator.userAgent) },
 
         getSystemFonts() {
             var fonts = [
@@ -402,11 +402,11 @@ globalRoot.syn = syn;
         },
 
         async getIpAddress() {
-            var result = '127.0.0.1';
+            var result = '';
 
             try {
-                var value = await syn.$w.apiHttp('/checkip').send(null, { timeout: 200 });
-                result = (value.status === 200 && syn.$v.regexs.ipAddress.test(value.response) == true) ? value.response : '127.0.0.1';
+                var value = await syn.$w.apiHttp(syn.Config.FindClientIPServer || '/checkip').send(null, { timeout: 3000 });
+                result = ($string.isNullOrEmpty(value) == true || syn.$v.regexs.ipAddress.test(value) == false) ? '127.0.0.1' : value;
             } catch (error) {
                 syn.$l.eventLog('$b.getIpAddress', error, 'Error');
             }
@@ -1057,27 +1057,31 @@ globalRoot.syn = syn;
     $dimension.extend({
         version: '1.0.0',
 
-        getDocumentSize() {
+        getDocumentSize(isTopWindow) {
+            isTopWindow = $string.toBoolean(isTopWindow);
+            var currentDocument = isTopWindow == true ? top.document : context.document;
             return {
                 width: Math.max(
-                    document.body.scrollWidth, document.documentElement.scrollWidth,
-                    document.body.offsetWidth, document.documentElement.offsetWidth,
-                    document.body.clientWidth, document.documentElement.clientWidth
+                    currentDocument.body.scrollWidth, currentDocument.documentElement.scrollWidth,
+                    currentDocument.body.offsetWidth, currentDocument.documentElement.offsetWidth,
+                    currentDocument.body.clientWidth, currentDocument.documentElement.clientWidth
                 ),
                 height: Math.max(
-                    document.body.scrollHeight, document.documentElement.scrollHeight,
-                    document.body.offsetHeight, document.documentElement.offsetHeight,
-                    document.body.clientHeight, document.documentElement.clientHeight
+                    currentDocument.body.scrollHeight, currentDocument.documentElement.scrollHeight,
+                    currentDocument.body.offsetHeight, currentDocument.documentElement.offsetHeight,
+                    currentDocument.body.clientHeight, currentDocument.documentElement.clientHeight
                 ),
-                frameWidth: document.documentElement.clientWidth || document.body.clientWidth || 0,
-                frameHeight: document.documentElement.clientHeight || document.body.clientHeight || 0
+                frameWidth: currentDocument.documentElement.clientWidth || currentDocument.body.clientWidth || 0,
+                frameHeight: currentDocument.documentElement.clientHeight || currentDocument.body.clientHeight || 0
             };
         },
 
-        getWindowSize() {
+        getWindowSize(isTopWindow) {
+            isTopWindow = $string.toBoolean(isTopWindow);
+            var currentWindow = isTopWindow == true ? top.window : context;
             return {
-                width: globalRoot.innerWidth,
-                height: globalRoot.innerHeight
+                width: currentWindow.innerWidth,
+                height: currentWindow.innerHeight
             };
         },
 
@@ -1268,9 +1272,9 @@ globalRoot.syn = syn;
 
 (function (context) {
     'use strict';
-    var $crytography = context.$crytography || new syn.module();
+    var $cryptography = context.$cryptography || new syn.module();
 
-    $crytography.extend({
+    $cryptography.extend({
         version: '1.0.0',
 
         base64Encode(val) {
@@ -1326,6 +1330,237 @@ globalRoot.syn = syn;
                         return String.fromCharCode(cc);
                     });
             return plainString;
+        },
+
+        isWebCryptoSupported() {
+            return (typeof window.crypto !== 'undefined' && typeof window.crypto.subtle !== 'undefined');
+        },
+
+        padKey(key, length) {
+            var result = null;
+            if (typeof key === 'string') {
+                key = new TextEncoder().encode(key);
+
+                if (key.length >= length) {
+                    return key.slice(0, length);
+                }
+
+                result = new Uint8Array(length);
+                result.set(key);
+            }
+            return result;
+        },
+
+        // syn.$c.generateHMAC().then((signature) => { debugger; });
+        async generateHMAC(key, message) {
+            var result = null;
+            var encoder = new TextEncoder();
+            var keyData = encoder.encode(key);
+            var messageData = encoder.encode(message);
+            var cryptoKey = await crypto.subtle.importKey(
+                'raw',
+                keyData,
+                { name: 'HMAC', hash: 'SHA-256' },
+                false,
+                ['sign']
+            );
+
+            var signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
+            result = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
+            return result;
+        },
+
+        // syn.$c.verifyHMAC('handstack', 'hello world', '25a00a2d55bbb313329c8abba5aebc8b282615876544c5be236d75d1418fc612').then((result) => { debugger; });
+        async verifyHMAC(key, message, signature) {
+            return await $cryptography.generateHMAC(key, message) === signature;
+        },
+
+        // syn.$c.generateRSAKey().then((cryptoKey) => { debugger; });
+        async generateRSAKey() {
+            var result = null;
+            result = await window.crypto.subtle.generateKey(
+                {
+                    name: "RSA-OAEP",
+                    modulusLength: 2048,
+                    publicExponent: new Uint8Array([1, 0, 1]),
+                    hash: "SHA-256"
+                },
+                true,
+                ['encrypt', 'decrypt']
+            );
+            return result;
+        },
+
+        // syn.$c.exportCryptoKey(cryptoKey.publicKey, true).then((result) => { debugger; });
+        async exportCryptoKey(cryptoKey, isPublic) {
+            var result = '';
+            isPublic = $string.toBoolean(isPublic);
+            var exportLabel = isPublic == true ? 'PUBLIC' : 'PRIVATE';
+            var exported = await window.crypto.subtle.exportKey(
+                (isPublic == true ? 'spki' : 'pkcs8'),
+                cryptoKey
+            );
+            var exportedAsString = String.fromCharCode.apply(null, new Uint8Array(exported));
+            var exportedAsBase64 = window.btoa(exportedAsString);
+            result = `-----BEGIN ${exportLabel} KEY-----\n${exportedAsBase64}\n-----END ${exportLabel} KEY-----`;
+
+            var lines = result.split('\n');
+            result = lines.map(line => {
+                return line.match(/.{1,64}/g).join('\n');
+            });
+            return result.join('\n');
+        },
+
+        // syn.$c.importCryptoKey('-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----', true).then((result) => { debugger; });
+        async importCryptoKey(pem, isPublic) {
+            var result = null;
+            isPublic = $string.toBoolean(isPublic);
+            var exportLabel = isPublic == true ? 'PUBLIC' : 'PRIVATE';
+            var pemHeader = `-----BEGIN ${exportLabel} KEY-----`;
+            var pemFooter = `-----END ${exportLabel} KEY-----`;
+            var pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length).replaceAll('\n', '');
+            var binaryDerString = window.atob(pemContents);
+            var binaryDer = syn.$l.stringToArrayBuffer(binaryDerString);
+            var importMode = isPublic == true ? ['encrypt'] : ['decrypt'];
+
+            result = await crypto.subtle.importKey(
+                (isPublic == true ? 'spki' : 'pkcs8'),
+                binaryDer,
+                {
+                    name: 'RSA-OAEP',
+                    hash: 'SHA-256'
+                },
+                true,
+                importMode
+            );
+            return result;
+        },
+
+        // syn.$c.rsaEncode('hello world', result).then((result) => { debugger; });
+        async rsaEncode(text, publicKey) {
+            var result = null;
+            var encoder = new TextEncoder();
+            var data = encoder.encode(text);
+            var encrypted = await crypto.subtle.encrypt(
+                {
+                    name: 'RSA-OAEP'
+                },
+                publicKey,
+                data
+            );
+
+            result = $cryptography.base64Encode(new Uint8Array(encrypted));
+            return result;
+        },
+
+        // syn.$c.rsaDecode(encryptData, result).then((result) => { debugger; });
+        async rsaDecode(encryptedData, privateKey) {
+            var result = null;
+            var encrypted = new Uint8Array($cryptography.base64Decode(encryptedData).split(',').map(Number));
+            var decrypted = await crypto.subtle.decrypt(
+                {
+                    name: 'RSA-OAEP'
+                },
+                privateKey,
+                encrypted
+            );
+
+            var decoder = new TextDecoder();
+            result = decoder.decode(decrypted);
+            return result;
+        },
+
+        generateIV(key, ivLength) {
+            var result;
+            ivLength = ivLength || 16;
+            if (key && key.toUpperCase() == '$RANDOM$') {
+                result = window.crypto.getRandomValues(new Uint8Array(ivLength));
+            }
+            else {
+                key = key || '';
+                result = $cryptography.padKey(key, ivLength);
+            }
+
+            return result;
+        },
+
+        async aesEncode(text, key, algorithm, keyLength) {
+            var result = null;
+            key = key || '';
+            algorithm = algorithm || 'AES-CBC'; // AES-CBC, AES-GCM
+            keyLength = keyLength || 256; // 128, 256
+            var ivLength = algorithm === 'AES-GCM' ? 12 : 16;
+            var iv = $cryptography.generateIV(key, ivLength);
+            var encoder = new TextEncoder();
+            var data = encoder.encode(text);
+
+            var cryptoKey = await window.crypto.subtle.importKey(
+                'raw',
+                $cryptography.padKey(key, keyLength / 8),
+                { name: algorithm },
+                false,
+                ['encrypt']
+            );
+
+            var encrypted = await window.crypto.subtle.encrypt(
+                {
+                    name: algorithm,
+                    iv: iv
+                },
+                cryptoKey,
+                data
+            );
+
+            result = {
+                iv: $cryptography.base64Encode(iv),
+                encrypted: $cryptography.base64Encode(new Uint8Array(encrypted))
+            };
+
+            return result;
+        },
+
+        async aesDecode(encryptedData, key, algorithm, keyLength) {
+            var result = null;
+            key = key || '';
+            algorithm = algorithm || 'AES-CBC'; // AES-CBC, AES-GCM
+            keyLength = keyLength || 256; // 128, 256
+            if (encryptedData && encryptedData.iv && encryptedData.encrypted) {
+                var iv = new Uint8Array($cryptography.base64Decode(encryptedData.iv).split(',').map(Number));
+                var encrypted = new Uint8Array($cryptography.base64Decode(encryptedData.encrypted).split(',').map(Number));
+                var cryptoKey = await window.crypto.subtle.importKey(
+                    'raw',
+                    $cryptography.padKey(key, keyLength / 8),
+                    { name: algorithm },
+                    false,
+                    ['decrypt']
+                );
+
+                const decrypted = await window.crypto.subtle.decrypt(
+                    {
+                        name: algorithm,
+                        iv: iv
+                    },
+                    cryptoKey,
+                    encrypted
+                );
+
+                const decoder = new TextDecoder();
+                result = decoder.decode(decrypted);
+            }
+
+            return result;
+        },
+
+        async sha(message, algorithms) {
+            var result = '';
+            algorithms = algorithms || 'SHA-1'; // SHA-1,SHA-2,SHA-224,SHA-256,SHA-384,SHA-512,SHA3-224,SHA3-256,SHA3-384,SHA3-512,SHAKE128,SHAKE256
+            var encoder = new TextEncoder();
+            var data = encoder.encode(message);
+            var hash = await crypto.subtle.digest(algorithms, data);
+            result = Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+            return result;
         },
 
         sha256(s) {
@@ -1989,7 +2224,7 @@ globalRoot.syn = syn;
             return LZString;
         })()
     });
-    syn.$c = $crytography;
+    syn.$c = $cryptography;
 })(globalRoot);
 
 /// <reference path='syn.core.js' />
@@ -2116,8 +2351,9 @@ globalRoot.syn = syn;
 
         setElement(el) {
             el = $object.isString(el) == true ? syn.$l.get(el) : el;
-            if ($object.isNullOrUndefined(el) == false && $string.isNullOrEmpty(el.id) == false) {
-                var keyObject = $keyboard.elements[el.id];
+            if ($object.isNullOrUndefined(el) == false) {
+                el.eventID = el.id || el.nodeName || typeof el;
+                var keyObject = $keyboard.elements[el.eventID];
                 if ($object.isNullOrUndefined(keyObject) == true) {
                     keyObject = {};
                     keyObject['keydown'] = {};
@@ -2126,6 +2362,8 @@ globalRoot.syn = syn;
                     function handler(evt) {
                         var eventType = evt.type;
                         var keyCode = evt.keyCode;
+                        window.keyboardEvent = arguments[0];
+                        window.documentEvent = evt;
 
                         if (keyObject[eventType][keyCode] != null) {
                             var val = keyObject[eventType][keyCode](evt);
@@ -2147,7 +2385,7 @@ globalRoot.syn = syn;
                     syn.$l.addEvent(el, 'keydown', handler);
                     syn.$l.addEvent(el, 'keyup', handler);
 
-                    $keyboard.elements[el.id] = keyObject;
+                    $keyboard.elements[el.eventID] = keyObject;
                 }
 
                 $keyboard.targetEL = el;
@@ -2158,7 +2396,7 @@ globalRoot.syn = syn;
 
         addKeyCode(keyType, keyCode, func) {
             if ($keyboard.targetEL) {
-                var keyObject = $keyboard.elements[$keyboard.targetEL.id];
+                var keyObject = $keyboard.elements[$keyboard.targetEL.eventID];
                 if ($object.isNullOrUndefined(keyObject) == false) {
                     keyObject[keyType][keyCode] = func;
                 }
@@ -2168,7 +2406,7 @@ globalRoot.syn = syn;
 
         removeKeyCode(keyType, keyCode) {
             if ($keyboard.targetEL) {
-                var keyObject = $keyboard.elements[$keyboard.targetEL.id];
+                var keyObject = $keyboard.elements[$keyboard.targetEL.eventID];
                 if ($object.isNullOrUndefined(keyObject) == false) {
                     keyObject[keyType][keyCode] = null;
                     delete keyObject[keyType][keyCode];
@@ -2508,7 +2746,7 @@ globalRoot.syn = syn;
         },
 
         regexs: new function () {
-            this.alphabet = /^[a-zA-Z]*$/;
+            this.alphabet = /^[a-zA-Z0-9]*$/;
             this.juminNo = /^(?:[0-9]{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[1,2][0-9]|3[0,1]))-?[1-4][0-9]{6}$/;
             this.numeric = /^-?[0-9]*(\.[0-9]+)?$/;
             this.email = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i;
@@ -2698,8 +2936,16 @@ globalRoot.syn = syn;
             return result;
         },
 
-        toString(date, format) {
+        toString(date, format, options) {
             var result = '';
+            if ($object.isString(date) == true && $date.isDate(date) == true) {
+                date = new Date(date);
+            }
+
+            if ($object.isDate(date) == false) {
+                return result;
+            }
+
             var year = date.getFullYear();
             var month = date.getMonth() + 1;
             var day = date.getDate().toString().length == 1 ? '0' + date.getDate().toString() : date.getDate().toString();
@@ -2721,6 +2967,9 @@ globalRoot.syn = syn;
                 case 'a':
                     result = year.toString().concat('-', month, '-', day, ' ', hours, ':', minutes, ':', seconds);
                     break;
+                case 'i':
+                    result = year.toString().concat('-', month, '-', day, 'T', hours, ':', minutes, ':', seconds, '.', milliseconds);
+                    break;
                 case 'f':
                     result = year.toString().concat(month, day, hours, minutes, seconds, milliseconds);
                     break;
@@ -2731,13 +2980,20 @@ globalRoot.syn = syn;
                     var dayOfWeek = weekNames[date.getDay()];
                     result = year.toString().concat('년 ', month, '월 ', day, '일 ', '(', dayOfWeek, ')');
                     break;
+                case 'nt':
+                    var dayOfWeek = weekNames[date.getDay()];
+                    result = year.toString().concat('년 ', month, '월 ', day, '일 ', '(', dayOfWeek, ')') + ', ' + hours.toString().concat(':', minutes, ':', seconds);
+                    break;
                 case 'mdn':
                     var dayOfWeek = weekNames[date.getDay()];
                     result = month.toString().concat('월 ', day, '일');
                     break;
                 case 'w':
+                    options = syn.$w.argumentsExtend({
+                        weekStartSunday: true
+                    }, options);
                     var weekNumber = 1;
-                    var weekOfMonths = $date.weekOfMonth(year, month);
+                    var weekOfMonths = $date.weekOfMonth(year, month, options.weekStartSunday);
                     var currentDate = Number($date.toString(date, 'd').replace(/-/g, ''));
                     for (var i = 0; i < weekOfMonths.length; i++) {
                         var weekOfMonth = weekOfMonths[i];
@@ -2857,7 +3113,7 @@ globalRoot.syn = syn;
                     result = end.getMonth() - start.getMonth() + 12 * (end.getFullYear() - start.getFullYear());
                 }
                 else if ($object.isNullOrUndefined($date.interval[interval]) == false) {
-                    var diff = Math.abs(end - start)
+                    var diff = end - start;
                     result = Math.floor(diff / $date.interval[interval]);
                 }
             }
@@ -2901,16 +3157,17 @@ globalRoot.syn = syn;
             var result = false;
             if ($date.isDate(val) == true) {
                 var date = new Date(val);
-                result = date.toISOString() === val;
+                result = $date.toString(date, 'i').indexOf(val) > -1;
             }
 
             return result;
         },
 
-        weekOfMonth(year, month, weekStand) {
+        weekOfMonth(year, month, weekStartSunday) {
             var result = [];
+            weekStartSunday = $object.isNullOrUndefined(weekStartSunday) == true ? true : $string.toBoolean(weekStartSunday);
             month = month || new Date().getMonth() + 1;
-            weekStand = weekStand || 8;
+            var weekStand = weekStartSunday == true ? 7 : 8;
             var date = new Date(year, month);
 
             var firstDay = new Date(date.getFullYear(), date.getMonth() - 1, 1);
@@ -2932,7 +3189,9 @@ globalRoot.syn = syn;
                 week = {};
                 if (firstDay.getDay() <= 1) {
                     if (firstDay.getDay() == 0) {
-                        firstDay.setDate(firstDay.getDate() + 1);
+                        if (weekStartSunday == false) {
+                            firstDay.setDate(firstDay.getDate() + 1);
+                        }
                     }
 
                     week.weekStartDate = firstDay.getFullYear().toString() + '-' + numberPad((firstDay.getMonth() + 1).toString(), 2) + '-' + numberPad(firstDay.getDate().toString(), 2);
@@ -2965,6 +3224,40 @@ globalRoot.syn = syn;
             }
 
             return result;
+        },
+
+        timeAgo(date) {
+            if ($date.isISOString(date) == true) {
+                var seconds = Math.floor((new Date() - new Date(date)) / 1000);
+                var interval = Math.floor(seconds / 31536000);
+
+                if (interval > 1) {
+                    return interval + " 년전";
+                }
+                interval = Math.floor(seconds / 2592000);
+                if (interval > 1) {
+                    return interval + " 달전";
+                }
+                interval = Math.floor(seconds / 604800);
+                if (interval > 1) {
+                    return interval + " 주전";
+                }
+                interval = Math.floor(seconds / 86400);
+                if (interval > 1) {
+                    return interval + " 일전";
+                }
+                interval = Math.floor(seconds / 3600);
+                if (interval > 1) {
+                    return interval + " 시간전";
+                }
+                interval = Math.floor(seconds / 60);
+                if (interval > 1) {
+                    return interval + " 분전";
+                }
+                return Math.floor(seconds) + " 초전";
+            }
+
+            return '';
         }
     });
     context.$date = $date;
@@ -3076,12 +3369,26 @@ globalRoot.syn = syn;
         },
 
         // 참조(http://www.ascii.cl/htmlcodes.htm)
-        toHtmlChar(val) {
-            return val.replace(/&/g, '&amp;').replace(/\'/g, '&quot;').replace(/\'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        toHtmlChar(val, charStrings) {
+            charStrings = charStrings || `&'<>!"#%()*+,./;=@[\]^\`{|}~`;
+            var charMap = {
+                '&': '&amp;', '\'': '&apos;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '!': '&excl;', '#': '&num;', '%': '&percnt;',
+                '(': '&lpar;', ')': '&rpar;', '*': '&ast;', '+': '&plus;', ',': '&comma;', '.': '&period;', '/': '&sol;', ';': '&semi;',
+                '=': '&equals;', '@': '&commat;', '[': '&lsqb;', '\\': '&bsol;', ']': '&rsqb;', '^': '&Hat;', '`': '&grave;', '{': '&lcub;',
+                '|': '&verbar;', '}': '&rcub;', '~': '&tilde;'
+            };
+            return val.replace(new RegExp(`[${charStrings}]`, 'g'), char => charMap[char] ? charMap[char] : '');
         },
 
-        toCharHtml(val) {
-            return val.replace(/&amp;/g, '&').replace(/&quot;/g, '\'').replace(/&#39;/g, '\'').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+        toCharHtml(val, htmlStrings) {
+            htmlStrings = htmlStrings || `amp|apos|lt|gt|quot|excl|num|percnt|lpar|rpar|ast|plus|comma|period|sol|semi|equals|commat|lsqb|bsol|rsqb|Hat|grave|lcub|verbar|rcub|tilde`;
+            var charMap = {
+                '&amp;': '&', '&apos;': '\'', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&excl;': '!', '&num;': '#', '&percnt;': '%',
+                '&lpar;': '(', '&rpar;': ')', '&ast;': '*', '&plus;': '+', '&comma;': ',', '&period;': '.', '&sol;': '/', '&semi;': ';',
+                '&equals;': '=', '&commat;': '@', '&lsqb;': '[', '&bsol;': '\\', '&rsqb;': ']', '&Hat;': '^', '&grave;': '`', '&lcub;': '{',
+                '&verbar;': '|', '&rcub;': '}', '&tilde;': '~'
+            };
+            return val.replace(new RegExp(`/&(${htmlStrings});`, 'g'), char => charMap[char] ? charMap[char] : '');
         },
 
         length(val) {
@@ -3099,7 +3406,8 @@ globalRoot.syn = syn;
         },
 
         split(val, char) {
-            return val.split(char).filter(p => p);
+            char = char || ',';
+            return $string.isNullOrEmpty(val) == true ? [] : val.split(char).filter(p => p);
         },
 
         isNumber(num) {
@@ -3223,7 +3531,7 @@ globalRoot.syn = syn;
                         result = $string.toBoolean(val);
                         break;
                     case 'number':
-                    case 'int':
+                    case 'numeric':
                         result = $object.isNullOrUndefined(val) == true ? null : $string.isNumber(val) == true ? $string.toNumber(val) : null;
                         break;
                     case 'date':
@@ -3274,6 +3582,20 @@ globalRoot.syn = syn;
             }
 
             return result;
+        },
+
+        pad(val, length, fix, isLeft) {
+            fix = fix || '0';
+            if ($object.isNullOrUndefined(isLeft) == true) {
+                isLeft = true;
+            }
+            else {
+                isLeft = $string.toBoolean(isLeft);
+            }
+            val = val.toString();
+            var padding = fix.repeat(Math.max(0, length - val.length));
+
+            return isLeft ? padding + val : val + padding;
         }
     });
     context.$string = $string;
@@ -3394,6 +3716,9 @@ globalRoot.syn = syn;
             if (index <= arr.length - 1) {
                 arr.splice(index, 0, val);
             }
+            else {
+                arr.push(val);
+            }
             return arr;
         },
 
@@ -3466,7 +3791,7 @@ globalRoot.syn = syn;
                     parseParameter = items.find(function (item) { return item[parameterProperty] == parameterName; });
                 }
                 else {
-                    parseParameter = items.find(function (item) { return item.parameterName == parameterName; });
+                    parseParameter = items.find(function (item) { return item.ParameterName == parameterName || item.parameterName == parameterName; });
                 }
 
                 if (parseParameter) {
@@ -3474,7 +3799,7 @@ globalRoot.syn = syn;
                         result = parseParameter[valueProperty];
                     }
                     else {
-                        result = parseParameter.value;
+                        result = parseParameter.Value || parseParameter.value;
                     }
                 }
                 else {
@@ -3512,6 +3837,16 @@ globalRoot.syn = syn;
                 result = value.map(function (v) {
                     return sorted.indexOf(v) + 1;
                 });
+            }
+
+            return result;
+        },
+
+        split(value, flag) {
+            var result = [];
+            if ($object.isNullOrUndefined(value) == false && $object.isString(value) == true) {
+                flag = flag || ',';
+                result = value.split(flag).map(item => item.trim()).filter(item => item.length > 0);
             }
 
             return result;
@@ -3700,7 +4035,7 @@ globalRoot.syn = syn;
                     return false;
                 case 'function': return function () { };
                 case 'null': return null;
-                case 'int':
+                case 'numeric':
                 case 'number':
                     return 0;
                 case 'object': return {};
@@ -3904,54 +4239,17 @@ globalRoot.syn = syn;
     else {
         document = context.document;
 
-        (function () {
-            if (typeof context.CustomEvent !== 'function') {
-                var CustomEvent = function (event, params) {
-                    params = params || { bubbles: false, cancelable: false, detail: undefined };
-                    var evt = document.createEvent('CustomEvent');
-                    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
-                    return evt;
-                }
-
-                CustomEvent.prototype = context.Event.prototype;
-                context.CustomEvent = CustomEvent;
+        if (typeof context.CustomEvent !== 'function') {
+            var CustomEvent = function (event, params) {
+                params = params || { bubbles: false, cancelable: false, detail: undefined };
+                var evt = document.createEvent('CustomEvent');
+                evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+                return evt;
             }
 
-            context['events'] = function () {
-                var items = [];
-
-                return {
-                    items: items,
-                    add(el, eventName, handler) {
-                        items.push(arguments);
-                    },
-                    remove(el, eventName, handler) {
-                        var index = items.findIndex((item) => { return item[0] == arguments[0] && item[1] == arguments[1] && item[2] == arguments[2] });
-                        if (index > -1) {
-                            items.splice(index, 1);
-                        }
-                    },
-                    flush() {
-                        var i, item;
-                        for (i = items.length - 1; i >= 0; i = i - 1) {
-                            item = items[i];
-                            if (item[0].removeEventListener) {
-                                item[0].removeEventListener(item[1], item[2], item[3]);
-                            }
-                            if (item[1].substring(0, 2) != 'on') {
-                                item[1] = 'on' + item[1];
-                            }
-                            if (item[0].detachEvent) {
-                                item[0].detachEvent(item[1], item[2]);
-                            }
-                            item[0][item[1]] = null;
-                        }
-
-                        syn.$w.purge(document.body);
-                    }
-                }
-            }();
-        })();
+            CustomEvent.prototype = context.Event.prototype;
+            context.CustomEvent = CustomEvent;
+        }
     }
 
     $library.extend({
@@ -3964,8 +4262,66 @@ globalRoot.syn = syn;
             'mousemove': 'touchmove'
         },
 
+        events: function () {
+            var items = [];
+
+            return {
+                items: items,
+                add(el, eventName, handler) {
+                    var result = false;
+                    if (el && eventName && handler) {
+                        items.push(arguments);
+                        result = true;
+                    }
+
+                    return result;
+                },
+                remove(el, eventName, handler) {
+                    var index = -1;
+                    if (el && eventName && handler) {
+                        index = items.findIndex((item) => { return item[0] == el && item[1] == eventName && item[2] == handler });
+                    }
+                    else if (el && eventName) {
+                        index = items.findIndex((item) => { return item[0] == el && item[1] == eventName });
+                    }
+
+                    if (index > -1) {
+                        items.splice(index, 1);
+                    }
+
+                    return index > -1;
+                },
+                flush() {
+                    var i, item;
+                    for (i = items.length - 1; i >= 0; i = i - 1) {
+                        item = items[i];
+                        if (item[0].removeEventListener) {
+                            item[0].removeEventListener(item[1], item[2], item[3]);
+                        }
+                        if (item[1].substring(0, 2) != 'on') {
+                            item[1] = 'on' + item[1];
+                        }
+                        if (item[0].detachEvent) {
+                            item[0].detachEvent(item[1], item[2]);
+                        }
+                        item[0][item[1]] = null;
+                    }
+
+                    syn.$w.purge(document.body);
+                }
+            }
+        }(),
+
+        concreate($library) {
+            if (globalRoot.devicePlatform !== 'node') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    $library.addEvent(context, 'unload', $library.events.flush);
+                });
+            }
+        },
+
         guid() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
                 var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
@@ -4062,20 +4418,23 @@ globalRoot.syn = syn;
         addEvent(el, type, func) {
             el = $object.isString(el) == true ? syn.$l.get(el) : el;
             if (el && func && $object.isFunction(func) == true) {
-                if (el.addEventListener) {
-                    el.addEventListener(type, func, false);
-                }
-                else if (el.attachEvent) {
-                    el.attachEvent('on' + type, func);
-                }
-                else {
-                    el['on' + type] = el['e' + type + func];
-                }
+                var hasEvent = syn.$l.hasEvent(el, type, func);
+                if (hasEvent == false) {
+                    if (el.addEventListener) {
+                        el.addEventListener(type, func, false);
+                    }
+                    else if (el.attachEvent) {
+                        el.attachEvent('on' + type, func);
+                    }
+                    else {
+                        el['on' + type] = el['e' + type + func];
+                    }
 
-                events.add(el, type, func);
+                    syn.$l.events.add(el, type, func);
 
-                if ($object.isString(type) == true && type.toLowerCase() === 'resize') {
-                    func();
+                    if ($object.isString(type) == true && type.toLowerCase() === 'resize') {
+                        func();
+                    }
                 }
             }
 
@@ -4112,16 +4471,19 @@ globalRoot.syn = syn;
             return $library;
         },
 
-        addLive(elID, type, fn) {
-            $library.addEvent(context || document, type, function (evt) {
+        addLive(query, type, fn) {
+            $library.addEvent(document, type, function (evt) {
                 var found;
                 var targetEL = syn.$w.activeControl(evt);
-                while (targetEL && !(found = targetEL.id == elID)) {
+                while (targetEL && !(found = targetEL.matches(query))) {
                     targetEL = targetEL.parentElement;
                 }
 
                 if (found) {
                     fn.call(targetEL, evt);
+
+                    evt.preventDefault();
+                    evt.stopPropagation();
                 }
             });
 
@@ -4141,35 +4503,21 @@ globalRoot.syn = syn;
                     el['on' + type] = null;
                 }
 
-                events.remove(el, type, func);
+                syn.$l.events.remove(el, type, func);
             }
 
             return $library;
         },
 
-        hasEvent(el, type) {
-            var item = null;
+        hasEvent(el, type, func) {
             var result = false;
             el = $object.isString(el) == true ? syn.$l.get(el) : el;
-            for (var i = 0, len = events.items.length; i < len; i++) {
-                item = events.items[i];
-
-                if (item && item[0] instanceof context.constructor || item[0] instanceof document.constructor) {
-                    if (item[1] == type) {
-                        result = true;
-                        break;
-                    }
-                }
-                else {
-                    if (item && item[0].id) {
-                        if (item[0].id == el.id && item[1] == type) {
-                            result = true;
-                            break;
-                        }
-                    }
-                }
+            if (func && $object.isFunction(func) == true) {
+                result = syn.$l.events.items.some(item => (item[0] instanceof context.constructor || item[0] instanceof document.constructor || item[0] == el) && item[1] == type && item[2] == func)
             }
-
+            else {
+                result = syn.$l.events.items.some(item => (item[0] instanceof context.constructor || item[0] instanceof document.constructor || item[0] == el) && item[1] == type)
+            }
             return result;
         },
 
@@ -4178,21 +4526,19 @@ globalRoot.syn = syn;
             var item = null;
             var action = null;
             el = $object.isString(el) == true ? syn.$l.get(el) : el;
-            for (var i = 0, len = events.items.length; i < len; i++) {
-                item = events.items[i];
+            for (var i = 0, len = syn.$l.events.items.length; i < len; i++) {
+                item = syn.$l.events.items[i];
 
-                if (item[0] instanceof context.constructor || item[0] instanceof document.constructor) {
-                    if (item[1] == type) {
+                if (el instanceof HTMLElement) {
+                    if (item[0].id == el.id && item[1] == type) {
                         action = item[2];
                         break;
                     }
                 }
-                else {
-                    if (item[0].id) {
-                        if (item[0].id == el.id && item[1] == type) {
-                            action = item[2];
-                            break;
-                        }
+                else if (item[0] instanceof context.constructor || item[0] instanceof document.constructor) {
+                    if (item[1] == type) {
+                        action = item[2];
+                        break;
                     }
                 }
             }
@@ -5065,12 +5411,6 @@ globalRoot.syn = syn;
     else {
         delete syn.$l.getBasePath;
         delete syn.$l.moduleEventLog;
-
-        context.onevent = syn.$l.addEvent;
-        context.bind = syn.$l.addBind;
-        context.trigger = syn.$l.trigger;
-
-        syn.$l.addEvent(context, 'unload', events.flush);
     }
 })(globalRoot);
 
@@ -5196,6 +5536,8 @@ globalRoot.syn = syn;
             var xhr = syn.$w.xmlHttp();
             xhr.open(method, url, true);
 
+            xhr.setRequestHeader('OffsetMinutes', syn.$w.timezoneOffsetMinutes);
+
             if (syn.$w.setServiceClientHeader) {
                 if (syn.$w.setServiceClientHeader(xhr) == false) {
                     return;
@@ -5290,6 +5632,68 @@ globalRoot.syn = syn;
             }
         },
 
+        httpDataSubmit(formData, url, timeout, callback) {
+            if ($object.isNullOrUndefined(timeout) == true) {
+                timeout = 0;
+            }
+
+            var xhr = syn.$w.xmlHttp();
+            xhr.open('POST', url, true);
+
+            if (syn.$w.setServiceClientHeader) {
+                if (syn.$w.setServiceClientHeader(xhr) == false) {
+                    return;
+                }
+            }
+
+            xhr.timeout = timeout;
+
+            if (callback) {
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status !== 200) {
+                            if (xhr.status == 0) {
+                                syn.$l.eventLog('$r.httpDataSubmit', 'X-Requested transfort error', 'Fatal');
+                            }
+                            else {
+                                syn.$l.eventLog('$r.httpDataSubmit', 'response status - {0}'.format(xhr.statusText) + xhr.responseText, 'Error');
+                            }
+                            return;
+                        }
+
+                        if (callback) {
+                            callback({
+                                status: xhr.status,
+                                response: xhr.responseText
+                            });
+                        }
+                    }
+                }
+                xhr.send(formData);
+            }
+            else if (globalThis.Promise) {
+                return new Promise(function (resolve) {
+                    xhr.onload = function () {
+                        return resolve({
+                            status: xhr.status,
+                            response: xhr.responseText
+                        });
+                    };
+                    xhr.onerror = function () {
+                        return resolve({
+                            status: xhr.status,
+                            response: xhr.responseText
+                        });
+                    };
+
+                    xhr.send(formData);
+                });
+            }
+            else {
+                syn.$l.eventLog('$r.httpDataSubmit', '지원하지 않는 기능. 매개변수 확인 필요', 'Error');
+            }
+        },
+
         createBlobUrl: (globalRoot.URL && URL.createObjectURL && URL.createObjectURL.bind(URL)) || (globalRoot.webkitURL && webkitURL.createObjectURL && webkitURL.createObjectURL.bind(webkitURL)) || globalRoot.createObjectURL,
         revokeBlobUrl: (globalRoot.URL && URL.revokeObjectURL && URL.revokeObjectURL.bind(URL)) || (globalRoot.webkitURL && webkitURL.revokeObjectURL && webkitURL.revokeObjectURL.bind(webkitURL)) || globalRoot.revokeObjectURL,
 
@@ -5313,7 +5717,7 @@ globalRoot.syn = syn;
                 path = '/';
             }
 
-            document.cookie = id + '=' + encodeURI(val) + ((expires) ? ';expires=' + expires.toGMTString() : '') + ((path) ? ';path=' + path : '') + ((domain) ? ';domain=' + domain : '') + ((secure) ? ';secure' : '');
+            document.cookie = id + '=' + encodeURI(val) + ((expires) ? ';expires=' + expires.toUTCString() : '') + ((path) ? ';path=' + path : '') + ((domain) ? ';domain=' + domain : '') + ((secure) ? ';secure' : '');
             return $request;
         },
 
@@ -5690,42 +6094,19 @@ globalRoot.syn = syn;
                                     if (!transaction.delayReturn() && !transaction.completed()) {
                                         transaction.complete(resp);
                                     }
-                                } catch (e) {
-                                    var error = 'runtime_error';
+                                }
+                                catch (error) {
+                                    var name = 'runtime_error';
                                     var message = null;
-                                    if (typeof e === 'string') {
-                                        message = e;
-                                    } else if (typeof e === 'object') {
-                                        if (e && isArray(e) && e.length == 2) {
-                                            error = e[0];
-                                            message = e[1];
-                                        }
-                                        else if (typeof e.error === 'string') {
-                                            error = e.error;
-                                            if (!e.message) {
-                                                message = '';
-                                            }
-                                            else if (typeof e.message === 'string') {
-                                                message = e.message;
-                                            }
-                                            else {
-                                                e = e.message;
-                                            }
-                                        }
+                                    if (typeof error === 'string') {
+                                        message = error;
+                                    } else if (typeof error === 'object') {
+                                        name = error.name;
+                                        message = error.stack || error.message;
                                     }
 
-                                    if (message === null) {
-                                        try {
-                                            message = JSON.stringify(e);
-                                            if (typeof (message) == 'undefined') {
-                                                message = e.toString();
-                                            }
-                                        } catch (e2) {
-                                            message = e.toString();
-                                        }
-                                    }
-
-                                    transaction.error(error, message);
+                                    syn.$l.eventLog('$network.onMessage', `name: ${name}, message: ${message}`, 'Error');
+                                    transaction.error(name, message);
                                 }
                             }
                         } else if (data.id && data.callback) {
@@ -6066,6 +6447,7 @@ globalRoot.syn = syn;
         version: '1.0.0',
         localeID: 'ko-KR',
         cookiePrefixName: 'HandStack',
+        timezoneOffsetMinutes: -(new Date().getTimezoneOffset()),
         method: 'POST',
         isPageLoad: false,
         transactionLoaderID: null,
@@ -6079,8 +6461,14 @@ globalRoot.syn = syn;
 
         defaultControlOptions: {
             value: '',
-            text: '',
-            dataType: 'string',
+            dataType: 'string', // string, bool, number, int, date
+            belongID: null,
+            controlText: null,
+            validators: ['require', 'unique', 'numeric', 'ipaddress', 'email', 'date', 'url'],
+            transactConfig: null,
+            triggerConfig: null,
+            getter: false,
+            setter: false,
             bindingID: '',
             resourceKey: '',
             localeID: 'ko-KR',
@@ -6235,8 +6623,7 @@ globalRoot.syn = syn;
 
                 var input = document.createElement('input');
                 input.id = 'moduleScript';
-                input.type = 'text';
-                input.style.display = 'none';
+                input.type = 'hidden';
                 input.value = syn.$w.pageScript;
                 document.body.appendChild(input);
 
@@ -6553,8 +6940,45 @@ globalRoot.syn = syn;
                 }
             }
 
-            var pageFormInit = async function () {
+            var pageFormInit = async () => {
                 var mod = context[syn.$w.pageScript];
+                if (mod.config && $string.isNullOrEmpty(mod.config.layoutPage) == false) {
+                    var masterLayout = await syn.$w.fetchText(mod.config.layoutPage);
+                    if (masterLayout) {
+                        var parser = new DOMParser();
+                        var masterPage = parser.parseFromString(masterLayout, 'text/html');
+                        if (masterPage) {
+                            document.body.style.visibility = 'hidden';
+
+                            var heads = syn.$l.querySelectorAll('syn-head');
+                            for (var i = 0, length = heads.length; i < length; i++) {
+                                var head = heads[i];
+                                masterPage.head.insertAdjacentHTML('afterbegin', head.innerHTML);
+                            }
+
+                            var sections = syn.$l.querySelectorAll('syn-section');
+                            for (var i = 0, length = sections.length; i < length; i++) {
+                                var section = sections[i];
+                                var componentSection = masterPage.querySelector(section.getAttribute('selector'));
+                                if (componentSection) {
+                                    componentSection.innerHTML = section.innerHTML;
+                                }
+                            }
+
+                            var bodys = syn.$l.querySelectorAll('syn-body');
+                            for (var i = 0, length = bodys.length; i < length; i++) {
+                                var body = bodys[i];
+                                var position = body.getAttribute('position');
+                                if ($string.isNullOrEmpty(position) == false && ['beforebegin', 'afterbegin', 'beforeend', 'afterend'].indexOf(position) > -1) {
+                                    masterPage.body.insertAdjacentHTML(position, body.innerHTML);
+                                }
+                            }
+
+                            document.body.innerHTML = masterPage.body.innerHTML;
+                        }
+                    }
+                }
+
                 if (mod && mod.hook.pageFormInit) {
                     await mod.hook.pageFormInit();
                 }
@@ -6566,8 +6990,78 @@ globalRoot.syn = syn;
                     }
                 }
 
+                var getTagModule = (tagName) => {
+                    var controlModule = null;
+                    if (syn.uicontrols) {
+                        var controlType = '';
+                        if (tagName.indexOf('SYN_') > -1) {
+                            var moduleName = tagName.substring(4).toLowerCase();
+                            controlModule = syn.uicontrols['$' + moduleName];
+                            controlType = moduleName;
+                        }
+                        else {
+                            switch (tagName) {
+                                case 'BUTTON':
+                                    controlModule = syn.uicontrols.$button;
+                                    controlType = 'button';
+                                    break;
+                                case 'INPUT':
+                                    controlType = (synControl.getAttribute('type') || 'text').toLowerCase();
+                                    switch (controlType) {
+                                        case 'hidden':
+                                        case 'text':
+                                        case 'password':
+                                        case 'color':
+                                        case 'email':
+                                        case 'number':
+                                        case 'search':
+                                        case 'tel':
+                                        case 'url':
+                                            controlModule = syn.uicontrols.$textbox;
+                                            break;
+                                        case 'submit':
+                                        case 'reset':
+                                        case 'button':
+                                            controlModule = syn.uicontrols.$button;
+                                            break;
+                                        case 'radio':
+                                            controlModule = syn.uicontrols.$radio;
+                                            break;
+                                        case 'checkbox':
+                                            controlModule = syn.uicontrols.$checkbox;
+                                            break;
+                                    }
+                                    break;
+                                case 'TEXTAREA':
+                                    controlModule = syn.uicontrols.$textarea;
+                                    controlType = 'textarea';
+                                    break;
+                                case 'SELECT':
+                                    if (synControl.getAttribute('multiple') == null) {
+                                        controlModule = syn.uicontrols.$select;
+                                        controlType = 'select';
+                                    }
+                                    else {
+                                        controlModule = syn.uicontrols.$multiselect;
+                                        controlType = 'multiselect';
+                                    }
+                                    break;
+                                default:
+                                    controlModule = syn.uicontrols.$element;
+                                    controlType = 'element';
+                                    break;
+                            }
+                        }
+                    }
+
+                    return {
+                        module: controlModule,
+                        type: controlType
+                    };
+                }
+
                 var synControlList = [];
-                var synControls = document.querySelectorAll('[syn-datafield],[syn-options],[syn-events]');
+                var synControls = document.querySelectorAll('[tag^="syn_"],[syn-datafield],[syn-options],[syn-events]');
                 for (var i = 0; i < synControls.length; i++) {
                     var synControl = synControls[i];
                     if (synControl.tagName) {
@@ -6575,7 +7069,6 @@ globalRoot.syn = syn;
                         var dataField = synControl.getAttribute('syn-datafield');
                         var elementID = synControl.getAttribute('id');
                         var formDataField = synControl.closest('form') ? synControl.closest('form').getAttribute('syn-datafield') : '';
-                        var controlType = '';
 
                         var controlOptions = synControl.getAttribute('syn-options') || null;
                         if (controlOptions != null) {
@@ -6589,66 +7082,37 @@ globalRoot.syn = syn;
                             controlOptions = {};
                         }
 
-                        var controlModule = null;
-                        if (syn.uicontrols) {
-                            if (tagName.indexOf('SYN_') > -1) {
-                                var moduleName = tagName.substring(4).toLowerCase();
-                                controlModule = syn.uicontrols['$' + moduleName];
-                                controlType = moduleName;
+                        var tagModule = getTagModule(tagName);
+                        if (tagModule.module) {
+                            tagModule.module.controlLoad(elementID, controlOptions);
+                        }
+                        else {
+                            if ($this.hook.controlLoad) {
+                                $this.hook.controlLoad(elementID, controlOptions);
                             }
-                            else {
-                                switch (tagName) {
-                                    case 'BUTTON':
-                                        controlModule = syn.uicontrols.$button;
-                                        controlType = 'button';
-                                        break;
-                                    case 'INPUT':
-                                        controlType = synControl.getAttribute('type') == null ? 'text' : synControl.getAttribute('type').toLowerCase();
-                                        switch (controlType) {
-                                            case 'hidden':
-                                            case 'text':
-                                            case 'password':
-                                            case 'color':
-                                            case 'email':
-                                            case 'number':
-                                            case 'search':
-                                            case 'tel':
-                                            case 'url':
-                                                controlModule = syn.uicontrols.$textbox;
-                                                break;
-                                            case 'submit':
-                                            case 'reset':
-                                            case 'button':
-                                                controlModule = syn.uicontrols.$button;
-                                                break;
-                                            case 'radio':
-                                                controlModule = syn.uicontrols.$radio;
-                                                break;
-                                            case 'checkbox':
-                                                controlModule = syn.uicontrols.$checkbox;
-                                                break;
-                                        }
-                                        break;
-                                    case 'TEXTAREA':
-                                        controlModule = syn.uicontrols.$textarea;
-                                        controlType = 'textarea';
-                                        break;
-                                    case 'SELECT':
-                                        if (synControl.getAttribute('multiple') == null) {
-                                            controlModule = syn.uicontrols.$select;
-                                            controlType = 'select';
-                                        }
-                                        else {
-                                            controlModule = syn.uicontrols.$multiselect;
-                                            controlType = 'multiselect';
-                                        }
-                                        break;
-                                    default:
-                                        controlModule = syn.uicontrols.$element;
-                                        controlType = 'element';
-                                        break;
-                                }
+                        }
+                    }
+                }
+
+                synControls = document.querySelectorAll('[tag^="syn_"],[syn-datafield],[syn-options],[syn-events]');
+                for (var i = 0; i < synControls.length; i++) {
+                    var synControl = synControls[i];
+                    if (synControl.tagName) {
+                        var tagName = synControl.tagName.toUpperCase();
+                        var dataField = synControl.getAttribute('syn-datafield');
+                        var elementID = synControl.getAttribute('id');
+                        var formDataField = synControl.closest('form') ? synControl.closest('form').getAttribute('syn-datafield') : '';
+
+                        var controlOptions = synControl.getAttribute('syn-options') || null;
+                        if (controlOptions != null) {
+                            try {
+                                controlOptions = eval('(' + controlOptions + ')');
+                            } catch (error) {
+                                syn.$l.eventLog('$w.contentLoaded', 'elID: "{0}" syn-options 확인 필요 '.format(elementID) + error.message, 'Warning');
                             }
+                        }
+                        else {
+                            controlOptions = {};
                         }
 
                         syn.$l.addEvent(synControl.id, 'focus', function (evt) {
@@ -6661,26 +7125,21 @@ globalRoot.syn = syn;
                             }
                         });
 
-                        if (controlModule) {
-                            if (controlModule.addModuleList) {
-                                controlModule.addModuleList(synControl, synControlList, controlOptions, controlType);
+                        var tagModule = getTagModule(tagName);
+                        if (tagModule.module) {
+                            if (tagModule.module.addModuleList) {
+                                tagModule.module.addModuleList(synControl, synControlList, controlOptions, tagModule.type);
                             }
-
-                            controlModule.controlLoad(elementID, controlOptions);
                         }
                         else {
-                            if (elementID) {
+                            if (elementID && dataField) {
                                 synControlList.push({
                                     id: elementID,
                                     formDataFieldID: formDataField,
                                     field: dataField,
                                     module: null,
-                                    type: controlType ? controlType : synControl.tagName.toLowerCase()
+                                    type: tagModule.type ? tagModule.type : synControl.tagName.toLowerCase()
                                 });
-                            }
-
-                            if ($this.hook.controlLoad) {
-                                $this.hook.controlLoad(elementID, controlOptions);
                             }
                         }
                     }
@@ -6689,22 +7148,22 @@ globalRoot.syn = syn;
                 var synEventControls = document.querySelectorAll('[syn-events]');
                 for (var i = 0; i < synEventControls.length; i++) {
                     var synControl = synEventControls[i];
-                    var events = null;
+                    var elEvents = null;
 
                     try {
-                        events = eval('(' + synControl.getAttribute('syn-events') + ')');
+                        elEvents = eval('(' + synControl.getAttribute('syn-events') + ')');
                     } catch (error) {
                         syn.$l.eventLog('$w.contentLoaded', 'elID: "{0}" syn-events 확인 필요 '.format(synControl.id) + error.message, 'Warning');
                     }
 
-                    if (events && $this.event) {
-                        var length = events.length;
+                    if (elEvents && $this.event) {
+                        var length = elEvents.length;
                         for (var j = 0; j < length; j++) {
-                            var event = events[j];
+                            var elEvent = elEvents[j];
 
-                            var func = $this.event[synControl.id + '_' + event];
+                            var func = $this.event[synControl.id + '_' + elEvent];
                             if (func) {
-                                syn.$l.addEvent(synControl.id, event, func);
+                                syn.$l.addEvent(synControl.id, elEvent, func);
                             }
                         }
                     }
@@ -6729,7 +7188,7 @@ globalRoot.syn = syn;
                     if (options && options.transactConfig && options.transactConfig.triggerEvent) {
                         if ($object.isString(options.transactConfig.triggerEvent) == true) {
                             syn.$l.addEvent(elID, options.transactConfig.triggerEvent, function (evt) {
-                                var el = $webform.activeControl(evt);
+                                var el = syn.$w.activeControl(evt);
                                 var synOptions = el.getAttribute('syn-options') || null;
                                 if (synOptions != null) {
                                     options = eval('(' + synOptions + ')');
@@ -6747,7 +7206,7 @@ globalRoot.syn = syn;
                         }
                         else if ($object.isArray(options.transactConfig.triggerEvent) == true) {
                             var triggerFunction = function (evt) {
-                                var el = $webform.activeControl(evt);
+                                var el = syn.$w.activeControl(evt);
                                 var synOptions = el.getAttribute('syn-options') || null;
                                 if (synOptions != null) {
                                     options = eval('(' + synOptions + ')');
@@ -6774,10 +7233,16 @@ globalRoot.syn = syn;
                         if ($object.isString(options.triggerConfig.triggerEvent) == true) {
                             syn.$l.addEvent(elID, options.triggerConfig.triggerEvent, function (evt) {
                                 var triggerConfig = null;
-                                var el = $webform.activeControl(evt);
+                                var el = syn.$w.activeControl(evt);
                                 var synOptions = el.getAttribute('syn-options') || null;
                                 if (synOptions != null) {
                                     options = eval('(' + synOptions + ')');
+                                }
+                                else {
+                                    synOptions = el.parentElement.getAttribute('syn-options') || null;
+                                    if (synOptions != null) {
+                                        options = eval('(' + synOptions + ')');
+                                    }
                                 }
 
                                 if (options && options.triggerConfig) {
@@ -6792,10 +7257,16 @@ globalRoot.syn = syn;
                         else if ($object.isArray(options.triggerConfig.triggerEvent) == true) {
                             var triggerFunction = function (evt) {
                                 var triggerConfig = null;
-                                var el = $webform.activeControl(evt);
+                                var el = syn.$w.activeControl(evt);
                                 var synOptions = el.getAttribute('syn-options') || null;
                                 if (synOptions != null) {
                                     options = eval('(' + synOptions + ')');
+                                }
+                                else {
+                                    synOptions = el.parentElement.getAttribute('syn-options') || null;
+                                    if (synOptions != null) {
+                                        options = eval('(' + synOptions + ')');
+                                    }
                                 }
 
                                 if (options && options.triggerConfig) {
@@ -6893,7 +7364,9 @@ globalRoot.syn = syn;
                     }, syn.$w.pageReadyTimeout);
                 }
                 else {
-                    await pageFormInit();
+                    setTimeout(async () => {
+                        await pageFormInit();
+                    }, 25);
                 }
             }
             else {
@@ -7029,7 +7502,7 @@ globalRoot.syn = syn;
                 var isContinue = true;
 
                 var defaultParams = {
-                    args: [],
+                    arguments: [],
                     options: {}
                 };
 
@@ -7062,18 +7535,18 @@ globalRoot.syn = syn;
                             trigger = context[triggerConfig.action];
                         }
                     }
-                    else {
+                    else if (triggerConfig.triggerID && triggerConfig.action) {
                         trigger = $this.event ? $this.event['{0}_{1}'.format(triggerConfig.triggerID, triggerConfig.action)] : null;
                     }
 
-                    if (trigger) {
+                    if (el && trigger) {
                         el.setAttribute('triggerOptions', JSON.stringify(triggerConfig.params.options));
 
                         if (triggerConfig.action.indexOf('$') > -1) {
-                            $array.addAt(triggerConfig.params.args, 0, triggerConfig.triggerID);
+                            $array.addAt(triggerConfig.params.arguments, 0, triggerConfig.triggerID);
                         }
 
-                        triggerResult = trigger.apply(el, triggerConfig.params.args);
+                        triggerResult = trigger.apply(el, triggerConfig.params.arguments);
                         if ($this.hook.afterTrigger) {
                             $this.hook.afterTrigger(null, triggerConfig.action, {
                                 elID: triggerConfig.triggerID,
@@ -7081,9 +7554,23 @@ globalRoot.syn = syn;
                             });
                         }
                     }
+                    else if (triggerConfig.method) {
+                        var func = eval(triggerConfig.method);
+                        if (typeof func === 'function') {
+                            trigger = func;
+
+                            triggerResult = trigger.apply($this, triggerConfig.params.arguments);
+                            if ($this.hook.afterTrigger) {
+                                $this.hook.afterTrigger(null, triggerConfig.action, {
+                                    elID: triggerConfig.triggerID,
+                                    result: triggerResult
+                                });
+                            }
+                        }
+                    }
                     else {
                         if ($this.hook.afterTrigger) {
-                            $this.hook.afterTrigger('{0} trigger 확인 필요'.format(triggerConfig.action), triggerConfig.action, null);
+                            $this.hook.afterTrigger('{0} trigger 확인 필요'.format(JSON.stringify(triggerConfig)), triggerConfig.action, null);
                         }
                     }
                 }
@@ -7093,6 +7580,27 @@ globalRoot.syn = syn;
                     }
                 }
             }
+        },
+
+        getControlModule(module) {
+            var result = null;
+            var currings = module.split('.');
+            if (currings.length > 0) {
+                for (var i = 0; i < currings.length; i++) {
+                    var curring = currings[i];
+                    if (result) {
+                        result = result[curring];
+                    }
+                    else {
+                        result = context[curring];
+                    }
+                }
+            }
+            else {
+                result = context[controlInfo.module];
+            }
+
+            return result;
         },
 
         tryAddFunction(transactConfig) {
@@ -7135,7 +7643,7 @@ globalRoot.syn = syn;
                             var synControlConfigs = null;
                             if (inputConfig.type == 'Row') {
                                 var synControlConfigs = synControlList.filter(function (item) {
-                                    return item.formDataFieldID == input.dataFieldID && ['grid', 'chart', 'chartjs'].indexOf(item.type) == -1;
+                                    return item.formDataFieldID == input.dataFieldID && (item.type.indexOf('grid') > -1 || item.type.indexOf('chart') > -1 || item.type.indexOf('data') > -1) == false;
                                 });
 
                                 if (synControlConfigs && synControlConfigs.length > 0) {
@@ -7143,7 +7651,7 @@ globalRoot.syn = syn;
                                         var synControlConfig = synControlConfigs[k];
 
                                         var el = syn.$l.get(synControlConfig.id + '_hidden') || syn.$l.get(synControlConfig.id);
-                                        var options = el.getAttribute('syn-options');
+                                        var options = el && el.getAttribute('syn-options');
                                         if (options == null) {
                                             continue;
                                         }
@@ -7156,7 +7664,7 @@ globalRoot.syn = syn;
                                             synOptions = eval('(' + options + ')');
                                         }
 
-                                        if (synOptions == null || synControlConfig.field == '') {
+                                        if (synOptions == null || $string.isNullOrEmpty(synControlConfig.field) == true) {
                                             continue;
                                         }
 
@@ -7179,57 +7687,13 @@ globalRoot.syn = syn;
                                     }
                                 }
                                 else {
-                                    var synControlConfigs = synControlList.filter(function (item) {
-                                        return item.field == input.dataFieldID && item.type == 'grid';
+                                    var synControlConfig = synControlList.find(function (item) {
+                                        return item.field == input.dataFieldID && (item.type.indexOf('grid') > -1 || item.type.indexOf('chart') > -1) == true;
                                     });
 
-                                    if (synControlConfigs && synControlConfigs.length > 0) {
-                                        for (var k = 0; k < synControlConfigs.length; k++) {
-                                            var synControlConfig = synControlConfigs[k];
-
-                                            var el = syn.$l.get(synControlConfig.id + '_hidden') || syn.$l.get(synControlConfig.id);
-                                            var synOptions = JSON.parse(el.getAttribute('syn-options'));
-
-                                            if (synOptions == null) {
-                                                continue;
-                                            }
-
-                                            for (var l = 0; l < synOptions.columns.length; l++) {
-                                                var column = synOptions.columns[l];
-                                                var dataType = 'string'
-                                                switch (column.columnType) {
-                                                    case 'checkbox':
-                                                        dataType = 'bool';
-                                                        break;
-                                                    case 'numeric':
-                                                        dataType = 'int';
-                                                        break;
-                                                    case 'date':
-                                                        dataType = 'date';
-                                                        break;
-                                                }
-
-                                                var isBelong = false;
-                                                if (column.data == 'Flag') {
-                                                    isBelong = true;
-                                                }
-                                                else if (column.belongID) {
-                                                    if ($object.isString(column.belongID) == true) {
-                                                        isBelong = transactConfig.functionID == column.belongID;
-                                                    }
-                                                    else if ($object.isArray(column.belongID) == true) {
-                                                        isBelong = column.belongID.indexOf(transactConfig.functionID) > -1;
-                                                    }
-                                                }
-
-                                                if (isBelong == true) {
-                                                    input.items[column.data] = {
-                                                        fieldID: column.data,
-                                                        dataType: dataType
-                                                    };
-                                                }
-                                            }
-                                        }
+                                    var controlModule = $object.isNullOrUndefined(synControlConfig) == true ? null : syn.$w.getControlModule(synControlConfig.module);
+                                    if ($object.isNullOrUndefined(controlModule) == false && controlModule.setTransactionBelongID) {
+                                        controlModule.setTransactionBelongID(synControlConfig.id, input, transactConfig);
                                     }
                                     else {
                                         if (syn.uicontrols.$data && syn.uicontrols.$data.storeList.length > 0) {
@@ -7262,63 +7726,19 @@ globalRoot.syn = syn;
                                 }
                             }
                             else if (inputConfig.type == 'List') {
-                                var synControlConfigs = synControlList.filter(function (item) {
-                                    return item.field == input.dataFieldID && item.type == 'grid';
+                                var synControlConfig = synControlList.find(function (item) {
+                                    return item.field == input.dataFieldID && (item.type.indexOf('grid') > -1 || item.type.indexOf('chart') > -1) == true;
                                 });
 
-                                if (synControlConfigs && synControlConfigs.length == 1) {
-                                    var synControlConfig = synControlConfigs[0];
-
-                                    var el = syn.$l.get(synControlConfig.id + '_hidden') || syn.$l.get(synControlConfig.id);
-                                    var synOptions = JSON.parse(el.getAttribute('syn-options'));
-
-                                    if (synOptions == null) {
-                                        continue;
-                                    }
-
-                                    for (var k = 0; k < synOptions.columns.length; k++) {
-                                        var column = synOptions.columns[k];
-                                        var dataType = 'string'
-                                        switch (column.columnType) {
-                                            case 'checkbox':
-                                                dataType = 'bool';
-                                                break;
-                                            case 'numeric':
-                                                dataType = 'int';
-                                                break;
-                                            case 'date':
-                                                dataType = 'date';
-                                                break;
-                                        }
-
-                                        var isBelong = false;
-                                        if (column.data == 'Flag') {
-                                            isBelong = true;
-                                        }
-                                        else if (column.belongID) {
-                                            if ($object.isString(column.belongID) == true) {
-                                                isBelong = transactConfig.functionID == column.belongID;
-                                            }
-                                            else if ($object.isArray(column.belongID) == true) {
-                                                isBelong = column.belongID.indexOf(transactConfig.functionID) > -1;
-                                            }
-                                        }
-
-                                        if (isBelong == true) {
-                                            input.items[column.data] = {
-                                                fieldID: column.data,
-                                                dataType: dataType
-                                            };
-                                        }
-                                    }
+                                var controlModule = $object.isNullOrUndefined(synControlConfig) == true ? null : syn.$w.getControlModule(synControlConfig.module);
+                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.setTransactionBelongID) {
+                                    controlModule.setTransactionBelongID(synControlConfig.id, input, transactConfig);
                                 }
                                 else {
-                                    var isMapping = false;
                                     if (syn.uicontrols.$data && syn.uicontrols.$data.storeList.length > 0) {
                                         for (var k = 0; k < syn.uicontrols.$data.storeList.length; k++) {
                                             var store = syn.uicontrols.$data.storeList[k];
                                             if (store.storeType == 'Grid' && store.dataSourceID == input.dataFieldID) {
-                                                isMapping = true;
                                                 for (var l = 0; l < store.columns.length; l++) {
                                                     var column = store.columns[l];
                                                     var isBelong = false;
@@ -7340,10 +7760,6 @@ globalRoot.syn = syn;
                                                 break;
                                             }
                                         }
-                                    }
-
-                                    if (isMapping == false) {
-                                        syn.$l.eventLog('$w.tryAddFunction', '{0} 컬럼 ID 중복 또는 존재여부 확인 필요'.format(input.dataFieldID), 'Warning');
                                     }
                                 }
                             }
@@ -7367,7 +7783,7 @@ globalRoot.syn = syn;
                             var synControlConfigs = null;
                             if (outputConfig.type == 'Form') {
                                 var synControlConfigs = synControlList.filter(function (item) {
-                                    return item.formDataFieldID == output.dataFieldID && ['grid', 'chart', 'chartjs'].indexOf(item.type) == -1;
+                                    return item.formDataFieldID == output.dataFieldID && (item.type.indexOf('grid') > -1 || item.type.indexOf('chart') > -1 || item.type.indexOf('data') > -1) == false;
                                 });
 
                                 if (synControlConfigs && synControlConfigs.length > 0) {
@@ -7375,7 +7791,7 @@ globalRoot.syn = syn;
                                         var synControlConfig = synControlConfigs[k];
 
                                         var el = syn.$l.get(synControlConfig.id + '_hidden') || syn.$l.get(synControlConfig.id);
-                                        var options = el.getAttribute('syn-options');
+                                        var options = el && el.getAttribute('syn-options');
                                         if (options == null) {
                                             continue;
                                         }
@@ -7388,7 +7804,7 @@ globalRoot.syn = syn;
                                             synOptions = eval('(' + options + ')');
                                         }
 
-                                        if (synOptions == null || synControlConfig.field == '') {
+                                        if (synOptions == null || $string.isNullOrEmpty(synControlConfig.field) == true) {
                                             continue;
                                         }
 
@@ -7398,42 +7814,18 @@ globalRoot.syn = syn;
                                         };
 
                                         if (outputConfig.clear == true) {
-                                            if (synControls && synControls.length == 1) {
-                                                var bindingControlInfos = synControls.filter(function (item) {
+                                            if (synControls && synControls.length > 0) {
+                                                var controlInfo = synControls.find(function (item) {
                                                     return item.field == outputConfig.dataFieldID;
                                                 });
 
-                                                if (bindingControlInfos.length == 1) {
-                                                    var controlInfo = bindingControlInfos[0];
-                                                    if (controlInfo.module == null) {
-                                                        continue;
-                                                    }
-
-                                                    var controlID = controlInfo.id;
-                                                    var controlField = controlInfo.field;
-                                                    var controlModule = null;
-                                                    var currings = controlInfo.module.split('.');
-                                                    if (currings.length > 0) {
-                                                        for (var l = 0; l < currings.length; l++) {
-                                                            var curring = currings[l];
-                                                            if (controlModule) {
-                                                                controlModule = controlModule[curring];
-                                                            }
-                                                            else {
-                                                                controlModule = context[curring];
-                                                            }
-                                                        }
-                                                    }
-                                                    else {
-                                                        controlModule = context[controlInfo.module];
-                                                    }
-
-                                                    if (controlModule.clear) {
-                                                        controlModule.clear(controlID);
-                                                    }
+                                                if ($string.isNullOrEmpty(controlInfo.module) == true) {
+                                                    continue;
                                                 }
-                                                else {
-                                                    syn.$l.eventLog('$w.tryAddFunction Form', '{0} dataFieldID 중복 또는 존재여부 확인 필요'.format(outputConfig.dataFieldID), 'Warning');
+
+                                                var controlModule = syn.$w.getControlModule(controlInfo.module);
+                                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.clear) {
+                                                    controlModule.clear(controlInfo.id);
                                                 }
                                             }
                                         }
@@ -7467,66 +7859,22 @@ globalRoot.syn = syn;
                                 }
                             }
                             else if (outputConfig.type == 'Grid') {
-                                var synControlConfigs = synControlList.filter(function (item) {
-                                    return item.field == output.dataFieldID && item.type == 'grid';
+                                var synControlConfig = synControlList.find(function (item) {
+                                    return item.field == output.dataFieldID && (item.type.indexOf('grid') > -1 || item.type.indexOf('chart') > -1) == true;
                                 });
 
-                                if (synControlConfigs && synControlConfigs.length == 1) {
-                                    var synControlConfig = synControlConfigs[0];
-
-                                    var el = syn.$l.get(synControlConfig.id + '_hidden') || syn.$l.get(synControlConfig.id);
-                                    var synOptions = JSON.parse(el.getAttribute('syn-options'));
-
-                                    if (synOptions == null) {
-                                        continue;
-                                    }
-
-                                    for (var k = 0; k < synOptions.columns.length; k++) {
-                                        var column = synOptions.columns[k];
-                                        var dataType = 'string'
-                                        switch (column.type) {
-                                            case 'checkbox':
-                                                dataType = 'bool';
-                                                break;
-                                            case 'numeric':
-                                                dataType = 'int';
-                                                break;
-                                            case 'date':
-                                                dataType = 'date';
-                                                break;
-                                        }
-
-                                        output.items[column.data] = {
-                                            fieldID: column.data,
-                                            dataType: dataType
-                                        };
-                                    }
+                                var controlModule = $object.isNullOrUndefined(synControlConfig) == true ? null : syn.$w.getControlModule(synControlConfig.module);
+                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.setTransactionBelongID) {
+                                    controlModule.setTransactionBelongID(synControlConfig.id, output);
 
                                     if (outputConfig.clear == true) {
                                         if (synControls && synControls.length > 0) {
-                                            var bindingControlInfos = synControls.filter(function (item) {
+                                            var controlInfo = synControls.find(function (item) {
                                                 return item.field == output.dataFieldID;
                                             });
 
-                                            var controlInfo = bindingControlInfos[0];
-                                            var controlModule = null;
-                                            var currings = controlInfo.module.split('.');
-                                            if (currings.length > 0) {
-                                                for (var l = 0; l < currings.length; l++) {
-                                                    var curring = currings[l];
-                                                    if (controlModule) {
-                                                        controlModule = controlModule[curring];
-                                                    }
-                                                    else {
-                                                        controlModule = context[curring];
-                                                    }
-                                                }
-                                            }
-                                            else {
-                                                controlModule = context[controlInfo.module];
-                                            }
-
-                                            if (controlModule.clear) {
+                                            var controlModule = syn.$w.getControlModule(controlInfo.module);
+                                            if ($object.isNullOrUndefined(controlModule) == false && controlModule.clear) {
                                                 controlModule.clear(controlInfo.id);
                                             }
                                         }
@@ -7556,51 +7904,27 @@ globalRoot.syn = syn;
                                         }
 
                                         if (outputConfig.clear == true) {
-                                            if (synControls && synControls.length == 1) {
-                                                var bindingControlInfos = synControls.filter(function (item) {
+                                            if (synControls && synControls.length > 0) {
+                                                var controlInfo = synControls.find(function (item) {
                                                     return item.field == outputConfig.dataFieldID;
                                                 });
 
-                                                if (bindingControlInfos.length == 1) {
-                                                    var controlInfo = bindingControlInfos[0];
-                                                    if (controlInfo.module == null) {
-                                                        continue;
-                                                    }
+                                                if ($string.isNullOrEmpty(controlInfo.module) == true) {
+                                                    continue;
+                                                }
 
-                                                    var controlID = controlInfo.id;
-                                                    var controlField = controlInfo.field;
-                                                    var controlModule = null;
-                                                    var currings = controlInfo.module.split('.');
-                                                    if (currings.length > 0) {
-                                                        for (var l = 0; l < currings.length; l++) {
-                                                            var curring = currings[l];
-                                                            if (controlModule) {
-                                                                controlModule = controlModule[curring];
-                                                            }
-                                                            else {
-                                                                controlModule = context[curring];
-                                                            }
-                                                        }
-                                                    }
-                                                    else {
-                                                        controlModule = context[controlInfo.module];
-                                                    }
-
-                                                    if (controlModule.clear) {
-                                                        controlModule.clear(controlID);
-                                                    }
+                                                var controlModule = syn.$w.getControlModule(controlInfo.module);
+                                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.clear) {
+                                                    controlModule.clear(controlInfo.id);
                                                 }
                                             }
                                         }
                                     }
                                     else {
-                                        var isMapping = false;
                                         if (syn.uicontrols.$data && syn.uicontrols.$data.storeList.length > 0) {
                                             for (var k = 0; k < syn.uicontrols.$data.storeList.length; k++) {
                                                 var store = syn.uicontrols.$data.storeList[k];
                                                 if (store.storeType == 'Grid' && store.dataSourceID == output.dataFieldID) {
-                                                    isMapping = true;
-
                                                     for (var l = 0; l < store.columns.length; l++) {
                                                         var column = store.columns[l];
 
@@ -7620,10 +7944,6 @@ globalRoot.syn = syn;
                                                     break;
                                                 }
                                             }
-                                        }
-
-                                        if (isMapping == false) {
-                                            syn.$l.eventLog('$w.tryAddFunction Grid', '{0} dataFieldID 중복 또는 존재여부 확인 필요'.format(output.dataFieldID), 'Warning');
                                         }
                                     }
                                 }
@@ -7659,14 +7979,6 @@ globalRoot.syn = syn;
             }
 
             if (transactConfig && $this && $this.config) {
-                if ($object.isNullOrUndefined(transactConfig.noProgress) == true) {
-                    transactConfig.noProgress = false;
-                }
-
-                if (syn.$w.progressMessage && transactConfig.noProgress == false) {
-                    syn.$w.progressMessage($resource.translations.progress);
-                }
-
                 try {
                     if ($object.isNullOrUndefined($this.config.transactions) == true) {
                         $this.config.transactions = [];
@@ -7688,11 +8000,12 @@ globalRoot.syn = syn;
                             transactionLog: 'Y'
                         }, options);
 
-                        if (options) {
+                        if ($object.isNullOrUndefined(transactConfig.noProgress) == true) {
+                            transactConfig.noProgress = false;
+                        }
 
-                            if (syn.$w.progressMessage) {
-                                syn.$w.progressMessage(options.message);
-                            }
+                        if (syn.$w.progressMessage && $string.toBoolean(transactConfig.noProgress) == false) {
+                            syn.$w.progressMessage();
                         }
 
                         syn.$w.tryAddFunction(transactConfig);
@@ -7775,6 +8088,10 @@ globalRoot.syn = syn;
         });
         */
         transactionDirect(directObject, callback, options) {
+            if (syn.$w.progressMessage && directObject && $string.toBoolean(directObject.noProgress) == false) {
+                syn.$w.progressMessage();
+            }
+
             directObject.transactionResult = $object.isNullOrUndefined(directObject.transactionResult) == true ? true : directObject.transactionResult === true;
             directObject.systemID = directObject.systemID || (globalRoot.devicePlatform == 'browser' ? $this.config.systemID : '');
 
@@ -7797,12 +8114,6 @@ globalRoot.syn = syn;
                 transactionLog: 'Y'
             }, options);
 
-            if (options) {
-
-                if (syn.$w.progressMessage) {
-                    syn.$w.progressMessage(options.message);
-                }
-            }
             transactionObject.options = options;
 
             if (globalRoot.devicePlatform === 'node') {
@@ -7894,8 +8205,8 @@ globalRoot.syn = syn;
                                 if (bindingControlInfos.length == 1) {
                                     var controlInfo = bindingControlInfos[0];
 
-                                    if (['grid', 'chart'].indexOf(controlInfo.type) > -1) {
-                                        var dataFieldID = inputMapping.dataFieldID; // syn-datafield
+                                    if (controlInfo.type.indexOf('grid') > -1 || controlInfo.type.indexOf('chart') > -1) {
+                                        var dataFieldID = inputMapping.dataFieldID;
 
                                         var controlValue = '';
                                         if (synControls && synControls.length > 0) {
@@ -7905,22 +8216,7 @@ globalRoot.syn = syn;
 
                                             if (bindingControlInfos.length == 1) {
                                                 var controlInfo = bindingControlInfos[0];
-                                                var controlModule = null;
-                                                var currings = controlInfo.module.split('.');
-                                                if (currings.length > 0) {
-                                                    for (var i = 0; i < currings.length; i++) {
-                                                        var curring = currings[i];
-                                                        if (controlModule) {
-                                                            controlModule = controlModule[curring];
-                                                        }
-                                                        else {
-                                                            controlModule = context[curring];
-                                                        }
-                                                    }
-                                                }
-                                                else {
-                                                    controlModule = context[controlInfo.module];
-                                                }
+                                                var controlModule = syn.$w.getControlModule(controlInfo.module);
 
                                                 var el = syn.$l.get(controlInfo.id + '_hidden') || syn.$l.get(controlInfo.id);
                                                 var synOptions = JSON.parse(el.getAttribute('syn-options'));
@@ -7945,7 +8241,9 @@ globalRoot.syn = syn;
                                                     }
                                                 }
 
-                                                inputObjects = controlModule.getValue(controlInfo.id, 'Row', inputMapping.items)[0];
+                                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
+                                                    inputObjects = controlModule.getValue(controlInfo.id.replace('_hidden', ''), 'Row', inputMapping.items)[0];
+                                                }
                                             }
                                             else {
                                                 syn.$l.eventLog('$w.transaction', '"{0}" Row List Input Mapping 확인 필요'.format(dataFieldID), 'Warning');
@@ -7972,22 +8270,7 @@ globalRoot.syn = syn;
                                                         controlValue = syn.$l.get(controlInfo.id).value;
                                                     }
                                                     else {
-                                                        var controlModule = null;
-                                                        var currings = controlInfo.module.split('.');
-                                                        if (currings.length > 0) {
-                                                            for (var i = 0; i < currings.length; i++) {
-                                                                var curring = currings[i];
-                                                                if (controlModule) {
-                                                                    controlModule = controlModule[curring];
-                                                                }
-                                                                else {
-                                                                    controlModule = context[curring];
-                                                                }
-                                                            }
-                                                        }
-                                                        else {
-                                                            controlModule = context[controlInfo.module];
-                                                        }
+                                                        var controlModule = syn.$w.getControlModule(controlInfo.module);
 
                                                         var el = syn.$l.get(controlInfo.id + '_hidden') || syn.$l.get(controlInfo.id);
                                                         var synOptions = JSON.parse(el.getAttribute('syn-options'));
@@ -8008,9 +8291,11 @@ globalRoot.syn = syn;
                                                             }
                                                         }
 
-                                                        controlValue = controlModule.getValue(controlInfo.id, meta);
+                                                        if ($object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
+                                                            controlValue = controlModule.getValue(controlInfo.id.replace('_hidden', ''), meta);
+                                                        }
 
-                                                        if ($object.isNullOrUndefined(controlValue) == true && dataType == 'int') {
+                                                        if ($object.isNullOrUndefined(controlValue) == true && (dataType == 'number' || dataType == 'numeric')) {
                                                             controlValue = 0;
                                                         }
                                                     }
@@ -8049,7 +8334,7 @@ globalRoot.syn = syn;
                                                         var controlInfo = bindingControlInfos[0];
                                                         controlValue = $this.store[store.dataSourceID][controlInfo.data];
 
-                                                        if (!controlValue && dataType == 'int') {
+                                                        if ($object.isNullOrUndefined(controlValue) == true && (dataType == 'number' || dataType == 'numeric')) {
                                                             controlValue = 0;
                                                         }
 
@@ -8090,22 +8375,7 @@ globalRoot.syn = syn;
 
                                     if (bindingControlInfos.length == 1) {
                                         var controlInfo = bindingControlInfos[0];
-                                        var controlModule = null;
-                                        var currings = controlInfo.module.split('.');
-                                        if (currings.length > 0) {
-                                            for (var i = 0; i < currings.length; i++) {
-                                                var curring = currings[i];
-                                                if (controlModule) {
-                                                    controlModule = controlModule[curring];
-                                                }
-                                                else {
-                                                    controlModule = context[curring];
-                                                }
-                                            }
-                                        }
-                                        else {
-                                            controlModule = context[controlInfo.module];
-                                        }
+                                        var controlModule = syn.$w.getControlModule(controlInfo.module);
 
                                         var el = syn.$l.get(controlInfo.id + '_hidden') || syn.$l.get(controlInfo.id);
                                         var synOptions = JSON.parse(el.getAttribute('syn-options'));
@@ -8130,7 +8400,9 @@ globalRoot.syn = syn;
                                             }
                                         }
 
-                                        inputObjects = controlModule.getValue(controlInfo.id, 'List', inputMapping.items);
+                                        if ($object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
+                                            inputObjects = controlModule.getValue(controlInfo.id.replace('_hidden', ''), 'List', inputMapping.items);
+                                        }
                                     }
                                     else {
                                         var isMapping = false;
@@ -8241,24 +8513,10 @@ globalRoot.syn = syn;
 
                                                         if (bindingControlInfos.length == 1) {
                                                             var controlInfo = bindingControlInfos[0];
-                                                            var controlModule = null;
-                                                            var currings = controlInfo.module.split('.');
-                                                            if (currings.length > 0) {
-                                                                for (var i = 0; i < currings.length; i++) {
-                                                                    var curring = currings[i];
-                                                                    if (controlModule) {
-                                                                        controlModule = controlModule[curring];
-                                                                    }
-                                                                    else {
-                                                                        controlModule = context[curring];
-                                                                    }
-                                                                }
+                                                            var controlModule = syn.$w.getControlModule(controlInfo.module);
+                                                            if ($object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
+                                                                controlModule.setValue(controlInfo.id.replace('_hidden', ''), controlValue, meta);
                                                             }
-                                                            else {
-                                                                controlModule = context[controlInfo.module];
-                                                            }
-
-                                                            controlModule.setValue(controlInfo.id, controlValue, meta);
                                                         }
                                                         else {
                                                             var isMapping = false;
@@ -8295,133 +8553,89 @@ globalRoot.syn = syn;
                                             }
                                         }
                                         else if (outputMapping.responseType == 'Grid') {
-                                            if (outputData.length && outputData.length > 0) {
-                                                result.outputStat.push({
-                                                    fieldID: responseFieldID,
-                                                    Count: outputData.length
+                                            result.outputStat.push({
+                                                fieldID: responseFieldID,
+                                                Count: outputData.length
+                                            });
+                                            var dataFieldID = outputMapping.dataFieldID; // syn-datafield
+                                            if (synControls && synControls.length > 0) {
+                                                var bindingControlInfos = synControls.filter(function (item) {
+                                                    return item.field == dataFieldID;
                                                 });
-                                                var dataFieldID = outputMapping.dataFieldID; // syn-datafield
-                                                if (synControls && synControls.length > 0) {
-                                                    var bindingControlInfos = synControls.filter(function (item) {
-                                                        return item.field == dataFieldID;
-                                                    });
 
-                                                    if (bindingControlInfos.length == 1) {
-                                                        var controlInfo = bindingControlInfos[0];
-                                                        var controlModule = null;
-                                                        var currings = controlInfo.module.split('.');
-                                                        if (currings.length > 0) {
-                                                            for (var i = 0; i < currings.length; i++) {
-                                                                var curring = currings[i];
-                                                                if (controlModule) {
-                                                                    controlModule = controlModule[curring];
-                                                                }
-                                                                else {
-                                                                    controlModule = context[curring];
-                                                                }
-                                                            }
-                                                        }
-                                                        else {
-                                                            controlModule = context[controlInfo.module];
-                                                        }
-
-                                                        controlModule.setValue(controlInfo.id, outputData, outputMapping.items);
-                                                    }
-                                                    else {
-                                                        var isMapping = false;
-                                                        if (syn.uicontrols.$data && syn.uicontrols.$data.storeList.length > 0) {
-                                                            for (var k = 0; k < syn.uicontrols.$data.storeList.length; k++) {
-                                                                var store = syn.uicontrols.$data.storeList[k];
-                                                                if ($object.isNullOrUndefined($this.store[store.dataSourceID]) == true) {
-                                                                    $this.store[store.dataSourceID] = [];
-                                                                }
-
-                                                                if (store.storeType == 'Grid' && store.dataSourceID == outputMapping.dataFieldID) {
-                                                                    isMapping = true;
-                                                                    var bindingInfos = syn.uicontrols.$data.bindingList.filter(function (item) {
-                                                                        return (item.dataSourceID == store.dataSourceID && item.controlType == 'grid');
-                                                                    });
-
-                                                                    var length = outputData.length;
-                                                                    for (var i = 0; i < length; i++) {
-                                                                        outputData[i].Flag = 'R';
-                                                                    }
-
-                                                                    if (bindingInfos.length > 0) {
-                                                                        for (var binding_i = 0; binding_i < bindingInfos.length; binding_i++) {
-                                                                            var bindingInfo = bindingInfos[binding_i];
-                                                                            $this.store[store.dataSourceID][bindingInfo.dataFieldID] = outputData;
-                                                                        }
-                                                                    }
-                                                                    else {
-                                                                        $this.store[store.dataSourceID] = outputData;
-                                                                    }
-                                                                    break;
-                                                                }
-                                                            }
-                                                        }
-
-                                                        if (isMapping == false) {
-                                                            errorText = '"{0}" Grid Output Mapping 확인 필요'.format(dataFieldID);
-                                                            result.errorText.push(errorText);
-                                                            syn.$l.eventLog('$w.transaction', errorText, 'Error');
-                                                        }
+                                                if (bindingControlInfos.length == 1) {
+                                                    var controlInfo = bindingControlInfos[0];
+                                                    var controlModule = syn.$w.getControlModule(controlInfo.module);
+                                                    if ($object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
+                                                        controlModule.setValue(controlInfo.id.replace('_hidden', ''), outputData, outputMapping.items);
                                                     }
                                                 }
-                                            }
-                                            else {
-                                                result.outputStat.push({
-                                                    fieldID: responseFieldID,
-                                                    Count: 0
-                                                });
-                                            }
-                                        }
-                                        else if (outputMapping.responseType == 'Chart') {
-                                            if (outputData.length && outputData.length > 0) {
-                                                result.outputStat.push({
-                                                    fieldID: responseFieldID,
-                                                    Count: outputData.length
-                                                });
-                                                var dataFieldID = outputMapping.dataFieldID; // syn-datafield
+                                                else {
+                                                    var isMapping = false;
+                                                    if (syn.uicontrols.$data && syn.uicontrols.$data.storeList.length > 0) {
+                                                        for (var k = 0; k < syn.uicontrols.$data.storeList.length; k++) {
+                                                            var store = syn.uicontrols.$data.storeList[k];
+                                                            if ($object.isNullOrUndefined($this.store[store.dataSourceID]) == true) {
+                                                                $this.store[store.dataSourceID] = [];
+                                                            }
 
-                                                if (synControls && synControls.length > 0) {
-                                                    var bindingControlInfos = synControls.filter(function (item) {
-                                                        return item.field == dataFieldID;
-                                                    });
+                                                            if (store.storeType == 'Grid' && store.dataSourceID == outputMapping.dataFieldID) {
+                                                                isMapping = true;
+                                                                var bindingInfos = syn.uicontrols.$data.bindingList.filter(function (item) {
+                                                                    return (item.dataSourceID == store.dataSourceID && item.controlType == 'grid');
+                                                                });
 
-                                                    if (bindingControlInfos.length == 1) {
-                                                        var controlInfo = bindingControlInfos[0];
-                                                        var controlModule = null;
-                                                        var currings = controlInfo.module.split('.');
-                                                        if (currings.length > 0) {
-                                                            for (var i = 0; i < currings.length; i++) {
-                                                                var curring = currings[i];
-                                                                if (controlModule) {
-                                                                    controlModule = controlModule[curring];
+                                                                var length = outputData.length;
+                                                                for (var i = 0; i < length; i++) {
+                                                                    outputData[i].Flag = 'R';
+                                                                }
+
+                                                                if (bindingInfos.length > 0) {
+                                                                    for (var binding_i = 0; binding_i < bindingInfos.length; binding_i++) {
+                                                                        var bindingInfo = bindingInfos[binding_i];
+                                                                        $this.store[store.dataSourceID][bindingInfo.dataFieldID] = outputData;
+                                                                    }
                                                                 }
                                                                 else {
-                                                                    controlModule = context[curring];
+                                                                    $this.store[store.dataSourceID] = outputData;
                                                                 }
+                                                                break;
                                                             }
                                                         }
-                                                        else {
-                                                            controlModule = context[controlInfo.module];
-                                                        }
-
-                                                        controlModule.setValue(controlInfo.id, outputData, outputMapping.items);
                                                     }
-                                                    else {
-                                                        errorText = '"{0}" Chart Output Mapping 확인 필요'.format(dataFieldID);
+
+                                                    if (isMapping == false) {
+                                                        errorText = '"{0}" Grid Output Mapping 확인 필요'.format(dataFieldID);
                                                         result.errorText.push(errorText);
                                                         syn.$l.eventLog('$w.transaction', errorText, 'Error');
                                                     }
                                                 }
                                             }
-                                            else {
-                                                result.outputStat.push({
-                                                    fieldID: responseFieldID,
-                                                    Count: 0
+                                        }
+                                        else if (outputMapping.responseType == 'Chart') {
+                                            result.outputStat.push({
+                                                fieldID: responseFieldID,
+                                                Count: outputData.length
+                                            });
+                                            var dataFieldID = outputMapping.dataFieldID; // syn-datafield
+
+                                            if (synControls && synControls.length > 0) {
+                                                var bindingControlInfos = synControls.filter(function (item) {
+                                                    return item.field == dataFieldID;
                                                 });
+
+                                                if (bindingControlInfos.length == 1) {
+                                                    var controlInfo = bindingControlInfos[0];
+                                                    var controlModule = syn.$w.getControlModule(controlInfo.module);
+                                                    if ($object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
+                                                        controlModule.setValue(controlInfo.id.replace('_hidden', ''), outputData, outputMapping.items);
+                                                    }
+                                                }
+                                                else {
+                                                    errorText = '"{0}" Chart Output Mapping 확인 필요'.format(dataFieldID);
+                                                    result.errorText.push(errorText);
+                                                    syn.$l.eventLog('$w.transaction', errorText, 'Error');
+                                                }
                                             }
                                         }
                                     }
@@ -8521,7 +8735,7 @@ globalRoot.syn = syn;
                                 if (bindingControlInfos.length == 1) {
                                     var controlInfo = bindingControlInfos[0];
 
-                                    if (['grid', 'chart'].indexOf(controlInfo.type) > -1) {
+                                    if (controlInfo.type.indexOf('grid') > -1 || controlInfo.type.indexOf('chart') > -1) {
                                         var dataFieldID = inputMapping.dataFieldID;
 
                                         var controlValue = '';
@@ -8532,24 +8746,10 @@ globalRoot.syn = syn;
 
                                             if (bindingControlInfos.length == 1) {
                                                 var controlInfo = bindingControlInfos[0];
-                                                var controlModule = null;
-                                                var currings = controlInfo.module.split('.');
-                                                if (currings.length > 0) {
-                                                    for (var i = 0; i < currings.length; i++) {
-                                                        var curring = currings[i];
-                                                        if (controlModule) {
-                                                            controlModule = controlModule[curring];
-                                                        }
-                                                        else {
-                                                            controlModule = context[curring];
-                                                        }
-                                                    }
+                                                var controlModule = syn.$w.getControlModule(controlInfo.module);
+                                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
+                                                    inputObjects = controlModule.getValue(controlInfo.id.replace('_hidden', ''), 'Row', inputMapping.items)[0];
                                                 }
-                                                else {
-                                                    controlModule = context[controlInfo.module];
-                                                }
-
-                                                inputObjects = controlModule.getValue(controlInfo.id, 'Row', inputMapping.items)[0];
                                             }
                                             else {
                                                 syn.$l.eventLog('$w.getterValue', '"{0}" Row List Input Mapping 확인 필요'.format(dataFieldID), 'Warning');
@@ -8572,26 +8772,12 @@ globalRoot.syn = syn;
 
                                                 if (bindingControlInfos.length == 1) {
                                                     var controlInfo = bindingControlInfos[0];
-                                                    var controlModule = null;
-                                                    var currings = controlInfo.module.split('.');
-                                                    if (currings.length > 0) {
-                                                        for (var i = 0; i < currings.length; i++) {
-                                                            var curring = currings[i];
-                                                            if (controlModule) {
-                                                                controlModule = controlModule[curring];
-                                                            }
-                                                            else {
-                                                                controlModule = context[curring];
-                                                            }
-                                                        }
-                                                    }
-                                                    else {
-                                                        controlModule = context[controlInfo.module];
+                                                    var controlModule = syn.$w.getControlModule(controlInfo.module);
+                                                    if ($object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
+                                                        controlValue = controlModule.getValue(controlInfo.id.replace('_hidden', ''), meta);
                                                     }
 
-                                                    controlValue = controlModule.getValue(controlInfo.id, meta);
-
-                                                    if (!controlValue && dataType == 'int') {
+                                                    if ($object.isNullOrUndefined(controlValue) == true && (dataType == 'number' || dataType == 'numeric')) {
                                                         controlValue = 0;
                                                     }
                                                 }
@@ -8629,7 +8815,7 @@ globalRoot.syn = syn;
                                                         var controlInfo = bindingControlInfos[0];
                                                         controlValue = $this.store[store.dataSourceID][controlInfo.data];
 
-                                                        if (!controlValue && dataType == 'int') {
+                                                        if ($object.isNullOrUndefined(controlValue) == true && (dataType == 'number' || dataType == 'numeric')) {
                                                             controlValue = 0;
                                                         }
 
@@ -8674,24 +8860,10 @@ globalRoot.syn = syn;
 
                                     if (bindingControlInfos.length == 1) {
                                         var controlInfo = bindingControlInfos[0];
-                                        var controlModule = null;
-                                        var currings = controlInfo.module.split('.');
-                                        if (currings.length > 0) {
-                                            for (var i = 0; i < currings.length; i++) {
-                                                var curring = currings[i];
-                                                if (controlModule) {
-                                                    controlModule = controlModule[curring];
-                                                }
-                                                else {
-                                                    controlModule = context[curring];
-                                                }
-                                            }
+                                        var controlModule = syn.$w.getControlModule(controlInfo.module);
+                                        if ($object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
+                                            inputObjects = controlModule.getValue(controlInfo.id.replace('_hidden', ''), 'List', inputMapping.items);
                                         }
-                                        else {
-                                            controlModule = context[controlInfo.module];
-                                        }
-
-                                        inputObjects = controlModule.getValue(controlInfo.id, 'List', inputMapping.items);
                                     }
                                     else {
                                         var isMapping = false;
@@ -8833,24 +9005,10 @@ globalRoot.syn = syn;
 
                                             if (bindingControlInfos.length == 1) {
                                                 var controlInfo = bindingControlInfos[0];
-                                                var controlModule = null;
-                                                var currings = controlInfo.module.split('.');
-                                                if (currings.length > 0) {
-                                                    for (var i = 0; i < currings.length; i++) {
-                                                        var curring = currings[i];
-                                                        if (controlModule) {
-                                                            controlModule = controlModule[curring];
-                                                        }
-                                                        else {
-                                                            controlModule = context[curring];
-                                                        }
-                                                    }
+                                                var controlModule = syn.$w.getControlModule(controlInfo.module);
+                                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
+                                                    controlModule.setValue(controlInfo.id.replace('_hidden', ''), controlValue, meta);
                                                 }
-                                                else {
-                                                    controlModule = context[controlInfo.module];
-                                                }
-
-                                                controlModule.setValue(controlInfo.id, controlValue, meta);
                                             }
                                             else {
                                                 var isMapping = false;
@@ -8900,24 +9058,10 @@ globalRoot.syn = syn;
 
                                         if (bindingControlInfos.length == 1) {
                                             var controlInfo = bindingControlInfos[0];
-                                            var controlModule = null;
-                                            var currings = controlInfo.module.split('.');
-                                            if (currings.length > 0) {
-                                                for (var i = 0; i < currings.length; i++) {
-                                                    var curring = currings[i];
-                                                    if (controlModule) {
-                                                        controlModule = controlModule[curring];
-                                                    }
-                                                    else {
-                                                        controlModule = context[curring];
-                                                    }
-                                                }
+                                            var controlModule = syn.$w.getControlModule(controlInfo.module);
+                                            if ($object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
+                                                controlModule.setValue(controlInfo.id.replace('_hidden', ''), outputData, outputMapping.items);
                                             }
-                                            else {
-                                                controlModule = context[controlInfo.module];
-                                            }
-
-                                            controlModule.setValue(controlInfo.id, outputData, outputMapping.items);
                                         }
                                         else {
                                             var isMapping = false;
@@ -8983,24 +9127,10 @@ globalRoot.syn = syn;
 
                                         if (bindingControlInfos.length == 1) {
                                             var controlInfo = bindingControlInfos[0];
-                                            var controlModule = null;
-                                            var currings = controlInfo.module.split('.');
-                                            if (currings.length > 0) {
-                                                for (var i = 0; i < currings.length; i++) {
-                                                    var curring = currings[i];
-                                                    if (controlModule) {
-                                                        controlModule = controlModule[curring];
-                                                    }
-                                                    else {
-                                                        controlModule = context[curring];
-                                                    }
-                                                }
+                                            var controlModule = syn.$w.getControlModule(controlInfo.module);
+                                            if ($object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
+                                                controlModule.setValue(controlInfo.id.replace('_hidden', ''), outputData, outputMapping.items);
                                             }
-                                            else {
-                                                controlModule = context[controlInfo.module];
-                                            }
-
-                                            controlModule.setValue(controlInfo.id, outputData, outputMapping.items);
                                         }
                                         else {
                                             errorText = '"{0}" Chart Output Mapping 확인 필요'.format(dataFieldID);
@@ -9166,6 +9296,10 @@ globalRoot.syn = syn;
                                 }
                             }
 
+                            if (options.headers.has('OffsetMinutes') == false) {
+                                options.headers.append('OffsetMinutes', syn.$w.timezoneOffsetMinutes);
+                            }
+
                             var data = {
                                 method: options.method,
                                 headers: options.headers,
@@ -9196,6 +9330,10 @@ globalRoot.syn = syn;
                                 }
                             }
 
+                            if (options.headers.has('OffsetMinutes') == false) {
+                                options.headers.append('OffsetMinutes', syn.$w.timezoneOffsetMinutes);
+                            }
+
                             var data = {
                                 method: options.method,
                                 headers: options.headers,
@@ -9212,7 +9350,7 @@ globalRoot.syn = syn;
                         if (response.ok == true) {
                             var result = null;
                             var contentType = response.headers.get('Content-Type');
-                            if (contentType.indexOf('application/json') > -1) {
+                            if ($object.isNullOrUndefined(contentType) == false && contentType.indexOf('application/json') > -1) {
                                 result = response.json();
                             }
                             else {
@@ -9234,7 +9372,7 @@ globalRoot.syn = syn;
             return new globalRoot.XMLHttpRequest();
         },
 
-        loadScript(url, scriptID) {
+        loadScript(url, scriptID, callback) {
             var head;
             var resourceID;
             if (document.getElementsByTagName('head')) {
@@ -9247,22 +9385,33 @@ globalRoot.syn = syn;
 
             resourceID = scriptID || 'id_' + syn.$l.random();
 
-            var el = document.createElement('script');
-            el.setAttribute('type', 'text/javascript');
-            el.setAttribute('id', resourceID);
-            if (syn.Config && $string.toBoolean(syn.Config.IsClientCaching) == true) {
-                el.setAttribute('src', url);
-            }
-            else {
-                el.setAttribute('src', url + (url.indexOf('?') > -1 ? '&' : '?') + 'noCache=' + (new Date()).getTime());
-            }
+            var scriptTag = document.getElementById(resourceID);
+            if (scriptTag) {
+                callback();
+            } else {
+                var el = document.createElement('script');
+                el.setAttribute('type', 'text/javascript');
+                el.setAttribute('id', resourceID);
+                if (syn.Config && $string.toBoolean(syn.Config.IsClientCaching) == true) {
+                    el.setAttribute('src', url);
+                }
+                else {
+                    el.setAttribute('src', url + (url.indexOf('?') > -1 ? '&' : '?') + 'noCache=' + (new Date()).getTime());
+                }
 
-            head.insertBefore(el, head.firstChild);
+                if (callback && typeof callback === 'function') {
+                    el.onload = function () {
+                        callback();
+                    };
+                }
+
+                head.insertBefore(el, head.firstChild);
+            }
 
             return $webform;
         },
 
-        loadStyle(url, styleID) {
+        loadStyle(url, styleID, callback) {
             var head;
             var resourceID;
             if (document.getElementsByTagName('head')) {
@@ -9275,18 +9424,29 @@ globalRoot.syn = syn;
 
             resourceID = styleID || 'id_' + syn.$l.random();
 
-            var el = document.createElement('link');
-            el.setAttribute('rel', 'stylesheet');
-            el.setAttribute('type', 'text/css');
-            el.setAttribute('id', resourceID);
-            if (syn.Config && $string.toBoolean(syn.Config.IsClientCaching) == true) {
-                el.setAttribute('href', url);
-            }
-            else {
-                el.setAttribute('href', url + (url.indexOf('?') > -1 ? '&' : '?') + 'noCache=' + (new Date()).getTime());
-            }
+            var styleTag = document.getElementById('scriptID');
+            if (styleTag) {
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            } else {
+                var el = document.createElement('link');
+                el.setAttribute('rel', 'stylesheet');
+                el.setAttribute('type', 'text/css');
+                el.setAttribute('id', resourceID);
+                if (syn.Config && $string.toBoolean(syn.Config.IsClientCaching) == true) {
+                    el.setAttribute('href', url);
+                }
+                else {
+                    el.setAttribute('href', url + (url.indexOf('?') > -1 ? '&' : '?') + 'noCache=' + (new Date()).getTime());
+                }
 
-            head.appendChild(el);
+                head.appendChild(el);
+
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            }
 
             return $webform;
         },
@@ -9500,36 +9660,87 @@ globalRoot.syn = syn;
                 return;
             }
 
+            var serviceID = syn.Config.SystemID + syn.Config.Environment.substring(0, 1) + ($string.isNullOrEmpty(syn.Config.LoadModuleID) == true ? '' : syn.Config.LoadModuleID);
             var apiService = null;
+            var apiServices = syn.$w.getStorage('apiServices', false);
             if (globalRoot.devicePlatform === 'node') {
-                var apiServices = syn.$w.getStorage('apiServices', false);
                 if (apiServices) {
-                    apiService = apiServices[syn.Config.SystemID + syn.Config.Environment.substring(0, 1)];
-                    if ($object.isNullOrUndefined(apiServices.BearerToken) == true && globalRoot.bearerToken) {
-                        apiServices.BearerToken = globalRoot.bearerToken;
+                    apiService = apiServices[serviceID];
+                    if (apiService) {
+                        if ($object.isNullOrUndefined(apiServices.BearerToken) == true && globalRoot.bearerToken) {
+                            apiServices.BearerToken = globalRoot.bearerToken;
+                            syn.$w.setStorage('apiServices', apiServices, false);
+                        }
+                    }
+                    else if (syn.Config.DomainAPIServer != null) {
+                        apiService = syn.Config.DomainAPIServer;
+                        apiServices = apiServices || {};
+                        if (token || globalRoot.bearerToken) {
+                            apiServices.BearerToken = token || globalRoot.bearerToken;
+                        }
+                        apiServices[serviceID] = apiService;
                         syn.$w.setStorage('apiServices', apiServices, false);
+                    }
+                    else {
+                        syn.$l.eventLog('$w.executeTransaction', '서비스 호출에 필요한 DomainAPIServer 정보가 구성되지 확인 필요', 'Error');
                     }
                 }
                 else {
                     if (syn.Config.DomainAPIServer != null) {
                         apiService = syn.Config.DomainAPIServer;
-                        apiServices = {};
+                        apiServices = apiServices || {};
                         if (token || globalRoot.bearerToken) {
                             apiServices.BearerToken = token || globalRoot.bearerToken;
                         }
-                        apiServices[syn.Config.SystemID + syn.Config.Environment.substring(0, 1)] = apiService;
+                        apiServices[serviceID] = apiService;
                         syn.$w.setStorage('apiServices', apiServices, false);
-                        syn.$l.eventLog('$w.executeTransaction', 'apiService 확인 필요 systemApi: {0}'.format(JSON.stringify(apiService)), 'Warning');
                     }
                     else {
-                        syn.$l.eventLog('$w.executeTransaction', '서비스 호출에 필요한 BP 정보가 구성되지 확인 필요', 'Error');
+                        syn.$l.eventLog('$w.executeTransaction', '서비스 호출에 필요한 DomainAPIServer 정보가 구성되지 확인 필요', 'Error');
+                    }
+                }
+            }
+            else {
+                if (apiServices) {
+                    apiService = apiServices[serviceID];
+                    if (apiService) {
+                        if ((apiServices.BearerToken == null || apiServices.BearerToken == undefined) && window.bearerToken) {
+                            apiServices.BearerToken = window.bearerToken;
+                            syn.$w.setStorage('apiServices', apiServices, false);
+                        }
+                    }
+                    else if (syn.Config.DomainAPIServer != null) {
+                        apiService = syn.Config.DomainAPIServer;
+                        apiServices = apiServices || {};
+                        if (window.bearerToken) {
+                            apiServices.BearerToken = window.bearerToken;
+                        }
+                        apiServices[serviceID] = apiService;
+                        syn.$w.setStorage('apiServices', apiServices, false);
+                    }
+                    else {
+                        syn.$l.eventLog('$w.executeTransaction', '서비스 호출에 필요한 DomainAPIServer 정보가 구성되지 확인 필요', 'Error');
+                    }
+                }
+                else {
+                    if (syn.Config.DomainAPIServer != null) {
+                        apiService = syn.Config.DomainAPIServer;
+                        apiServices = apiServices || {};
+                        if (window.bearerToken) {
+                            apiServices.BearerToken = window.bearerToken;
+                        }
+                        apiServices[serviceID] = apiService;
+                        syn.$w.setStorage('apiServices', apiServices, false);
+                    }
+                    else {
+                        syn.$l.eventLog('$w.executeTransaction', '서비스 호출에 필요한 DomainAPIServer 정보가 구성되지 확인 필요', 'Error');
                     }
                 }
             }
 
             var apiServices = syn.$w.getStorage('apiServices', false);
             if (apiServices) {
-                apiService = apiServices[syn.Config.SystemID + syn.Config.Environment.substring(0, 1)];
+                apiService = apiServices[serviceID];
             }
 
             if (apiService == null) {
@@ -9543,7 +9754,7 @@ globalRoot.syn = syn;
 
                 var ipAddress = syn.$w.getStorage('ipAddress', false);
                 if ($object.isNullOrUndefined(ipAddress) == true && $string.isNullOrEmpty(syn.Config.FindClientIPServer) == false) {
-                    ipAddress = await syn.$w.apiHttp(syn.Config.FindClientIPServer).send(null, {
+                    ipAddress = await syn.$w.apiHttp(syn.Config.FindClientIPServer || '/checkip').send(null, {
                         method: 'GET',
                         redirect: 'follow',
                         timeout: 1000
@@ -9600,7 +9811,7 @@ globalRoot.syn = syn;
                 }
 
                 var transactionRequest = {
-                    accessToken: apiServices.BearerToken,
+                    accessToken: token || globalRoot.bearerToken || apiServices.BearerToken,
                     action: 'SYN', // "SYN: Request/Response, PSH: Execute/None, ACK: Subscribe",
                     kind: 'BIZ', // "DBG: Debug, BIZ: Business, URG: Urgent, FIN: Finish",
                     clientTag: syn.Config.SystemID.concat('|', syn.Config.HostName, '|', syn.Config.Program.ProgramName, '|', syn.Config.Environment.substring(0, 1)),
@@ -10049,7 +10260,7 @@ globalRoot.syn = syn;
                         }
                     }
 
-                    syn.$l.eventLog('$w.executeTransaction', transactionRequest.requestID, 'Verbose');
+                    syn.$l.eventLog('$w.executeTransaction', transactionRequest.transaction.globalID, 'Verbose');
 
                     xhr.setRequestHeader('X-Requested-With', 'HandStack ServiceClient');
                     xhr.setRequestHeader('Content-Type', 'application/json');
@@ -10107,9 +10318,15 @@ globalRoot.syn = syn;
         if (process.env.SYN_CONFIG) {
             syn.Config = JSON.parse(process.env.SYN_CONFIG);
         }
-
-        if (syn.Config && $string.isNullOrEmpty(syn.Config.DataSourceFilePath) == true) {
-            syn.Config.DataSourceFilePath = path.join(process.cwd(), 'BusinessContract/Database/DataSource.xml');
+        else {
+            var filePath = path.join(process.cwd(), 'node.config.json');
+            if (fs.existsSync(filePath) == true) {
+                var data = fs.readFileSync(filePath, 'utf8');
+                syn.Config = JSON.parse(data);
+            }
+            else {
+                console.error('Node.js 환경설정 파일이 존재하지 않습니다. 파일경로: {0}'.format(filePath));
+            }
         }
 
         delete syn.$w.isPageLoad;
@@ -10222,136 +10439,141 @@ globalRoot.syn = syn;
         translateControls: [],
 
         concreate() {
-            var els = document.querySelectorAll('[syn-i18n]');
-            for (var i = 0; i < els.length; i++) {
-                var el = els[i];
+            $resource.remainingReadyIntervalID = setInterval(function () {
+                if (syn.$w.isPageLoad == true) {
+                    clearInterval($resource.remainingReadyIntervalID);
+                    $resource.remainingReadyIntervalID = null;
 
-                var tagName = el.tagName.toUpperCase();
-                var elID = el.getAttribute('id');
-                var i18nOption = el.getAttribute('syn-i18n');
+                    var els = document.querySelectorAll('[syn-i18n]');
+                    for (var i = 0; i < els.length; i++) {
+                        var el = els[i];
 
-                if (i18nOption === undefined || i18nOption === null || i18nOption === '') {
-                    continue;
-                }
+                        var tagName = el.tagName.toUpperCase();
+                        var elID = el.getAttribute('id');
+                        var i18nOption = el.getAttribute('syn-i18n');
 
-                var options = null;
-                if (i18nOption.startsWith('{') == true) {
-                    try {
-                        options = eval('(' + i18nOption + ')');
-                        if (options.options.bindSource === undefined || options.options.bindSource === null) {
-                            options.bindSource = 'content';
+                        if (i18nOption === undefined || i18nOption === null || i18nOption === '') {
+                            continue;
                         }
-                        else {
-                            options.bindSource = options.options.bindSource;
-                        }
-                    } catch (error) {
-                        console.log('$resource.concreate, tagName: "' + tagName + '", elID: "' + elID + '" syn-i18n 확인 필요, error: ' + error.message);
-                    }
-                }
-                else {
-                    options = {
-                        key: i18nOption,
-                        bindSource: 'content'
-                    };
-                }
 
-                if (options && (options.key === undefined || options.key === null || options.key === '') == false) {
-                    el.setAttribute('i18n-key', options.key);
-                    var controlType = '';
-                    var moduleName = null;
-
-                    if (tagName.indexOf('SYN_') > -1) {
-                        moduleName = tagName.substring(4).toLowerCase();
-                        controlType = moduleName;
-                    }
-                    else {
-                        switch (tagName) {
-                            case 'BUTTON':
-                                moduleName = 'button';
-                                controlType = 'button';
-                                break;
-                            case 'INPUT':
-                                controlType = el.getAttribute('type').toLowerCase();
-                                switch (controlType) {
-                                    case 'hidden':
-                                    case 'text':
-                                    case 'password':
-                                    case 'color':
-                                    case 'email':
-                                    case 'number':
-                                    case 'search':
-                                    case 'tel':
-                                    case 'url':
-                                        moduleName = 'textbox';
-                                        break;
-                                    case 'submit':
-                                    case 'reset':
-                                    case 'button':
-                                        moduleName = 'button';
-                                        break;
-                                    case 'radio':
-                                        moduleName = 'radio';
-                                        break;
-                                    case 'checkbox':
-                                        moduleName = 'checkbox';
-                                        break;
-                                }
-                                break;
-                            case 'TEXTAREA':
-                                moduleName = 'textarea';
-                                controlType = 'textarea';
-                                break;
-                            case 'SELECT':
-                                if (el.getAttribute('multiple') == null) {
-                                    moduleName = 'select';
-                                    controlType = 'select';
+                        var options = null;
+                        if (i18nOption.startsWith('{') == true) {
+                            try {
+                                options = eval('(' + i18nOption + ')');
+                                if (options.options.bindSource === undefined || options.options.bindSource === null) {
+                                    options.bindSource = 'content';
                                 }
                                 else {
-                                    moduleName = 'multiselect';
-                                    controlType = 'multiselect';
+                                    options.bindSource = options.options.bindSource;
                                 }
-                                break;
-                            default:
-                                moduleName = 'element';
-                                break;
+                            } catch (error) {
+                                console.log('$resource.concreate, tagName: "' + tagName + '", elID: "' + elID + '" syn-i18n 확인 필요, error: ' + error.message);
+                            }
+                        }
+                        else {
+                            options = {
+                                key: i18nOption,
+                                bindSource: 'content'
+                            };
+                        }
+
+                        if (options && (options.key === undefined || options.key === null || options.key === '') == false) {
+                            el.setAttribute('i18n-key', options.key);
+                            var controlType = '';
+                            var moduleName = null;
+
+                            if (tagName.indexOf('SYN_') > -1) {
+                                moduleName = tagName.substring(4).toLowerCase();
+                                controlType = moduleName;
+                            }
+                            else {
+                                switch (tagName) {
+                                    case 'BUTTON':
+                                        moduleName = 'button';
+                                        controlType = 'button';
+                                        break;
+                                    case 'INPUT':
+                                        controlType = (el.getAttribute('type') || 'text').toLowerCase();
+                                        switch (controlType) {
+                                            case 'hidden':
+                                            case 'text':
+                                            case 'password':
+                                            case 'color':
+                                            case 'email':
+                                            case 'number':
+                                            case 'search':
+                                            case 'tel':
+                                            case 'url':
+                                                moduleName = 'textbox';
+                                                break;
+                                            case 'submit':
+                                            case 'reset':
+                                            case 'button':
+                                                moduleName = 'button';
+                                                break;
+                                            case 'radio':
+                                                moduleName = 'radio';
+                                                break;
+                                            case 'checkbox':
+                                                moduleName = 'checkbox';
+                                                break;
+                                        }
+                                        break;
+                                    case 'TEXTAREA':
+                                        moduleName = 'textarea';
+                                        controlType = 'textarea';
+                                        break;
+                                    case 'SELECT':
+                                        if (el.getAttribute('multiple') == null) {
+                                            moduleName = 'select';
+                                            controlType = 'select';
+                                        }
+                                        else {
+                                            moduleName = 'multiselect';
+                                            controlType = 'multiselect';
+                                        }
+                                        break;
+                                    default:
+                                        moduleName = 'element';
+                                        break;
+                                }
+                            }
+
+                            var key = options.key;
+                            var bindSource = options.bindSource;
+
+                            delete options.key;
+                            delete options.bindSource;
+
+                            $resource.translateControls.push({
+                                elID: elID,
+                                key: key,
+                                bindSource: bindSource,
+                                tag: tagName,
+                                module: moduleName,
+                                type: controlType,
+                                options: options
+                            });
+                        }
+                        else {
+                            console.log('$resource.concreate, tagName: "' + tagName + '", elID: "' + elID + '" key 확인 필요');
                         }
                     }
 
-                    var key = options.key;
-                    var bindSource = options.bindSource;
+                    var mod = window[syn.$w.pageScript];
+                    if (mod && mod.hook.pageResource) {
+                        mod.hook.pageResource($resource.localeID);
+                    }
 
-                    delete options.key;
-                    delete options.bindSource;
+                    if (syn.Config && $string.toBoolean(syn.Config.IsLocaleTranslations) == true && syn.$w.pageResource) {
+                        syn.$w.pageResource($resource.localeID);
+                    }
 
-                    $resource.translateControls.push({
-                        elID: elID,
-                        key: key,
-                        bindSource: bindSource,
-                        tag: tagName,
-                        module: moduleName,
-                        type: controlType,
-                        options: options
-                    });
-                }
-                else {
-                    console.log('$resource.concreate, tagName: "' + tagName + '", elID: "' + elID + '" key 확인 필요');
-                }
-            }
-
-            var mod = window[syn.$w.pageScript];
-            if (mod && mod.hook.pageResource) {
-                mod.hook.pageResource($resource.localeID);
-            }
-
-            if (syn.Config && $string.toBoolean(syn.Config.IsLocaleTranslations) == true) {
-                $resource.remainingReadyIntervalID = setInterval(function () {
-                    if (syn.$w.isPageLoad == true) {
-                        clearInterval($resource.remainingReadyIntervalID);
-                        $resource.remainingReadyIntervalID = null;
+                    if (syn.Config && $string.toBoolean(syn.Config.IsLocaleTranslations) == true) {
                         $resource.setLocale($resource.localeID);
                     }
-                }, 25);
-            }
+                }
+            }, 25);
         },
 
         add(id, val) {

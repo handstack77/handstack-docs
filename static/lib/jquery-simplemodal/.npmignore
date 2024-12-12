@@ -1,0 +1,10 @@
+
+/.idea/
+/components/
+/build/
+build.xml
+version.txt
+simplemodal.jquery.json
+ChangeLog.txt
+License.txt
+GPL-LICENSE.txt

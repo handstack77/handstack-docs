@@ -46,7 +46,7 @@ const config: Config = {
         },
     },
     scripts: [
-        '/lib/master@1.37.8/master-css.min.js'
+        '/lib/master-css/master-css.min.js'
     ],
     stylesheets: [
         '/css/pure-min.css',

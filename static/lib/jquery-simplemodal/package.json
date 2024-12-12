@@ -1,0 +1,19 @@
+{
+  "name": "jquery-simplemodal",
+  "version": "1.0.0",
+  "description": "jQuery plugin to simple modal.",
+  "main": "src/jquery.simplemodal.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/muthuselvan86/simplemodal.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/muthuselvan86/simplemodal/issues"
+  },
+  "homepage": "https://github.com/muthuselvan86/simplemodal#readme"
+}

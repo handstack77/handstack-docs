@@ -71,6 +71,26 @@ let $requests = {
             syn.$l.get('txt_isCorsEnabled').value = await syn.$r.isCorsEnabled('sample.json');
         },
 
+        async btn_httpRequest_click() {
+            var result = await syn.$r.httpRequest('GET', '/checkip');
+            syn.$l.get('txt_httpRequest').value = result.response;
+        },
+
+        btn_httpSubmit_click() {
+            syn.$r.httpSubmit('/index', 'form1');
+        },
+
+        async btn_httpDataSubmit_click() {
+            var formData = new FormData();
+            formData.append('companyNo', companyNo);
+            formData.append('userNo', userNo);
+
+            var result = await syn.$r.httpDataSubmit(formData, '/api/message-sender/SendPost');
+
+            console.log('status:', result.status)
+            console.log('response:', result.response)
+        },
+
         btn_getCookie_click() {
             syn.$l.get('txt_getCookie').value = syn.$r.getCookie('Cookie');
         },

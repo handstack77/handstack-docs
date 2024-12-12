@@ -1,4 +1,5 @@
 ﻿(async function () {
+    var systemVersion = '1.0.0';
     var getCookie = function (id) {
         var start = document.cookie.indexOf(id + '=');
         var len = start + id.length + 1;
@@ -21,7 +22,7 @@
             end = document.cookie.length;
         }
 
-        return unescape(document.cookie.substring(len, end));
+        return decodeURIComponent(document.cookie.substring(len, end));
     }
 
     var backgroundColor = '#ed1c23';
@@ -29,14 +30,8 @@
     style.innerHTML = '.pl-container{position:absolute;top:0;left:0;background-color:#fff;width:100vw;height:100vh;z-index:999}.pl-cube-grid{position:absolute;left:50%;top:50%;margin:-20px 0 0 -20px;width:40px;height:40px}.pl-cube-grid .pl-cube{width:33%;height:33%;background-color:' + backgroundColor + ';float:left;-webkit-animation:pl-cubeGridScaleDelay 1.3s infinite ease-in-out;animation:pl-cubeGridScaleDelay 1.3s infinite ease-in-out}.pl-cube-grid .pl-cube1{-webkit-animation-delay:.2s;animation-delay:.2s}.pl-cube-grid .pl-cube2{-webkit-animation-delay:.3s;animation-delay:.3s}.pl-cube-grid .pl-cube3{-webkit-animation-delay:.4s;animation-delay:.4s}.pl-cube-grid .pl-cube4{-webkit-animation-delay:.1s;animation-delay:.1s}.pl-cube-grid .pl-cube5{-webkit-animation-delay:.2s;animation-delay:.2s}.pl-cube-grid .pl-cube6{-webkit-animation-delay:.3s;animation-delay:.3s}.pl-cube-grid .pl-cube7{-webkit-animation-delay:0s;animation-delay:0s}.pl-cube-grid .pl-cube8{-webkit-animation-delay:.1s;animation-delay:.1s}.pl-cube-grid .pl-cube9{-webkit-animation-delay:.2s;animation-delay:.2s}@-webkit-keyframes pl-cubeGridScaleDelay{0%,100%,70%{-webkit-transform:scale3D(1,1,1);transform:scale3D(1,1,1)}35%{-webkit-transform:scale3D(0,0,1);transform:scale3D(0,0,1)}}@keyframes pl-cubeGridScaleDelay{0%,100%,70%{-webkit-transform:scale3D(1,1,1);transform:scale3D(1,1,1)}35%{-webkit-transform:scale3D(0,0,1);transform:scale3D(0,0,1)}}.wtBorder{background-color:' + backgroundColor + ' !important;}';
     document.head.appendChild(style);
 
-    // var pageBackground = document.createElement('div');
-    // pageBackground.id = 'pageLoader';
-    // pageBackground.classList.add('pl-container');
-    // pageBackground.innerHTML = '<div class="pl-cube-grid"><div class="pl-cube pl-cube1"></div><div class="pl-cube pl-cube2"></div><div class="pl-cube pl-cube3"></div><div class="pl-cube pl-cube4"></div><div class="pl-cube pl-cube5"></div><div class="pl-cube pl-cube6"></div><div class="pl-cube pl-cube7"></div><div class="pl-cube pl-cube8"></div><div class="pl-cube pl-cube9"></div></div>';
-    // document.body.appendChild(pageBackground);
-
     var agent = navigator.userAgent.toLowerCase();
-    var isIE = (navigator.appName == 'Netscape' && agent.indexOf('trident') != -1) || (agent.indexOf("msie") != -1);
+    var isIE = (agent.indexOf('trident') != -1) || (agent.indexOf("msie") != -1);
     if (isIE == true) {
         var html = 'Internet Explorer 지원이 종료되었습니다.<br /><a href="https://www.google.co.kr/chrome" target="_blank">Chrome</a> 또는 <a href="https://www.microsoft.com/edge" target="_blank">Microsoft Edge</a> 웹 브라우저를 사용하세요.';
         document.body.innerHTML = '';
@@ -94,11 +89,12 @@
         start: (new Date()).getTime(),
         logTimer: null,
         logCount: 0,
-        argArgs: '',
+        assetsCachingID: '',
+        noCache: '',
         currentLoadedCount: 0,
         styleLoadedCount: 0,
         remainLoadedCount: 0,
-        isEnableModuleLogging: sessionStorage.getItem('EnableModuleLogging') === 'true', // sessionStorage.setItem('EnableModuleLogging', true)
+        isEnableModuleLogging: sessionStorage.getItem('EnableModuleLogging') === 'true',
 
         endsWith(str, suffix) {
             if (str === null || suffix === null) {
@@ -131,15 +127,23 @@
             }
 
             for (var i = 0; i < synLoader.styleFiles.length; i++) {
-                var styleFile = synLoader.styleFiles[i];
-                synLoader.eventLog('request', 'loading style ' + styleFile);
+                synLoader.eventLog('request', 'loading style ' + url);
+
+                var url = synLoader.styleFiles[i];
+                if (synLoader.assetsCachingID != '' && url.indexOf('/view/') == -1) {
+                    url = url + (url.indexOf('?') > -1 ? '&' : '?') + synLoader.assetsCachingID;
+                }
+                else if (synLoader.noCache != '') {
+                    url = url + (url.indexOf('?') > -1 ? '&' : '?') + synLoader.noCache;
+                }
 
                 var style = document.createElement('link');
                 style.rel = 'stylesheet';
-                style.href = styleFile + (styleFile.indexOf('?') > -1 ? '&' : '?') + synLoader.argArgs;
                 style.type = 'text/css';
+                style.href = url;
+                style.async = 'async';
 
-                if (styleFile.indexOf('dark_mode') > -1) {
+                if (url.indexOf('dark_mode') > -1) {
                     style.id = 'dark_mode';
                 }
 
@@ -176,43 +180,47 @@
                 if (nextIndex < synLoader.scriptFiles.length) {
                     synLoader.loadScript(nextIndex);
                 }
+                else {
+                    synLoader.loadCallback();
+                }
             };
 
-            var src = synLoader.scriptFiles[i];
-            src = src + (src.indexOf('?') > -1 ? '&' : '?') + synLoader.argArgs;
+            var url = synLoader.scriptFiles[i];
+            if (synLoader.assetsCachingID != '' && url.indexOf('/view/') == -1) {
+                url = url + (url.indexOf('?') > -1 ? '&' : '?') + synLoader.assetsCachingID;
+            }
+            else if (synLoader.noCache != '') {
+                url = url + (url.indexOf('?') > -1 ? '&' : '?') + synLoader.noCache;
+            }
 
             var script = document.createElement('script');
             script.type = 'text/javascript';
-            script.src = src;
+            script.src = url;
             script.async = 'async';
             script.onload = function (evt) {
                 synLoader.eventLog('loaded', 'Loaded script: ' + evt.target.src);
                 synLoader.currentLoadedCount++;
 
-                if (synLoader.remainLoadedCount === synLoader.currentLoadedCount) {
-                    synLoader.loadCallback();
-                }
-                else {
-                    loadNextScript();
-                }
+                loadNextScript();
             };
             script.onerror = function (evt) {
                 synLoader.eventLog('load error', 'Loaded fail script: ' + evt.target.src);
                 synLoader.currentLoadedCount++;
 
-                if (synLoader.remainLoadedCount === synLoader.currentLoadedCount) {
-                    synLoader.loadCallback();
-                }
-                else {
-                    loadNextScript();
-                }
+                loadNextScript();
             };
 
             document.body.appendChild(script);
         },
 
         loadText: async function (id, url) {
-            url = url + (url.indexOf('?') > -1 ? '&' : '?') + synLoader.argArgs;
+            if (synLoader.assetsCachingID != '' && url.indexOf('/view/') == -1) {
+                url = url + (url.indexOf('?') > -1 ? '&' : '?') + synLoader.assetsCachingID;
+            }
+            else if (synLoader.noCache != '') {
+                url = url + (url.indexOf('?') > -1 ? '&' : '?') + synLoader.noCache;
+            }
+
             var response = await fetch(url);
             if (response.status !== 200) {
                 if (response.status == 0) {
@@ -249,7 +257,7 @@
         },
 
         request: async function (resources) {
-            synLoader.resources = resources;
+            resources = resources.filter(item => item !== null && item !== undefined);
             var length = resources.length;
             for (var i = 0; i < length; ++i) {
                 var resource = resources[i];
@@ -267,11 +275,409 @@
                 }
             }
 
+            if (window.synConfigName == 'syn.config.json') {
+                var moduleFile = '';
+                if (window.moduleFile) {
+                    moduleFile = window.moduleFile;
+                }
+                else {
+                    var pathname = location.pathname;
+                    if (pathname.split('/').length > 0) {
+                        moduleFile = pathname.split('/')[location.pathname.split('/').length - 1];
+                        moduleFile = moduleFile.split('.').length == 2 ? (moduleFile.indexOf('.') > -1 ? moduleFile.substring(0, moduleFile.indexOf('.')) : moduleFile) : '';
+                    }
+                }
+
+                if (moduleFile.length > 0 && window['$' + moduleFile] == undefined) {
+                    var fileName = moduleFile.indexOf('.js') > -1 ? moduleFile : moduleFile + '.js';
+                    if (synLoader.scriptFiles.find(function (p) { return p === fileName; }) === undefined) {
+                        synLoader.scriptFiles.push(fileName);
+                    }
+                }
+            }
+
             await synLoader.loadFiles();
         },
 
         sleep(ms) {
             return new Promise((r) => setTimeout(r, ms));
+        },
+
+        definedResources() {
+            var result = [];
+            var synControlList = [];
+            var synControls = document.querySelectorAll('[tag^="syn_"],[syn-datafield],[syn-options],[syn-events]');
+            for (var i = 0; i < synControls.length; i++) {
+                var synControl = synControls[i];
+                if (synControl.tagName) {
+                    var tagName = synControl.tagName.toUpperCase();
+                    var controlType = '';
+                    var moduleName = null;
+
+                    if (tagName.indexOf('SYN_') > -1) {
+                        moduleName = tagName.substring(4).toLowerCase();
+                        controlType = moduleName;
+                    }
+                    else {
+                        switch (tagName) {
+                            case 'BUTTON':
+                                moduleName = 'button';
+                                controlType = 'button';
+                                break;
+                            case 'INPUT':
+                                controlType = (synControl.getAttribute('type') || 'text').toLowerCase();
+                                switch (controlType) {
+                                    case 'hidden':
+                                    case 'text':
+                                    case 'password':
+                                    case 'color':
+                                    case 'email':
+                                    case 'number':
+                                    case 'search':
+                                    case 'tel':
+                                    case 'url':
+                                        moduleName = 'textbox';
+                                        break;
+                                    case 'submit':
+                                    case 'reset':
+                                    case 'button':
+                                        moduleName = 'button';
+                                        break;
+                                    case 'radio':
+                                        moduleName = 'radio';
+                                        break;
+                                    case 'checkbox':
+                                        moduleName = 'checkbox';
+                                        break;
+                                }
+                                break;
+                            case 'TEXTAREA':
+                                moduleName = 'textarea';
+                                controlType = 'textarea';
+                                break;
+                            case 'SELECT':
+                                if (synControl.getAttribute('multiple') == null) {
+                                    moduleName = 'select';
+                                    controlType = 'select';
+                                }
+                                else {
+                                    moduleName = 'multiselect';
+                                    controlType = 'multiselect';
+                                }
+                                break;
+                            default:
+                                moduleName = 'element';
+                                controlType = 'element';
+                                break;
+                        }
+                    }
+
+                    if (moduleName) {
+                        synControlList.push({
+                            module: moduleName,
+                            type: controlType ? controlType : synControl.tagName.toLowerCase()
+                        });
+                    }
+                }
+            }
+
+            result = synControlList.filter(function (control, idx, arr) {
+                return synControlList.findIndex(function (item) {
+                    return item.module === control.module && item.type === control.type;
+                }) === idx;
+            });
+
+            result.unshift({
+                module: 'before-default',
+                type: 'before-default',
+                css: [
+                    '/lib/tabler-core/dist/css/tabler.css',
+                    '/lib/tabler-icons-webfont/dist/tabler-icons.css',
+                    '/js/notifier/notifier.css',
+                    '/js/jquery-ui-contextmenu/jquery-ui.css'
+                ],
+                js: [
+                    '/lib/tabler-core/dist/js/tabler.min.js',
+                    '/lib/jquery/jquery.js',
+                    '/js/jquery.alertmodal/jquery.alertmodal.js',
+                    '/lib/jquery-simplemodal/src/jquery.simplemodal.js',
+                    '/js/jquery-wm/jquery.WM.js',
+                    '/js/jquery-ui-contextmenu/jquery-ui.js',
+                    '/js/jquery-ui-contextmenu/jquery.ui-contextmenu.js',
+                    '/lib/nanobar/nanobar.js',
+                    '/js/notifier/notifier.js',
+                    '/lib/clipboard.js/clipboard.js',
+                    '/lib/mustache/mustache.js',
+                    '/js/syn.js'
+                ]
+            });
+
+            for (var i = 0; i < result.length; i++) {
+                var item = result[i];
+
+                switch (item.module) {
+                    case 'textbox':
+                        item.css = ['/uicontrols/TextBox/TextBox.css'];
+                        item.js = [
+                            '/lib/jquery.maskedinput/jquery.maskedinput.js',
+                            '/lib/ispin/dist/ispin.js',
+                            '/lib/superplaceholder/superplaceholder.js',
+                            '/lib/vanilla-masker/vanilla-masker.min.js',
+                            '/uicontrols/TextBox/TextBox.js'
+                        ];
+                        break;
+                    case 'button':
+                        item.css = ['/uicontrols/TextButton/TextButton.css'];
+                        item.js = ['/uicontrols/TextButton/TextButton.js'];
+                        break;
+                    case 'radio':
+                        item.css = ['/uicontrols/RadioButton/RadioButton.css'];
+                        item.js = ['/uicontrols/RadioButton/RadioButton.js'];
+                        break;
+                    case 'checkbox':
+                        item.css = [
+                            '/js/css-checkbox/checkboxes.css',
+                            '/uicontrols/CheckBox/CheckBox.css'
+                        ];
+                        item.js = ['/uicontrols/CheckBox/CheckBox.js'];
+                        break;
+                    case 'textarea':
+                        item.css = [
+                            '/lib/codemirror/codemirror.css',
+                            '/uicontrols/TextArea/TextArea.css'
+                        ];
+                        item.js = [
+                            '/lib/codemirror/codemirror.js',
+                            '/uicontrols/TextArea/TextArea.js'
+                        ];
+                        break;
+                    case 'select':
+                        item.css = [
+                            '/lib/tail.select.js/css/default/tail.select-light.css',
+                            '/uicontrols/DropDownList/DropDownList.css'
+                        ];
+                        item.js = [
+                            '/lib/tail.select.js/js/tail.select.js',
+                            '/uicontrols/DropDownList/DropDownList.js'
+                        ];
+                        break;
+                    case 'multiselect':
+                        item.css = [
+                            '/lib/tail.select.js/css/default/tail.select-light.css',
+                            '/uicontrols/DropDownCheckList/DropDownCheckList.css'
+                        ];
+                        item.js = [
+                            '/lib/tail.select.js/js/tail.select.js',
+                            '/uicontrols/DropDownCheckList/DropDownCheckList.js'
+                        ];
+                        break;
+                    case 'chart':
+                        item.css = [
+                            '/uicontrols/Chart/Chart.css'
+                        ];
+                        item.js = [
+                            '/lib/highcharts/highcharts.js',
+                            '/uicontrols/Chart/Chart.js'
+                        ];
+                        break;
+                    case 'chartjs':
+                        item.css = [
+                            '/uicontrols/Chart/ChartJS.css'
+                        ];
+                        item.js = [
+                            '/lib/chart.js/chart.umd.js',
+                            '/uicontrols/Chart/ChartJS.js'
+                        ];
+                        break;
+                    case 'codepicker':
+                        item.css = ['/uicontrols/CodePicker/CodePicker.css'];
+                        item.js = ['/uicontrols/CodePicker/CodePicker.js'];
+                        break;
+                    case 'colorpicker':
+                        item.css = [
+                            '/js/color-picker/color-picker.css',
+                            '/uicontrols/ColorPicker/ColorPicker.css'
+                        ];
+                        item.js = [
+                            '/js/color-picker/color-picker.js',
+                            '/uicontrols/ColorPicker/ColorPicker.js'
+                        ];
+                        break;
+                    case 'contextmenu':
+                        item.css = [
+                            '/js/jquery-ui-contextmenu/jquery-ui.css',
+                            '/uicontrols/ContextMenu/ContextMenu.css'
+                        ];
+                        item.js = [
+                            '/js/jquery-ui-contextmenu/jquery-ui.js',
+                            '/js/jquery-ui-contextmenu/jquery.ui-contextmenu.js',
+                            '/uicontrols/ContextMenu/ContextMenu.js'
+                        ];
+                        break;
+                    case 'data':
+                        item.css = ['/uicontrols/DataSource/DataSource.css'];
+                        item.js = ['/uicontrols/DataSource/DataSource.js'];
+                        break;
+                    case 'datepicker':
+                        item.css = [
+                            '/lib/pikaday/css/pikaday.css',
+                            '/uicontrols/TextBox/TextBox.css',
+                            '/uicontrols/DatePicker/DatePicker.css'
+                        ];
+                        item.js = [
+                            '/lib/jquery.maskedinput/jquery.maskedinput.js',
+                            '/lib/ispin/dist/ispin.js',
+                            '/lib/moment.js/moment.js',
+                            '/lib/pikaday/pikaday.js',
+                            '/lib/superplaceholder/superplaceholder.js',
+                            '/uicontrols/TextBox/TextBox.js',
+                            '/uicontrols/DatePicker/DatePicker.js'
+                        ];
+                        break;
+                    case 'dateperiodpicker':
+                        item.css = [
+                            '/lib/pikaday/css/pikaday.css',
+                            '/uicontrols/TextBox/TextBox.css',
+                            '/uicontrols/DatePeriodPicker/DatePeriodPicker.css'
+                        ];
+                        item.js = [
+                            '/lib/jquery.maskedinput/jquery.maskedinput.js',
+                            '/lib/ispin/dist/ispin.js',
+                            '/lib/moment.js/moment.js',
+                            '/lib/pikaday/pikaday.js',
+                            '/lib/superplaceholder/superplaceholder.js',
+                            '/uicontrols/TextBox/TextBox.js',
+                            '/uicontrols/DatePeriodPicker/DatePeriodPicker.js'
+                        ];
+                        break;
+                    case 'fileclient':
+                        item.css = ['/uicontrols/FileClient/FileClient.css'];
+                        item.js = ['/uicontrols/FileClient/FileClient.js'];
+                        break;
+                    case 'list':
+                        item.css = ['/uicontrols/GridList/GridList.css'];
+                        item.js = [
+                            '/js/datatable/datatables.js',
+                            '/js/datatable/dataTables.checkboxes.js',
+                            '/uicontrols/GridList/GridList.js'
+                        ];
+                        break;
+                    case 'htmleditor':
+                        item.css = [
+                            '/uicontrols/FileClient/FileClient.css',
+                            '/uicontrols/HtmlEditor/HtmlEditor.css'
+                        ];
+                        item.js = [
+                            '/uicontrols/FileClient/FileClient.js',
+                            '/uicontrols/HtmlEditor/HtmlEditor.js'
+                        ];
+                        break;
+                    case 'jsoneditor':
+                        item.css = ['/uicontrols/JsonEditor/JsonEditor.css'];
+                        item.js = ['/uicontrols/JsonEditor/JsonEditor.js'];
+                        break;
+                    case 'organization':
+                        item.css = [
+                            '/lib/orgchart/css/jquery.orgchart.css',
+                            '/uicontrols/OrganizationView/OrganizationView.css'
+                        ];
+                        item.js = [
+                            '/lib/orgchart/js/jquery.orgchart.js',
+                            '/uicontrols/OrganizationView/OrganizationView.js'
+                        ];
+                        break;
+                    case 'sourceeditor':
+                        item.css = ['/uicontrols/SourceEditor/SourceEditor.css'];
+                        item.js = ['/uicontrols/SourceEditor/SourceEditor.js'];
+                        break;
+                    case 'editor':
+                        item.css = ['/uicontrols/TextEditor/TextEditor.css'];
+                        item.js = ['/uicontrols/TextEditor/TextEditor.js'];
+                        break;
+                    case 'tree':
+                        item.css = [
+                            '/lib/fancytree/skin-win8/ui.fancytree.css',
+                            '/uicontrols/TreeView/TreeView.css'
+                        ];
+                        item.js = [
+                            '/lib/fancytree/jquery.fancytree-all-deps.js',
+                            '/uicontrols/TreeView/TreeView.js'
+                        ];
+                        break;
+                    case 'grid':
+                        item.css = [
+                            '/uicontrols/DataSource/DataSource.css',
+                            '/uicontrols/CodePicker/CodePicker.css',
+                            '/lib/handsontable/dist/handsontable.full.css',
+                            '/uicontrols/WebGrid/WebGrid.css'
+                        ];
+                        item.js = [
+                            '/uicontrols/DataSource/DataSource.js',
+                            '/uicontrols/CodePicker/CodePicker.js',
+                            '/lib/papaparse/papaparse.js',
+                            '/lib/xlsx/xlsx.core.min.js',
+                            '/lib/handsontable/dist/handsontable.full.js',
+                            '/lib/handsontable/languages/ko-KR.js',
+                            '/uicontrols/WebGrid/WebGrid.js'
+                        ];
+                        break;
+                    case 'auigrid':
+                        item.css = [
+                            '/uicontrols/DataSource/DataSource.css',
+                            '/uicontrols/CodePicker/CodePicker.css',
+                            '/uicontrols/WebGrid/AUIGrid.css'
+                        ];
+                        item.js = [
+                            '/uicontrols/DataSource/DataSource.js',
+                            '/uicontrols/CodePicker/CodePicker.js',
+                            '/lib/papaparse/papaparse.js',
+                            '/lib/xlsx/xlsx.core.min.js',
+                            '/js/auigrid/AUIGridLicense.js',
+                            '/js/auigrid/AUIGrid.js',
+                            '/js/auigrid/FileSaver.min.js',
+                            '/uicontrols/WebGrid/AUIGrid.js'
+                        ];
+                        break;
+                    case 'guide':
+                        item.css = [
+                            '/lib/intro.js/introjs.min.css',
+                            '/uicontrols/Guide/Guide.css'
+                        ];
+                        item.js = [
+                            '/lib/popper.js/umd/popper.js',
+                            '/lib/tippy.js/tippy-bundle.umd.js',
+                            '/lib/intro.js/intro.js',
+                            '/lib/superplaceholder/superplaceholder.js',
+                            '/uicontrols/Guide/Guide.js'
+                        ];
+                        break;
+                    case 'element':
+                        item.js = ['/uicontrols/Element/Element.js'];
+                        break;
+                }
+            }
+
+            result.push({
+                module: 'after-default',
+                type: 'after-default',
+                css: [
+                    '/css/layouts/Dialogs.css',
+                    '/css/layouts/LoadingPage.css',
+                    '/css/layouts/ProgressBar.css',
+                    '/css/layouts/Tooltips.css',
+                    '/css/layouts/WindowManager.css',
+                    '/css/uicontrols/Control.css',
+
+                    '/css/base.css',
+                ],
+                js: [
+                    '/uicontrols/Element/Element.js',
+                    '/lib/darkreader/darkreader.min.js',
+                    '/lib/master-css/index.js'
+                ]
+            });
+
+            return result;
         },
 
         loadCallback() {
@@ -329,9 +735,13 @@
 
     window.synConfigName = sessionStorage.getItem('synConfigName') || 'syn.config.json';
     var cacheSynConfig = sessionStorage.getItem('synConfig');
-    if (window.synConfigName == 'syn.config.json' && cacheSynConfig && cacheSynConfig.Environment == 'Production') {
+    if (window.synConfigName == 'syn.config.json' && cacheSynConfig) {
         window.synConfig = JSON.parse(cacheSynConfig);
-        if (window.synConfig.CreatedAt) {
+        if (systemVersion != window.synConfig.SystemVersion) {
+            window.synConfig = null;
+            sessionStorage.removeItem('synConfig');
+        }
+        else if (window.synConfig.CreatedAt) {
             var diffHours = Math.abs(new Date() - new Date(window.synConfig.CreatedAt)) / 3600000;
             if (diffHours >= 1) {
                 window.synConfig = null;
@@ -345,12 +755,17 @@
     }
 
     var loaderRequest = async function () {
+        var toBoolean = (val) => {
+            return (val === 'true' || val === 'True' || val === 'TRUE' || val === 'Y' || val == '1');
+        };
+
+        var urlOptions = synLoader.toUrlObject(location.href);
         if (location.pathname.startsWith((synConfig.TenantAppRequestPath ? `/${synConfig.TenantAppRequestPath}/` : '/app/')) == true) {
             var userWorkID = location.pathname.split('/')[2];
             var applicationID = location.pathname.split('/')[3];
             var tenantID = `${userWorkID}|${applicationID}`;
             var cacheAppConfig = sessionStorage.getItem(`${tenantID}Config`);
-            if (cacheAppConfig && cacheSynConfig.Environment == 'Production') {
+            if (cacheAppConfig) {
                 window.Configuration = JSON.parse(cacheAppConfig);
                 if (window.Configuration.CreatedAt) {
                     var diffHours = Math.abs(new Date() - new Date(window.Configuration.CreatedAt)) / 3600000;
@@ -373,7 +788,7 @@
                     window.Configuration.CreatedAt = new Date();
                 }
                 else {
-                    window.Configuration = { Application: {}, Cookie: {}, Header: {}, Definition: { Scripts: [], Styles: [], Controls: [] } };
+                    window.Configuration = { Application: {}, Cookie: {}, Header: {}, Definition: { BindingAction: 'Replace', Scripts: [], Styles: [], Controls: [] } };
                 }
 
                 sessionStorage.setItem(`${tenantID}Config`, JSON.stringify(window.Configuration));
@@ -395,120 +810,139 @@
             var configuration = window.Configuration;
             if (configuration.Application) {
                 loaderPath = configuration.Application.LoaderPath || loaderPath;
-                synConfig.IsDebugMode = configuration.Application.IsDebugMode;
-                synConfig.CodeHelpID = configuration.Application.CodeHelpID;
+                synConfig.IsDebugMode = configuration.Application.IsDebugMode || synConfig.IsDebugMode;
+                synConfig.IsBundleLoad = configuration.Application.IsBundleLoad || synConfig.IsBundleLoad;
             }
         }
 
+        var bindingAction;
         if (window.Configuration && window.Configuration.Definition) {
-            jsFiles = window.Configuration.Definition.Scripts || [];
-            jsFiles = jsFiles.concat(window.Configuration.Definition.Controls || []);
-            styleFiles = window.Configuration.Definition.Styles || [];
+            bindingAction = window.Configuration.Definition.BindingAction || 'Replace';
+            if (bindingAction != 'None') {
+                jsFiles = window.Configuration.Definition.Scripts || [];
+                jsFiles = jsFiles.concat(window.Configuration.Definition.Controls || []);
+            }
         }
-        else {
-            if (synConfig.Environment == 'Development') {
-                styleFiles = [
-                    // syn.scripts.js
-                    '/lib/tabler@1.0.0-beta20/css/tabler.syn.css',
-                    '/lib/handsontable-13.1.0/dist/handsontable.full.css',
-                    '/lib/tail.select-0.5.15/css/default/tail.select-light.css',
-                    '/lib/ispin-2.0.1/ispin.css',
-                    '/lib/css-checkbox-1.0.0/checkboxes.css',
-                    '/lib/color-picker-1.0.0/color-picker.css',
-                    '/lib/codemirror-5.50.2/codemirror.css',
-                    "/lib/fancytree-2.38.0/skin-win8/ui.fancytree.css",
-                    "/lib/jquery-ui-contextmenu-1.18.1/jquery-ui.css",
-                    "/lib/orgchart-3.1.1/jquery.orgchart.css",
-                    "/lib/printjs-1.6.0/print.min.css",
-                    '/lib/notifier-1.0.0/notifier.css',
 
-                    // syn.domain.js
-                    '/css/layouts/Dialogs.css',
-                    '/css/layouts/LoadingPage.css',
-                    '/css/layouts/ProgressBar.css',
-                    '/css/layouts/Tooltips.css',
-                    '/css/layouts/WindowManager.css',
-                    '/css/uicontrols/Control.css',
+        if (bindingAction != 'Replace') {
+            if (toBoolean(synConfig.IsBundleLoad) == false) {
+                var definedResource = synLoader.definedResources();
+                var cssList = definedResource.map(function (item) { return item.css });
+                var jsList = definedResource.map(function (item) { return item.js });
 
-                    // syn.controls.js
-                    '/uicontrols/Chart/Chart.css',
-                    '/uicontrols/CheckBox/CheckBox.css',
-                    '/uicontrols/ColorPicker/ColorPicker.css',
-                    '/uicontrols/ContextMenu/ContextMenu.css',
-                    '/uicontrols/DataSource/DataSource.css',
-                    '/uicontrols/DatePicker/DatePicker.css',
-                    '/uicontrols/DropDownCheckList/DropDownCheckList.css',
-                    '/uicontrols/DropDownList/DropDownList.css',
-                    '/uicontrols/FileClient/FileClient.css',
-                    '/uicontrols/GridList/GridList.css',
-                    '/uicontrols/RadioButton/RadioButton.css',
-                    '/uicontrols/TextArea/TextArea.css',
-                    '/uicontrols/TextBox/TextBox.css',
-                    '/uicontrols/SourceEditor/SourceEditor.css',
-                    '/uicontrols/HtmlEditor/HtmlEditor.css',
-                    '/uicontrols/OrganizationView/OrganizationView.css',
-                    '/uicontrols/TreeView/TreeView.css',
-                    '/uicontrols/WebGrid/WebGrid.css',
+                for (var i = 0; i < cssList.length; i++) {
+                    styleFiles = styleFiles.concat(cssList[i]);
+                }
 
-                    // 프로젝트 화면 디자인
-                    '/css/base.css',
-                    '/css/tabler-icons.css',
-                ];
-
-                jsFiles = [
-                    '/js/syn.scripts.js',
-                ];
-
-                jsFiles.push('/js/syn.js');
-                jsFiles.push('/js/syn.controls.js');
+                for (var i = 0; i < jsList.length; i++) {
+                    jsFiles = jsFiles.concat(jsList[i]);
+                }
             }
             else {
-                if (synConfig.IsDebugMode == true) {
-                    styleFiles = [
-                        '/css/syn.bundle.css'
-                    ];
+                if (synConfig.Environment == 'Development') {
+                    styleFiles = styleFiles.concat([
+                        // syn.scripts.js
+                        '/lib/tabler-core/dist/css/tabler.css',
+                        '/lib/tabler-icons-webfont/dist/tabler-icons.css',
+                        '/lib/handsontable/dist/handsontable.full.css',
+                        '/lib/tail.select.js/css/default/tail.select-light.css',
+                        '/lib/ispin/dist/ispin.css',
+                        '/js/css-checkbox/checkboxes.css',
+                        '/js/color-picker/color-picker.css',
+                        '/lib/codemirror/codemirror.css',
+                        '/lib/fancytree/skin-win8/ui.fancytree.css',
+                        '/js/jquery-ui-contextmenu/jquery-ui.css',
+                        '/lib/orgchart/css/jquery.orgchart.css',
+                        '/lib/print-js/print.min.css',
+                        '/js/notifier/notifier.css',
 
-                    jsFiles = [
-                        '/js/syn.bundle.js'
-                    ];
+                        // syn.domain.js
+                        '/css/layouts/Dialogs.css',
+                        '/css/layouts/LoadingPage.css',
+                        '/css/layouts/ProgressBar.css',
+                        '/css/layouts/Tooltips.css',
+                        '/css/layouts/WindowManager.css',
+                        '/css/uicontrols/Control.css',
+
+                        // syn.controls.js
+                        '/uicontrols/Chart/Chart.css',
+                        '/uicontrols/CheckBox/CheckBox.css',
+                        '/uicontrols/ColorPicker/ColorPicker.css',
+                        '/uicontrols/ContextMenu/ContextMenu.css',
+                        '/uicontrols/DataSource/DataSource.css',
+                        '/uicontrols/DatePicker/DatePicker.css',
+                        '/uicontrols/DropDownCheckList/DropDownCheckList.css',
+                        '/uicontrols/DropDownList/DropDownList.css',
+                        '/uicontrols/FileClient/FileClient.css',
+                        '/uicontrols/GridList/GridList.css',
+                        '/uicontrols/RadioButton/RadioButton.css',
+                        '/uicontrols/TextArea/TextArea.css',
+                        '/uicontrols/TextBox/TextBox.css',
+                        '/uicontrols/SourceEditor/SourceEditor.css',
+                        '/uicontrols/HtmlEditor/HtmlEditor.css',
+                        '/uicontrols/OrganizationView/OrganizationView.css',
+                        '/uicontrols/TreeView/TreeView.css',
+                        '/uicontrols/WebGrid/WebGrid.css',
+                        '/uicontrols/WebGrid/AUIGrid.css',
+
+                        // 프로젝트 화면 디자인
+                        '/css/base.css',
+                    ]);
+
+                    jsFiles = jsFiles.concat([
+                        '/js/syn.scripts.js',
+                    ]);
+
+                    jsFiles.push('/js/syn.js');
+                    jsFiles.push('/js/syn.controls.js');
                 }
                 else {
-                    styleFiles = [
-                        '/css/syn.bundle.min.css'
-                    ];
+                    if (synConfig.IsDebugMode == true) {
+                        styleFiles = styleFiles.concat([
+                            '/css/syn.bundle.css'
+                        ]);
 
-                    jsFiles = [
-                        '/js/syn.bundle.min.js'
-                    ];
+                        jsFiles = jsFiles.concat([
+                            '/js/syn.bundle.js'
+                        ]);
+                    }
+                    else {
+                        styleFiles = styleFiles.concat([
+                            '/css/syn.bundle.min.css'
+                        ]);
+
+                        jsFiles = jsFiles.concat([
+                            '/js/syn.bundle.min.js'
+                        ]);
+                    }
                 }
             }
         }
 
         jsFiles.push(loaderPath);
+        styleFiles = styleFiles.concat(window.Configuration.Definition?.Styles || []);
 
-        if (synConfig.Environment == 'Development') {
-            var moduleFile = '';
-            if (window.moduleFile) {
-                moduleFile = window.moduleFile;
+        var moduleFile = '';
+        if (window.moduleFile) {
+            moduleFile = window.moduleFile;
+        }
+        else {
+            var pathname = location.pathname;
+            if (pathname.split('/').length > 0) {
+                moduleFile = pathname.split('/')[pathname.split('/').length - 1];
+                moduleFile = moduleFile.split('.').length == 2 ? (moduleFile.indexOf('.') > -1 ? moduleFile.substring(0, moduleFile.indexOf('.')) : moduleFile) : '';
             }
-            else {
-                var pathname = location.pathname;
-                if (pathname.split('/').length > 0) {
-                    moduleFile = pathname.split('/')[pathname.split('/').length - 1];
-                    moduleFile = moduleFile.split('.').length == 2 ? (moduleFile.indexOf('.') > -1 ? moduleFile.substring(0, moduleFile.indexOf('.')) : moduleFile) : '';
-                }
-            }
+        }
 
-            if (moduleFile.length > 0 && window[moduleFile] == undefined) {
-                jsFiles.unshift(moduleFile.indexOf('.js') > -1 ? moduleFile : moduleFile + '.js');
-            }
+        if (moduleFile.length > 0 && window['$' + moduleFile] == undefined) {
+            jsFiles.unshift(moduleFile.indexOf('.js') > -1 ? moduleFile : moduleFile + '.js');
         }
 
         /*
         <script type="text/javascript">
             function pageLoadFiles(styleFiles, jsFiles, templateFiles) {
                 styleFiles.push('/js/uicontrols/GridList/GridList.css');
-                jsFiles.push('/assets/lib/datatable-1.10.21/datatables.js');
+                jsFiles.push('/js/datatable/datatables.js');
             }
         </script>
          */
@@ -532,23 +966,51 @@
             }
         }
 
-        // synLoader.argArgs = getCookie('syn.iscache') == 'true' ? '' : 'tick=' + new Date().getTime();
+        loadFiles = [...new Set(loadFiles)];
+
+        var toBoolean = (val) => {
+            return (val === 'true' || val === 'True' || val === 'TRUE' || val === 'Y' || val == '1');
+        }
+
+        synLoader.assetsCachingID = synConfig.AssetsCachingID === '' ? '' : 'tick=' + synConfig.AssetsCachingID;
+        synLoader.noCache = toBoolean(synConfig.IsClientCaching) === true ? '' : 'tick=' + new Date().getTime();
         await synLoader.request(loadFiles);
+    }
+
+    if (!window.synConfig) {
+        var response = await fetch('/' + window.synConfigName, { cache: 'no-cache' });
+        if (response.status === 200) {
+            window.synConfig = await response.json();
+            window.synConfig.CreatedAt = new Date();
+            sessionStorage.setItem('synConfig', JSON.stringify(window.synConfig));
+        }
+        else {
+            synLoader.eventLog('loadJson', ' ' + window.synConfigName + ', ' + response.status.toString() + ', ' + await response.text(), 'Error');
+        }
+    }
+
+    if (window.synConfig && synConfig.LoadModuleConfig && synConfig.LoadModuleConfig.length > 0) {
+        var loadModuleID = synConfig.LoadModuleConfig.find((item) => { return location.pathname.startsWith('/' + item) == true; });
+        if (loadModuleID) {
+            var modConfigName = '/' + loadModuleID + '/mod.config.json';
+            var response = await fetch(modConfigName, { cache: 'no-cache' });
+            if (response.status === 200) {
+                window.modConfig = await response.json();
+                if (window.modConfig.SynConfigPath) {
+                    var configResponse = await fetch(window.modConfig.SynConfigPath, { cache: 'no-cache' });
+                    if (configResponse.status === 200) {
+                        window.synConfig = await configResponse.json();
+                        window.synConfig.LoadModuleID = loadModuleID;
+                    }
+                }
+            }
+        }
     }
 
     if (window.synConfig) {
         loaderRequest();
     }
     else {
-        var response = await fetch('/' + window.synConfigName, { cache: 'no-cache' });
-        if (response.status === 200) {
-            window.synConfig = await response.json();
-            window.synConfig.CreatedAt = new Date();
-            sessionStorage.setItem('synConfig', JSON.stringify(window.synConfig));
-            loaderRequest();
-        }
-        else {
-            synLoader.eventLog('loadJson', ' ' + window.synConfigName + ', ' + response.status.toString() + ', ' + await response.text(), 'Error');
-        }
+        synLoader.eventLog('loadJson', ' ' + window.synConfigName + ', ' + response.status.toString() + ', ' + await response.text(), 'Error');
     }
 }());
