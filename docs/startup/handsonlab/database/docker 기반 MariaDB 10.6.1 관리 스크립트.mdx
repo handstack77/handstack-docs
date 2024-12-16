@@ -1,0 +1,43 @@
+---
+sidebar_position: 2
+---
+
+# docker 기반 MariaDB 10.6.1 관리 스크립트
+
+## docker 이미지 다운로드
+docker pull mariadb:10.6.1
+
+## 컨테이너 실행
+docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=Strong@Passw0rd -v C:\docker-volumns/mariadb:/var/lib/mysql --restart always --name mariadb-10.6.1 mariadb:10.6.1
+
+## my.cnf 수정
+apt-get update && apt-get install -y vim
+vi /etc/mysql/my.cnf 
+[client]
+default-character-set = utf8
+
+[mysql]
+default-character-set = utf8
+
+[mysqldump]
+default-character-set = utf8
+
+[mysqld]
+character-set-client-handshake = FALSE
+collation-server = utf8_unicode_ci
+init_connect="SET NAMES utf8"
+character-set-server = utf8
+lower_case_table_names = 2
+
+## 컨테이너 bash 접속
+docker exec -i -t mariadb-10.6.1 bash
+
+## 컨테이너 bash 나오기
+ctrl + p, ctrl + q
+
+## 컨테이너 재시작
+docker stop mariadb-10.6.1
+docker start mariadb-10.6.1
+
+## mariaDB 로그 보기
+docker logs -f --tail=10 mariadb

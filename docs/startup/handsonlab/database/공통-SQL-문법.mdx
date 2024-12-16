@@ -1,0 +1,207 @@
+---
+sidebar_position: 1
+---
+
+# 공통 SQL 문법
+
+데이터베이스 작업 데이터베이스 작업 개발자 가이드
+
+## 시간 확인
+각 데이터베이스에서 현재 서버 시간을 확인하는 방법입니다.
+
+### SQL Server
+```sql
+SELECT GETDATE() AS ServerDate;
+```
+
+### Oracle
+```sql
+SELECT SYSDATE AS ServerDate FROM DUAL;
+```
+
+### SQLite
+```sql
+SELECT DATETIME('now', 'localtime') AS ServerDate;
+```
+
+### MySQL
+```sql
+SELECT NOW() AS ServerDate;
+```
+
+### PostgreSQL
+```sql
+SELECT CURRENT_DATE AS ServerDate;
+```
+
+## 테이블 존재 여부 확인
+특정 테이블이 존재하는지 확인하는 방법입니다.
+
+### SQL Server
+```sql
+SELECT COUNT(*) AS IsExists FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}';
+```
+
+### Oracle
+```sql
+SELECT COUNT(*) AS IsExists FROM user_tables WHERE table_name = '{tableName}';
+```
+
+### SQLite
+```sql
+SELECT COUNT(*) AS IsExists FROM sqlite_master WHERE type='table' AND name ='{tableName}';
+```
+
+### MySQL
+```sql
+SELECT COUNT(*) AS IsExists FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}';
+```
+
+### PostgreSQL
+```sql
+SELECT COUNT(*) AS IsExists FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}';
+```
+
+## 테이블명 변경
+기존 테이블명을 새로운 테이블명으로 변경하는 방법입니다.
+
+### SQL Server
+```sql
+SP_RENAME '[기존 테이블명]', '[새로 바꿔줄 테이블명]';
+```
+
+### Oracle
+```sql
+RENAME '[기존 테이블명]' TO '[새로 바꿔줄 테이블명]';
+```
+
+### MySQL/MariaDB
+```sql
+ALTER TABLE '[기존 테이블명]' RENAME '[새로 바꿔줄 테이블명]';
+```
+
+### PostgreSQL
+```sql
+ALTER TABLE '[기존 테이블명]' RENAME TO '[새로 바꿔줄 테이블명]';
+```
+
+### SQLite
+```sql
+ALTER TABLE '[기존 테이블명]' RENAME TO '[새로 바꿔줄 테이블명]';
+```
+
+## 컬럼명 변경
+기존 컬럼명을 새로운 컬럼명으로 변경하는 방법입니다.
+
+### SQL Server
+```sql
+SP_RENAME '[기존 테이블명].[기존 컬럼명]', '[새로 바꿔줄 컬럼명]', 'COLUMN';
+```
+
+### Oracle
+```sql
+ALTER TABLE '[기존 테이블명]' RENAME COLUMN '[기존 컬럼명]' TO '[새로 바꿔줄 컬럼명]';
+```
+
+### MySQL/MariaDB
+```sql
+ALTER TABLE '[기존 테이블명]' CHANGE '[기존 컬럼명]' '[새로 바꿔줄 컬럼명]' [컬럼타입];
+```
+
+### PostgreSQL
+```sql
+ALTER TABLE '[기존 테이블명]' RENAME COLUMN '[기존 컬럼명]' TO '[새로 바꿔줄 컬럼명]';
+```
+
+### SQLite
+```sql
+ALTER TABLE '[기존 테이블명]' RENAME TO '[새로 바꿔줄 테이블명]';
+```
+
+## 컬럼타입 변경
+기존 컬럼의 타입을 새로운 타입으로 변경하는 방법입니다.
+
+### SQL Server
+```sql
+ALTER TABLE '[기존 테이블명]' ALTER COLUMN '[기존 컬럼명]' [새로 바꿔줄 컬럼타입];
+```
+
+### Oracle
+```sql
+ALTER TABLE '[기존 테이블명]' MODIFY '[기존 컬럼명]' [새로 바꿔줄 컬럼타입];
+```
+
+### MySQL/MariaDB
+```sql
+ALTER TABLE '[기존 테이블명]' MODIFY '[기존 컬럼명]' [새로 바꿔줄 컬럼타입];
+```
+
+### PostgreSQL
+```sql
+ALTER TABLE '[기존 테이블명]' ALTER COLUMN '[기존 컬럼명]' TYPE [새로 바꿔줄 컬럼타입];
+```
+
+### SQLite
+SQLite에서는 컬럼 타입을 직접 변경할 수 없으므로, 새로운 테이블을 생성하고 데이터를 복사한 후 기존 테이블을 삭제하고 테이블명을 변경하는 방식으로 진행합니다.
+```sql
+CREATE TABLE IF NOT EXISTS '[새로 추가한 테이블명]' (id integer, name text...);
+INSERT INTO '[새로 추가한 테이블명]' SELECT * FROM '[기존 테이블명]';
+DROP TABLE '[기존 테이블명]';
+ALTER TABLE '[새로 추가한 테이블명]' RENAME TO '[기존 테이블명]';
+```
+
+## 컬럼 추가
+기존 테이블에 새로운 컬럼을 추가하는 방법입니다.
+
+### SQL Server
+```sql
+ALTER TABLE '[테이블명]' ADD '[컬럼명]' [컬럼타입];
+```
+
+### Oracle
+```sql
+ALTER TABLE '[테이블명]' ADD('[컬럼명]' [컬럼타입]);
+```
+
+### MySQL/MariaDB
+```sql
+ALTER TABLE '[테이블명]' ADD COLUMN '[컬럼명]' [컬럼타입];
+```
+
+### PostgreSQL
+```sql
+ALTER TABLE '[테이블명]' ADD '[컬럼명]' [컬럼타입];
+```
+
+### SQLite
+```sql
+ALTER TABLE '[테이블명]' ADD '[컬럼명]' [컬럼타입];
+```
+
+## 컬럼 삭제
+기존 테이블에서 컬럼을 삭제하는 방법입니다.
+
+### SQL Server
+```sql
+ALTER TABLE '[테이블명]' DROP COLUMN '[컬럼명]';
+```
+
+### Oracle
+```sql
+ALTER TABLE '[테이블명]' DROP('[컬럼명]');
+```
+
+### MySQL/MariaDB
+```sql
+ALTER TABLE '[테이블명]' DROP COLUMN '[컬럼명]';
+```
+
+### PostgreSQL
+```sql
+ALTER TABLE '[테이블명]' DROP COLUMN '[컬럼명]';
+```
+
+### SQLite
+```sql
+ALTER TABLE '[테이블명]' DROP COLUMN '[컬럼명]';
+```
