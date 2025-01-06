@@ -25,7 +25,7 @@ HandStack 1.0.0 기점으로 1.1.3 릴리즈를 배포할 때 까지 **381 건**
 
 - GitHub 에 HandStack 오픈소스 공개 및 개선
 - 앱 개발 및 설정, 배포 자동화를 지원하는 CLI 프로그램
-- https://handstack.kr 문서 사이트 오픈 및 문서 추가
+- https://handstack.kr 문서 사이트 오픈소스 공개 및 문서 추가
 - https://www.youtube.com/@handstack-kr 유튜브 채널 오픈 및 컨텐츠 게시
 - HandStack 기반 메인 소스코드 관리 filehub 확장 모듈 진행 중
 
