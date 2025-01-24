@@ -43,8 +43,7 @@ tenent-app
 ├─dbclient
 │  └─PJT
 ├─function
-│  ├─csharp
-│  └─javascript
+│  └─PJT
 ├─transact
 │  └─PJT
 └─wwwroot
