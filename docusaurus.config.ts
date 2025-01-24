@@ -4,8 +4,8 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-    title: 'HandStack',
-    tagline: '앱 개발과 운영을 좀 더 쉽게 만들어 줍니다. 칼 퇴근 가능한 비즈니스 앱 개발 환경을 사용하세요',
+    title: 'HandStack 은 고객의 IT 과제를 해결하는 도구입니다.',
+    tagline: '',
     favicon: '/favicon.ico',
 
     // Set the production url of your site here
