@@ -56,7 +56,7 @@ const config: Config = {
             'classic',
             {
                 docs: {
-                    sidebarPath: './sidebars.ts',
+                    sidebarPath: './sidebars.ts'
                 },
                 blog: {
                     showReadingTime: true,
