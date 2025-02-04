@@ -49,14 +49,14 @@ CSS를 간편하게 작성할 수 있는 프레임워크입니다. 다음 링크
 
 이 경우 공통 기능 개발 소스와 화면 개발 소스의 관리 주체가 서로 다르기 때문에 각자 소스에 대한 접근 및 관리 권한은 다르게 가져가는 것이 좋습니다.
 
-> 공통 assets 디렉토리는 `C:\home\[사용자 ID]\handstack\modules\wwwroot\wwwroot` 입니다. 여기에 있는 모든 파일은 웹 브라우저에 다음과 같이 루트 경로로 공개됩니다. /module.html, /js/syn.js 등등
+> 공통 assets 디렉토리는 `%HANDSTACK_HOME%\modules\wwwroot\wwwroot` 입니다. 여기에 있는 모든 파일은 웹 브라우저에 다음과 같이 루트 경로로 공개됩니다. /module.html, /js/syn.js 등등
 
 ## wwwroot 디렉토리
 
 다음과 같이 화면에 대한 개발 소스를 단일 디렉토리내에 저장합니다.
 
 ```txt
-C:\home\[사용자 ID]\handstack\contracts
+%HANDSTACK_HOME%\contracts
 └─wwwroot
    └─HDS
        └─TST
