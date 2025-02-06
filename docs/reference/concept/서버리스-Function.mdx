@@ -258,3 +258,31 @@ module.exports = {
 ```
 
 코드) 알림톡 발송 예제
+
+### Python 서버리스 Function의 예
+
+```python
+import json
+
+class PYF010:
+    def GF01(parameters, dataContext):
+        print(parameters["GlobalID"])
+        print(dataContext)
+        
+        dataDict = json.loads(dataContext)
+
+        result = {
+            "DataTable1": [
+                {
+                    "accessToken": dataDict["accessToken"],
+                    "globalID": dataDict["globalID"],
+                    "environment": dataDict["environment"],
+                    "platform": dataDict["platform"]
+                }
+            ]
+        }
+
+        return json.dumps(result, ensure_ascii=False, indent=4)
+```
+
+코드) 매개변수와 데이터 컨텍스트를 이용한 결과 반환 예제
