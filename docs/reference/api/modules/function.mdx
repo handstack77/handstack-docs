@@ -232,3 +232,174 @@ function 모듈내 Contract 파일에서 사용하는 (DB01) 데이터 원본 ID
 > http://localhost:8000/function/module-settings.html
 
 ![](img/localhost_8000_function_module-settings.html.png)
+
+---
+
+## (선택) Python 3 환경 설정 가이드 (Windows, Linux, macOS)
+
+HandStack의 function 모듈은 기본적으로 CSharp, Node.js 코드로 함수를 실행합니다. 이 가이드에서는 HandStack 기반에서 Python 함수 코드를 실행하기 위해 Windows, Linux, macOS에서 모두 동일한 개발 환경을 만들 수 있도록 Anaconda를 사용하는 방법을 안내합니다. Anaconda를 사용하면 Python 버전 관리와 필요한 패키지 설치를 쉽게 할 수 있습니다.
+
+### Anaconda란 무엇인가요?
+
+Anaconda는 데이터 과학 및 머신 러닝을 위한 Python 배포판입니다. 복잡한 Python 환경 설정을 쉽게 만들어주고, 다양한 라이브러리(패키지)를 간편하게 설치하고 관리할 수 있게 해줍니다.
+
+### 왜 가상 환경을 사용하나요?
+
+가상 환경은 프로젝트별로 독립된 Python 환경을 만들어줍니다. 이렇게 하면 프로젝트마다 다른 버전의 라이브러리를 사용할 수 있고, 서로 충돌하는 문제를 방지할 수 있습니다.
+
+### Anaconda 설치하기
+
+#### Ubuntu (Linux)
+
+**Anaconda 설치 스크립트 다운로드 및 실행**: 아래 명령어를 복사해서 터미널에 붙여넣고 실행합니다.
+
+```bash
+wget https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh -O /tmp/anaconda.sh && \
+bash /tmp/anaconda.sh -b -p /opt/anaconda && \
+rm /tmp/anaconda.sh && \
+/opt/anaconda/bin/conda init bash && \
+/opt/anaconda/bin/conda install -y python=3.11
+source ~/.bashrc
+```
+
+#### Windows 11
+
+**Anaconda 다운로드**: [Anaconda 공식 다운로드 페이지](https://www.anaconda.com/products/distribution)에서 Windows용 설치 프로그램을 다운로드하고 설치합니다.
+
+#### macOS
+
+**Anaconda 설치 스크립트 다운로드 및 실행**: 아래 명령어를 복사해서 터미널에 붙여넣고 실행합니다.
+
+> Apple Silicon (M1/M2) 칩을 사용하는 경우: [Anaconda 공식 홈페이지](https://www.anaconda.com/products/distribution)에서 "64-Bit (M1) Graphical Installer"를 다운로드하여 설치하세요. 설치 후, 터미널에서 위와 같이 `conda init zsh` 명령어를 실행하여 초기화해야 합니다.
+
+```bash
+# 터미널에서 설치 스크립트 다운로드 및 설치
+wget https://repo.anaconda.com/archive/Anaconda3-2023.03-MacOSX-x86_64.sh -O ~/anaconda.sh && \
+bash ~/anaconda.sh -b -p ~/anaconda && \
+rm ~/anaconda.sh && \
+~/anaconda/bin/conda init zsh
+source ~/.zshrc
+```
+
+### Anaconda 가상 환경 만들기
+
+Anaconda 설치가 끝났으면, 이제 프로젝트를 위한 가상 환경을 만들 차례입니다.
+
+터미널 또는 명령 프롬프트를 실행하고 **가상 환경 생성**: 아래 명령어를 입력하고 Enter 키를 누릅니다. `myenv`는 가상 환경의 이름입니다. (원하는 이름으로 변경 가능)
+
+```bash
+conda create -n myenv python=3.11 -y
+```
+
+**가상 환경 활성화**: 아래 명령어를 입력하여 가상 환경을 활성화합니다.
+
+```bash
+conda activate myenv
+```
+(myenv 부분을 생성한 가상환경 이름으로 변경)
+
+터미널 또는 프롬프트 왼쪽에 `(myenv)`와 같이 가상 환경 이름이 표시되면 활성화된 것입니다.
+
+### 필요한 패키지 설치하기
+
+이제 HandStack에서 Python 코드를 실행하는 데 필요한 라이브러리(패키지)들을 설치합니다.
+
+**가상 환경이 활성화된 상태**에서, 다음 명령어를 입력하고 Enter 키를 누릅니다.
+
+```bash
+conda install numpy pandas requests httpx PyMySQL pymssql asyncpg oracledb mapper-parser localStoragePy psutil logging4 suid xmltodict
+```
+
+이 명령어는 다음과 같은 여러 패키지를 한 번에 설치합니다. 각 패키지는 HandStack에서 함수 기능을 수행하는 데 필요합니다.
+
+```txt
+수학 및 통계를 위한 패키지
+
+conda install numpy
+conda install pandas
+
+HTTP 요청을 위한 패키지
+
+conda install requests
+conda install httpx1
+
+SqlServer, MySQL, Posgresql, Oracle 데이터베이스 클라이언트 패키지
+
+conda install PyMySQL
+conda install pymssql
+conda install psycopg2
+conda install oracledb
+
+MyBatis Mapper XML 파일을 처리하는 패키지
+
+conda install mapper-parser
+
+로컬 스토리지 API
+
+conda install localStoragePy
+
+프로세스 및 시스템 정보 유틸리티
+
+conda install psutil
+
+로깅 패키지
+
+conda install logging4
+
+uuid: UUID 생성 패키지
+
+conda install suid
+
+XML을 JSON으로 변환하는 패키지
+
+conda install xmltodict
+```
+
+### HandStack function 모듈 설정 (Python 런타임 설정)
+
+마지막으로, HandStack의 function 모듈의 `module.json` 파일에서 Python 실행 환경을 설정해야 합니다.
+
+HandStack이 설치된 폴더에서 modules/function 디렉토리의 `module.json` 파일을 찾습니다. 이 파일을 텍스트 편집기로 열고, 다음과 같이 Python 함수 실행 환경을 설정합니다.
+
+* **Ubuntu**:
+
+```json
+{
+    "PythonFunctionConfig": {
+    "EnablePythonDLL": true,
+    "PythonDLLFilePath": "/opt/anaconda/envs/myenv/lib/libpython3.so",
+    ...
+    }
+}
+```
+
+* **Windows**:
+
+```json
+{
+    "PythonFunctionConfig": {
+    "EnablePythonDLL": true,
+    "PythonDLLFilePath": "C:/Users/사용자명/Anaconda3/envs/myenv/python311.dll",
+    ...
+    }
+}
+```
+    - `C:/Users/사용자명/` 부분은 실제 사용자 이름으로 바꿔주세요.
+    -  `python311.dll`의 경로는 Anaconda Prompt 에서 `where python` 명령어로 확인 가능합니다.
+
+* **macOS**:
+
+```json
+{
+    "PythonFunctionConfig": {
+    "EnablePythonDLL": true,
+    "PythonDLLFilePath": "/Users/사용자명/anaconda/envs/myenv/lib/libpython3.11.dylib",
+    ...
+    }
+}
+```
+- `/Users/사용자명/` 부분은 실제 사용자 이름으로 바꿔주세요.
+
+5. **ModuleConfig.json 저장**
+
+이제 HandStack에서 Python 함수 코드를 실행할 준비가 완료되었습니다. HandStack을 실행하고 Python 함수를 실행해보세요.
