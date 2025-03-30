@@ -130,6 +130,9 @@
                 synLoader.eventLog('request', 'loading style ' + url);
 
                 var url = synLoader.styleFiles[i];
+                var originalUrl = url;
+                var style = document.createElement('link');
+                var fileName = url.split('?')[0].split('/').pop();
                 if (synLoader.assetsCachingID != '' && url.indexOf('/view/') == -1) {
                     url = url + (url.indexOf('?') > -1 ? '&' : '?') + synLoader.assetsCachingID;
                 }
@@ -137,10 +140,16 @@
                     url = url + (url.indexOf('?') > -1 ? '&' : '?') + synLoader.noCache;
                 }
 
-                var style = document.createElement('link');
-                style.rel = 'stylesheet';
+                if (fileName == 'preload.css') {
+                    style.rel = 'preload';
+                    style.as = 'style';
+                    style.href = originalUrl;
+                } else {
+                    style.rel = 'stylesheet';
+                    style.href = url;
+                }
+
                 style.type = 'text/css';
-                style.href = url;
                 style.async = 'async';
 
                 if (url.indexOf('dark_mode') > -1) {
@@ -148,6 +157,10 @@
                 }
 
                 style.onload = function (evt) {
+                    if (evt.target.rel == 'preload') {
+                        evt.target.rel = 'stylesheet';
+                    }
+
                     synLoader.eventLog('loaded', 'loaded style: ' + evt.target.href);
                     synLoader.currentLoadedCount++;
                     synLoader.styleLoadedCount++;
@@ -275,27 +288,6 @@
                 }
             }
 
-            if (window.synConfigName == 'syn.config.json') {
-                var moduleFile = '';
-                if (window.moduleFile) {
-                    moduleFile = window.moduleFile;
-                }
-                else {
-                    var pathname = location.pathname;
-                    if (pathname.split('/').length > 0) {
-                        moduleFile = pathname.split('/')[location.pathname.split('/').length - 1];
-                        moduleFile = moduleFile.split('.').length == 2 ? (moduleFile.indexOf('.') > -1 ? moduleFile.substring(0, moduleFile.indexOf('.')) : moduleFile) : '';
-                    }
-                }
-
-                if (moduleFile.length > 0 && window['$' + moduleFile] == undefined) {
-                    var fileName = moduleFile.indexOf('.js') > -1 ? moduleFile : moduleFile + '.js';
-                    if (synLoader.scriptFiles.find(function (p) { return p === fileName; }) === undefined) {
-                        synLoader.scriptFiles.push(fileName);
-                    }
-                }
-            }
-
             await synLoader.loadFiles();
         },
 
@@ -391,6 +383,7 @@
                 module: 'before-default',
                 type: 'before-default',
                 css: [
+                    '/css/preload.css',
                     '/lib/tabler-core/dist/css/tabler.css',
                     '/lib/tabler-icons-webfont/dist/tabler-icons.css',
                     '/js/notifier/notifier.css',
@@ -632,9 +625,9 @@
                             '/uicontrols/CodePicker/CodePicker.js',
                             '/lib/papaparse/papaparse.js',
                             '/lib/xlsx/xlsx.core.min.js',
-                            '/js/auigrid/AUIGridLicense.js',
-                            '/js/auigrid/AUIGrid.js',
-                            '/js/auigrid/FileSaver.min.js',
+                            '/lib/auigrid/dist/AUIGridLicense.js',
+                            '/lib/auigrid/dist/AUIGrid.js',
+                            '/lib/filesaver/FileSaver.min.js',
                             '/uicontrols/WebGrid/AUIGrid.js'
                         ];
                         break;
@@ -922,20 +915,22 @@
         jsFiles.push(loaderPath);
         styleFiles = styleFiles.concat(window.Configuration.Definition?.Styles || []);
 
-        var moduleFile = '';
-        if (window.moduleFile) {
-            moduleFile = window.moduleFile;
-        }
-        else {
-            var pathname = location.pathname;
-            if (pathname.split('/').length > 0) {
-                moduleFile = pathname.split('/')[pathname.split('/').length - 1];
-                moduleFile = moduleFile.split('.').length == 2 ? (moduleFile.indexOf('.') > -1 ? moduleFile.substring(0, moduleFile.indexOf('.')) : moduleFile) : '';
+        if (synConfig.Environment == 'Development') {
+            var moduleFile = '';
+            if (window.moduleFile) {
+                moduleFile = window.moduleFile;
             }
-        }
+            else {
+                var pathname = location.pathname;
+                if (pathname.split('/').length > 0) {
+                    moduleFile = pathname.split('/')[pathname.split('/').length - 1];
+                    moduleFile = moduleFile.split('.').length == 2 ? (moduleFile.indexOf('.') > -1 ? moduleFile.substring(0, moduleFile.indexOf('.')) : moduleFile) : '';
+                }
+            }
 
-        if (moduleFile.length > 0 && window['$' + moduleFile] == undefined) {
-            jsFiles.unshift(moduleFile.indexOf('.js') > -1 ? moduleFile : moduleFile + '.js');
+            if (moduleFile.length > 0 && window['$' + moduleFile] == undefined) {
+                jsFiles.unshift(moduleFile.indexOf('.js') > -1 ? moduleFile : moduleFile + '.js');
+            }
         }
 
         /*
@@ -973,7 +968,7 @@
         }
 
         synLoader.assetsCachingID = synConfig.AssetsCachingID === '' ? '' : 'tick=' + synConfig.AssetsCachingID;
-        synLoader.noCache = toBoolean(synConfig.IsClientCaching) === true ? '' : 'tick=' + new Date().getTime();
+        synLoader.noCache = toBoolean(synConfig.IsClientCaching) === true ? synLoader.assetsCachingID : 'tick=' + new Date().getTime();
         await synLoader.request(loadFiles);
     }
 

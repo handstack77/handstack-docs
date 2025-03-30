@@ -6,7 +6,7 @@
 
     $chart.extend({
         name: 'syn.uicontrols.$chart',
-        version: '1.0',
+        version: 'v2025.3.1',
         chartControls: [],
         randomSeed: Date.now(),
         defaultSetting: {
@@ -253,7 +253,7 @@
 
     $checkbox.extend({
         name: 'syn.uicontrols.$checkbox',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         defaultSetting: {
             contents: '',
             toSynControl: false,
@@ -415,7 +415,7 @@
 
     $codepicker.extend({
         name: 'syn.uicontrols.$codepicker',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         defaultSetting: {
             dataSourceID: null,
             storeSourceID: null,
@@ -858,7 +858,7 @@
 
     $colorpicker.extend({
         name: 'syn.uicontrols.$colorpicker',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         colorControls: [],
         defaultSetting:
         {
@@ -1056,7 +1056,7 @@
 
     $contextmenu.extend({
         name: 'syn.uicontrols.$contextmenu',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         menuControls: [],
         eventHooks: [
             'close',
@@ -1294,7 +1294,7 @@
 
     $data.extend({
         name: 'syn.uicontrols.$data',
-        version: '1.0.0',
+        version: 'v2025.3.10',
         bindingList: [],
         storeList: [],
 
@@ -1381,7 +1381,7 @@
                     return (item.dataSourceID == bindingInfo.dataSourceID);
                 });
 
-                if (bindingInfo.controlType == 'grid' || bindingInfo.controlType == 'list' || bindingInfo.controlType == 'chart') {
+                if (bindingInfo.controlType.indexOf('grid') > -1 || bindingInfo.controlType == 'list' || bindingInfo.controlType == 'chart') {
                     var metaItems = {};
                     var length = storeInfo.columns.length;
                     for (var i = 0; i < length; i++) {
@@ -1414,7 +1414,7 @@
                     return (item.dataSourceID == bindingInfo.dataSourceID);
                 });
 
-                if (bindingInfo.controlType == 'grid' || bindingInfo.controlType == 'list' || bindingInfo.controlType == 'chart') {
+                if (bindingInfo.controlType.indexOf('grid') > -1 || bindingInfo.controlType == 'list' || bindingInfo.controlType == 'chart') {
                     var metaItems = {};
                     var length = storeInfo.columns.length;
                     for (var i = 0; i < length; i++) {
@@ -1566,7 +1566,7 @@
 
     $datepicker.extend({
         name: 'syn.uicontrols.$datepicker',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         dateControls: [],
         defaultSetting: {
             elID: '',
@@ -1943,7 +1943,7 @@
 
     $dateperiodpicker.extend({
         name: 'syn.uicontrols.$dateperiodpicker',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         dateControls: [],
         selectedYear: null,
         pkaStartDate: null,
@@ -2819,7 +2819,7 @@
 
     $multiselect.extend({
         name: 'syn.uicontrols.$multiselect',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         selectControls: [],
         defaultSetting: {
             elID: '',
@@ -3350,7 +3350,7 @@
 
     $select.extend({
         name: 'syn.uicontrols.$select',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         selectControls: [],
         defaultSetting: {
             elID: '',
@@ -3834,7 +3834,7 @@
 
     $fileclient.extend({
         name: 'syn.uicontrols.$fileclient',
-        version: '1.0.0',
+        version: 'v2025.3.1',
 
         fileManagers: [],
         fileControls: [],
@@ -5171,7 +5171,7 @@
 
     $list.extend({
         name: 'syn.uicontrols.$list',
-        version: '1.0',
+        version: 'v2025.3.1',
         listControls: [],
         defaultSetting: {
             width: '100%',
@@ -5512,7 +5512,7 @@
 
     $guide.extend({
         name: 'syn.uicontrols.$guide',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         guideControls: [],
         itemTemplate: {
             helpType: '', // I: introJs, T: tippy, P: superplaceholder, U: UI Help & Link
@@ -5997,7 +5997,7 @@
 
     $radio.extend({
         name: 'syn.uicontrols.$radio',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         defaultSetting: {
             contents: '',
             toSynControl: false,
@@ -6158,7 +6158,7 @@
 
     $textarea.extend({
         name: 'syn.uicontrols.$textarea',
-        version: '1.0.0',
+        version: 'v2025.3.14',
         textControls: [],
         defaultSetting: {
             width: '100%',
@@ -6291,6 +6291,11 @@
             }
         },
 
+        countLines(elID) {
+            var result = $textarea.getValue(elID) || '';
+            return result.split('\n').length;
+        },
+
         getValue(elID) {
             var result = null;
             var textControl = $textarea.getControl(elID);
@@ -6399,7 +6404,7 @@
 
     $textbox.extend({
         name: 'syn.uicontrols.$textbox',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         defaultSetting: {
             editType: 'text',
             formatNumber: true,
@@ -6460,13 +6465,25 @@
                 case 'english':
                     syn.$l.addEvent(el, 'focus', $textbox.event_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_english_blur);
-                    syn.$l.addEvent(el, 'keydown', $textbox.event_english_keydown);
+                    syn.$l.addEvent(el, 'input', $textbox.event_english_input);
+                    syn.$m.setStyle(el, 'ime-mode', 'disabled');
+                    break;
+                case 'uppercase':
+                    syn.$l.addEvent(el, 'focus', $textbox.event_focus);
+                    syn.$l.addEvent(el, 'blur', $textbox.event_uppercase_blur);
+                    syn.$l.addEvent(el, 'input', $textbox.event_uppercase_input);
+                    syn.$m.setStyle(el, 'ime-mode', 'disabled');
+                    break;
+                case 'lowercase':
+                    syn.$l.addEvent(el, 'focus', $textbox.event_focus);
+                    syn.$l.addEvent(el, 'blur', $textbox.event_lowercase_blur);
+                    syn.$l.addEvent(el, 'input', $textbox.event_lowercase_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
                     break;
                 case 'number':
                     syn.$l.addEvent(el, 'focus', $textbox.event_numeric_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_number_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
 
                     VMasker(el).maskNumber();
@@ -6474,7 +6491,7 @@
                 case 'numeric':
                     syn.$l.addEvent(el, 'focus', $textbox.event_numeric_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_numeric_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
 
                     VMasker(el).maskNumber();
@@ -6482,7 +6499,7 @@
                 case 'spinner':
                     syn.$l.addEvent(el, 'focus', $textbox.event_numeric_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_numeric_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
                     if (el.offsetWidth) {
                         // el.offsetWidth = el.offsetWidth <= 28 ? 0 : el.offsetWidth - 28;
@@ -6504,46 +6521,46 @@
                 case 'year':
                     syn.$l.addEvent(el, 'focus', $textbox.event_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_year_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     break;
                 case 'date':
                     syn.$l.addEvent(el, 'focus', $textbox.event_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_date_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     break;
                 case 'hour':
                     syn.$l.addEvent(el, 'focus', $textbox.event_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_hour_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
                     break;
                 case 'minute':
                     syn.$l.addEvent(el, 'focus', $textbox.event_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_minute_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
                     break;
                 case 'yearmonth':
                     syn.$l.addEvent(el, 'focus', $textbox.event_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_yearmonth_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     break;
                 case 'homephone':
                     syn.$l.addEvent(el, 'focus', $textbox.event_phone_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_homephone_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
                     break;
                 case 'mobilephone':
                     syn.$l.addEvent(el, 'focus', $textbox.event_phone_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_mobilephone_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
                     break;
                 case 'phone':
                     syn.$l.addEvent(el, 'focus', $textbox.event_phone_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_phone_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
                     break;
                 case 'email':
@@ -6554,7 +6571,7 @@
                 case 'juminno':
                     syn.$l.addEvent(el, 'focus', $textbox.event_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_juminno_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
 
                     if ($string.isNullOrEmpty(setting.maskPattern) == true) {
@@ -6564,7 +6581,7 @@
                 case 'businessno':
                     syn.$l.addEvent(el, 'focus', $textbox.event_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_businessno_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
 
                     if ($string.isNullOrEmpty(setting.maskPattern) == true) {
@@ -6574,7 +6591,7 @@
                 case 'corporateno':
                     syn.$l.addEvent(el, 'focus', $textbox.event_focus);
                     syn.$l.addEvent(el, 'blur', $textbox.event_corporateno_blur);
-                    syn.$l.addEvent(el, 'keypress', $textbox.event_numeric_keypress);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
 
                     if ($string.isNullOrEmpty(setting.maskPattern) == true) {
@@ -6603,13 +6620,14 @@
             }
         },
 
-        event_english_keydown(evt) {
+        event_english_input(evt) {
+            var el = evt.target || evt.srcElement || evt;
             var charCode = evt.which || evt.keyCode;
             var value = false;
-            if ((charCode > 7 && charCode < 47) == true || (charCode > 64 && charCode < 91) == true || (charCode > 47 && charCode < 58) == true || (charCode > 95 && charCode < 123) == true) {
+            if (/^[a-zA-Z0-9_]$/.test(String.fromCharCode(charCode))) {
+                value = true;
             }
             else {
-                var el = evt.target || evt.srcElement || evt;
                 el.value = el.value.replace(/[\ㄱ-ㅎㅏ-ㅣ가-힣]/g, '');
 
                 evt.returnValue = false;
@@ -6621,12 +6639,45 @@
                 value = false;
             }
 
-            value = true;
+            var synOptions = JSON.parse(el.getAttribute('syn-options'));
+            var textCase = synOptions.textCase || '';
+            if (textCase == 'upper') {
+                el.value = el.value.toUpperCase();
+            }
+            else if (textCase == 'lower') {
+                el.value = el.value.toLowerCase();
+            }
 
             return value;
         },
 
-        event_numeric_keypress(evt) {
+        event_uppercase_input(evt) {
+            var el = evt.target || evt.srcElement || evt;
+            el.value = el.value.replace(/[^A-Za-z]/g, '').toUpperCase();
+
+            evt.returnValue = false;
+            evt.cancel = true;
+            if (evt.preventDefault) {
+                evt.preventDefault();
+            }
+
+            return false;
+        },
+
+        event_lowercase_input(evt) {
+            var el = evt.target || evt.srcElement || evt;
+            el.value = el.value.replace(/[^A-Za-z]/g, '').toLowerCase();
+
+            evt.returnValue = false;
+            evt.cancel = true;
+            if (evt.preventDefault) {
+                evt.preventDefault();
+            }
+
+            return false;
+        },
+
+        event_numeric_input(evt) {
             var el = evt.target || evt.srcElement || evt;
             var charCode = evt.which || evt.keyCode;
             var value = false;
@@ -6745,6 +6796,16 @@
             else {
                 el.value = el.value.replace(/[^a-z0-9]/gi, '');
             }
+        },
+
+        event_uppercase_blur(evt) {
+            var el = evt.target || evt.srcElement || evt;
+            el.value = el.value.replace(/[^A-Z]/gi, '');
+        },
+
+        event_lowercase_blur(evt) {
+            var el = evt.target || evt.srcElement || evt;
+            el.value = el.value.replace(/[^a-z]/gi, '');
         },
 
         event_number_blur(evt) {
@@ -7282,7 +7343,7 @@
 
     $sourceeditor.extend({
         name: 'syn.uicontrols.$sourceeditor',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         editorPendings: [],
         editorControls: [],
         defaultSetting: {
@@ -7624,7 +7685,7 @@
 
     $htmleditor.extend({
         name: 'syn.uicontrols.$htmleditor',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         userWorkID: '',
         applicationID: '',
         editorPendings: [],
@@ -7645,7 +7706,7 @@
             isNumberTempDependency: true,
             height: 300,
             imageFileSizeLimit: 300000,
-            viewerHtml: '<html><head><base href="/"><style type="text/css">body { font-family: \'맑은 고딕\', 돋움체; font-size: 12px; }</style><link type="text/css" rel="stylesheet" href="/lib/tinymce/skins/ui/oxide/content.min.css"><link type="text/css" rel="stylesheet" href="/lib/tinymce/skins/content/default/content.min.css"></head><body id="tinymce" class="mce-content-body">{0}<script>document.onselectstart = function () { return false; }; document.oncontextmenu = function () { return false; }; document.addEventListener && document.addEventListener("click", function(e) {for (var elm = e.target; elm; elm = elm.parentNode) {if (elm.nodeName === "A" && !(e.ctrlKey && !e.altKey)) {e.preventDefault();}}}, false);</script></body></html>',
+            viewerHtml: '<html><head><base href="/"><style type="text/css">body { font-family: \'Noto Sans KR\', \'Pretendard\', \'Nanum Gothic\', \'Malgun Gothic\', Gulim, 굴림, sans-serif !important; font-size: 12px; }</style><link type="text/css" rel="stylesheet" href="/lib/tinymce/skins/ui/oxide/content.min.css"><link type="text/css" rel="stylesheet" href="/lib/tinymce/skins/content/default/content.min.css"></head><body id="tinymce" class="mce-content-body">{0}<script>document.onselectstart = function () { return false; }; document.oncontextmenu = function () { return false; }; document.addEventListener && document.addEventListener("click", function(e) {for (var elm = e.target; elm; elm = elm.parentNode) {if (elm.nodeName === "A" && !(e.ctrlKey && !e.altKey)) {e.preventDefault();}}}, false);</script></body></html>',
             language: 'ko_KR',
             // plugins: [
             //     'autolink link image lists print preview hr anchor pagebreak',
@@ -7656,7 +7717,7 @@
             // toolbar: 'styleselect | bold italic forecolor backcolor table | alignleft aligncenter alignright | bullist numlist outdent indent | link image media | preview export code help',
             toolbar: 'styleselect | bold italic forecolor backcolor table | alignleft aligncenter alignright | link image | code help',
             menubar: false, // 'file edit view insert format tools table help',
-            content_style: 'body { font-family: \'맑은 고딕\', 돋움체; font-size: 12px; }',
+            content_style: 'body { font-family: \'Noto Sans KR\', \'Pretendard\', \'Nanum Gothic\', \'Malgun Gothic\', Gulim, 굴림, sans-serif !important; font-size: 12px; }',
             powerpaste_word_import: 'merge',
             powerpaste_googledocs_import: 'merge',
             defaultHtmlContent: null,
@@ -8810,7 +8871,7 @@
 
     $organization.extend({
         name: 'syn.uicontrols.$organization',
-        version: '1.0',
+        version: 'v2025.3.1',
         organizationControls: [],
         eventHooks: [
             'nodedrop',
@@ -9193,7 +9254,7 @@
 
     $tree.extend({
         name: 'syn.uicontrols.$tree',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         treeControls: [],
         eventHooks: [
             'blurTree',
@@ -9387,6 +9448,7 @@
                     });
                 }
 
+                tree.reduceSource = reduceSource;
                 var nestedValue = syn.$l.flat2Nested(reduceSource, setting.itemID, setting.parentItemID, setting.childrenID);
                 tree.reload([nestedValue]);
             }
@@ -9540,12 +9602,24 @@
             return result;
         },
 
-        setSelectedAll(elID, node) {
+        setNodeSelectedAll(elID, node) {
             var result = [];
             var tree = $tree.getControl(elID).tree;
             if (tree) {
                 var isSelected = node.isSelected();
                 node.visit(function (childNode) {
+                    childNode.setSelected(isSelected);
+                });
+            }
+
+            return result;
+        },
+
+        selectedAll(elID, isSelected) {
+            var result = [];
+            var tree = $tree.getControl(elID).tree;
+            if (tree) {
+                tree.visit(function (childNode) {
                     childNode.setSelected(isSelected);
                 });
             }
@@ -9943,7 +10017,7 @@
 
     $grid.extend({
         name: 'syn.uicontrols.$grid',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         defaultHotSettings: {
             licenseKey: 'non-commercial-and-evaluation',
             language: 'ko-KR',
@@ -13394,7 +13468,7 @@
 
     $element.extend({
         name: 'syn.uicontrols.$element',
-        version: '1.0.0',
+        version: 'v2025.3.1',
         defaultSetting: {
             contents: '',
             disabled: false,

@@ -349,14 +349,14 @@
             }
 
             if (clientTag == "ROQKFWKTLFGODZNJFL") {
-                syn.$l.eventLog('serviceClientInterceptor', JSON.parse(xhr.responseText).Result.replace(/↓/g, '\n\n'), 'Information');
+                syn.$l.eventLog('serviceClientInterceptor', transactionResponse.Result.replace(/↓/g, '\n\n'), 'Information');
                 return false;
             }
             else {
                 try {
-                    var response = JSON.parse(xhr.responseText);
-                    var acknowledge = response.Acknowledge;
-                    var exceptionText = response.ExceptionText;
+                    var response = transactionResponse;
+                    var acknowledge = response.acknowledge;
+                    var exceptionText = response.exceptionText;
                     if (acknowledge == 0 && exceptionText.match(/(ERR-20[0-9]{3})/) != null) {
                         var messages = ['ERR-20001', 'ERR-20999'];
                         for (var i = 0; i < messages.length; i++) {
@@ -935,7 +935,7 @@
                 }
             }
             else {
-                if (window.parent) {
+                if (window.parent && window.top !== window.parent) {
                     window.parent.syn.$w.statusMessage(val);
                 }
             }
@@ -993,7 +993,7 @@
                 }
             }
             else {
-                if (window.parent) {
+                if (window.parent && window.top !== window.parent) {
                     window.parent.syn.$w.notify(type, message, title, timeout);
                 }
             }
@@ -1619,7 +1619,7 @@
                 }
             }
             else {
-                if (window.parent) {
+                if (window.parent && window.top !== window.parent) {
                     setTimeout(function () {
                         window.parent.syn.$w.windowOpen(elID, options, callback);
                     });
@@ -1670,7 +1670,7 @@
                 }
             }
             else {
-                if (window.parent) {
+                if (window.parent && window.top !== window.parent) {
                     window.parent.syn.$w.windowClose(elID);
                 }
             }
@@ -2204,31 +2204,31 @@
                     return false;
                 };
 
-                var controlText = options.controlText;
+                var controlText = options.controlText || controlInfo.id.replace('_hidden', '');
                 var value = controlModule.getValue(controlInfo.id);
                 if (options.validators.indexOf('require') > -1) {
                     if (value == '' || value == null) {
-                        var message = '{0} 항목은 반드시 입력 해야 합니다'.format(controlText);
+                        var message = '{0} 항목은 반드시 입력 해야합니다'.format(controlText);
                         return valiationFunc(message);
                     }
 
                     if (options.validators.indexOf('numeric') > -1) {
                         if (isNaN(value) == true) {
-                            var message = '{0} 항목은 숫자값만 입력할 수 있습니다'.format(controlText);
+                            var message = '{0} 항목은 숫자값만 입력 할 수 있습니다'.format(controlText);
                             return valiationFunc(message);
                         }
                     }
 
                     if (options.validators.indexOf('ipaddress') > -1) {
                         if (regexs.ipaddress.test(value) == false) {
-                            var message = '{0} 항목은 IP 주소만 입력할 수 있습니다'.format(controlText);
+                            var message = '{0} 항목은 IP 주소만 입력 할 수 있습니다'.format(controlText);
                             return valiationFunc(message);
                         }
                     }
 
                     if (options.validators.indexOf('email') > -1) {
                         if (regexs.email.test(value) == false) {
-                            var message = '{0} 항목은 이메일 주소만 입력할 수 있습니다'.format(controlText);
+                            var message = '{0} 항목은 이메일 주소만 입력 할 수 있습니다'.format(controlText);
                             return valiationFunc(message);
                         }
                     }
@@ -2248,14 +2248,14 @@
                         isDateCheck = (date.toISOString().slice(0, 10) === value);
 
                         if (isDateCheck == false) {
-                            var message = '{0} 항목은 "YYYY-MM-DD" 형식의 올바른 일자만 입력할 수 있습니다'.format(controlText);
+                            var message = '{0} 항목은 "YYYY-MM-DD" 형식의 올바른 일자만 입력 할 수 있습니다'.format(controlText);
                             return valiationFunc(message);
                         }
                     }
 
                     if (options.validators.indexOf('url') > -1) {
                         if (regexs.url.test(value) == false) {
-                            var message = '{0} 항목은 웹 URL 주소만 입력할 수 있습니다'.format(controlText);
+                            var message = '{0} 항목은 웹 URL 주소만 입력 할 수 있습니다'.format(controlText);
                             return valiationFunc(message);
                         }
                     }
@@ -2267,7 +2267,7 @@
                     return false;
                 };
 
-                var controlText = options.controlText;
+                var controlText = options.controlText || controlInfo.id.replace('_hidden', '');
                 var columnName = controlModule.getColHeader(controlInfo.id.replace('_hidden', ''), controlModule.propToCol(controlInfo.id.replace('_hidden', ''), options.data));
                 var row = controlModule.getActiveRowIndex(controlInfo.id);
                 var col = controlModule.propToCol(controlInfo.id.replace('_hidden', ''), options.data);
@@ -2279,28 +2279,28 @@
                     var value = controlModule.getDataAtCell(controlInfo.id.replace('_hidden', ''), row, col);
                     if (options.validators.indexOf('require') > -1) {
                         if (value === '' || value == null) {
-                            var message = '{0} 그리드의 {1} 컬럼은 반드시 입력 해야입니다'.format(controlText, columnName);
+                            var message = '{0} 그리드의 {1} 컬럼은 반드시 입력 해야합니다'.format(controlText, columnName);
                             return valiationFunc(message);
                         }
                     }
 
                     if (options.validators.indexOf('numeric') > -1) {
                         if (isNaN(value) == true) {
-                            var message = '{0} 그리드의 {1} 컬럼은 숫자값만 입력할 수 있습니다'.format(controlText, columnName);
+                            var message = '{0} 그리드의 {1} 컬럼은 숫자값만 입력 할 수 있습니다'.format(controlText, columnName);
                             return valiationFunc(message);
                         }
                     }
 
                     if (options.validators.indexOf('ipaddress') > -1) {
                         if (regexs.ipaddress.test(value) == false) {
-                            var message = '{0} 그리드의 {1} 컬럼은 IP 주소만 입력할 수 있습니다'.format(controlText, columnName);
+                            var message = '{0} 그리드의 {1} 컬럼은 IP 주소만 입력 할 수 있습니다'.format(controlText, columnName);
                             return valiationFunc(message);
                         }
                     }
 
                     if (options.validators.indexOf('email') > -1) {
                         if (regexs.email.test(value) == false) {
-                            var message = '{0} 그리드의 {1} 컬럼은 이메일 주소만 입력할 수 있습니다'.format(controlText, columnName);
+                            var message = '{0} 그리드의 {1} 컬럼은 이메일 주소만 입력 할 수 있습니다'.format(controlText, columnName);
                             return valiationFunc(message);
                         }
                     }
@@ -2320,14 +2320,14 @@
                         isDateCheck = (date.toISOString().slice(0, 10) === value);
 
                         if (isDateCheck == false) {
-                            var message = '{0} 그리드의 {1} 컬럼은 "YYYY-MM-DD" 형식의 올바른 일자만 입력할 수 있습니다'.format(controlText, columnName);
+                            var message = '{0} 그리드의 {1} 컬럼은 "YYYY-MM-DD" 형식의 올바른 일자만 입력 할 수 있습니다'.format(controlText, columnName);
                             return valiationFunc(message);
                         }
                     }
 
                     if (options.validators.indexOf('url') > -1) {
                         if (regexs.url.test(value) == false) {
-                            var message = '{0} 그리드의 {1} 컬럼은 웹 URL 주소만 입력할 수 있습니다'.format(controlText, columnName);
+                            var message = '{0} 그리드의 {1} 컬럼은 웹 URL 주소만 입력 할 수 있습니다'.format(controlText, columnName);
                             return valiationFunc(message);
                         }
                     }
@@ -2339,7 +2339,7 @@
                     return false;
                 };
 
-                var controlText = options.controlText;
+                var controlText = options.controlText || controlInfo.id.replace('_hidden', '');
                 var columnName = controlModule.getColHeader(controlInfo.id.replace('_hidden', ''), controlModule.propToCol(controlInfo.id.replace('_hidden', ''), options.data));
                 var flagData = controlModule.getSourceDataAtCol(controlInfo.id.replace('_hidden', ''), 'Flag');
                 var rowData = controlModule.getSourceDataAtCol(controlInfo.id.replace('_hidden', ''), options.data);
@@ -2354,7 +2354,7 @@
 
                 if (options.validators.indexOf('require') > -1) {
                     if (vaildateData.filter(function (row) { return (row === '' || row == null) }).length > 0) {
-                        var message = '{0} 그리드의 {1} 컬럼은 반드시 입력 해야입니다'.format(controlText, columnName);
+                        var message = '{0} 그리드의 {1} 컬럼은 반드시 입력 해야합니다'.format(controlText, columnName);
                         return valiationFunc(message);
                     }
                 }
@@ -2368,21 +2368,21 @@
 
                 if (options.validators.indexOf('numeric') > -1) {
                     if (vaildateData.filter(function (row) { return isNaN(row) }).length > 0) {
-                        var message = '{0} 그리드의 {1} 컬럼은 숫자값만 입력할 수 있습니다'.format(controlText, columnName);
+                        var message = '{0} 그리드의 {1} 컬럼은 숫자값만 입력 할 수 있습니다'.format(controlText, columnName);
                         return valiationFunc(message);
                     }
                 }
 
                 if (options.validators.indexOf('ipaddress') > -1) {
                     if (vaildateData.filter(function (row) { return !regexs.ipaddress.test(row) }).length > 0) {
-                        var message = '{0} 그리드의 {1} 컬럼은 IP 주소만 입력할 수 있습니다'.format(controlText, columnName);
+                        var message = '{0} 그리드의 {1} 컬럼은 IP 주소만 입력 할 수 있습니다'.format(controlText, columnName);
                         return valiationFunc(message);
                     }
                 }
 
                 if (options.validators.indexOf('email') > -1) {
                     if (vaildateData.filter(function (row) { return !regexs.email.test(row) }).length > 0) {
-                        var message = '{0} 그리드의 {1} 컬럼은 이메일 주소만 입력할 수 있습니다'.format(controlText, columnName);
+                        var message = '{0} 그리드의 {1} 컬럼은 이메일 주소만 입력 할 수 있습니다'.format(controlText, columnName);
                         return valiationFunc(message);
                     }
                 }
@@ -2401,14 +2401,14 @@
 
                         return !(date.toISOString().slice(0, 10) === row);
                     }).length > 0) {
-                        var message = '{0} 그리드의 {1} 컬럼은 "YYYY-MM-DD" 형식의 올바른 일자만 입력할 수 있습니다'.format(controlText, columnName);
+                        var message = '{0} 그리드의 {1} 컬럼은 "YYYY-MM-DD" 형식의 올바른 일자만 입력 할 수 있습니다'.format(controlText, columnName);
                         return valiationFunc(message);
                     }
                 }
 
                 if (options.validators.indexOf('url') > -1) {
                     if (vaildateData.filter(function (row) { return !regexs.url.test(row) }).length > 0) {
-                        var message = '{0} 그리드의 {1} 컬럼은 웹 URL 주소만 입력할 수 있습니다'.format(controlText, columnName);
+                        var message = '{0} 그리드의 {1} 컬럼은 웹 URL 주소만 입력 할 수 있습니다'.format(controlText, columnName);
                         return valiationFunc(message);
                     }
                 }
@@ -2594,6 +2594,11 @@ function domainPageLoad() {
                     syn.uicontrols.$grid.gridControls[i].hot.render();
                 }
             }
+
+            var els = syn.$l.querySelectorAll('//div[contains(text(), "AUIGrid NON-COMMERCIAL")]');
+            els.forEach(function (el) {
+                el.style.zIndex = '10';
+            });
 
             var isDarkMode = (window.localStorage && localStorage.getItem('isDarkMode') == 'true');
             if (isDarkMode == true) {

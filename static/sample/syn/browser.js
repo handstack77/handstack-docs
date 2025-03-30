@@ -35,13 +35,13 @@ let $browser = {
 
     event: {
         btn_getSystemFonts_click() {
-            syn.$l.get('txt_getSystemFonts').value = syn.$b.getSystemFonts().split(',').map((item) => {
+            syn.$l.get('txt_getSystemFonts').value = syn.$b.getSystemFonts().map((item) => {
                 return item.trim();
             }).join('\n');
         },
 
         btn_getPlugins_click() {
-            syn.$l.get('txt_getPlugins').value = syn.$b.getPlugins().split(',').map((item) => {
+            syn.$l.get('txt_getPlugins').value = syn.$b.getPlugins().map((item) => {
                 return item.trim();
             }).join('\n');
         },
