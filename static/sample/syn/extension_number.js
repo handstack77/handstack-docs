@@ -4,12 +4,6 @@ let $extension_number = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = $number.version;
-        }
-    },
-
     event: {
         btn_duration_click() {
             syn.$l.get('txt_duration').value = $number.duration(100000000);

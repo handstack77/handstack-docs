@@ -19,12 +19,6 @@ let $cryptography = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = syn.$d.version;
-        }
-    },
-
     event: {
         btn_base64Encode_click() {
             syn.$l.get('txt_base64EncodeResult').value = syn.$c.base64Encode(syn.$l.get('txt_base64Encode').value);

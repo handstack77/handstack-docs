@@ -19,13 +19,6 @@ let $requests = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = syn.$k.version;
-            syn.$l.get('txt_params').value = JSON.stringify(syn.$r.params);
-        }
-    },
-
     method: {
         customValidation(options) {
             console.log(options);

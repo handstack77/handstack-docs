@@ -19,12 +19,6 @@ let $extension_array = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = $array.version;
-        }
-    },
-
     event: {
         btn_distinct_click() {
             var arr = ['Apple', 'Banana', 'Banana', 'Mango', 'Cherry'];

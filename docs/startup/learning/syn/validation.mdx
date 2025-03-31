@@ -19,12 +19,6 @@ let $validate = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = syn.$k.version;
-        }
-    },
-
     method: {
         customValidation(options) {
             console.log(options);

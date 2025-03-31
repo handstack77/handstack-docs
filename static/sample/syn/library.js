@@ -4,12 +4,6 @@ let $library = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = syn.$m.version;
-        }
-    },
-
     method: {
         updateText(evt) {
             var el = null;
@@ -122,6 +116,10 @@ let $library = {
             syn.$l.get('txt_getTagName').value = els.length;
         },
 
+        btn_toEnumValue_click() {
+            syn.$l.get('txt_toEnumValue').value = syn.$l.toEnumValue(syn.$v.valueType, 'valueMissing');
+        },
+
         btn_toEnumText_click() {
             syn.$l.get('txt_toEnumText').value = syn.$l.toEnumText(syn.$v.valueType, 0);
         },
@@ -214,10 +212,7 @@ let $library = {
         btn_blobUrlToDataUri_click() {
             var blob = syn.$l.createBlob('helloworld', 'text/plain');
             var blobUrl = syn.$r.createBlobUrl(blob);
-            syn.$l.blobUrlToDataUri(blobUrl, (error, dataUri) => {
-                if (error) {
-                    console.log(error);
-                }
+            syn.$l.blobUrlToDataUri(blobUrl, (dataUri) => {
                 syn.$l.get('txt_blobUrlToDataUri').value = dataUri;
             });
         },
@@ -239,19 +234,19 @@ let $library = {
 
         async btn_blobToFile_click() {
             var blob = syn.$l.createBlob('hello world', 'text/plain');
-            var file = await syn.$l.blobToFile(blob, 0);
+            var file = await syn.$l.blobToFile(blob);
             syn.$l.get('txt_blobToFile').value = file.size;
         },
 
         async btn_fileToBase64_click() {
             var blob = syn.$l.createBlob('hello world', 'text/plain');
-            var file = await syn.$l.blobToFile(blob, 0);
+            var file = await syn.$l.blobToFile(blob);
             syn.$l.get('txt_fileToBase64').value = await syn.$l.fileToBase64(file);
         },
 
         async btn_fileToBlob_click() {
             var blob = syn.$l.createBlob('hello world', 'text/plain');
-            var file = await syn.$l.blobToFile(blob, 0);
+            var file = await syn.$l.blobToFile(blob);
             syn.$l.get('txt_fileToBlob').value = await syn.$l.fileToBlob(file);
         }
     }

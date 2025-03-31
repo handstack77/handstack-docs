@@ -12,24 +12,6 @@
             <div class="col-12">
                 <h1 class="mt-3">syn.$l: 공통 라이브러리 기능을 제공합니다.</h1>
 
-                <div class="card">
-                    <div class="card-status-top bg-red"></div>
-                    <div class="card-header">
-                        <h3 class="card-title">속성</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row p-2 mt-1 b:1|solid|#e5e5e5">
-                            <div class="col-12">
-                                <label class="form-label">syn.$l.version</label>
-                                <input type="text" id="txt_version" class="form-control">
-                                <div class="form-text">
-                                    $library version을 반환합니다.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="card mt-3">
                     <div class="card-status-top bg-red"></div>
                     <div class="card-header">
@@ -183,6 +165,16 @@
                                 <button type="button" id="btn_getTagName" class="mt-2 btn btn-primary" syn-events="['click']">'button', 'input' 개수 확인</button>
                                 <div class="form-text">
                                     노드 이름으로 여러 노드들을 조회합니다.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row p-2 mt-1 b:1|solid|#e5e5e5">
+                            <div class="col-12">
+                                <label class="form-label">syn.$l.toEnumValue()</label>
+                                <input type="text" id="txt_toEnumValue" class="form-control" />
+                                <button type="button" id="btn_toEnumValue" class="mt-2 btn btn-primary" syn-events="['click']">syn.$v.valueType 확인</button>
+                                <div class="form-text">
+                                    enum 열거자의 키로 값을 조회합니다.
                                 </div>
                             </div>
                         </div>

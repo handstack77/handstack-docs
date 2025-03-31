@@ -4,12 +4,6 @@ let $manipulation = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = syn.$m.version;
-        }
-    },
-
     event: {
         btn_childNodes_click() {
             var childNodes = syn.$m.childNodes(document.body);
@@ -49,42 +43,42 @@ let $manipulation = {
 
         btn_nextSibling1_click() {
             syn.$l.get('txt_nextSibling').value = '';
-            syn.$l.get('txt_nextSibling').value = syn.$m.nextSibling('nextSibling_item1').nodeName;
+            syn.$l.get('txt_nextSibling').value = syn.$m.nextSibling('nextSibling_item1')?.nodeName;
         },
 
         btn_nextSibling2_click() {
             syn.$l.get('txt_nextSibling').value = '';
-            syn.$l.get('txt_nextSibling').value = syn.$m.nextSibling('nextSibling_item2').nodeName;
+            syn.$l.get('txt_nextSibling').value = syn.$m.nextSibling('nextSibling_item2')?.nodeName;
         },
 
         btn_nextElementSibling1_click() {
             syn.$l.get('txt_nextElementSibling').value = '';
-            syn.$l.get('txt_nextElementSibling').value = syn.$m.nextElementSibling('nextElementSibling_item1').nodeName;
+            syn.$l.get('txt_nextElementSibling').value = syn.$m.nextElementSibling('nextElementSibling_item1')?.nodeName;
         },
 
         btn_nextElementSibling2_click() {
             syn.$l.get('txt_nextElementSibling').value = '';
-            syn.$l.get('txt_nextElementSibling').value = syn.$m.nextElementSibling('nextElementSibling_item2').nodeName;
+            syn.$l.get('txt_nextElementSibling').value = syn.$m.nextElementSibling('nextElementSibling_item2')?.nodeName;
         },
 
         btn_previousSibling1_click() {
             syn.$l.get('txt_previousSibling').value = '';
-            syn.$l.get('txt_previousSibling').value = syn.$m.previousSibling('previousSibling_item1').nodeName;
+            syn.$l.get('txt_previousSibling').value = syn.$m.previousSibling('previousSibling_item1')?.nodeName;
         },
 
         btn_previousSibling2_click() {
             syn.$l.get('txt_previousSibling').value = '';
-            syn.$l.get('txt_previousSibling').value = syn.$m.previousSibling('previousSibling_item2').nodeName;
+            syn.$l.get('txt_previousSibling').value = syn.$m.previousSibling('previousSibling_item2')?.nodeName;
         },
 
         btn_previousElementSibling1_click() {
             syn.$l.get('txt_previousElementSibling').value = '';
-            syn.$l.get('txt_previousElementSibling').value = syn.$m.previousElementSibling('previousElementSibling_item1').nodeName;
+            syn.$l.get('txt_previousElementSibling').value = syn.$m.previousElementSibling('previousElementSibling_item1')?.nodeName;
         },
 
         btn_previousElementSibling2_click() {
             syn.$l.get('txt_previousElementSibling').value = '';
-            syn.$l.get('txt_previousElementSibling').value = syn.$m.previousElementSibling('previousElementSibling_item2').nodeName;
+            syn.$l.get('txt_previousElementSibling').value = syn.$m.previousElementSibling('previousElementSibling_item2')?.nodeName;
         },
 
         btn_siblings_click() {
@@ -98,11 +92,11 @@ let $manipulation = {
         },
 
         btn_parentNode_click() {
-            syn.$l.get('txt_parentNode').value = syn.$m.parentNode(document.body).nodeName;
+            syn.$l.get('txt_parentNode').value = syn.$m.parentNode(document.body)?.nodeName;
         },
 
         btn_parentElement_click() {
-            syn.$l.get('txt_parentElement').value = syn.$m.parentElement(document.body).nodeName;
+            syn.$l.get('txt_parentElement').value = syn.$m.parentElement(document.body)?.nodeName;
         },
 
         btn_value_click() {

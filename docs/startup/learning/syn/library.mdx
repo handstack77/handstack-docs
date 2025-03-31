@@ -19,12 +19,6 @@ let $library = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = syn.$m.version;
-        }
-    },
-
     method: {
         updateText(evt) {
             var el = null;

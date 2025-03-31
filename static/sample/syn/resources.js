@@ -4,12 +4,6 @@ let $resources = {
         childrenChannel: null
     },
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = $resource.version;
-        }
-    },
-
     event: {
     }
 }

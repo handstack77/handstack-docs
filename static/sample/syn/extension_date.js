@@ -4,13 +4,6 @@ let $extension_date = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = $date.version;
-            syn.$l.get('txt_interval').value = JSON.stringify($date.interval);
-        }
-    },
-
     event: {
         btn_now_click() {
             syn.$l.get('txt_now').value = $date.now().toString();

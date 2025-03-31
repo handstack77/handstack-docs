@@ -26,12 +26,6 @@ let $webforms = {
         },
     },
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = syn.$m.version;
-        }
-    },
-
     event: {
         btn_setStorage_sessionStorage_click() {
             syn.$w.setStorage('storageKey1', 'hello world');

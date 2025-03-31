@@ -17,12 +17,6 @@ let $manipulation = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = syn.$m.version;
-        }
-    },
-
     event: {
         btn_childNodes_click() {
             var childNodes = syn.$m.childNodes(document.body);

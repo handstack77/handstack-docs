@@ -4,13 +4,6 @@ let $requests = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = syn.$r.version;
-            syn.$l.get('txt_params').value = JSON.stringify(syn.$r.params);
-        }
-    },
-
     method: {
         customValidation(options) {
             console.log(options);
@@ -67,8 +60,8 @@ let $requests = {
 
         async btn_httpDataSubmit_click() {
             var formData = new FormData();
-            formData.append('companyNo', companyNo);
-            formData.append('userNo', userNo);
+            formData.append('companyNo', 'companyNo');
+            formData.append('userNo', 'userNo');
 
             var result = await syn.$r.httpDataSubmit(formData, '/api/message-sender/SendPost');
 

@@ -4,12 +4,6 @@ let $extension_object = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = $object.version;
-        }
-    },
-
     event: {
         btn_isNullOrUndefined_click() {
             syn.$l.get('txt_isNullOrUndefined').value = `${$object.isNullOrUndefined('')}, ${$object.isNullOrUndefined(undefined)}, ${$object.isNullOrUndefined(null)}, ${$object.isNullOrUndefined({})}`;

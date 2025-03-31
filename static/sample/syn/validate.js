@@ -4,12 +4,6 @@ let $validate = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = syn.$k.version;
-        }
-    },
-
     method: {
         customValidation(options) {
             console.log(options);
@@ -65,6 +59,7 @@ let $validate = {
         },
 
         btn_range_validateControl_click() {
+            debugger;
             var isValid = syn.$v.validateControl('txt_range');
             if (isValid == false) {
                 var messages = syn.$v.toMessages();

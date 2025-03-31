@@ -19,12 +19,6 @@ let $extension_string = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = $string.version;
-        }
-    },
-
     event: {
         btn_toValue_click() {
             syn.$l.get('txt_toValue').value = `${$string.toValue('hello world')}, ${$string.toValue(new Date())}, ${$string.toValue({})}, ${$string.toValue(true)}, ${$string.toValue(null, 'default')}`;

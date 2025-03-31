@@ -19,12 +19,6 @@ let $dimension = {
         'parsehtml'
     ],
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_version').value = syn.$d.version;
-        }
-    },
-
     event: {
         btn_getDocumentSize_click() {
             syn.$l.get('txt_getDocumentSize').value = JSON.stringify(syn.$d.getDocumentSize());
