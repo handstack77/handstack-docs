@@ -253,7 +253,7 @@
 
     $checkbox.extend({
         name: 'syn.uicontrols.$checkbox',
-        version: 'v2025.3.1',
+        version: 'v2025.3.24',
         defaultSetting: {
             contents: '',
             toSynControl: false,
@@ -336,27 +336,22 @@
         },
 
         getValue(elID, meta) {
-            var result = null;
+            var result = '0';
             var el = syn.$l.get(elID);
             if ($object.isNullOrUndefined(el) == false) {
                 var synOptions = el.getAttribute('syn-options');
                 if (synOptions) {
                     var options = JSON.parse(synOptions);
-                    if (options.checkedValue && options.uncheckedValue) {
-                        if (el.checked == true) {
-                            result = options.checkedValue;
-                        }
-                        else {
-                            result = options.uncheckedValue;
-                        }
+                    if (el.checked == true) {
+                        result = $object.isNullOrUndefined(options.checkedValue) == true ? '1' : options.checkedValue;
+                    }
+                    else {
+                        result = $object.isNullOrUndefined(options.uncheckedValue) == true ? '0' : options.uncheckedValue;
                     }
                 }
                 else {
-                    result = el.checked;
+                    result = el.checked == true ? '1' : '0';
                 }
-            }
-            else {
-                result = '';
             }
 
             return result;
@@ -364,12 +359,25 @@
 
         setValue(elID, value, meta) {
             var el = syn.$l.get(elID);
-            if (value) {
-                value = value.toString().toUpperCase();
-                el.checked = (value == 'TRUE' || value == 'Y' || value == '1');
-            }
-            else {
-                el.checked = false;
+            if ($object.isNullOrUndefined(el) == false) {
+                if (value) {
+                    value = value.toString().toUpperCase();
+                    var synOptions = el.getAttribute('syn-options');
+                    if (synOptions) {
+                        var options = JSON.parse(synOptions);
+                        if ($object.isNullOrUndefined(options.checkedValue) == false) {
+                            value = value == options.checkedValue;
+                        }
+
+                        el.checked = (value == true || value == 'TRUE' || value == 'Y' || value == '1');
+                    }
+                    else {
+                        el.checked = (value == true || value == 'TRUE' || value == 'Y' || value == '1');
+                    }
+                }
+                else {
+                    el.checked = false;
+                }
             }
         },
 
@@ -415,7 +423,7 @@
 
     $codepicker.extend({
         name: 'syn.uicontrols.$codepicker',
-        version: 'v2025.3.1',
+        version: 'v2025.3.25',
         defaultSetting: {
             dataSourceID: null,
             storeSourceID: null,
@@ -452,23 +460,14 @@
 
         addModuleList(el, moduleList, setting, controlType) {
             var elementID = el.getAttribute('id');
-            var dataField = el.getAttribute('syn-datafield');
             var formDataField = el.closest('form') ? el.closest('form').getAttribute('syn-datafield') : '';
 
             moduleList.push({
                 id: elementID,
                 formDataFieldID: formDataField,
-                field: dataField,
+                field: null,
                 module: this.name,
                 type: controlType
-            });
-
-            moduleList.push({
-                id: elementID + '_Text',
-                formDataFieldID: formDataField,
-                field: setting.textDataFieldID,
-                module: syn.uicontrols.$textbox.name,
-                type: 'text'
             });
         },
 
@@ -1943,7 +1942,7 @@
 
     $dateperiodpicker.extend({
         name: 'syn.uicontrols.$dateperiodpicker',
-        version: 'v2025.3.1',
+        version: 'v2025.3.24',
         dateControls: [],
         selectedYear: null,
         pkaStartDate: null,
@@ -2473,7 +2472,7 @@
                 if (dateControl.textbox1ID && syn.$l.get(dateControl.textbox2ID)) {
                     endedAt = syn.$l.get(dateControl.textbox2ID).value;
                 }
-                result = `${startedAt},${endedAt}`;
+                result = `${startedAt} ~ ${endedAt}`;
             }
 
             return result;
@@ -5997,7 +5996,7 @@
 
     $radio.extend({
         name: 'syn.uicontrols.$radio',
-        version: 'v2025.3.1',
+        version: 'v2025.3.26',
         defaultSetting: {
             contents: '',
             toSynControl: false,
@@ -6111,6 +6110,20 @@
                 var el = els[i];
                 if (el.id.indexOf('_hidden') == -1 && el.checked == true) {
                     result = el.value;
+                    break;
+                }
+            }
+
+            return result;
+        },
+
+        getSelectedByText(group) {
+            var result = null;
+            var els = syn.$l.querySelectorAll('input[type="radio"][name="{0}"]'.format(group));
+            for (var i = 0; i < els.length; i++) {
+                var el = els[i];
+                if (el.id.indexOf('_hidden') == -1 && el.checked == true) {
+                    result = el.nextElementSibling.textContent.trim();
                     break;
                 }
             }
@@ -6404,9 +6417,10 @@
 
     $textbox.extend({
         name: 'syn.uicontrols.$textbox',
-        version: 'v2025.3.1',
+        version: 'v2025.3.25',
         defaultSetting: {
             editType: 'text',
+            inValidateClear: true,
             formatNumber: true,
             maskPattern: null,
             maxCount: null,
@@ -7100,8 +7114,15 @@
             if (val.length > 0) {
                 el.setAttribute('placeholder', '');
                 if ($textbox.isCorporateNo(val) == false) {
-                    el.setAttribute('placeholder', '법인번호 확인 필요');
-                    el.value = '';
+                    var synOptions = JSON.parse(el.getAttribute('syn-options'));
+                    if ($object.isNullOrUndefined(synOptions.inValidateClear) == true || synOptions.inValidateClear == true) {
+                        el.setAttribute('placeholder', '법인번호 확인 필요');
+                        el.value = '';
+                    }
+                    else {
+                        syn.$m.addClass(el, 'font:red!');
+                        syn.$m.addClass(el, 'font:bold');
+                    }
                 }
                 else {
                     if (val.length != 14) {
@@ -7110,6 +7131,9 @@
                     }
 
                     el.value = val;
+
+                    syn.$m.removeClass(el, 'font:red!');
+                    syn.$m.removeClass(el, 'font:bold');
                 }
             }
         },
@@ -7685,7 +7709,7 @@
 
     $htmleditor.extend({
         name: 'syn.uicontrols.$htmleditor',
-        version: 'v2025.3.1',
+        version: 'v2025.3.24',
         userWorkID: '',
         applicationID: '',
         editorPendings: [],
@@ -7706,7 +7730,7 @@
             isNumberTempDependency: true,
             height: 300,
             imageFileSizeLimit: 300000,
-            viewerHtml: '<html><head><base href="/"><style type="text/css">body { font-family: \'Noto Sans KR\', \'Pretendard\', \'Nanum Gothic\', \'Malgun Gothic\', Gulim, 굴림, sans-serif !important; font-size: 12px; }</style><link type="text/css" rel="stylesheet" href="/lib/tinymce/skins/ui/oxide/content.min.css"><link type="text/css" rel="stylesheet" href="/lib/tinymce/skins/content/default/content.min.css"></head><body id="tinymce" class="mce-content-body">{0}<script>document.onselectstart = function () { return false; }; document.oncontextmenu = function () { return false; }; document.addEventListener && document.addEventListener("click", function(e) {for (var elm = e.target; elm; elm = elm.parentNode) {if (elm.nodeName === "A" && !(e.ctrlKey && !e.altKey)) {e.preventDefault();}}}, false);</script></body></html>',
+            viewerHtml: '<html><head><base href="/"><style type="text/css">body { font-family: \'Noto Sans KR\', \'Pretendard\', \'Nanum Gothic\', \'Malgun Gothic\', Gulim, 굴림, sans-serif !important; font-size: 14px; }</style><link type="text/css" rel="stylesheet" href="/lib/tinymce/skins/ui/oxide/content.min.css"><link type="text/css" rel="stylesheet" href="/lib/tinymce/skins/content/default/content.min.css"></head><body id="tinymce" class="mce-content-body">{0}<script>document.onselectstart = function () { return false; }; document.oncontextmenu = function () { return false; }; document.addEventListener && document.addEventListener("click", function(e) {for (var elm = e.target; elm; elm = elm.parentNode) {if (elm.nodeName === "A" && !(e.ctrlKey && !e.altKey)) {e.preventDefault();}}}, false);</script></body></html>',
             language: 'ko_KR',
             // plugins: [
             //     'autolink link image lists print preview hr anchor pagebreak',
@@ -7717,7 +7741,7 @@
             // toolbar: 'styleselect | bold italic forecolor backcolor table | alignleft aligncenter alignright | bullist numlist outdent indent | link image media | preview export code help',
             toolbar: 'styleselect | bold italic forecolor backcolor table | alignleft aligncenter alignright | link image | code help',
             menubar: false, // 'file edit view insert format tools table help',
-            content_style: 'body { font-family: \'Noto Sans KR\', \'Pretendard\', \'Nanum Gothic\', \'Malgun Gothic\', Gulim, 굴림, sans-serif !important; font-size: 12px; }',
+            content_style: 'body { font-family: \'Noto Sans KR\', \'Pretendard\', \'Nanum Gothic\', \'Malgun Gothic\', Gulim, 굴림, sans-serif !important; font-size: 14px; }',
             powerpaste_word_import: 'merge',
             powerpaste_googledocs_import: 'merge',
             defaultHtmlContent: null,
@@ -10017,7 +10041,7 @@
 
     $grid.extend({
         name: 'syn.uicontrols.$grid',
-        version: 'v2025.3.1',
+        version: 'v2025.3.25',
         defaultHotSettings: {
             licenseKey: 'non-commercial-and-evaluation',
             language: 'ko-KR',
@@ -13146,7 +13170,7 @@
                             if (metaColumn) {
                                 switch (metaColumn.dataType.toLowerCase()) {
                                     case 'string':
-                                        isTypeCheck = item[column] == null || $object.isString(item[column]) || $string.isNumber(item[column]);
+                                        isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $object.isString(item[column]) || $string.isNumber(item[column]);
                                         break;
                                     case 'bool':
                                         isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $object.isBoolean(item[column]);
