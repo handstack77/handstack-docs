@@ -54,42 +54,42 @@ syn.$p.requestReportValue(moduleID, 'Row|Form', pdfOptions, async (error, respon
 });
 
 syn.$rpt.updateSettings({
-    templateID: '새로운이력서.xlsx',
-    reportName: `새로운보고서.${formatDate(new Date(), 'yyyy-MM-dd')}.pdf`,
-    datetimeFormat: 'dd-MM-yyyy',
-    boolTrue: 'Yes',
-    boolFalse: 'No'
+	templateID: '새로운이력서.xlsx',
+	reportName: `새로운보고서.${formatDate(new Date(), 'yyyy-MM-dd')}.pdf`,
+	datetimeFormat: 'dd-MM-yyyy',
+	boolTrue: 'Yes',
+	boolFalse: 'No'
 });
 
 syn.$rpt.addWorkItem(0, 0, 'cell', 3, 'K', 'string', '조준철', null, null);
 syn.$rpt.addWorkItem(0, 0, 'cell', 1, 'A', 'image', 'C:/projects/poc/QrameReport/reportify/wwwroot/img/profile.png', null, null);
 syn.$rpt.addWorkItem(0, 0, 'cell:StoreForm1', 13, 'A', 'url', 'https://handstack.kr/docs/startup/%EA%B0%9C%EC%9A%94', '2:A3', null);
 syn.$rpt.addWorkItem(0, 0, 'item:StoreGrid1', 43, ['A', 'G', 'AC'], ['date', 'string', 'string'], [
-    ['2025-01-18', '자격증 1', '블라블라'],
-    ['2025-01-18', '자격증 2', '블라블라'],
-    ['2025-01-18', '자격증 3', '블라블라']
+	['2025-01-18', '자격증 1', '블라블라'],
+	['2025-01-18', '자격증 2', '블라블라'],
+	['2025-01-18', '자격증 3', '블라블라']
 ], null, 2);
 syn.$rpt.addWorkItem(1, 2, 'cell', 13, 'A', 'html', '<div class=\'container\'>...</div>', '2:A3', null);
 syn.$rpt.addWorkItem(2, 3, 'cell', 51, 'M', 'image', 'https://easywork.qcnservice.co.kr/assets/img/company/logo/easywork.qcnservice.co.kr.png', null, null);
 syn.$rpt.addWorkItem(3, 1, 'list', 3, ['A', 'G', 'AC'], ['string', 'string', 'string'], [
-    ['큐씨엔', '프로젝트 1', '블라블라'],
-    ['큐씨엔', '프로젝트 2', '블라블라'],
-    ['큐씨엔', '프로젝트 3', '블라블라'],
-    ['큐씨엔', '프로젝트 4', '블라블라'],
-    ['큐씨엔', '프로젝트 5', '블라블라'],
-    ['큐씨엔', '프로젝트 6', '블라블라'],
-    ['큐씨엔', '프로젝트 7', '블라블라'],
-    ['큐씨엔', '프로젝트 8', '블라블라']
+	['큐씨엔', '프로젝트 1', '블라블라'],
+	['큐씨엔', '프로젝트 2', '블라블라'],
+	['큐씨엔', '프로젝트 3', '블라블라'],
+	['큐씨엔', '프로젝트 4', '블라블라'],
+	['큐씨엔', '프로젝트 5', '블라블라'],
+	['큐씨엔', '프로젝트 6', '블라블라'],
+	['큐씨엔', '프로젝트 7', '블라블라'],
+	['큐씨엔', '프로젝트 8', '블라블라']
 ], null, 2);
 
 syn.$rpt.addWorkItem({
-    document: 0,
-    worksheet: 0,
-    bind: 'cell',
-    row: 3,
-    col: 'K',
-    type: 'string',
-    data: '조준철'
+	document: 0,
+	worksheet: 0,
+	bind: 'cell',
+	row: 3,
+	col: 'K',
+	type: 'string',
+	data: '조준철'
 });
 
 console.log(JSON.stringify(syn.$rpt.generate(), null, 2));
