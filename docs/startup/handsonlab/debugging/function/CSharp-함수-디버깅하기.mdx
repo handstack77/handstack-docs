@@ -219,7 +219,7 @@ namespace handsup.Areas.handsup.Controllers
 FunctionController 클래스는 HAC010.LF01 함수를 실행하는 Execute 메서드를 가지고 있습니다. 이 메서드는 다음과 같은 요청을 처리합니다.
 
 ```http
-http://localhost:8000/handsup/api/function/execute?accessToken=test&loadOptions[option1]=value1&featureMeta.Timeout=0
+http://localhost:8421/handsup/api/function/execute?accessToken=test&loadOptions[option1]=value1&featureMeta.Timeout=0
 ```
 
 ![](img/postman-apitest.png)
@@ -233,7 +233,7 @@ Postman 과 같은 프로그램 외에도 명령 프롬프트나 터미널에서
 
 ```http
 POST /function/api/function/execute?accessToken=&loadOptions[option1]=value1&featureMeta.Timeout=0&globalID=blabla&featureSQLPath=C:\projects\qcn.qramework\modules\filehub\Contracts\function\csharp\HDS\FHB\SYS010\featureSQL.xml&dataProvider=SqlServer&connectionString=Data Source=localhost;TrustServerCertificate=True;Initial Catalog=master;User ID=sa;Password=Strong@Passw0rd;&platform=Windows&functionID=FHB.SYS010.GF01 HTTP/1.1
-Host: localhost:8000
+Host: localhost:8421
 accept: */*
 Content-Type: application/json
 

@@ -27,9 +27,9 @@ syn.loader.js 에 의해 조회되는 웹 서버의 루트 디렉토리의 syn.c
     "ContractRequestPath": "view",
     "SharedAssetUrl": "/assets/shared/",
     "IsApiFindServer": false,
-    "DiscoveryApiServerUrl": "http://localhost:8000/api/find",
+    "DiscoveryApiServerUrl": "http://localhost:8421/api/find",
     "ReportServer": "http://localhost:8283",
-    "FileManagerServer": "http://localhost:8000",
+    "FileManagerServer": "http://localhost:8421",
     "FindClientIPServer": "/checkip",
     "FindGlobalIDServer": "",
     "FileServerType": "L",
@@ -41,7 +41,7 @@ syn.loader.js 에 의해 조회되는 웹 서버의 루트 디렉토리의 syn.c
         "ServerType": "D",
         "Protocol": "http",
         "IP": "localhost",
-        "Port": "8000",
+        "Port": "8421",
         "Path": "/transact/api/transaction/execute",
         "ClientIP": "localhost"
     },
@@ -146,17 +146,17 @@ transact 모듈의 API 서버의 검색 기능을 사용할지 여부를 설정�
 
 ## DiscoveryApiServerUrl
 
-transact 모듈의 API 서버의 검색 기능을 사용할 때 검색 서버의 URL을 설정합니다. 기본값은 "http://localhost:8000/api/find" 입니다. 검색 서버는 화면에서 서버의 자원을 검색할 때 사용합니다.
+transact 모듈의 API 서버의 검색 기능을 사용할 때 검색 서버의 URL을 설정합니다. 기본값은 "http://localhost:8421/api/find" 입니다. 검색 서버는 화면에서 서버의 자원을 검색할 때 사용합니다.
 
 > 이 기능은 개발 중이며, 추후에 변경될 수 있습니다.
 
 ## FileManagerServer
 
-repository 모듈을 호스팅하는 파일 매니저 서버의 URL을 설정합니다. 기본값은 "http://localhost:8000" 입니다. 파일 매니저 서버는 화면에서 파일을 업로드/다운로드할 때 사용합니다.
+repository 모듈을 호스팅하는 파일 매니저 서버의 URL을 설정합니다. 기본값은 "http://localhost:8421" 입니다. 파일 매니저 서버는 화면에서 파일을 업로드/다운로드할 때 사용합니다.
 
 ## FindClientIPServer
 
-클라이언트의 IP 주소를 검색하는 서버의 URL을 설정합니다. 기본값은 "/checkip" 입니다. http://localhost:8000/checkip 을 호출하여 클라이언트의 IP 주소를 검색합니다.
+클라이언트의 IP 주소를 검색하는 서버의 URL을 설정합니다. 기본값은 "/checkip" 입니다. http://localhost:8421/checkip 을 호출하여 클라이언트의 IP 주소를 검색합니다.
 
 ## FindGlobalIDServer
 
@@ -192,7 +192,7 @@ transact 모듈의 API 서버 URL을 설정합니다. Protocol, IP, Port, Path�
     "ServerType": "D", // D: Development, S: Staging, P: Production
     "Protocol": "http", // http, https
     "IP": "localhost", // IP Address 또는 도메인명 (예: localhost, www.handstack.kr)
-    "Port": "8000", // Port Number 또는 빈값 (예: 8000, "")
+    "Port": "8421", // Port Number 또는 빈값 (예: 8421, "")
     "Path": "/transact/api/transaction/execute", // API Server Path
     "ClientIP": "localhost"
 }

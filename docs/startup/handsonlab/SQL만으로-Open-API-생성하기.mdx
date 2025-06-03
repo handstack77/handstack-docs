@@ -287,26 +287,26 @@ INSERT INTO AccessMemberAPI (AccessID,APIServiceID,MemberNo,SecretKey,IPAddress,
 
 ```url
 # 기초코드 목록 (061897e5cdb6488a9e8ca9e1d447bb1b) API 서비스의 캐시된 설정을 삭제
-http://localhost:8000/openapi/api/managed/delete-api-service?apiServiceID=061897e5cdb6488a9e8ca9e1d447bb1b&AuthorizationKey=HANDSTACKDHOSTNAME
+http://localhost:8421/openapi/api/managed/delete-api-service?apiServiceID=061897e5cdb6488a9e8ca9e1d447bb1b&AuthorizationKey=HANDSTACKDHOSTNAME
 
 # 데이터 소스의 캐시된 설정을 삭제
-http://localhost:8000/openapi/api/managed/delete-api-data-source?dataSourceID=DB01&AuthorizationKey=HANDSTACKDHOSTNAME
+http://localhost:8421/openapi/api/managed/delete-api-data-source?dataSourceID=DB01&AuthorizationKey=HANDSTACKDHOSTNAME
 
 # 응답 결과의 캐시된 정보를 삭제
-http://localhost:8000/openapi/api/managed/cache-clear?AuthorizationKey=HANDSTACKDHOSTNAME
+http://localhost:8421/openapi/api/managed/cache-clear?AuthorizationKey=HANDSTACKDHOSTNAME
 ```
 
 ## Open API 사용
 
 클라이언트에서는 APIService 테이블에 등록된 InterfaceID를 호출하여 데이터를 소비할 수 있습니다.
 
-> http://localhost:8000/openapi/{interfaceID}
+> http://localhost:8421/openapi/{interfaceID}
 
-* http://localhost:8000/openapi/codes?AccessID=c48972d403cf4c3485d2625a892d135d&SecretKey=handstackblabla&GroupCode=SYS000&CategoryID=&Format=json
-* http://localhost:8000/openapi/codes?AccessID=c48972d403cf4c3485d2625a892d135d&SecretKey=handstackblabla&GroupCode=SYS000&CategoryID=&Format=xml
-* http://localhost:8000/openapi/codes?AccessID=c48972d403cf4c3485d2625a892d135d&SecretKey=handstackblabla&GroupCode=SYS000&CategoryID=&Format=soap
-* http://localhost:8000/openapi/codes?AccessID=c48972d403cf4c3485d2625a892d135d&SecretKey=handstackblabla&GroupCode=SYS000&CategoryID=&Format=rss
-* http://localhost:8000/openapi/codes?AccessID=c48972d403cf4c3485d2625a892d135d&SecretKey=handstackblabla&GroupCode=SYS000&CategoryID=&Format=atom
+* http://localhost:8421/openapi/codes?AccessID=c48972d403cf4c3485d2625a892d135d&SecretKey=handstackblabla&GroupCode=SYS000&CategoryID=&Format=json
+* http://localhost:8421/openapi/codes?AccessID=c48972d403cf4c3485d2625a892d135d&SecretKey=handstackblabla&GroupCode=SYS000&CategoryID=&Format=xml
+* http://localhost:8421/openapi/codes?AccessID=c48972d403cf4c3485d2625a892d135d&SecretKey=handstackblabla&GroupCode=SYS000&CategoryID=&Format=soap
+* http://localhost:8421/openapi/codes?AccessID=c48972d403cf4c3485d2625a892d135d&SecretKey=handstackblabla&GroupCode=SYS000&CategoryID=&Format=rss
+* http://localhost:8421/openapi/codes?AccessID=c48972d403cf4c3485d2625a892d135d&SecretKey=handstackblabla&GroupCode=SYS000&CategoryID=&Format=atom
 
 ## 응답 정보
 

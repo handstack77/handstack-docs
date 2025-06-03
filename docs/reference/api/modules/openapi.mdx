@@ -17,11 +17,11 @@ sidebar_position: 80
         "ModuleBasePath": "../modules/openapi",
         "ManagerEmailID": "manager@handstack.kr",
         "ManagerSHA256Password": "48c691ca3e9d0e01bdaab5923534a1ebc01dcb52f87bddccbae6e185f3f481d9",
-        "ModuleConfigurationUrl": "http://localhost:8000/openapi/api/managed/initialize-settings",
-        "BusinessServerUrl": "http://localhost:8000/transact/api/transaction/execute",
+        "ModuleConfigurationUrl": "http://localhost:8421/openapi/api/managed/initialize-settings",
+        "BusinessServerUrl": "http://localhost:8421/transact/api/transaction/execute",
         "ModuleLogFilePath": "../log/openapi/module.log",
         "IsLogServer": true,
-        "LogServerUrl": "http://localhost:8000/logger/api/log/insert",
+        "LogServerUrl": "http://localhost:8421/logger/api/log/insert",
         "DataSource": {
             "ApplicationID": "HDS",
             "ProjectID": "HOA",
@@ -65,7 +65,7 @@ ack 프로그램에서 운영하는 시스템 식별 ID를 입력합니다. (기
 
 #### BusinessServerUrl
 
-모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8000/transact/api/transaction/execute)
+모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8421/transact/api/transaction/execute)
 
 #### ModuleBasePath
 
@@ -81,7 +81,7 @@ openapi 모듈의 관리자 이메일 ID 입니다. 업무에 따라 변경할 �
 
 #### ModuleConfigurationUrl
 
-ack 프로그램이 실행되고 모듈 초기화를 실행하는 Url을 입력합니다. (기본값: http://localhost:8000/openapi/api/managed/initialize-settings)
+ack 프로그램이 실행되고 모듈 초기화를 실행하는 Url을 입력합니다. (기본값: http://localhost:8421/openapi/api/managed/initialize-settings)
 
 #### ModuleLogFilePath
 
@@ -93,7 +93,7 @@ openapi 모듈의 로그를 logger 모듈을 운영하는 서버로 저장합니
 
 #### LogServerUrl
 
-logger 모듈을 운영하는 서버의 URL 경로입니다. (기본값: http://localhost:8000/logger/api/log/insert)
+logger 모듈을 운영하는 서버의 URL 경로입니다. (기본값: http://localhost:8421/logger/api/log/insert)
 
 #### EventAction
 
@@ -144,6 +144,6 @@ logger 모듈을 운영하는 서버의 URL 경로입니다. (기본값: http://
 
 프로그램 실행 후, 자세한 내용은 웹 브라우저에서 다음 URL을 통해 확인할 수 있습니다. 또한, 편집한 환경설정을 가져오기 및 내보내기 기능도 제공합니다.
 
-> http://localhost:8000/openapi/module-settings.html
+> http://localhost:8421/openapi/module-settings.html
 
 ![](img/localhost_8000_openapi_module-settings.html.png)

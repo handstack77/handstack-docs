@@ -194,7 +194,7 @@ module.exports = {
 
                 var config = {
                     method: 'get',
-                    url: 'http://localhost:8000/easywork/api/message-sender/SendAlarmTalkDirect?companyNo={0}&userNo={1}&templateCode={2}&phoneNo={3}&isForceEasyworkSenderKey={4}&content={5}'
+                    url: 'http://localhost:8421/easywork/api/message-sender/SendAlarmTalkDirect?companyNo={0}&userNo={1}&templateCode={2}&phoneNo={3}&isForceEasyworkSenderKey={4}&content={5}'
                         .format(companyNo, userID, messageTempleteID, toPhoneNumber, isForceEasyworkSenderKey, encodeURI(contents))
                 };
 

@@ -3,6 +3,6 @@
     "position": 30,
     "link": {
         "type": "generated-index",
-        "description": "HandStack에서 제공하는 모듈 들의 환경 설정을 참고하세요. 각 공식 모듈에 대한 설정 정보를 관리하는 도구 화면을 제공합니다. 자세한 내용은 다음 URL에서 웹 브라우저로 확인할 수 있습니다: http://localhost:8000/[모듈 ID]/module-settings.html"
+        "description": "HandStack에서 제공하는 모듈 들의 환경 설정을 참고하세요. 각 공식 모듈에 대한 설정 정보를 관리하는 도구 화면을 제공합니다. 자세한 내용은 다음 URL에서 웹 브라우저로 확인할 수 있습니다: http://localhost:8421/[모듈 ID]/module-settings.html"
     }
 }

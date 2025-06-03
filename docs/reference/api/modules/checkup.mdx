@@ -17,8 +17,8 @@ sidebar_position: 10
         "ManagedAccessKey": "6eac215f2f5e495cad4f2abfdcad7644",
         "EncryptionAES256Key": "1234567890123456",
         "AdministratorEmailID": "administrator@handstack.kr",
-        "ModuleConfigurationUrl": "http://localhost:8000/checkup/api/managed/initialize-settings",
-        "BusinessServerUrl": "http://localhost:8000/transact/api/transaction/execute",
+        "ModuleConfigurationUrl": "http://localhost:8421/checkup/api/managed/initialize-settings",
+        "BusinessServerUrl": "http://localhost:8421/transact/api/transaction/execute",
         "ModuleLogFilePath": "../log/checkup/module.log",
         "ModuleBasePath": "../modules/checkup",
         "WWWRootBasePath": "../modules/checkup/wwwroot/checkup",
@@ -70,11 +70,11 @@ ack 프로그램에서 운영하는 시스템 식별 ID를 입력합니다. (기
 
 #### ModuleConfigurationUrl
 
-ack 프로그램이 실행되고 모듈 초기화를 실행하는 Url을 입력합니다. (기본값: http://localhost:8000/checkup/api/managed/initialize-settings)
+ack 프로그램이 실행되고 모듈 초기화를 실행하는 Url을 입력합니다. (기본값: http://localhost:8421/checkup/api/managed/initialize-settings)
 
 #### BusinessServerUrl
 
-모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8000/transact/api/transaction/execute)
+모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8421/transact/api/transaction/execute)
 
 #### ModuleLogFilePath
 
@@ -109,6 +109,6 @@ SQLite 데이터베이스의 연결 문자열을 설정합니다.
 
 프로그램 실행 후, 자세한 내용은 웹 브라우저에서 다음 URL을 통해 확인할 수 있습니다. 또한, 편집한 환경설정을 가져오기 및 내보내기 기능도 제공합니다.
 
-> http://localhost:8000/checkup/module-settings.html
+> http://localhost:8421/checkup/module-settings.html
 
 ![](img/localhost_8000_checkup_module-settings.html.png)
