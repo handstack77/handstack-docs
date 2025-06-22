@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+﻿import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import useBaseUrl, { useBaseUrlUtils } from '@docusaurus/useBaseUrl';
 import styles from './styles.module.css';
@@ -33,7 +33,7 @@ const FeatureList: FeatureItem[] = [
         src: require('@site/static/img/3.png').default,
         description: (
             <>
-                비즈니스 앱은 다양한 운영 환경과 Cloud, Docker를 지원해야 합니다. 한 줄의 CLI 명령어로 프로그램 동작을 관리하세요
+                HandStack은 복잡한 SaaS 연동 없이, 셀프 호스팅 또는 클라우드에서 안전하게 개발할 수 있는 환경을 제공합니다.
             </>
         ),
     },
@@ -51,7 +51,7 @@ const FeatureList: FeatureItem[] = [
         src: require('@site/static/img/5.png').default,
         description: (
             <>
-                개발 과정과 운영 방법을 단순화 하여 적은 학습 곡선, 구축 비용을 절감 할 수 있습니다
+                로컬 개발, 운영에 이르는 반복적 비용과 마찰을 줄이고, 하나의 통합된 개발 워크플로우로 당신의 비즈니스 소프트웨어 개발에만 집중할 수 있게 돕습니다.
             </>
         ),
     },
@@ -60,7 +60,7 @@ const FeatureList: FeatureItem[] = [
         src: require('@site/static/img/6.png').default,
         description: (
             <>
-                웹 브라우저로 비즈니스 앱 프로젝트 개발, 운영, 교육 및 기술 지원 정보를 제공하는 SaaS 서비스를 운영합니다.
+                중요한 건 기술과 프레임워크가 아니라, 당신이 만들고자 하는 비즈니스와 소프트웨어입니다. 프로젝트에 맞춤화된 안전하고 코딩할 수 있는 환경으로, 당신의 비즈니스 소프트웨어를 구축하는 데 집중하세요.
             </>
         ),
     },

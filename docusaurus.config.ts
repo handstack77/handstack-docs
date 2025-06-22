@@ -1,10 +1,10 @@
-// 참조: https://github.com/facebook/docusaurus/blob/main/website/docusaurus.config.ts, https://github.com/hojunin/hjinn/blob/main/docusaurus.config.js
+﻿// 참조: https://github.com/facebook/docusaurus/blob/main/website/docusaurus.config.ts, https://github.com/hojunin/hjinn/blob/main/docusaurus.config.js
 import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-    title: 'HandStack 은 고객의 IT 과제를 해결하는 도구입니다.',
+    title: '개발자의 워크플로우를 높이는 통합 플랫폼, HandStack',
     tagline: '',
     favicon: '/favicon.ico',
 
