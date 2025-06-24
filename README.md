@@ -14,3 +14,26 @@
 ```
 
 HandStack 문서 웹 사이트는 최신 정적 웹사이트 생성기인 [다큐사우루스](https://docusaurus.io/)를 사용하여 제작되었습니다.
+
+---
+
+## Marp로 HTML 생성 후 포함하기
+
+Marp를 사용하여 HTML 슬라이드를 생성하고, 이를 HandStack 문서에 포함할 수 있습니다. 다음은 그 방법입니다.
+
+```txt
+handstack-docs/
+└── static/
+    └── slides/
+        └── XXXX.md
+```
+
+```bash
+npm install -g @marp-team/marp-cli
+```
+
+```bash
+cd $(handstack-docs)\static\slides\
+node marp-slide.js
+pm2 start marp-slide.js --name "marp-watcher"
+```
