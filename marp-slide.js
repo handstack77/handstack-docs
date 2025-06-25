@@ -5,7 +5,7 @@ const chokidar = require('chokidar');
 
 class MarpServer {
     constructor() {
-        this.slidesDir = path.join(__dirname, '../', 'static', 'slides');
+        this.slidesDir = path.join(__dirname, 'static', 'slides');
         this.watcher = null;
         this.isProcessing = new Set();
         this.marpCommand = null;

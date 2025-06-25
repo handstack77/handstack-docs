@@ -46,6 +46,7 @@
 	</ItemGroup>
 
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+		<!--<Exec Command="npm run build" WorkingDirectory="$(ProjectDir)" />-->
 		<RemoveDir Directories="$(TargetDir)" Condition="Exists('$(TargetDir)')" ContinueOnError="true" />
 		<MakeDir Directories="$(ProjectDir)build" Condition="!Exists('$(ProjectDir)build')" />
 	</Target>
