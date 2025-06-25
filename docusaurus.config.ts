@@ -64,6 +64,7 @@ const config: Config = {
                     blogSidebarCount: 'ALL',
                     blogTitle: 'HandStack 개발 블로그',
                     postsPerPage: 10,
+                    onUntruncatedBlogPosts: 'ignore',
                 },
                 gtag: {
                     trackingID: 'G-G6PRQRS4K3',

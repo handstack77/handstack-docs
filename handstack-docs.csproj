@@ -44,14 +44,17 @@
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
-	
+
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-		<Exec Condition="'$(OS)'=='Windows_NT'" Command="rmdir /s /q $(TargetDir)&#xD;&#xA;if not exist $(ProjectDir)build mkdir $(ProjectDir)build" />
-		<Exec Condition="'$(OS)'!='Windows_NT'" Command="rm -rf $(TargetDir)&#xD;&#xA;mkdir -p $(ProjectDir)build" />
+		<RemoveDir Directories="$(TargetDir)" Condition="Exists('$(TargetDir)')" ContinueOnError="true" />
+		<MakeDir Directories="$(ProjectDir)build" Condition="!Exists('$(ProjectDir)build')" />
 	</Target>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Condition="'$(OS)'=='Windows_NT'" Command="move $(ProjectDir)build $(TargetDir)&#xD;&#xA;rename $(TargetDir)build wwwroot" />
-		<Exec Condition="'$(OS)'!='Windows_NT'" Command="mv $(ProjectDir)build/ $(TargetDir)wwwroot" />
+		<ItemGroup>
+			<BuildFiles Include="$(ProjectDir)build\**\*.*" />
+		</ItemGroup>
+		<RemoveDir Directories="$(TargetDir)wwwroot" Condition="Exists('$(TargetDir)wwwroot')" />
+		<Copy SourceFiles="@(BuildFiles)" DestinationFiles="@(BuildFiles->'$(TargetDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)')" />
 	</Target>
 </Project>
