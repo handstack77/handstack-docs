@@ -37,6 +37,9 @@ export default function Home(): JSX.Element {
 
             <div className="container mt:32! text--center">
                 <h1 className="mt:24!">개발자와 엔지니어를 위한 앱 개발 환경</h1>
+                <Link className="button button--secondary button--lg" to="https://notebooklm.google.com/notebook/02e39cd7-bd8a-48ff-8ab1-12a985660a74">
+                    NotebookLM 바로가기
+                </Link>
             </div>
 
             <main>
