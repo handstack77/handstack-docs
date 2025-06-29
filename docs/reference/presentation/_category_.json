@@ -1,0 +1,8 @@
+{
+    "label": "강연/세미나 문서",
+    "position": 2,
+    "link": {
+        "type": "generated-index",
+        "description": "발표 분위기나 공식성, 또는 청중의 성격에 따라 HandStack의 이해를 돕기 위해 전달하기 쉽게 정리 한 문서입니다."
+    }
+}
