@@ -16,11 +16,10 @@ https://github.com/handstack77/handstack/releases/latest 에서 운영체제에 
 * osx-x64.zip: Intel CPU 기반 macOS 운영체제
 * win-x64.zip: Windows 10 이상 운영체제
 
-다운로드 한 압축 파일을 다음의 경로에 해제 했을 경우 방법을 설명합니다. 다른 경로에 배치해도 경로가 다른 것외에 동일하게 작업합니다.
+다운로드 한 압축 파일을 다음의 경로에 해제 하는 것을 권장합니다. 다른 경로에 배치해도 경로가 다른 것외에 동일하게 작업합니다.
 
-- Windows 10+: `C:/home/[사용자 ID]/handstack`
-- Linux: `/home/[사용자 ID]/handstack`
-- macOS: `/Users/[사용자 ID]/handstack`
+- Windows 10+: `C:/projects/handstack`
+- Linux 또는 macOS: `/home/[사용자 ID]/projects/handstack`
 
 압축을 해제 한후 [HandStack 소스 기본경로]로 이동하면 다음과 같은 디렉토리 구조를 확인할 수 있습니다.
 
@@ -34,118 +33,68 @@ HandStack 압축 해제 경로
 └─modules <- 업무 단위 모듈
 ```
 
+터미널 또는 명령 프롬프트를 열고 curl 명령어를 사용하여 최신 HandStack 압축 파일을 다운로드 할 수 있습니다. Windows, macOS, Linux에서 기본적으로 동일한 방식으로 활용할 수 있습니다. HandStack 압축 파일을 다운로드 할 적절한 디렉토리로 이동하고 다음의 명령어를 실행합니다.
+
 ## Windows 운영체제에서 실행하기
 
-[HandStack 소스 기본경로]는 `~/handstack` 여기까지의 경로입니다. 예를 들면 다음과 같습니다.
-
 ```bash
-C:/home/handstack77/handstack
-```
-
-압축을 해제 한후 [HandStack 소스 기본경로]로 이동하여 install.bat 배치 스크립트를 실행합니다.
-```bash
-cd [HandStack 소스 기본경로]
+cd C:/projects
+curl -L -o handstack-win-x64.zip https://github.com/handstack77/handstack/releases/latest/download/win-x64.zip
+powershell Expand-Archive -Path handstack-win-x64.zip -DestinationPath .
+cd handstack
 install.bat
 ```
 
+압축을 해제 한후 `C:/projects/handstack` 로 이동하여 install.bat 배치 스크립트를 실행합니다.
+
 실행에 필요한 필수 설치 프로그램과 환경을 자동으로 구성합니다. 서버 사양과 네트워크 상태에 따라 10분 이상 소요될 수 있습니다.
 
 설정이 완료되면 app 디렉토리로 이동하여 ack 프로그램을 실행합니다.
+
 ```bash
-cd [HandStack 소스 기본경로]/app
+cd C:/projects/handstack/app
 ack
 ```
 
-## macOS 운영체제에서 실행하기
+## Linux 또는 macOS 운영체제에서 실행하기
 
-터미널을 열고 CPU 아키텍처에 따라 다음의 명령어를 실행하여 최신 HandStack 압축 파일을 다운로드 합니다.
-
-> macOS M1 기반에서 .NET Core로 빌드된 프로그램을 실행 하려면 로제타를 이용하여 실행 해야합니다. 로제타는 Intel 프로세서가 장착된 Mac용으로 제작된 앱을 Apple Silicon이 장착된 Mac에서 사용할 수 있게 해주는 프로그램입니다.
 
 ```bash
-cd ~
-curl -s https://api.github.com/repos/handstack77/handstack/releases/latest | grep "browser_download_url.*osx-x64.zip" | cut -d : -f 2,3 | tr -d \" | xargs -n 1 curl -L -o osx-x64.zip
-unzip -q -o osx-x64.zip -d handstack
-```
-
-[HandStack 소스 기본경로]는 `~/handstack` 여기까지의 경로입니다. 예를 들면 다음과 같습니다.
-
-```bash
-/Users/handstack77/handstack
-```
-
-압축을 해제 한후 [HandStack 소스 기본경로]로 이동하여 install.sh 배치 스크립트를 실행합니다.
-```bash
-# 윈도우에서 작성된 스크립트 파일을 macOS 에서 실행하기 위해 줄바꿈 문자 제거합니다.
+cd /home/[사용자 ID]/projects
+curl -L -o handstack-linux-x64.zip https://github.com/handstack77/handstack/releases/latest/download/linux-x64.zip
+unzip -q -o handstack-linux-x64.zip -d handstack
 tr -d '\r' < install.sh > install_fixed.sh && mv install_fixed.sh install.sh
 chmod +x install.sh
 sudo ./install.sh
 ```
+
+> macOS 운영체제에서 실행하려면 `handstack-osx-x64.zip` 파일을 다운로드하고 압축을 해제합니다. macOS M1 기반에서 .NET Core로 빌드된 프로그램을 실행 하려면 로제타를 이용하여 실행 해야합니다.
+> ```bash
+> curl -L -o handstack-osx-x64.zip https://github.com/handstack77/handstack/releases/latest/download/osx-x64.zip
+> unzip -q -o handstack-osx-x64.zip -d handstack
+> ```
+
+압축을 해제 한후 `/home/[사용자 ID]/projects/handstack` 로 이동하여 install.sh 배치 스크립트를 실행합니다.
 
 실행에 필요한 필수 설치 프로그램과 환경을 자동으로 구성합니다. 서버 사양과 네트워크 상태에 따라 10분 이상 소요될 수 있습니다.
 
 ack, handstack 실행 파일에 권한을 부여하여 실행이 가능합니다. 다음과 같이 실행 권한을 부여합니다.
 
 ```bash
-cd [HandStack 소스 기본경로]/app
+cd /home/[사용자 ID]/projects/handstack/app
 chmod +x ack
 
-cd [HandStack 소스 기본경로]/app/cli
+cd /home/[사용자 ID]/projects/handstack/app/cli
 chmod +x handstack
 ```
 
 설정이 완료되면 app 디렉토리로 이동하여 ack 프로그램을 실행합니다.
 
 ```bash
-cd [HandStack 소스 기본경로]/app
-dotnet ack.dll
-# 또는
+cd /home/[사용자 ID]/projects/handstack/app
 ./ack
-```
-
-## Linux 운영체제에서 실행하기
-
-터미널을 열고 다음의 명령어를 실행하여 최신 HandStack 압축 파일을 다운로드 합니다.
-
-```bash
-cd ~
-curl -s https://api.github.com/repos/handstack77/handstack/releases/latest | grep "browser_download_url.*linux-x64.zip" | cut -d : -f 2,3 | tr -d \" | xargs -n 1 curl -L -o linux-x64.zip
-unzip -q -o linux-x64.zip -d handstack
-```
-
-[HandStack 소스 기본경로]는 `~/handstack` 여기까지의 경로입니다. 예를 들면 다음과 같습니다.
-
-```bash
-/home/handstack77/handstack
-```
-
-압축을 해제 한후 [HandStack 소스 기본경로]로 이동하여 install.sh 배치 스크립트를 실행합니다.
-```bash
-# 윈도우에서 작성된 스크립트 파일을 Linux 에서 실행하기 위해 줄바꿈 문자 제거합니다.
-tr -d '\r' < install.sh > install_fixed.sh && mv install_fixed.sh install.sh
-chmod +x install.sh
-sudo ./install.sh
-```
-
-실행에 필요한 필수 설치 프로그램과 환경을 자동으로 구성합니다. 서버 사양과 네트워크 상태에 따라 10분 이상 소요될 수 있습니다.
-
-ack, handstack 실행 파일에 권한을 부여하여 실행이 가능합니다. 다음과 같이 실행 권한을 부여합니다.
-
-```bash
-cd [HandStack 소스 기본경로]/app
-chmod +x ack
-
-cd [HandStack 소스 기본경로]/app/cli
-chmod +x handstack
-```
-
-설정이 완료되면 app 디렉토리로 이동하여 ack 프로그램을 실행합니다.
-
-```bash
-cd [HandStack 소스 기본경로]/app
-dotnet ack.dll
 # 또는
-./ack
+dotnet ack.dll
 ```
 
 ## 웹 브라우저로 HandStack 실행 확인하기

@@ -121,25 +121,26 @@ section.tinytext>blockquote {
 ## HandStack 소개
 
 - HandStack은 <mark>풀스택(Full-Stack) 개발 프레임워크</mark>입니다.
-- 웹 애플리케이션의 <mark>프론트엔드</mark>(사용자 화면)와 <mark>백엔드</mark>(서버 로직)를 모두 만들 수 있습니다.
+- 표준 기술로 <mark>프론트엔드</mark>(사용자 화면)와 <mark>백엔드</mark>(서버 로직)를 모두 만들 수 있습니다.
 
 - 주요 기술
     - 백엔드: ASP.NET Core, Node.js
-    - 데이터베이스: SQL Server, Oracle, PostgreSQL, MariaDB, SQLite 등
+    - 데이터베이스: SQL Server, Oracle, PostgreSQL, MySQL/MariaDB, SQLite 기반 제품 및 서비스
     - 라이선스: 오픈소스 (MIT License)
 
 - 누구나 자유롭게 사용하고 기여할 수 있습니다.
 
 ---
 
-## 왜 개발은 처음엔 복잡하게 느껴질까요?
+## 왜 개발은 복잡하게 느껴질까요?
 
 - 배워야 할 것이 너무 많아요 (프론트엔드, 백엔드, 데이터베이스...)
 - 개발 환경 설정부터 막막해요.
 - 프로젝트 구조를 어떻게 잡아야 할지 어려워요.
 - 반복적인 코드를 계속 작성해야 해요.
+- 유지보수와 인수인계가 쉬웠으면 좋겠어요.
 
-> HandStack은 이러한 어려움을 해결하기 위해 만들어졌습니다.
+> HandStack은 개발자와 운영자의 실무적인 어려움을 해결하기 위해 만들어졌습니다.
 
 ---
 
@@ -147,15 +148,17 @@ section.tinytext>blockquote {
 
 - HandStack은 <mark>CLI (명령줄 도구)</mark>를 제공하여 복잡한 초기 설정을 자동화합니다.
 - 터미널에 명령어 몇 줄만 입력하면 프로젝트가 바로 생성됩니다.
+- 프로젝트 생성, 모듈 관리, 빌드, 배포까지 CLI로 간편하게 해결할 수 있습니다.
+
 
 ```bash
-# HandStack CLI 설치
-npm install -g handstack
-
-# 새 프로젝트 생성
-handstack create my-first-app
+# Windows 에서 초기 설정 실행
+cd C:/projects
+curl -L -o handstack-win-x64.zip https://github.com/handstack77/handstack/releases/latest/download/win-x64.zip
+powershell Expand-Archive -Path handstack-win-x64.zip -DestinationPath .
+cd handstack
+install.bat
 ```
-- 프로젝트 생성, 모듈 관리, 빌드, 배포까지 CLI로 간편하게 해결할 수 있습니다.
 
 ---
 
