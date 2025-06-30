@@ -216,14 +216,14 @@ Ctrl + C
 
 ---
 
-### 각 모듈의 기본 페이지 확인하기
+## 각 모듈의 기본 페이지 확인하기
 
 `http://localhost:8421/[모듈 ID]/module.html`
 
 HandStack에서는 공식 module로서 다음과 같이 기본 제공됩니다.
 
 <style scoped>
-  table { font-size: 24px; }  
+  table { font-size: 22px; }  
 </style>
 
 |module명|설명|
@@ -236,3 +236,11 @@ HandStack에서는 공식 module로서 다음과 같이 기본 제공됩니다.
 |logger|module 요청/응답 구간 주요 이벤트 로그 수집 관리|
 |wwwroot|웹 공통 static assets 및 화면 단위 소스 호스팅 관리|
 |openapi|데이터베이스 데이터를 Open API로 제공 하기 위한 기능 관리|
+
+---
+
+## 요약 정리 및 Q&A
+
+- 처음 소스를 내려받으면 솔루션 빌드와 게시를 해보세요.
+- 화면/기능 개발을 위해 기본 모듈이 실행되는지 확인하세요.
+- 각 모듈의 기본 페이지 확인하며 UI 파일이 어떻게 보이는지 생각해보세요.

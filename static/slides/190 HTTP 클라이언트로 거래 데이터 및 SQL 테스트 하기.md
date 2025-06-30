@@ -103,11 +103,10 @@ section.tinytext>blockquote {
   font-size: 0.65em;
 }
 </style>
----
 
-# HTTP 클라이언트로 거래 데이터 및 SQL 테스트 하기
+# 클라이언트 도구로 거래 및 SQL 테스트 하기
 
-Postman과 CLI 도구를 활용한 HandStack API 테스트
+### Postman과 CLI 도구를 활용한 HandStack API 테스트
 
 ---
 

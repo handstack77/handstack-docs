@@ -204,7 +204,7 @@ section.tinytext>blockquote {
 
 ---
 
-## 정리
+## 요약 정리 및 Q&A
 
 - 라우팅은 URL과 실제 처리 로직(Controller) 또는 페이지(Razor Page)를 연결하는 규칙입니다.
 - HandStack Controller: `클래스명` + `메서드명` -> `/클래스명/메서드명` (kebab-case)

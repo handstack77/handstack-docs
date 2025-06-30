@@ -103,10 +103,10 @@ section.tinytext>blockquote {
   font-size: 0.65em;
 }
 </style>
----
 
 # Tabler, Master CSS, Mustache 로 만드는 화면 레이아웃
 
+### 기본에 충실한 바닐라 HTML, CSS, Javascript 문법
 ---
 
 ## 먼저, 디자인 시스템이란 무엇일까요?
