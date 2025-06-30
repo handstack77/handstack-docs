@@ -106,20 +106,22 @@ section.tinytext>blockquote {
 
 # HandStack으로 첫 프로젝트 실행하기
 
-### 프로젝트를 빌드하고, 서버를 실행하여 결과를 확인합니다.
+### Windows 에서 프로젝트를 빌드하고, 결과를 확인합니다.
 
 ---
 
 ## 1. 프로젝트 빌드하기
 
+> [내 컴퓨터에 개발 환경 꾸미기](https://handstack.kr/slides/020%20내%20컴퓨터에%20개발%20환경%20꾸미기.html) 에서 설치 과정이 완료되면 호스트에 HANDSTACK_SRC, HANDSTACK_HOME 환경변수가 설정됩니다.
+
 - 먼저 프로젝트 소스 코드를 빌드하여 컴파일합니다.
 - HandStack 소스 디렉토리로 이동하여 `dotnet build` 명령어를 실행합니다.
+- 이 과정은 프로젝트에 필요한 모든 코드를 확인하고 실행 가능한 상태로 만듭니다.
 
 ```bash
 cd %HANDSTACK_SRC%
 dotnet build
 ```
-- 이 과정은 프로젝트에 필요한 모든 코드를 확인하고 실행 가능한 상태로 만듭니다.
 
 ---
 
@@ -138,7 +140,6 @@ publish.bat win build Debug x64
 publish.bat linux build Debug x64
 publish.bat osx build Debug x64
 ```
-- 이 과정에서 의존성 패키지를 설치하므로 시간이 다소 걸릴 수 있습니다.
 
 ---
 
@@ -149,37 +150,29 @@ publish.bat osx build Debug x64
 - 운영체제에 맞는 명령어를 사용하세요.
 
 ```bash
-# HandStack 게시 디렉토리로 이동
 cd %HANDSTACK_HOME%
-
-# 서버 실행 (Windows)
 ack.exe
-# 또는
-dotnet ack.dll
-
-# 서버 실행 (Linux/macOS)
-./ack
 ```
 ---
 
-## 4. 브라우저에서 확인하기
+## 브라우저에서 확인하기
 
-- 서버가 성공적으로 실행되면 터미널에 접속 주소가 표시됩니다.
+- 서버가 성공적으로 실행되면 명령 프롬프트에 접속 주소가 표시됩니다.
 - 웹 브라우저를 열고 해당 주소로 접속합니다. (기본값: `http://localhost:8421`)
 
-```
+```txt
 http://localhost:8421
 ```
 
-- "Hello HandStack" 메시지가 보이면 성공적으로 실행된 것입니다.
+- "hello syn !" 메시지가 보이면 성공적으로 실행된 것입니다.
 
 ---
 
-## 5. 개발 서버 종료하기
+## 개발 서버 종료하기
 
-- 서버를 실행한 터미널 창에서 `Ctrl` 키와 `C` 키를 함께 눌러 개발 서버를 종료할 수 있습니다.
+- 서버를 실행한 명령 프롬프트 창에서 `Ctrl` 키와 `C` 키를 함께 눌러 개발 서버를 종료할 수 있습니다.
 
-```
+```txt
 Ctrl + C
 ```
 
@@ -187,13 +180,24 @@ Ctrl + C
 
 ## 핸즈온 활동: 첫 프로젝트 실행
 
-1.  `cd %HANDSTACK_SRC%`
-2.  `dotnet build`
-3.  `publish.bat win build Debug x64`
-4.  `cd %HANDSTACK_HOME%`
-5.  `ack.exe`
-6.  브라우저에서 `http://localhost:8421` 접속
-7.  `Ctrl+C` 로 종료
+1. `cd %HANDSTACK_SRC%`
+2. `dotnet build`
+3. `publish.bat win build Debug x64`
+4. `cd %HANDSTACK_HOME%`
+5. `ack.exe`
+6. 브라우저에서 `http://localhost:8421` 접속
+7. `Ctrl+C` 로 종료
+
+---
+
+## HandStack 에서는 컴파일 디렉토리를 구분합니다
+
+`cd %HANDSTACK_SRC%/..` 로 이동하면 build, publish 디렉토리가 있습니다.
+
+- build: 개발 중 코드 검증 및 디버깅 결과물 위치로 개발 머신에서만 실행하는 것을 권장
+- publish: 배포 가능한 완전한 애플리케이션 패키지 생성 결과물 위치로 운영체제에 맞는 출력 디렉토리
+
+> 개발할 때는 build, 배포할 때는 publish를 사용하여 각각의 목적에 맞는 최적화된 결과물을 얻을 수 있습니다!
 
 ---
 
@@ -212,13 +216,23 @@ Ctrl + C
 
 ---
 
-### 결과 확인하기
+### 각 모듈의 기본 페이지 확인하기
 
-`ack` 서버가 실행 중인지 확인하고, 웹 브라우저를 열어 아래 주소로 접속합니다.
+`http://localhost:8421/[모듈 ID]/module.html`
 
-- `http://localhost:8421/index.html`
+HandStack에서는 공식 module로서 다음과 같이 기본 제공됩니다.
 
-화면에 "Welcome to HandStack!" 메시지가 보이면 성공입니다.
+<style scoped>
+  table { font-size: 24px; }  
+</style>
 
-- 참고: 각 모듈의 기본 페이지는 아래와 같이 접근할 수 있습니다.
-- `http://localhost:8421/[모듈 ID]/module.html`
+|module명|설명|
+|---|---|
+|checkup|태넌트 앱 개발 및 운영 기능 관리|
+|dbclient|SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite SQL을 관리|
+|function|C# 또는 Node.js 기반 Function 개발 기능 관리|
+|repository|단일, 다중, 이미지, 첨부파일 등등 파일 업로드/다운로드 관리|
+|transact|거래 요청 검증 및 접근 제어 관리와 요청 정보를 dbclient, function 등등 module로 라우팅 기능 관리|
+|logger|module 요청/응답 구간 주요 이벤트 로그 수집 관리|
+|wwwroot|웹 공통 static assets 및 화면 단위 소스 호스팅 관리|
+|openapi|데이터베이스 데이터를 Open API로 제공 하기 위한 기능 관리|
