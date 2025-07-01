@@ -59,11 +59,18 @@ code:not([class*="language-"]) {
 }
 
 section {
+  padding: 1rem;
+  border-bottom: 1px solid #000;
   background-image: linear-gradient(to bottom right, #f7f7f7 0%, #d3d3d3 100%);
+}
+
+section > h2 {
+  border-bottom: 4px solid #17344f;
 }
 
 section table {
     margin: auto;
+    margin-top: 1rem;
     font-size: 28px;
 }
 
@@ -103,11 +110,6 @@ section.tinytext>blockquote {
   font-size: 0.65em;
 }
 </style>
-
-<!--
-_class:
- - lead
--->
 
 # Jenkins를 활용한 CI/CD 파이프라인 구축하기
 

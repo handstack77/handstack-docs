@@ -59,11 +59,18 @@ code:not([class*="language-"]) {
 }
 
 section {
+  padding: 1rem;
+  border-bottom: 1px solid #000;
   background-image: linear-gradient(to bottom right, #f7f7f7 0%, #d3d3d3 100%);
+}
+
+section > h2 {
+  border-bottom: 4px solid #17344f;
 }
 
 section table {
     margin: auto;
+    margin-top: 1rem;
     font-size: 28px;
 }
 
@@ -173,6 +180,7 @@ section.tinytext>blockquote {
 
 - `*Controller.cs` 파일을 열어 Controller 이름과 Action 이름을 확인하고 URL을 유추해 보세요.
 - `Pages` 폴더 안의 `.cshtml` 파일 경로를 보고 URL이 어떻게 될지 생각해 보세요.
+- 웹 브라우저로 경로를 확인해봅니다.
 
 ---
 
@@ -191,6 +199,19 @@ section.tinytext>blockquote {
   }
   ```
 - 이렇게 하면 `/user-management/get-my-special-user` 와 같이 고정된 주소를 사용할 수 있습니다.
+
+---
+
+## RESTful API를 사용하는 HTTP verb
+
+| HTTP Verb | API | 설명 | 요청 메시지 본문 | 응답 본문 |
+| --- | --- | --- | --- | --- |
+| HttpGet | `GET /api/todoitems` | 할 일 항목 모두 가져오기 | 없음 | 할 일 | HTTP Verb 항목의 배열 |
+| HttpGet | `GET /api/todoitems/{id}` | ID로 항목 가져오기 | 없음 | 할 일 항목 |
+| HttpPost | `POST /api/todoitems` | 새 항목 추가 | 할 일 항목 | 할 일 항목 |
+| HttpPut | `PUT /api/todoitems/{id}` | 기존 항목 업데이트 | 할 일 항목 | 없음 |
+| HttpDelete | `DELETE /api/todoitems/{id}` | 항목 삭제 | 없음 | 없음 |
+| HttpHead | `HEAD /api/todoitems` | 헤더 정보만 조회 | 없음 | 지원되는 헤더 목록 |
 
 ---
 
