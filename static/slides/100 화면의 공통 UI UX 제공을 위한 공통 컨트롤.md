@@ -181,7 +181,7 @@ section.tinytext>blockquote {
   - `$(HANDSTACK_SRC)/2.Modules/wwwroot/wwwroot/uicontrols`
 
 - 번들링
-  - 개별 Javascript 파일로 구성된 컨트롤들은 빌드 시 `syn.controls.js` 파일 하나로 통합(Bundle)되어 서비스 성능을 최적화합니다.
+  - 개별 JavaScript 파일로 구성된 컨트롤들은 빌드 시 `syn.controls.js` 파일 하나로 통합(Bundle)되어 서비스 성능을 최적화합니다.
 
 ---
 
