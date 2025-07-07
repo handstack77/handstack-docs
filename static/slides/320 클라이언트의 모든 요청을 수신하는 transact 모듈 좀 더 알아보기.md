@@ -164,7 +164,7 @@ section.tinytext>blockquote {
 
 ---
 
-### 핸즈온 활동: 데이터 구조 확인하기
+### 핸즈온: 데이터 구조 확인하기
 
 - Postman 또는 Thunder Client를 사용해 API에 요청을 보내봅니다.
   - `GET /api/products/1` 요청을 보내 단일 건 `{}` 응답 확인
@@ -196,7 +196,7 @@ section.tinytext>blockquote {
 
 ---
 
-### 핸즈온 활동: 유효성 규칙 추가 및 테스트
+### 핸즈온: 유효성 규칙 추가 및 테스트
 
 1. 모델(DTO)에 유효성 검사 규칙을 추가합니다.
     - 예시: `Product` 모델의 `name` 필드는 비어있을 수 없고(`@IsNotEmpty()`), `price` 필드는 양수여야 합니다.
@@ -236,7 +236,7 @@ section.tinytext>blockquote {
 
 ---
 
-### 핸즈온 활동: 에러 상황별 응답 확인
+### 핸즈온: 에러 상황별 응답 확인
 
 - Postman으로 다양한 에러 상황을 시뮬레이션 해봅니다.
 
@@ -271,7 +271,7 @@ HandStack은 쿼리 파라미터를 SQL 조건으로 자동 매핑하는 강력�
 
 ---
 
-### 핸즈온 활동: 검색 기능 구현하기
+### 핸즈온: 검색 기능 구현하기
 
 1. 백엔드에서 쿼리 파라미터를 처리하는 로직을 추가합니다.
    - HandStack 설정 파일에서 `BaseFieldMappings` 등을 사용하여 URL의 `name` 파라미터를 SQL의 `WHERE name LIKE ...` 조건과 연결합니다.

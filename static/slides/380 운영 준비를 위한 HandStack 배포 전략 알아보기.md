@@ -253,7 +253,7 @@ handstack serve
 
 ---
 
-### 핸즈온 활동 (개념 이해)
+### 핸즈온 (개념 이해)
 
 - `client` 디렉토리 옆에 `client-admin`이라는 새 디렉토리를 만들어 보세요.
 - `package.json`의 `scripts` 부분을 어떻게 수정하면 두 클라이언트를 동시에 또는 개별적으로 빌드하고 실행할 수 있을지 상상해 보세요.
@@ -335,7 +335,7 @@ module.exports = {
 
 ---
 
-### 핸즈온 활동
+### 핸즈온
 
 1. `handstack build` 명령어로 프로젝트를 빌드합니다.
 2. 프로젝트 루트에 `ecosystem.config.js` 파일을 생성하고 위 예시처럼 설정합니다.
@@ -405,7 +405,7 @@ WantedBy=multi-user.target
 
 ---
 
-### 핸즈온 활동 (WSL2/VM)
+### 핸즈온 (WSL2/VM)
 
 1. `dotnet publish`로 ASP.NET Core 프로젝트를 빌드합니다.
 2. 빌드 결과물을 Ubuntu 서버의 특정 경로(예: `/var/www/mywebapp`)에 업로드합니다.
@@ -443,7 +443,7 @@ WantedBy=multi-user.target
 
 ---
 
-### 핸즈온 활동
+### 핸즈온
 
 1. ASP.NET Core 프로젝트를 `dotnet publish` 명령어로 빌드합니다.
 2. 관리자 권한으로 PowerShell을 실행합니다.
@@ -492,7 +492,7 @@ sc.exe create MyWebApp binPath="C:\path\to\publish\YourApp.exe" DisplayName="My 
 
 ---
 
-### 핸즈온 활동
+### 핸즈온
 
 1. Windows 서버 기능에서 IIS를 설치합니다.
 2. 최신 ASP.NET Core Hosting Bundle을 다운로드하여 설치합니다.
@@ -557,7 +557,7 @@ ENTRYPOINT ["dotnet", "YourApp.dll"]
 
 ---
 
-### 핸즈온 활동
+### 핸즈온
 
 1. 프로젝트 루트 디렉토리에 위 예시를 참고하여 `Dockerfile`을 작성합니다.
 2. `docker build -t my-handstack-app .` 명령어로 이미지를 빌드합니다.

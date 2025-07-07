@@ -114,10 +114,9 @@ section.tinytext>blockquote {
 # HandStack API 사용하기
 
 ### `transact` 모듈로 자동화된 API 경험하기
-
 ---
 
-## 오늘의 목표
+## 전달하려는 주요 내용
 
 - `transact` 모듈의 업무 계약(Contract)에 따라 클라이언트의 요청을 처리하는 방법을 알아봅니다.
 
@@ -144,51 +143,68 @@ HandStack에서 비즈니스 로직의 핵심 관문 역할을 하는 모듈입�
 
 ---
 
+## 거래 데이터 흐름
+
+모든 거래 요청은 단 하나의 Endpoint로 수신합니다.
+
+<style scoped>
+  img { width: 76%; display: inline; margin-left:120px; }
+</style>
+
+![](/img/transact-architecture.png)
+
+
+---
+
 ## 계약(Contract) 문서 살펴보기
 
 `transact` 모듈은 모든 것을 이 계약 문서에 기반하여 처리합니다.
 
 ```json
-// HDS/TST/TST010.json
 {
     "ApplicationID": "HDS",
     "ProjectID": "TST",
     "TransactionID": "TST010",
-    "Description": "테스트 > 첫번째 테스트 거래",
     "Services": [
         {
             "ServiceID": "LD01",
             "Authorize": false,
+            "Roles": [ "Administrator", "Master" ],
+            "Policys": { "ApplicationRoleID": [ "Bot" ] },
             "ReturnType": "Json",
             "CommandType": "D",
+            "SequentialOptions": [...],
+            "AccessScreenID": [ "TST010" ],
             "TransactionScope": false,
             "Inputs": [ { "ModelID": "Dynamic", "Type": "Row", ... } ],
             "Outputs": [ { "ModelID": "Dynamic", "Type": "Grid" } ]
         }
-    ],
-    "Models": []
+    ]
 }
 ```
 
 ---
 
-## 계약(Contract) 문서 해부하기
+## 계약(Contract) 문서 해부하기 (1/2)
 
 - `ApplicationID`, `ProjectID`, `TransactionID`
     - `HDS` 앱의 `TST` 프로젝트에 속한 `TST010` 거래를 의미합니다.
+- ServiceID: `TST010` 거래 내에서 `LD01`이라는 서비스 ID로 요청을 식별합니다.
+- Authorize: 별도의 인증 절차 없이 누구나 호출할 수 있는 공개된 서비스입니다.
+- CommandType: D, F
+    - D: 데이터베이스 관련 명령을 수행합니다.
+    - F: 함수 관련 명령을 수행합니다.
 
-- `ServiceID`: `LD01`
-    - `TST010` 거래 내에서 `LD01`이라는 서비스 ID로 요청을 식별합니다.
+---
 
-- `Authorize`: `false`
-    - 별도의 인증 절차 없이 누구나 호출할 수 있는 공개된 서비스입니다.
+## 계약(Contract) 문서 해부하기 (2/2)
 
-- `CommandType`: `D`
-    - 이 서비스는 데이터베이스 관련 명령을 수행합니다.
-
-- `Inputs` & `Outputs`
-    - `Input`은 단일 행(Row), `Output`은 다중 행(Grid) 형태의 동적 데이터를 처리합니다.
-
+- Roles: 인증 토큰에서 프로그램 역할 레벨에 해당되는 지 확인합니다.
+- Policys: 인증 토큰에서 업무 정책 정보에 포함되는 지 확인합니다.
+- AccessScreenID: 특정 화면 ID에서만 접근을 허용합니다.
+- SequentialOptions: 여러 거래를 순차적으로 한번에 수행합니다.
+- Inputs: 여러 요청을 처리하는 정보를 포함하는 배열입니다.
+- Outputs: 여러 응답을 처리하는 정보를 포함하는 배열입니다.
 ---
 
 ## 설계 사상: 책임의 분리
@@ -208,30 +224,34 @@ HandStack에서 비즈니스 로직의 핵심 관문 역할을 하는 모듈입�
 
 ---
 
-## Hands-on: 계약 추가하고 API 확인하기
+## 핸즈온: 계약 목록 조회하고 정보 확인하기
 
-이제 직접 신규 거래 계약 파일을 프로젝트에 추가하고, HandStack이 해당 계약을 정상적으로 인식했는지 확인해 보겠습니다.
+transact 모듈의 module.json 의 다음 보안 항목에 해당하는 클라이언트만 가능
+- AuthorizationKey: 기본값 (SystemID + RunningEnvironment + HostName == HANDSTACKDHOSTNAME)
+- AllowClientIP: *
 
-1.  프로젝트의 계약 폴더에 위에서 살펴본 `HDS/TST/TST010.json` 파일을 생성합니다.
-2.  HandStack 애플리케이션을 실행합니다.
-3.  아래 URL을 웹 브라우저에서 열어 계약 정보가 조회되는지 확인합니다.
 
+```http
+# `transact` 모듈이 관리하는 계약 목록 정보를 조회하는 기본 API입니다.
+http://localhost:8421/transact/api/transaction/meta
 ```
-http://localhost:8421/transact/api/transaction/retrieve?applicationID=HDS&projectID=TST&transactionID=TST010&AuthorizationKey=HANDSTACKDHOSTNAME
+
+```http
+# 특정 계약 상세 정보를 조회하는 기본 API입니다.
+http://localhost:8421/transact/api/transaction/retrieve?applicationID=HDS&projectID=TST&transactionID=TST010
 ```
-- 위 URL은 `transact` 모듈이 관리하는 계약 정보를 조회하는 기본 API입니다.
 
 ---
 
-## 데이터베이스 트랜잭션 관리의 중요성
-- 목표: 데이터베이스 트랜잭션(Transaction)의 개념과 중요성(ACID 속성)을 이해하고, 여러 데이터베이스 작업이 하나의 논리적인 단위로 처리되어야 하는 이유를 파악합니다.
-- 내용:
-    - 트랜잭션이란? 여러 개의 데이터베이스 작업이 모두 성공하거나, 모두 실패하여 롤백되는 원자적인 단위.
-    - ACID 속성: 원자성(Atomicity), 일관성(Consistency), 고립성(Isolation), 지속성(Durability) 설명.
-    - 트랜잭션이 필요한 시나리오: 은행 계좌 이체, 온라인 쇼핑몰 주문 처리 (상품 재고 감소 + 주문 내역 생성).
-    - 트랜잭션 미사용 시 문제점: 데이터 불일치, 무결성 훼손.
-- 핸즈온 활동: (코드 실습 없음) 트랜잭션이 필요한 시나리오를 상상하고, 트랜잭션이 없다면 어떤 문제가 발생할지 생각해보기.
-- 초급자 눈높이: "트랜잭션은 마치 계약서와 같아요. 모든 조건이 충족되어야 계약이 성사(커밋)되고, 하나라도 문제가 생기면 처음부터 없었던 일(롤백)로 되돌려야 하죠."
+## 핸즈온: 데이터 연동 실습
+
+이제 직접 화면과 서버의 데이터 연동 과정을 체험해 봅시다.
+
+- 1단계: 페이지 자바스크립트 파일에 거래(transaction) 함수 정의하기
+- 2단계: HTML 요소에 `syn-datafield` 속성으로 데이터 Key 연결하기
+- 3단계: 조회 버튼에 `onclick` 이벤트를 연결하여 거래 함수 호출하기
+- 4단계: `beforeTransaction` Hook으로 조회 전 조건을, `afterTransaction` Hook으로 조회 후 결과를 확인하기
+- 5단계: 브라우저에서 버튼을 클릭하고 개발자 도구(F12) 네트워크 탭에서 실제 통신 데이터 확인하기
 
 ---
 

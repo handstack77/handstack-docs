@@ -185,7 +185,7 @@ Ctrl + C
 
 ---
 
-## 핸즈온 활동: 첫 프로젝트 실행
+## 핸즈온: 첫 프로젝트 실행
 
 1. `cd %HANDSTACK_SRC%`
 2. `dotnet build`

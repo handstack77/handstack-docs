@@ -336,7 +336,7 @@ http://localhost:8421/sample/uicontrol/files.html
 
 ---
 
-## 정리 및 핵심
+## 요약 정리 및 Q&A
 
 > 화면 개발에 필요한 파일 제어를 <mark>repository 모듈</mark>을 이용하여 간단하게 처리하세요.
 

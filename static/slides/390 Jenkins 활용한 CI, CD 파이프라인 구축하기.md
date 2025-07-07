@@ -213,7 +213,7 @@ pipeline {
 
 ---
 
-## 핸즈온 활동 (실습)
+## 핸즈온 (실습)
 
 1. GitHub/GitLab에 HandStack 프로젝트를 푸시합니다.
 2. 프로젝트 루트에 앞서 작성한 간단한 `Jenkinsfile`을 생성하고 커밋/푸시합니다.
