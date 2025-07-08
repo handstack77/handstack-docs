@@ -1,0 +1,112 @@
+{
+	"info": {
+		"name": "HandStack transact, dbclient, function API 테스트",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "HandStack Function",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"ClientTag\": \"\",\r\n    \"AccessToken\": \"\",\r\n    \"Version\": \"001\",\r\n    \"RequestID\": \"HDSHACHAC010LF01D20230821133753804DP0\",\r\n    \"LoadOptions\": {\r\n        \"encryptionType\": \"P\",\r\n        \"encryptionKey\": \"G\",\r\n        \"platform\": \"Win32\",\r\n        \"dynamic\": \"Y\",\r\n        \"authorize\": \"N\",\r\n        \"commandType\": \"F\",\r\n        \"returnType\": \"Json\",\r\n        \"transactionScope\": \"N\",\r\n        \"transactionLog\": \"Y\"\r\n    },\r\n    \"Action\": \"SYN\",\r\n    \"Environment\": \"D\",\r\n    \"ReturnType\": 0,\r\n    \"GlobalID\": \"HDSHACHAC010LF01D20230821133753804DP0\",\r\n    \"IsTransaction\": false,\r\n    \"DynamicObjects\": [\r\n        {\r\n            \"QueryID\": \"HDS|TST|PYF010|GF0100\",\r\n            \"JsonObject\": 0,\r\n            \"JsonObjects\": [\r\n                0,\r\n                1\r\n            ],\r\n            \"Parameters\": [\r\n                {\r\n                    \"ParameterName\": \"ServerDate\",\r\n                    \"Value\": \"helloworld\",\r\n                    \"DbType\": \"String\",\r\n                    \"Length\": -1\r\n                },\r\n                {\r\n                    \"ParameterName\": \"ServerName\",\r\n                    \"Value\": \"SYS999\",\r\n                    \"DbType\": \"String\",\r\n                    \"Length\": -1\r\n                }\r\n            ],\r\n            \"DecryptParameters\": [],\r\n            \"BaseFieldMappings\": [],\r\n            \"IgnoreResult\": false\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8421/function/api/execution",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8421",
+					"path": [
+						"function",
+						"api",
+						"execution"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "HandStack Database",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"name": "Content-Type",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"ClientTag\": \"\",\r\n    \"AccessToken\": \"\",\r\n    \"Version\": \"001\",\r\n    \"RequestID\": \"HDSHACHAC010LF01D20230821133753804DP0\",\r\n    \"LoadOptions\": {\r\n        \"encryptionType\": \"P\",\r\n        \"encryptionKey\": \"G\",\r\n        \"platform\": \"Win32\",\r\n        \"dynamic\": \"Y\",\r\n        \"authorize\": \"N\",\r\n        \"commandType\": \"F\",\r\n        \"returnType\": \"Json\",\r\n        \"transactionScope\": \"N\",\r\n        \"transactionLog\": \"Y\"\r\n    },\r\n    \"Action\": \"SYN\",\r\n    \"Environment\": \"D\",\r\n    \"ReturnType\": 0,\r\n    \"GlobalID\": \"HDSHACHAC010LF01D20230821133753804DP0\",\r\n    \"IsTransaction\": false,\r\n    \"DynamicObjects\": [\r\n        {\r\n            \"QueryID\": \"HDS|ZZD|TST020|G0100\",\r\n            \"JsonObject\": 0,\r\n            \"JsonObjects\": [\r\n                0,\r\n                1\r\n            ],\r\n            \"Parameters\": [\r\n                {\r\n                    \"ParameterName\": \"ApplicationID\",\r\n                    \"Value\": \"helloworld\",\r\n                    \"DbType\": \"String\",\r\n                    \"Length\": -1\r\n                },\r\n                {\r\n                    \"ParameterName\": \"CodeGroupID\",\r\n                    \"Value\": \"SYS999\",\r\n                    \"DbType\": \"String\",\r\n                    \"Length\": -1\r\n                }\r\n            ],\r\n            \"DecryptParameters\": [],\r\n            \"BaseFieldMappings\": [],\r\n            \"IgnoreResult\": false\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8421/dbclient/api/query",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8421",
+					"path": [
+						"dbclient",
+						"api",
+						"query"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "HandStack Transaction",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"accessToken\": \"\",\r\n    \"action\": \"SYN\",\r\n    \"kind\": \"BIZ\",\r\n    \"clientTag\": \"HANDSTACK|WebClient|ack|D\",\r\n    \"loadOptions\": {\r\n        \"encryptionType\": \"P\",\r\n        \"encryptionKey\": \"G\",\r\n        \"platform\": \"Win32\",\r\n        \"dynamic\": \"Y\",\r\n        \"authorize\": \"N\",\r\n        \"commandType\": \"D\",\r\n        \"returnType\": \"Json\",\r\n        \"transactionScope\": \"N\",\r\n        \"transactionLog\": \"Y\"\r\n    },\r\n    \"requestID\": \"LD00000HDSTSTSQS010GD01WRPFJF9104400\",\r\n    \"version\": \"001\",\r\n    \"environment\": \"D\",\r\n    \"system\": {\r\n        \"programID\": \"HDS\",\r\n        \"moduleID\": \"qramework\",\r\n        \"version\": \"1.0.0\",\r\n        \"routes\": [\r\n            {\r\n                \"systemID\": \"HANDSTACK\",\r\n                \"requestTick\": 1741743840722\r\n            }\r\n        ],\r\n        \"localeID\": \"ko-KR\"\r\n    },\r\n    \"interface\": {\r\n        \"devicePlatform\": \"browser\",\r\n        \"interfaceID\": \"WEB\",\r\n        \"sourceIP\": \"1.1.14.10\",\r\n        \"sourcePort\": 0,\r\n        \"sourceMAC\": \"\",\r\n        \"connectionType\": \"4g\",\r\n        \"timeout\": 184210\r\n    },\r\n    \"transaction\": {\r\n        \"globalID\": \"LD00000HDSTSTSQS010GD01WRPFJF9104400\",\r\n        \"businessID\": \"TST\",\r\n        \"transactionID\": \"TST020\",\r\n        \"functionID\": \"AD01\",\r\n        \"commandType\": \"R\",\r\n        \"simulationType\": \"P\",\r\n        \"terminalGroupID\": \"1|165\",\r\n        \"operatorID\": \"honggildong@handstack.kr\",\r\n        \"screenID\": \"TST020\",\r\n        \"startTraceID\": \"\",\r\n        \"dataFormat\": \"J\",\r\n        \"compressionYN\": \"N\"\r\n    },\r\n    \"payLoad\": {\r\n        \"property\": {},\r\n        \"dataMapInterface\": \"Row|Form,Grid\",\r\n        \"dataMapCount\": [\r\n            1\r\n        ],\r\n        \"dataMapSet\": [\r\n            [\r\n                {\r\n                    \"id\": \"CompanyNo\",\r\n                    \"value\": \"1\"\r\n                }\r\n            ]\r\n        ],\r\n        \"dataMapSetRaw\": []\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8421/transact/api/transaction/execute",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8421",
+					"path": [
+						"transact",
+						"api",
+						"transaction",
+						"execute"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

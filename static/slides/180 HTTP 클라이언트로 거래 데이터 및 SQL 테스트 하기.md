@@ -119,7 +119,7 @@ section.tinytext>blockquote {
 
 ## 왜 HTTP 클라이언트가 필요한가?
 
-HandStack으로 개발한 애플리케이션은 HTTP 기반의 API를 제공합니다.
+HandStack으로 개발한 애플리케이션은 HTTP 기반의 단일 엔드포인트의 API를 사용합니다.
 
 - UI 화면 없이도 백엔드의 기능이 올바르게 동작하는지 확인해야 합니다.
 - HTTP 클라이언트는 서버에 직접 요청을 보내고 응답을 확인할 수 있는 도구입니다.
@@ -136,11 +136,9 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
 - 요청 기록, 환경 변수 설정 등 다양한 편의 기능을 제공합니다.
 - [Postman 다운로드](https://go.postman.co/build) 후 설치하여 바로 사용할 수 있습니다.
 
-![bg right:40% contain](https://storage.googleapis.com/postman-documentation-images/support/Screenshot-2018-02-13-17-02-09.png)
-
 ---
 
-## `transact` 모듈 테스트 (Postman)
+## `transact` 모듈 테스트 (1/2)
 
 `transact` 모듈의 비즈니스 거래를 테스트합니다.
 
@@ -148,30 +146,46 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
 - Method: `POST`
 - URL: `http://localhost:8421/transact/api/transaction/execute`
 - Headers: `Content-Type: application/json`
-- Body:
-```json
-{
-    "action": "SYN", "kind": "BIZ",
-    "requestID": "LD00000HDSTSTSQS010GD01WRPFJF9104400",
-    "transaction": {
-        "businessID": "TST", "transactionID": "SQS010",
-        "functionID": "GD01", "commandType": "D"
-    },
-    "payLoad": {
-        "dataMapSet": [[{ "id": "CompanyNo", "value": "1" }]]
-    }
-}
-```
-
-<style scoped>
-section.tinytext code { font-size: 0.9em; }
-</style>
-
-<!-- class: tinytext -->
 
 ---
 
-## `dbclient` 모듈 테스트 (Postman)
+## `transact` 모듈 테스트 (2/2)
+
+[transact-payload.json 다운로드](assets/transact-payload.json) 후에 다음의 항목을 변경하여 요청을 실행합니다.
+
+```json
+{
+    ...
+    "transaction": {
+        "globalID": "LD00000HDSTSTSQS010GD01WRPFJF9104400",
+        "businessID": "TST",
+        "transactionID": "TST020",
+        "functionID": "AD01",
+        "commandType": "R",
+        "screenID": "TST020",
+    },
+    "payLoad": {
+        "property": {},
+        "dataMapInterface": "Row|Form,Grid",
+        "dataMapCount": [
+            1
+        ],
+        "dataMapSet": [
+            [
+                {
+                    "id": "CompanyNo",
+                    "value": "1"
+                }
+            ]
+        ]
+    }
+    ...
+}
+```
+
+---
+
+## `dbclient` 모듈 테스트 (1/2)
 
 `dbclient` 모듈을 통해 직접 SQL을 실행하고 테스트합니다.
 
@@ -179,28 +193,108 @@ section.tinytext code { font-size: 0.9em; }
 - Method: `POST`
 - URL: `http://localhost:8421/dbclient/api/query`
 - Headers: `Content-Type: application/json`
-- Body:
+
+---
+
+## `dbclient` 모듈 테스트 (2/2)
+
+[dbclient-payload.json 다운로드](assets/dbclient-payload.json) 후에 다음의 항목을 변경하여 요청을 실행합니다.
+
 ```json
 {
+    ...
+    "ClientTag": "",
+    "AccessToken": "",
+    "Version": "001",
     "Action": "SYN",
-    "RequestID": "HDSTSTSQS010LF01D20230821133753804DP0",
+    "Environment": "D",
+    "ReturnType": 0,
+    "GlobalID": "HDSTSTSQS010LF01D20230821133753804DP0",
+    "IsTransaction": false,
     "DynamicObjects": [
         {
             "QueryID": "HDS|TST|SQS010|GD0100",
+            "JsonObject": 0,
+            "JsonObjects": [
+                0
+            ],
             "Parameters": [
-                { "ParameterName": "ApplicationID", "Value": "HDS" }
-            ]
+                {
+                    "ParameterName": "ApplicationID",
+                    "Value": "helloworld",
+                    "DbType": "String",
+                    "Length": -1
+                }
+            ],
+            "DecryptParameters": [],
+            "BaseFieldMappings": [],
+            "IgnoreResult": false
         }
     ]
+    ...
 }
 ```
-> 필요 시 연결 문자열을 직접 명시하여 테스트할 수 있습니다.
-> `Server=localhost;TrustServerCertificate=True;...`
 
-<style scoped>
-section.tinytext code { font-size: 0.9em; }
-</style>
-<!-- class: tinytext -->
+---
+
+## `function` 모듈 테스트 (1/2)
+
+`function` 모듈을 통해 직접 Function 을 실행하고 테스트합니다.
+
+- 사전 설정: `function` 모듈의 `syn.config.json` 에서 `AuthorizationKey` 값을 `HANDSTACKDHOSTNAME`으로 설정합니다.
+- Method: `POST`
+- URL: `http://localhost:8421/function/api/execution`
+- Headers: `Content-Type: application/json`
+
+---
+
+## `function` 모듈 테스트 (2/2)
+
+[function-payload.json 다운로드](assets/function-payload.json) 후에 다음의 항목을 변경하여 요청을 실행합니다.
+
+```json
+{
+    ...
+    "ClientTag": "",
+    "AccessToken": "",
+    "Version": "001",
+    "Action": "SYN",
+    "Environment": "D",
+    "ReturnType": 0,
+    "GlobalID": "HDSHEDHED010GF01D20230821133753804DP0",
+    "IsTransaction": false,
+    "DynamicObjects": [
+        {
+            "QueryID": "HDS|HED|HED010|GF0100",
+            "JsonObject": 0,
+            "JsonObjects": [
+                0
+            ],
+            "Parameters": [
+                {
+                    "ParameterName": "UserWorkID",
+                    "Value": "3qmbxyhc",
+                    "DbType": "String",
+                    "Length": -1
+                }
+            ],
+            "DecryptParameters": [],
+            "BaseFieldMappings": [],
+            "IgnoreResult": false
+        }
+    ]
+    ...
+}
+```
+
+---
+
+## postman 에서 컬렉션 import
+
+HandStack transact, dbclient, function API 테스트에서 거래 항목을 수정하여 요청
+
+- [postman_handstack_apitest.json](assets/postman_handstack_apitest.json) 파일을 다운로드
+- 왼쪽 상단의 `import` 버튼을 클릭하여 다운로드 받은 파일을 드래그 또는 선택
 
 ---
 
@@ -213,13 +307,16 @@ section.tinytext code { font-size: 0.9em; }
 - 스크립트에 포함하여 테스트를 자동화하기에도 용이합니다.
 - 여기서는 JetBrains에서 제공하는 <mark>IntelliJ HTTP Client CLI</mark>를 사용해 보겠습니다.
 
+> ijhttp는 IntelliJ IDEA의 HTTP Client 플러그인과 동일한 .http 파일 형식을 사용하기 때문에, IDE에서 작성한 요청 파일을 터미널에서도 그대로 활용할 수 있다는 장점이 있습니다
+
 ---
 
-## `.http` 파일 준비하기
+## `.http` 파일 만들기
 
-CLI 도구에서 사용하기 위해, 요청 정보를 `.http` 파일 형식으로 저장합니다. Postman에서 사용했던 JSON 본문과 요청 정보를 합쳐서 만듭니다.
+CLI 도구에서 사용하기 위해, Postman 에서 요청 정보를 `.http` 파일 형식으로 저장합니다.
 
-- `transact.http` 파일과 `dbclient.http` 파일을 각각 생성합니다.
+- Postman 의 Code snippet 에서 HTTP 를 선택합니다.
+  - `transact.http`, `dbclient.http`, `function.http` 파일을 각각 `C:/tmp/handstack` 디렉토리에 생성합니다.
 
 - 파일 내용은 다음과 같은 형식으로 작성합니다.
     - 요청 메서드와 URL
@@ -229,116 +326,48 @@ CLI 도구에서 사용하기 위해, 요청 정보를 `.http` 파일 형식으�
 
 ---
 
-<!-- class: tinytext -->
+## IntelliJ HTTP Client CLI 설치하기 (1/2)
 
-## `transact.http` 파일 예시
-
-```http
-### transact 모듈 테스트
-POST http://localhost:8421/transact/api/transaction/execute
-Content-Type: application/json
-
-{
-    "accessToken": "", "action": "SYN", "kind": "BIZ",
-    "clientTag": "HANDSTACK|WebClient|ack|D",
-    "loadOptions": {
-        "encryptionType": "P", "encryptionKey": "G", "platform": "Win32",
-        "dynamic": "Y", "authorize": "N", "commandType": "D",
-        "returnType": "Json", "transactionScope": "N", "transactionLog": "Y"
-    },
-    "requestID": "LD00000HDSTSTSQS010GD01WRPFJF9104400", "version": "001", "environment": "D",
-    "system": {
-        "programID": "HDS", "moduleID": "qramework", "version": "1.0.0",
-        "routes": [{"systemID": "HANDSTACK", "requestTick": 1741743840722}],
-        "localeID": "ko-KR"
-    },
-    "interface": {
-        "devicePlatform": "browser", "interfaceID": "WEB", "sourceIP": "1.1.14.10",
-        "sourcePort": 0, "sourceMAC": "", "connectionType": "4g", "timeout": 180000
-    },
-    "transaction": {
-        "globalID": "LD00000HDSTSTSQS010GD01WRPFJF9104400", "businessID": "TST",
-        "transactionID": "SQS010", "functionID": "GD01", "commandType": "D",
-        "simulationType": "P", "terminalGroupID": "undefined|165",
-        "operatorID": "junchul@qcn.co.kr", "screenID": "SQS010",
-        "startTraceID": "", "dataFormat": "J", "compressionYN": "N"
-    },
-    "payLoad": {
-        "property": {}, "dataMapInterface": "Row|Form", "dataMapCount": [1],
-        "dataMapSet": [[{ "id": "CompanyNo", "value": "1" }]],
-        "dataMapSetRaw": []
-    }
-}
-```
-
----
-
-<!-- class: tinytext -->
-
-## `dbclient.http` 파일 예시
-
-```http
-### dbclient 모듈 테스트
-POST http://localhost:8421/dbclient/api/query
-Content-Type: application/json
-
-{
-    "ClientTag": "", "AccessToken": "", "Version": "001",
-    "RequestID": "HDSTSTSQS010LF01D20230821133753804DP0",
-    "LoadOptions": {
-        "encryptionType": "P", "encryptionKey": "G", "platform": "Win32",
-        "dynamic": "Y", "authorize": "N", "commandType": "F",
-        "returnType": "Json", "transactionScope": "N", "transactionLog": "Y"
-    },
-    "Action": "SYN", "Environment": "D", "ReturnType": 0,
-    "GlobalID": "HDSTSTSQS010LF01D20230821133753804DP0",
-    "IsTransaction": false,
-    "DynamicObjects": [
-        {
-            "QueryID": "HDS|TST|SQS010|GD0100", "JsonObject": 0, "JsonObjects": [0],
-            "Parameters": [
-                { "ParameterName": "ApplicationID", "Value": "HDS", "DbType": "String", "Length": -1 }
-            ],
-            "DecryptParameters": [], "BaseFieldMappings": [], "IgnoreResult": false
-        }
-    ]
-}
-```
-
----
-
-## IntelliJ HTTP Client CLI 설치하기
-
-- 1. JDK 17+ 설치 (필수)
+- JDK 17+ 설치
     - `ijhttp` CLI는 JDK 17 이상이 필요합니다.
     - Windows에서는 `winget`을 사용하여 쉽게 설치할 수 있습니다.
+
     ```bash
     winget install Microsoft.OpenJDK.17
     ```
 
-- 2. `ijhttp` 다운로드 및 압축 해제
+- JDK 21 설치
+    ```bash
+    winget install Microsoft.OpenJDK.21
+    ```
+
+---
+
+## IntelliJ HTTP Client CLI 설치하기 (2/2)
+
+- `ijhttp` 다운로드 및 압축 해제
     - [JetBrains 공식 웹사이트](https://www.jetbrains.com/ko-kr/ijhttp/download/)에서 직접 다운로드하거나, 터미널에서 `curl` 명령을 사용합니다.
     ```bash
     curl -f -L -o ijhttp.zip "https://jb.gg/ijhttp/latest"
     ```
     - 다운로드한 `ijhttp.zip` 파일의 압축을 해제합니다.
 
+- 명령 프롬프트를 관리자 권한으로 실행하여 다음 명령어로 환경변수에 등록합니다.
+  ```cmd
+  setx PATH "%PATH%;[압축 해제 경로]\ijhttp\bin" /M
+  ```
+
 ---
 
 ## IntelliJ HTTP Client CLI 실행하기
 
-압축을 해제한 디렉토리의 `bin` 폴더로 이동하여 `ijhttp` 명령을 실행합니다.
+`ijhttp` 명령을 실행하여 사전에 만든 .http 파일로 요청을 실행합니다.
 
 - `-L VERBOSE` 옵션은 요청과 응답의 상세 정보(헤더, 본문)를 모두 출력합니다.
 
 - `transact.http` 파일 테스트
     ```bash
-    ijhttp -L VERBOSE C:\path\to\your\transact.http
-    ```
-
-- `dbclient.http` 파일 테스트
-    ```bash
-    ijhttp -L VERBOSE C:\path\to\your\dbclient.http
+    ijhttp -L VERBOSE C:/tmp/handstack/transact.http
     ```
 
 ---

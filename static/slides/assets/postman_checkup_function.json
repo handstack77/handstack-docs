@@ -1,0 +1,81 @@
+{
+	"info": {
+		"name": "HandStack function 모듈 함수 Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "checkup Function 테스트",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  {\n    \"ParameterName\": \"UserWorkID\",\n    \"Value\": \"3qmbxyhc\",\n    \"DbType\": \"String\",\n    \"Length\": 0\n  },\n  {\n    \"ParameterName\": \"UserNo\",\n    \"Value\": \"08dc9ccbf7e3e2d26f78690d7c05f876\",\n    \"DbType\": \"String\",\n    \"Length\": 0\n  },\n  {\n    \"ParameterName\": \"ApplicationName\",\n    \"Value\": \"ack\",\n    \"DbType\": \"String\",\n    \"Length\": 0\n  },\n  {\n    \"ParameterName\": \"ApplicationID\",\n    \"Value\": \"jizq4ga6\",\n    \"DbType\": \"String\",\n    \"Length\": 0\n  },\n  {\n    \"ParameterName\": \"ProjectType\",\n    \"Value\": \"U\",\n    \"DbType\": \"String\",\n    \"Length\": 0\n  },\n  {\n    \"ParameterName\": \"ItemPath\",\n    \"Value\": \"FHB/SYS010.html\",\n    \"DbType\": \"String\",\n    \"Length\": 0\n  }\n]"
+				},
+				"url": {
+					"raw": "http://localhost:8421/checkup/api/function/execute?accessToken=&loadOptions[option1]=value1&featureMeta.Timeout=0&globalID=blabla&featureSQLPath=C:\\projects\\qcn.qramework\\modules\\filehub\\Contracts\\function\\csharp\\HDS\\FHB\\SYS010\\featureSQL.xml&dataProvider=SqlServer&connectionString=Data Source=localhost;Initial Catalog=handsup;User ID=sa;Password=roqkfwk~!@34;Pooling=true;Min Pool Size=60;Max Pool Size=180;&platform=Windows&functionID=SYS.SYS010.LF01",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"checkup",
+						"api",
+						"function",
+						"execute"
+					],
+					"query": [
+						{
+							"key": "accessToken",
+							"value": ""
+						},
+						{
+							"key": "loadOptions[option1]",
+							"value": "value1"
+						},
+						{
+							"key": "featureMeta.Timeout",
+							"value": "0"
+						},
+						{
+							"key": "globalID",
+							"value": "blabla"
+						},
+						{
+							"key": "featureSQLPath",
+							"value": "C:\\projects\\qcn.qramework\\modules\\filehub\\Contracts\\function\\csharp\\HDS\\FHB\\SYS010\\featureSQL.xml"
+						},
+						{
+							"key": "dataProvider",
+							"value": "SqlServer"
+						},
+						{
+							"key": "connectionString",
+							"value": "Data Source=localhost;Initial Catalog=handsup;User ID=sa;Password=roqkfwk~!@34;Pooling=true;Min Pool Size=60;Max Pool Size=180;"
+						},
+						{
+							"key": "platform",
+							"value": "Windows"
+						},
+						{
+							"key": "functionID",
+							"value": "SYS.SYS010.LF01"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

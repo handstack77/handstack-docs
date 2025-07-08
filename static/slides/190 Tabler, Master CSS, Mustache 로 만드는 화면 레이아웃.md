@@ -116,7 +116,7 @@ section.tinytext>blockquote {
 ### 기본에 충실한 바닐라 HTML, CSS, JavaScript 문법
 ---
 
-## 먼저, 디자인 시스템이란 무엇일까요?
+## 디자인 시스템이란 무엇일까요?
 
 > 디자인 시스템은 UI(사용자 인터페이스) 및 UX(사용자 경험) 디자인 원칙과 규격을 정의하고, 재사용 가능한 UI 컴포넌트를 제공하여 다양한 제품(PC, 모바일 등)에 일관성 있게 대응할 수 있도록 하는 체계입니다.
 
@@ -187,16 +187,17 @@ HandStack은 다음과 같은 검증된 도구들을 기반으로 디자인 시�
 
 ---
 
-## 샘플 및 예제 참고하기
+## Bootstrap, Tabler 샘플 및 예제 참고하기
 
 HandStack은 Bootstrap 기반의 Tabler 테마를 기본 CSS 프레임워크로 사용합니다.
 아래 사이트들에서 다양한 컴포넌트와 레이아웃 예제를 확인해 보세요.
 
 - **디자인 컴포넌트 예제**
   - [Bootstrap 5 Examples](https://getbootstrap.com/docs/5.3/examples/)
-  - [Bootstrap Components](https://getbootstrap.com/docs/5.3/components/)
   - [Tabler Preview](https://preview.tabler.io/)
   - [Tabler Form Elements](https://preview.tabler.io/form-elements.html)
+  - [Tabler Documents](https://docs.tabler.io/ui/layout)
+  - [Tabler Icons](https://tabler.io/icons)
 
 ---
 
@@ -207,11 +208,41 @@ HandStack은 Bootstrap 기반의 Tabler 테마를 기본 CSS 프레임워크로 
 - [Bootsnipp](https://bootsnipp.com/)
 - [Bootdey](https://www.bootdey.com/bootstrap-snippets)
 - [Bootstrapious](https://bootstrapious.com/snippets)
-- [Tutorial Republic](https://www.tutorialrepublic.com/snippets/gallery.php)
+- [shuffle.dev](https://shuffle.dev/components/bootstrap)
 
 ---
 
+## Master CSS 샘플 및 예제 참고하기
 
+Master CSS 는 TailwindCSS 와 같이 유틸리티 클래스 처럼 동작하지만 가상 CSS 엔진을 도입하여 미리 정의한 수많은 클래스를 학습할 필요 없이 자동으로 생성하도록 설계 되었습니다.
+
+> 예를 들어, font:14, pt:16, w:36@md 와 같이 속성명과 값 사이에 콜론(:)을 사용하고, 유닛 변환이 더 지능적으로 이루어집니다.
+
+- [Getting started with Master CSS](https://css.master.co/docs)
+
+---
+
+## mustache.js 템플릿 엔진 샘플 및 예제 참고하기
+
+Mustache는 로직이 없는(logic-less) 템플릿 엔진으로, JavaScript를 포함한 다양한 언어로 구현되어 있습니다. JavaScript 버전의 Mustache는 일반적으로 "Mustache.js"로 불립니다.
+
+```js
+var template = "Hello, {{name}}! You have {{calc}} new messages.";
+var data = {
+    name: "Alice",
+    messages: ["msg1", "msg2", "msg3"],
+    calc: function() {
+        return this.messages.length;
+    }
+};
+
+var rendered = Mustache.render(template, data);
+document.getElementById('output').innerHTML = rendered;
+```
+
+- [Getting started with Master CSS](https://github.com/janl/mustache.js)
+
+---
 
 # 실습 시간
 ## Tabler, Master CSS, Mustache로 화면 레이아웃 만들기
