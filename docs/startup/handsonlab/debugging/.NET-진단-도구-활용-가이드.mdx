@@ -1,0 +1,349 @@
+---
+sidebar_position: 32
+---
+
+# .NET 진단 도구 활용 가이드 (dotnet-trace, dotnet-dump)
+
+프로세스에 직접 연결하는 실시간 디버깅이 어려운 경우, `dotnet-trace`와 `dotnet-dump`를 활용한 간접 디버깅으로 장애 원인을 분석할 수 있습니다.
+
+이 방법은 당장의 문제 해결을 위한 디버깅 뿐만 아니라 애플리케이션의 성능 문제나 예기치 않은 종료 현상을 분석하는 데도 유용합니다.
+
+- Trace 수집: 성능 관련 데이터를 수집하려면 대상 서버에서 다음 명령을 실행합니다.
+
+```bash
+dotnet-trace collect -p <PID> -o trace.nettrace
+```
+
+- Dump 수집: 특정 시점의 메모리 스냅샷을 생성하려면 다음 명령을 실행합니다.
+
+```bash
+dotnet-dump collect -p <PID> -o dump.dmp
+```
+
+- Analyze 분석: dump.dmp 파일을 이용하여 분석을 시작하려면 다음 명령을 실행합니다.
+
+```bash
+dotnet-dump analyze dump.dmp
+```
+
+---
+
+수집된 `trace.nettrace` 또는 `dump.dmp` 파일을 로컬 개발 PC로 가져와 Visual Studio에서 열거나, `dotnet-dump analyze` 명령을 통해 상세한 스택 및 메모리 정보를 분석할 수 있습니다.
+
+
+## 개념 및 필요성
+
+### 간접 디버깅이란?
+
+- 운영 환경에서 원격 또는 직접 디버거를 연결하기 어려운 상황에서 사용
+- 애플리케이션의 실행 정보를 파일로 수집하여 별도 환경에서 분석
+- 서비스 중단 없이 성능 문제나 장애 원인 파악 가능
+
+### 주요 도구들
+
+- dotnet-trace: 성능 추적 데이터 수집 (.nettrace 파일)
+- dotnet-dump: 메모리 덤프 수집 (.dmp 파일)
+- dotnet-counters: 실시간 성능 카운터 모니터링
+
+## Microsoft Learn 공식 문서
+
+각 진단 도구의 설치, 기본 사용법, 고급 옵션, 문제 해결 등이 체계적으로 정리되어 있어 실무에서 활용하기에 좋은 참고 자료들을 정리했습니다.
+
+### 주요 도구별 공식 문서
+
+- dotnet-trace: https://learn.microsoft.com/ko-kr/dotnet/core/diagnostics/dotnet-trace
+- dotnet-dump: https://learn.microsoft.com/ko-kr/dotnet/core/diagnostics/dotnet-dump
+- dotnet-counters: https://learn.microsoft.com/ko-kr/dotnet/core/diagnostics/dotnet-counters
+
+### 통합 개요 문서
+
+- .NET Diagnostic tools overview: https://learn.microsoft.com/ko-kr/dotnet/core/diagnostics/tools-overview
+
+## GitHub 공식 저장소 문서
+
+### dotnet/diagnostics 저장소
+
+- dotnet-trace 상세 가이드: https://github.com/dotnet/diagnostics/blob/main/documentation/dotnet-trace-instructions.md
+- dotnet-counters 상세 가이드: https://github.com/dotnet/diagnostics/blob/main/documentation/dotnet-counters-instructions.md
+- 진단 도구 설계 문서: https://github.com/dotnet/diagnostics/blob/main/documentation/design-docs/dotnet-tools.md
+
+이 중에서 Microsoft Learn 문서들이 가장 공식적이고 사용자 친화적인 가이드를 제공하며, GitHub 저장소에서는 더 기술적인 세부사항과 고급 사용법을 확인할 수 있습니다.
+
+---
+
+## 1. dotnet-trace 활용
+
+### 설치 및 기본 사용법
+
+```bash
+# 전역 도구 설치
+dotnet tool install --global dotnet-trace
+
+# 실행 중인 .NET 프로세스 확인
+dotnet-trace ps
+
+# 기본 추적 수집 (30초 동안)
+dotnet-trace collect -p {process_id}
+
+# 특정 시간 동안 수집
+dotnet-trace collect -p {process_id} --duration 00:01:00
+
+# 출력 파일 이름 지정
+dotnet-trace collect -p {process_id} -o my-trace.nettrace
+```
+
+### 고급 사용법
+
+```bash
+# 특정 프로바이더만 추적
+dotnet-trace collect -p {process_id} --providers Microsoft-DotNETCore-SampleProfiler
+
+# 여러 프로바이더 조합
+dotnet-trace collect -p {process_id} --providers "Microsoft-DotNETCore-SampleProfiler,System.Runtime"
+
+# ASP.NET Core 웹 애플리케이션 추적
+dotnet-trace collect -p {process_id} --providers "Microsoft-AspNetCore-Server-Kestrel,Microsoft-AspNetCore-Hosting"
+
+# CPU 샘플링 프로파일링
+dotnet-trace collect -p {process_id} --profile cpu-sampling
+
+# 가비지 컬렉션 추적
+dotnet-trace collect -p {process_id} --profile gc-verbose
+```
+
+### 실전 예시
+
+```bash
+# 1. 실행 중인 ASP.NET Core 애플리케이션 확인
+dotnet-trace ps
+# 출력: 12345 MyWebApp /path/to/MyWebApp.dll
+
+# 2. 성능 문제 발생 시 추적 시작
+dotnet-trace collect -p 12345 --profile cpu-sampling --duration 00:02:00
+
+# 3. HTTP 요청 문제 추적
+dotnet-trace collect -p 12345 --providers "Microsoft-AspNetCore-Server-Kestrel:Information"
+```
+
+## 2. dotnet-dump 활용
+
+### 설치 및 기본 사용법
+
+```bash
+# 전역 도구 설치
+dotnet tool install --global dotnet-dump
+
+# 실행 중인 프로세스 확인
+dotnet-dump ps
+
+# 메모리 덤프 수집
+dotnet-dump collect -p {process_id}
+
+# 출력 파일 이름 지정
+dotnet-dump collect -p {process_id} -o my-dump.dmp
+
+# 덤프 타입 지정 (Mini, Heap, Triage, Full)
+dotnet-dump collect -p {process_id} --type Full
+```
+
+### 덤프 분석
+
+```bash
+# 덤프 파일 분석 시작
+dotnet-dump analyze my-dump.dmp
+
+# 분석 모드에서 사용 가능한 명령어들
+# > help                    # 도움말 보기
+# > clrstack                # 관리되는 스택 추적
+# > clrthreads              # 관리되는 스레드 목록
+# > dumpheap                # 힙 객체 덤프
+# > gcroot                  # GC 루트 추적
+# > sos                     # SOS 명령어들
+```
+
+### 실전 예시
+
+```bash
+# 1. 메모리 누수 의심 시 덤프 수집
+dotnet-dump collect -p 12345 --type Heap -o memory-leak-dump.dmp
+
+# 2. 덤프 분석 시작
+dotnet-dump analyze memory-leak-dump.dmp
+
+# 3. 분석 세션에서 실행할 명령어들
+> dumpheap -stat          # 객체 타입별 통계
+> dumpheap -type System.String  # 특정 타입 객체들
+> clrthreads              # 스레드 상태 확인
+> clrstack                # 현재 스레드 스택
+```
+
+## 3. 통합 활용 시나리오
+
+### 시나리오 1: 성능 저하 문제 해결
+
+```bash
+# 1단계: 실시간 성능 카운터 확인
+dotnet-counters monitor -p {process_id} --counters System.Runtime,Microsoft.AspNetCore.Hosting
+
+# 2단계: 성능 추적 데이터 수집
+dotnet-trace collect -p {process_id} --profile cpu-sampling --duration 00:05:00
+
+# 3단계: 메모리 상태 확인을 위한 덤프 수집
+dotnet-dump collect -p {process_id} --type Heap
+```
+
+### 시나리오 2: 데드락 문제 진단
+
+```bash
+# 1단계: 응답 없는 애플리케이션의 덤프 수집
+dotnet-dump collect -p {process_id} --type Full
+
+# 2단계: 덤프 분석
+dotnet-dump analyze deadlock-dump.dmp
+
+# 3단계: 분석 세션에서 실행
+> clrthreads                    # 모든 스레드 상태 확인
+> setthread {thread_id}         # 특정 스레드 선택
+> clrstack                      # 선택된 스레드의 스택 추적
+> syncblk                       # 동기화 블록 정보
+```
+
+## 4. 분석 도구 및 환경
+
+### Visual Studio에서 분석
+
+```csharp
+// Visual Studio 2022에서 지원
+// 1. 진단 도구 > 성능 프로파일러
+// 2. 파일 > 열기 > .nettrace 파일 선택
+// 3. 또는 .dmp 파일을 직접 열기
+```
+
+### JetBrains dotMemory/dotTrace와 연동
+
+```bash
+# dotTrace 형식으로 변환
+dotnet-trace convert input.nettrace --format speedscope
+
+# Speedscope 웹 뷰어에서 분석
+# https://speedscope.app 에서 파일 업로드
+```
+
+## 5. 자동화 스크립트 예시
+
+### PowerShell 스크립트
+
+```powershell
+# 자동 진단 스크립트
+param(
+    [Parameter(Mandatory=$true)]
+    [int]$ProcessId,
+    [string]$OutputPath = ".",
+    [int]$DurationSeconds = 60
+)
+
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$traceFile = "$OutputPath\trace_$timestamp.nettrace"
+$dumpFile = "$OutputPath\dump_$timestamp.dmp"
+
+Write-Host "진단 시작: Process ID $ProcessId"
+
+# 추적 수집
+Write-Host "성능 추적 수집 중..."
+dotnet-trace collect -p $ProcessId --duration "00:00:$DurationSeconds" -o $traceFile
+
+# 덤프 수집
+Write-Host "메모리 덤프 수집 중..."
+dotnet-dump collect -p $ProcessId -o $dumpFile
+
+Write-Host "진단 완료!"
+Write-Host "추적 파일: $traceFile"
+Write-Host "덤프 파일: $dumpFile"
+```
+
+### Bash 스크립트
+
+```bash
+#!/bin/bash
+# 자동 진단 스크립트
+
+PROCESS_ID=$1
+OUTPUT_PATH=${2:-"."}
+DURATION=${3:-60}
+
+if [ -z "$PROCESS_ID" ]; then
+    echo "사용법: $0 <process_id> [output_path] [duration_seconds]"
+    exit 1
+fi
+
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+TRACE_FILE="$OUTPUT_PATH/trace_$TIMESTAMP.nettrace"
+DUMP_FILE="$OUTPUT_PATH/dump_$TIMESTAMP.dmp"
+
+echo "진단 시작: Process ID $PROCESS_ID"
+
+# 추적 수집
+echo "성능 추적 수집 중..."
+dotnet-trace collect -p $PROCESS_ID --duration "00:00:$DURATION" -o $TRACE_FILE
+
+# 덤프 수집
+echo "메모리 덤프 수집 중..."
+dotnet-dump collect -p $PROCESS_ID -o $DUMP_FILE
+
+echo "진단 완료!"
+echo "추적 파일: $TRACE_FILE"
+echo "덤프 파일: $DUMP_FILE"
+```
+
+## 6. 모범 사례 및 주의사항
+
+### 모범 사례
+
+1. 정기적인 베이스라인 수집
+   - 정상 상태에서의 성능 데이터를 미리 수집
+   - 문제 발생 시 비교 분석 가능
+
+2. 적절한 덤프 타입 선택
+   - Mini: 최소 정보, 빠른 수집
+   - Heap: 메모리 분석용
+   - Full: 완전한 정보, 크기 큼
+
+3. 스토리지 관리
+   - 덤프 파일은 매우 클 수 있음 (GB 단위)
+   - 정기적인 정리 및 압축 필요
+
+### 주의사항
+
+1. 성능 영향
+   - 덤프 수집 시 애플리케이션이 일시 정지될 수 있음
+   - 피크 시간대 피하여 수집 권장
+
+2. 보안 고려사항
+   - 덤프 파일에는 민감한 정보 포함 가능
+   - 전송 및 저장 시 암호화 필요
+
+3. 버전 호환성
+   - .NET Core 3.0 이상에서 지원
+   - 도구 버전과 런타임 버전 호환성 확인
+
+## 7. 문제 해결 가이드
+
+### 일반적인 문제들
+
+```bash
+# 권한 문제
+sudo dotnet-dump collect -p {process_id}
+
+# 프로세스 찾기 실패
+ps aux | grep dotnet
+dotnet-dump ps
+
+# 큰 덤프 파일 처리
+dotnet-dump collect -p {process_id} --type Mini
+
+# 네트워크 상의 덤프 분석
+scp user@server:/path/to/dump.dmp ./
+dotnet-dump analyze dump.dmp
+```
+
+이러한 도구들을 활용하면 운영 환경에서 발생하는 다양한 문제들을 안전하고 효과적으로 진단할 수 있습니다.

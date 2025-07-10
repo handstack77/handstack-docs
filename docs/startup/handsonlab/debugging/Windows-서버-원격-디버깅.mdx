@@ -53,23 +53,3 @@ ack 프로그램이 원격 Windows Server에서 실행 중이라면 디버거를
 - 원하는 프로세스를 더블 클릭하거나 선택 후 `연결(Attach)` 버튼을 클릭합니다.
 
 이제 Visual Studio의 모든 디버깅 기능(중단점, 조사식, 호출 스택 등)을 사용하여 원격 앱을 디버그할 수 있습니다.
-
----
-
-## 추가 팁: dotnet-trace 및 dotnet-dump 활용
-
-프로세스에 직접 연결하는 실시간 디버깅이 어려운 경우, `dotnet-trace`와 `dotnet-dump`를 활용한 간접 디버깅으로 장애 원인을 분석할 수 있습니다. 이 방법은 애플리케이션의 성능 문제나 예기치 않은 종료 현상을 분석하는 데 유용합니다.
-
-- Trace 수집: 성능 관련 데이터를 수집하려면 대상 서버에서 다음 명령을 실행합니다.
-
-```bash
-dotnet-trace collect -p <PID> -o trace.nettrace
-```
-
-- Dump 수집: 특정 시점의 메모리 스냅샷을 생성하려면 다음 명령을 실행합니다.
-
-```bash
-dotnet-dump collect -p <PID> -o dump.dmp
-```
-
-수집된 `trace.nettrace` 또는 `dump.dmp` 파일을 로컬 개발 PC로 가져와 Visual Studio에서 열거나, `dotnet-dump analyze` 명령을 통해 상세한 스택 및 메모리 정보를 분석할 수 있습니다.
