@@ -117,24 +117,25 @@ section.tinytext>blockquote {
 
 ---
 
-## 1. 프로젝트 빌드하기
+## 프로젝트 빌드하기
 
-> [내 컴퓨터에 개발 환경 꾸미기](https://handstack.kr/slides/020%20내%20컴퓨터에%20개발%20환경%20꾸미기.html) 에서 설치 과정이 완료되면 호스트에 HANDSTACK_SRC, HANDSTACK_HOME 환경변수가 설정됩니다.
+> [내 컴퓨터에 개발 환경 꾸미기](https://handstack.kr/slides/020%20내%20컴퓨터에%20개발%20환경%20꾸미기.html) 에서 설치 과정에서 `install.bat` 스크립트가 실행 되면 호스트에 <mark>HANDSTACK_SRC</mark>, <mark>HANDSTACK_HOME</mark> 환경변수가 설정됩니다.
 
 - 먼저 프로젝트 소스 코드를 빌드하여 컴파일합니다.
-- HandStack 소스 디렉토리로 이동하여 `dotnet build` 명령어를 실행합니다.
-- 이 과정은 프로젝트에 필요한 모든 코드를 확인하고 실행 가능한 상태로 만듭니다.
+- HandStack 소스 디렉토리로 이동하여 `build.bat` 명령어를 실행합니다.
+- 이 과정은 모든 프로젝트를 개발 환경에 적합한 Debug 모드로 모든 코드를 컴파일 하고 실행 가능한 상태로 만듭니다.
 
 ```bash
 cd %HANDSTACK_SRC%
-dotnet build
+build.bat
 ```
 
 ---
 
-## 2. 프로젝트 게시(Publish)하기
+## 프로젝트 게시(Publish)하기
 
-- 빌드가 완료되면, 실행 가능한 형태로 배포 파일을 생성합니다.
+- 빌드가 완료되면, 운영 환경에 적합한 실행 가능한 형태로 배포 파일을 생성합니다.
+- 
 - HandStack은 다양한 운영체제와 환경에 맞춰 게시할 수 있는 `publish.bat` 스크립트를 제공합니다.
 
 ```bash
@@ -142,7 +143,6 @@ cd %HANDSTACK_SRC%
 
 # publish.bat [운영체제] [빌드설정] [빌드구성] [아키텍처]
 
-# 예시
 publish.bat win build Debug x64
 publish.bat linux build Debug x64
 publish.bat osx build Debug x64
@@ -150,7 +150,7 @@ publish.bat osx build Debug x64
 
 ---
 
-## 3. ack 서버 실행하기
+## ack 서버 실행하기
 
 - 게시가 완료되면 결과물이 생성된 디렉토리로 이동합니다. (`%HANDSTACK_HOME%`)
 - 이제 `ack` 서버를 실행하여 웹 애플리케이션을 시작합니다.
