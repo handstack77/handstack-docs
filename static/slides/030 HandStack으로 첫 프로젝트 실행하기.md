@@ -135,29 +135,37 @@ build.bat
 ## 프로젝트 게시(Publish)하기
 
 - 빌드가 완료되면, 운영 환경에 적합한 실행 가능한 형태로 배포 파일을 생성합니다.
-- 
 - HandStack은 다양한 운영체제와 환경에 맞춰 게시할 수 있는 `publish.bat` 스크립트를 제공합니다.
 
 ```bash
 cd %HANDSTACK_SRC%
 
 # publish.bat [운영체제] [빌드설정] [빌드구성] [아키텍처]
-
 publish.bat win build Debug x64
 publish.bat linux build Debug x64
 publish.bat osx build Debug x64
+
+publish.bat linux publish Release x64
+publish.bat osx publish Release x64
+publish.bat win publish Release x64
 ```
 
 ---
 
 ## ack 서버 실행하기
 
-- 게시가 완료되면 결과물이 생성된 디렉토리로 이동합니다. (`%HANDSTACK_HOME%`)
+- 게시가 완료되면 결과물이 생성된 디렉토리로 이동합니다.
+  - `cd %HANDSTACK_SRC%/../publish/[운영체제 ID]/handstack`
 - 이제 `ack` 서버를 실행하여 웹 애플리케이션을 시작합니다.
 - 운영체제에 맞는 명령어를 사용하세요.
 
 ```bash
-cd %HANDSTACK_HOME%
+cd %HANDSTACK_SRC%/../publish/[운영체제 ID]/handstack
+
+# install.bat 은 처음 한번 실행해야 합니다.
+# install.bat
+
+cd app
 ack.exe
 ```
 ---
@@ -227,7 +235,7 @@ Ctrl + C
 
 `http://localhost:8421/[모듈 ID]/module.html`
 
-HandStack에서는 공식 module로서 다음과 같이 기본 제공됩니다.
+HandStack은 웹 개발 프레임워크 기능을 제공하는 업무 모듈을 다음과 같이 제공합니다.
 
 <style scoped>
   table { font-size: 22px; }  
