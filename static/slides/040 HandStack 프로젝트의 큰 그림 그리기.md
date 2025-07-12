@@ -262,17 +262,27 @@ HandStack은 모놀리식의 단순함과 마이크로서비스의 장점을 결
   - ack + (transact)
   - ack + (dbclient/function/repository)
 
+> 고성능의 단일 호스트에 Port 를 다르게 구성하여 마이크로서비스 구성이 가능합니다.
+
 ---
 
 ## 모듈 프로젝트의 SDK 개념
 
-최신 .NET 프로젝트는 프로젝트 SDK(소프트웨어 개발 키트)와 연결됩니다. [.NET 프로젝트 SDK 확인하기](https://learn.microsoft.com/ko-kr/dotnet/core/project-sdk/overview)
+.NET Core 프로젝트의 모듈 프로젝트 SDK는 컴포넌트 기반 UI, Razor Pages, Blazor 컴포넌트를 `ASP.NET Core의 모든 기능을 사용 가능한` 라이브러리 형태로 개발합니다.
 
-- HandStack module은 `ASP.NET Core의 모든 기능을 사용 가능한` 모듈 프로젝트로 개발됩니다.
-- .NET Core 프로젝트의 주요 속성을 다음과 같습니다.
-  - 프로그램: Project Sdk="Microsoft.NET.Sdk.Web"
-  - 모듈: Project Sdk="Microsoft.NET.Sdk.Razor"
-  - 라이브러리: Project Sdk="Microsoft.NET.Sdk"
+<style scoped>
+  table { font-size: 23px }
+</style>
+
+| SDK ID | 사용 용도 | 예시 |
+| --- | --- | --- |
+| Microsoft.NET.Sdk | 콘솔 앱, 윈폼, 라이브러리 | `dotnet new console`, `dotnet new classlib` |
+| `Microsoft.NET.Sdk.Web` | ASP.NET Core 웹 앱, API | `dotnet new mvc`, `dotnet new webapi` |
+| `Microsoft.NET.Sdk.Razor` | Razor 컴포넌트 라이브러리 | `dotnet new razorclasslib` |
+| Microsoft.NET.Sdk.BlazorWebAssembly | Blazor WASM SPA 앱 | `dotnet new blazorwasm` |
+| Microsoft.NET.Sdk.Worker | Worker 서비스 | `dotnet new worker` |
+| Aspire.AppHost.Sdk | Aspire 클라우드 네이티브 앱 | `dotnet new aspire-app` |
+| MSTest.Sd` | MSTest 기반 테스트 | `dotnet new mstest` |
 
 ---
 
@@ -320,6 +330,17 @@ HandStack은 이러한 애플리케이션을 개발하기 위한 부분을 논�
 </style>
 
 ![](img/handstack-monolith-architecture.png)
+
+---
+
+## 개발/운영 비용 간 균형 잡기
+
+기술의 상향 평준화는 개발 비용이 낮아지고, 운영 비용이 증가합니다.
+
+- 개발 단계: .NET Core의 크로스플랫폼, CLI, SDK 프로젝트, 최신 언어 기능, AI 지원원 → 저비용, 고속 개발 가능
+- 운영 단계: 사용자가 늘어날수록 인프라, 모니터링, 백업, 스케일링, 보안, 법적 대응 등 운영비용 지속 증가
+
+> 고객의 요구에 맞춰 셀프 호스트, 클라우드, 하이브리드 방식의 개발과 운영을 해야합니다.
 
 ---
 
