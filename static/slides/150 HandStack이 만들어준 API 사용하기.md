@@ -130,6 +130,10 @@ section.tinytext>blockquote {
 
 HandStack에서 비즈니스 로직의 핵심 관문 역할을 하는 모듈입니다.
 
+<style scoped>
+  li { font-size: 28px; }
+</style>
+
 - <mark>API 자동 관리</mark>
     - 업무 계약(Contract) JSON 파일을 생성하거나 변경하면, 해당 계약을 위한 HTTP POST 엔드포인트를 자동으로 생성하고 관리합니다.
 
@@ -159,6 +163,10 @@ HandStack에서 비즈니스 로직의 핵심 관문 역할을 하는 모듈입�
 ## 계약(Contract) 문서 살펴보기
 
 `transact` 모듈은 모든 것을 이 계약 문서에 기반하여 처리합니다.
+
+<style scoped>
+  marp-pre code { font-size: 17px; }
+</style>
 
 ```json
 {

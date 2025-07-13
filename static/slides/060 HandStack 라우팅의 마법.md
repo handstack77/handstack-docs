@@ -124,6 +124,7 @@ section.tinytext>blockquote {
 
 - HandStack은 이 과정을 매우 편리하게 자동화합니다.
   - URL을 `kebab-case` (대시로 구분된 소문자) 형태로 자동 변환하여 가독성과 검색 엔진 최적화(SEO)를 높입니다.
+- 라우팅 적용 범위는 Controller 와 Pages 입니다.
 
 ---
 
