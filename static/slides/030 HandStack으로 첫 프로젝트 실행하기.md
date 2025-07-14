@@ -223,11 +223,11 @@ Ctrl + C
 1. `wwwroot` 모듈의 웹 루트 디렉토리로 이동합니다.
    - `$(HANDSTACK_SRC)/2.Modules/wwwroot/wwwroot`
 
-2. `index.html` 파일의 내용을 수정합니다.
+2. `module.html` 파일의 내용을 수정합니다.
    - "hello module wwwroot" -> "Welcome to HandStack!"
 
 3. 웹 브라우저에서 결과를 확인합니다.
-   - `http://localhost:8421/index.html`
+   - `http://localhost:8421/module.html`
 
 ---
 
