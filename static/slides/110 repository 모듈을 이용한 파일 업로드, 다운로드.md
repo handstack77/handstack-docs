@@ -119,7 +119,7 @@ section.tinytext>blockquote {
 
 ## 학습 목표
 
-- HandStack의 `repository` 모듈과 `$fileclient` 컨트롤을 사용하여 다양한 파일 처리 방법을 학습합니다.
+- HandStack의 `repository` 모듈과 `$fileclient`, `$htmleditor` 컨트롤을 사용하여 다양한 파일 처리 방법을 학습합니다.
 - 파일 업로드, 다운로드, 삭제, 정보 조회 및 수정 기능을 익힙니다.
 - 대용량 서비스의 기반이 되는 클라우드 스토리지 연동 개념을 이해합니다.
 

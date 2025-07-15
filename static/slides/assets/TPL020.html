@@ -1,0 +1,295 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="visibility: hidden;">
+    <form autocomplete="off" id="form1" syn-datafield="MainForm">
+        <input type="hidden" id="txtApplicationNo" syn-datafield="ApplicationNo" syn-options="{belongID: ['LD01', 'MD01']}">
+        <div class="page">
+            <div class="page-wrapper">
+                <div class="page-header mt-2 d-print-none">
+                    <div class="container-fluid max-width:1600!">
+                        <div class="row g-2 align-items-center">
+                            <div class="col">
+                                <div class="page-pretitle f:12!">
+                                    GNB 메뉴 / LNB 메뉴
+                                </div>
+                                <h2 class="page-title">
+                                    프로젝트 항목
+                                </h2>
+                            </div>
+                            <div class="col-auto ms-auto d-print-none">
+                                <div class="btn-list">
+                                    <button type="button" id="btnNewDataList" syn-events="['click']" class="btn btn-primary">
+                                        <i class="f:20 mr:4 ti ti-news"></i>
+                                        신규 항목
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page-body mt-2">
+                    <div class="container-fluid max-width:1600!">
+                        <div class="card">
+                            <div class="card-status-top bg-dark-overlay"></div>
+                            <div class="card-header">
+                                <h3 class="card-title">기본 서식</h3>
+                            </div>
+                            <div class="card-body overflow-auto">
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label required">닉네임</label>
+                                    <div class="col">
+                                        <input id="txtUserName" syn-datafield="UserName" type="text" class="form-control" maxlength="50" autocomplete="new-password">
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label">비밀번호</label>
+                                    <div class="col">
+                                        <div class="row mb-2">
+                                            <div class="input-group pl-0">
+                                                <input id="txtPIN" syn-datafield="PIN" type="hidden">
+                                                <span class="input-group-text">기존 비밀번호</span>
+                                                <input id="txtExistPIN" syn-datafield="ExistPIN" syn-events="['keypress']" type="password" class="form-control" maxlength="64" autocomplete="new-password">
+                                                <button type="button" id="btnCheckExistPIN" syn-events="['click']" class="btn btn-icon bg-muted-lt">
+                                                    <i class="f:18 ti ti-check"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="input-group pl-0">
+                                                <span class="input-group-text">신규 비밀번호</span>
+                                                <input id="txtHashPIN" syn-datafield="HashPIN" type="hidden">
+                                                <input id="txtNewPIN" syn-datafield="NewPIN" type="password" class="form-control" maxlength="64" autocomplete="new-password">
+                                                <button type="button" id="btnToogleShowPIN" syn-events="['click']" class="btn btn-icon bg-muted-lt">
+                                                    <i class="f:18 ti ti-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label">프로필<br />이미지</label>
+                                    <div class="col">
+                                        <img id="imgUserProfile" class="avatar h:80px! w:80px! mb-2" alt="" style="background-image: url(/img/default_user.png)">
+                                        <div class="input-group">
+                                            <input id="txtUserProfile" syn-datafield="UserProfile" type="hidden">
+                                            <input id="fleUploadUserProfilePath" type="file" syn-events="['change']" class="form-control" accept="gif;jpg;jpeg;png;bmp">
+                                            <button type="button" id="btnClearUploadUserProfilePath" syn-events="['click']" class="btn btn-icon bg-muted-lt">
+                                                <i class="f:18 ti ti-trash"></i>
+                                            </button>
+                                        </div>
+                                        <small class="form-hint">
+                                            80px X 80px 크기의 이미지를 권장합니다
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label">직급명</label>
+                                    <div class="col">
+                                        <input id="txtPositionName" syn-datafield="PositionName" type="text" class="form-control" maxlength="50">
+                                    </div>
+                                    <label class="col-3 col-form-label">회사명</label>
+                                    <div class="col">
+                                        <input id="txtCompanyName" syn-datafield="CompanyName" type="text" class="form-control" maxlength="50">
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label">표현문구</label>
+                                    <div class="col">
+                                        <textarea id="txtAboutMe" syn-datafield="AboutMe" syn-options="{toSynControl: false, height: '60px'}" rows="2" class="form-control resize:none" maxlength="1000"></textarea>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label">가입일시</label>
+                                    <div class="col">
+                                        <input id="txtCreatedAt" syn-datafield="CreatedAt" type="text" class="form-control" disabled>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label required">엔티티 ID</label>
+                                    <div class="col">
+                                        <input id="txtEntityNo" syn-datafield="EntityNo" syn-options="{belongID: 'ID01'}" type="hidden" />
+                                        <input id="txtCreatedMemberNo" syn-datafield="CreatedMemberNo" syn-options="{belongID: 'ID01'}" type="hidden" />
+                                        <input id="txtEntityID" syn-datafield="EntityID" syn-options="{editType: 'english', belongID: 'ID01'}" type="text" class="form-control" placeholder="고유한 식별자를 입력하세요">
+                                        <small class="form-hint">의미가 분명한 영문자를 입력합니다 공백, 특수문자, 숫자를 포함할 수 없습니다</small>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label required">엔티티 명</label>
+                                    <div class="col">
+                                        <input id="txtEntityName" syn-datafield="EntityName" syn-options="{belongID: 'ID01'}" type="text" class="form-control" placeholder="예) 회사, 부서, 직원...">
+                                        <small class="form-hint">
+                                            엔티티 ID를 식별을 위한 정보성 명칭을 입력합니다
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label">분류</label>
+                                    <div class="col">
+                                        <input id="txtCategoryName" syn-datafield="CategoryName" syn-options="{belongID: 'ID01'}" type="text" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label">약어</label>
+                                    <div class="col">
+                                        <input id="txtAcronyms" syn-datafield="Acronyms" syn-options="{belongID: 'ID01'}" type="text" class="form-control" placeholder="예) User > U, Entity > E">
+                                        <small class="form-hint">
+                                            엔티티 ID를 식별을 위한 약어를 입력합니다
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label class="col-3 col-form-label">설명</label>
+                                    <div class="col">
+                                        <textarea id="txtComment" syn-datafield="Comment" syn-options="{toSynControl: false, belongID: 'ID01', height: '56px'}" rows="3" class="form-control resize:none"></textarea>
+                                        <small class="form-hint">
+                                            앱 내에서 사용할 엔티티에 대한 설명을 자유롭게 입력합니다
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer p:10!">
+                                <div class="row align-items-center">
+                                    <div class="col">프로젝트 ID에 대해 자세히 알아보기</div>
+                                    <div class="col-auto">
+                                        <button type="button" id="btnSaveMetaEntity" syn-events="['click']" class="btn btn-primary">
+                                            <i class="f:20 mr:4 ti ti-check"></i>
+                                            확인
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mt-3">
+                            <div class="card-status-top bg-dark-overlay"></div>
+                            <div class="card-header">
+                                <h3 class="card-title">멀티 서식</h3>
+                            </div>
+                            <div class="card-body overflow-auto">
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label required">닉네임</label>
+                                    <div class="col">
+                                        <input id="txtUserName1" syn-datafield="UserName" type="text" class="form-control" maxlength="50" autocomplete="new-password">
+                                    </div>
+                                    <label class="col-3 col-form-label">비밀번호</label>
+                                    <div class="col">
+                                        <div class="row mb-2">
+                                            <div class="input-group pl-0">
+                                                <input id="txtPIN1" syn-datafield="PIN" type="hidden">
+                                                <span class="input-group-text">기존 비밀번호</span>
+                                                <input id="txtExistPIN1" syn-datafield="ExistPIN" syn-events="['keypress']" type="password" class="form-control" maxlength="64" autocomplete="new-password">
+                                                <button type="button" id="btnCheckExistPIN1" syn-events="['click']" class="btn btn-icon bg-muted-lt">
+                                                    <i class="f:18 ti ti-check"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="input-group pl-0">
+                                                <span class="input-group-text">신규 비밀번호</span>
+                                                <input id="txtHashPIN1" syn-datafield="HashPIN" type="hidden">
+                                                <input id="txtNewPIN1" syn-datafield="NewPIN" type="password" class="form-control" maxlength="64" autocomplete="new-password">
+                                                <button type="button" id="btnToogleShowPIN1" syn-events="['click']" class="btn btn-icon bg-muted-lt">
+                                                    <i class="f:18 ti ti-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label">직급명</label>
+                                    <div class="col">
+                                        <input id="txtPositionName1" syn-datafield="PositionName" type="text" class="form-control" maxlength="50">
+                                    </div>
+                                    <label class="col-3 col-form-label">회사명</label>
+                                    <div class="col">
+                                        <input id="txtCompanyName1" syn-datafield="CompanyName" type="text" class="form-control" maxlength="50">
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label">프로필<br />이미지</label>
+                                    <div class="col">
+                                        <img id="imgUserProfile1" class="avatar h:80px! w:80px! mb-2" alt="" style="background-image: url(/img/default_user.png)">
+                                        <div class="input-group">
+                                            <input id="txtUserProfile1" syn-datafield="UserProfile" type="hidden">
+                                            <input id="fleUploadUserProfilePath1" type="file" syn-events="['change']" class="form-control" accept="gif;jpg;jpeg;png;bmp">
+                                            <button type="button" id="btnClearUploadUserProfilePath1" syn-events="['click']" class="btn btn-icon bg-muted-lt">
+                                                <i class="f:18 ti ti-trash"></i>
+                                            </button>
+                                        </div>
+                                        <small class="form-hint">
+                                            80px X 80px 크기의 이미지를 권장합니다
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label">표현문구</label>
+                                    <div class="col">
+                                        <textarea id="txtAboutMe1" syn-datafield="AboutMe" syn-options="{toSynControl: false, height: '60px'}" rows="2" class="form-control resize:none" maxlength="1000"></textarea>
+                                    </div>
+                                    <label class="col-3 col-form-label">가입일시</label>
+                                    <div class="col">
+                                        <input id="txtCreatedAt1" syn-datafield="CreatedAt" type="text" class="form-control" disabled>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label required">엔티티 ID</label>
+                                    <div class="col">
+                                        <input id="txtEntityNo1" syn-datafield="EntityNo" syn-options="{belongID: 'ID01'}" type="hidden" />
+                                        <input id="txtCreatedMemberNo1" syn-datafield="CreatedMemberNo" syn-options="{belongID: 'ID01'}" type="hidden" />
+                                        <input id="txtEntityID1" syn-datafield="EntityID" syn-options="{editType: 'english', belongID: 'ID01'}" type="text" class="form-control" placeholder="고유한 식별자를 입력하세요">
+                                        <small class="form-hint">의미가 분명한 영문자를 입력합니다 공백, 특수문자, 숫자를 포함할 수 없습니다</small>
+                                    </div>
+                                    <label class="col-3 col-form-label required">엔티티 명</label>
+                                    <div class="col">
+                                        <input id="txtEntityName1" syn-datafield="EntityName" syn-options="{belongID: 'ID01'}" type="text" class="form-control" placeholder="예) 회사, 부서, 직원...">
+                                        <small class="form-hint">
+                                            엔티티 ID를 식별을 위한 정보성 명칭을 입력합니다
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <label class="col-3 col-form-label">분류</label>
+                                    <div class="col">
+                                        <input id="txtCategoryName1" syn-datafield="CategoryName" syn-options="{belongID: 'ID01'}" type="text" class="form-control">
+                                    </div>
+                                    <label class="col-3 col-form-label">약어</label>
+                                    <div class="col">
+                                        <input id="txtAcronyms1" syn-datafield="Acronyms" syn-options="{belongID: 'ID01'}" type="text" class="form-control" placeholder="예) User > U, Entity > E">
+                                        <small class="form-hint">
+                                            엔티티 ID를 식별을 위한 약어를 입력합니다
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label class="col-3 col-form-label">설명</label>
+                                    <div class="col">
+                                        <textarea id="txtComment1" syn-datafield="Comment" syn-options="{toSynControl: false, belongID: 'ID01', height: '56px'}" rows="3" class="form-control resize:none"></textarea>
+                                        <small class="form-hint">
+                                            앱 내에서 사용할 엔티티에 대한 설명을 자유롭게 입력합니다
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer p:10!">
+                                <div class="row align-items-center">
+                                    <div class="col">프로젝트 ID에 대해 자세히 알아보기</div>
+                                    <div class="col-auto">
+                                        <button type="button" id="btnSaveMetaEntity1" syn-events="['click']" class="btn btn-primary">
+                                            <i class="f:20 mr:4 ti ti-check"></i>
+                                            확인
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <script src="/js/syn.loader.js"></script>
+</body>
+</html>
