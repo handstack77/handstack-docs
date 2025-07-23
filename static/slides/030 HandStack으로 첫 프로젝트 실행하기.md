@@ -250,7 +250,6 @@ HandStack은 웹 개발 프레임워크 기능을 제공하는 업무 모듈을 
 |transact|거래 요청 검증 및 접근 제어 관리와 요청 정보를 dbclient, function 등등 module로 라우팅 기능 관리|
 |logger|module 요청/응답 구간 주요 이벤트 로그 수집 관리|
 |wwwroot|웹 공통 static assets 및 화면 단위 소스 호스팅 관리|
-|openapi|데이터베이스 데이터를 Open API로 제공 하기 위한 기능 관리|
 
 ---
 
