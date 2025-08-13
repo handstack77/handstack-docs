@@ -1,0 +1,2211 @@
+---
+sidebar_position: 1
+---
+
+# 화면 UI 컨트롤 개발 퀵 가이드
+
+## 개요
+HandStack은 다양한 UI 컨트롤을 제공하여 효율적인 웹 애플리케이션 개발을 지원합니다. 본 문서는 주요 UI 컨트롤들의 사용법과 메서드를 설명합니다.
+
+## 목차
+1. [syn.uicontrols.$auigrid](#auigrid) - 데이터 그리드
+2. [syn.uicontrols.$codepicker](#codepicker) - 코드 도움 팝업
+3. [syn.uicontrols.$contextmenu](#contextmenu) - 컨텍스트 메뉴
+4. [syn.uicontrols.$dateperiodpicker](#dateperiodpicker) - 기간 선택기
+5. [syn.uicontrols.$datepicker](#datepicker) - 날짜 선택기
+6. [syn.uicontrols.$fileclient](#fileclient) - 파일 업로드/다운로드
+7. [syn.uicontrols.$select](#select) - 드롭다운 목록
+
+---
+
+## syn.uicontrols.$auigrid {#auigrid}
+
+### 개요
+$auigrid는 대량의 데이터를 효과적으로 표시하고 편집할 수 있는 그리드 컴포넌트입니다. 상용 라이브러리인 AUIGrid를 기반으로 합니다.
+
+### 기본 사용법
+
+#### HTML 마크업
+```html
+<syn_auigrid id="grdDataGrid" syn-options="{
+    width: 800,
+    height: 400,
+    columns: [
+        ['ID', 'ID', 100, false, 'text', false, 'center'],
+        ['Name', '이름', 200, true, 'text', false, 'left'],
+        ['Age', '나이', 100, true, 'numeric', false, 'right']
+    ]
+}" syn-events="['afterSelectionEnd']"></syn_auigrid>
+```
+
+#### JavaScript 이벤트 처리
+```javascript
+grdDataGrid_afterSelectionEnd(elID, rowIndex, columnIndex, dataField, value) {
+    console.log('선택된 행:', rowIndex, '열:', columnIndex);
+}
+```
+
+### 주요 메서드
+
+#### 데이터 관련 메서드
+
+##### clear
+그리드의 모든 데이터를 지웁니다.
+```javascript
+syn.uicontrols.$auigrid.clear('grdDataGrid');
+```
+
+##### setValue
+그리드에 데이터를 설정합니다.
+```javascript
+var data = [
+    {ID: 1, Name: '홍길동', Age: 30},
+    {ID: 2, Name: '김철수', Age: 25}
+];
+syn.uicontrols.$auigrid.setValue('grdDataGrid', data);
+```
+
+##### getGridData
+그리드의 모든 데이터를 가져옵니다.
+```javascript
+var allData = syn.uicontrols.$auigrid.getGridData('grdDataGrid');
+```
+
+#### 행(Row) 관련 메서드
+
+##### insertRow
+새로운 행을 추가합니다.
+```javascript
+syn.uicontrols.$auigrid.insertRow('grdDataGrid', {
+    amount: 1
+});
+```
+
+##### removeRow
+선택된 행을 삭제합니다.
+```javascript
+syn.uicontrols.$auigrid.removeRow('grdDataGrid');
+```
+
+##### removeRowByRowId
+특정 행 ID로 행을 삭제합니다.
+```javascript
+syn.uicontrols.$auigrid.removeRowByRowId('grdDataGrid', 'rowId');
+```
+
+##### countRows
+총 행 수를 반환합니다.
+```javascript
+var rowCount = syn.uicontrols.$auigrid.countRows('grdDataGrid');
+```
+
+##### updateRows
+여러 행을 업데이트합니다.
+```javascript
+syn.uicontrols.$auigrid.updateRows('grdDataGrid', updatedData);
+```
+
+#### 셀(Cell) 관련 메서드
+
+##### getDataAtCell
+특정 셀의 데이터를 가져옵니다.
+```javascript
+var cellValue = syn.uicontrols.$auigrid.getDataAtCell('grdDataGrid', 0, 1);
+```
+
+##### setDataAtCell
+특정 셀에 데이터를 설정합니다.
+```javascript
+syn.uicontrols.$auigrid.setDataAtCell('grdDataGrid', 0, 1, '새로운 값');
+```
+
+##### setDataAtRow
+특정 행의 여러 셀에 데이터를 설정합니다.
+```javascript
+var rowData = [
+    [0, 0, 'ID값'],
+    [0, 1, '이름값'],
+    [0, 2, '나이값']
+];
+syn.uicontrols.$auigrid.setDataAtRow('grdDataGrid', rowData);
+```
+
+##### getSourceDataAtRow
+특정 행의 원본 데이터를 가져옵니다.
+```javascript
+var rowData = syn.uicontrols.$auigrid.getSourceDataAtRow('grdDataGrid', 0);
+```
+
+#### 선택 관련 메서드
+
+##### selectCell
+특정 셀을 선택합니다.
+```javascript
+syn.uicontrols.$auigrid.selectCell('grdDataGrid', 0, 1);
+```
+
+##### getActiveRowIndex
+현재 활성화된 행의 인덱스를 반환합니다.
+```javascript
+var activeRow = syn.uicontrols.$auigrid.getActiveRowIndex('grdDataGrid');
+```
+
+##### getActiveColIndex
+현재 활성화된 열의 인덱스를 반환합니다.
+```javascript
+var activeCol = syn.uicontrols.$auigrid.getActiveColIndex('grdDataGrid');
+```
+
+#### 열(Column) 관련 메서드
+
+##### getColumnInfoList
+열 정보 목록을 가져옵니다.
+```javascript
+var columnInfo = syn.uicontrols.$auigrid.getColumnInfoList('grdDataGrid');
+```
+
+##### getColumnValues
+특정 열의 모든 값을 가져옵니다.
+```javascript
+var columnValues = syn.uicontrols.$auigrid.getColumnValues('grdDataGrid', 'Name');
+```
+
+##### setColumnPosition
+열의 위치를 변경합니다.
+```javascript
+syn.uicontrols.$auigrid.setColumnPosition('grdDataGrid', 'columnName', newPosition);
+```
+
+##### setColumnProperty
+열의 속성을 설정합니다.
+```javascript
+syn.uicontrols.$auigrid.setColumnProperty('grdDataGrid', 'columnName', 'width', 200);
+```
+
+##### setColumnWidth
+열의 너비를 설정합니다.
+```javascript
+syn.uicontrols.$auigrid.setColumnWidth('grdDataGrid', 'columnName', 150);
+```
+
+##### visibleColumns
+열의 표시/숨김을 설정합니다.
+```javascript
+syn.uicontrols.$auigrid.visibleColumns('grdDataGrid', [1, 2], false); // 숨김
+syn.uicontrols.$auigrid.visibleColumns('grdDataGrid', [1, 2], true);  // 표시
+```
+
+#### 필터 관련 메서드
+
+##### addCondition
+필터 조건을 추가합니다.
+```javascript
+syn.uicontrols.$auigrid.addCondition('grdDataGrid', 'Name', 'contains', '홍길동');
+```
+
+##### clearConditions
+모든 필터 조건을 지웁니다.
+```javascript
+syn.uicontrols.$auigrid.clearConditions('grdDataGrid');
+```
+
+#### 유틸리티 메서드
+
+##### getInitializeColumns
+컬럼 초기화 정보를 가져옵니다.
+```javascript
+var initColumns = syn.uicontrols.$auigrid.getInitializeColumns('grdDataGrid');
+```
+
+##### getSettings
+그리드 설정을 가져옵니다.
+```javascript
+var settings = syn.uicontrols.$auigrid.getSettings('grdDataGrid');
+```
+
+##### updateSettings
+그리드 설정을 업데이트합니다.
+```javascript
+syn.uicontrols.$auigrid.updateSettings('grdDataGrid', newSettings);
+```
+
+##### setControlSize
+그리드의 크기를 설정합니다.
+```javascript
+syn.uicontrols.$auigrid.setControlSize('grdDataGrid', {width: 1000, height: 500});
+```
+
+##### setFitColumnSize
+열 크기를 자동 맞춤합니다.
+```javascript
+syn.uicontrols.$auigrid.setFitColumnSize('grdDataGrid');
+```
+
+#### 변환 메서드
+
+##### colToProp
+열 인덱스를 속성명으로 변환합니다.
+```javascript
+var propName = syn.uicontrols.$auigrid.colToProp('grdDataGrid', 1);
+```
+
+##### propToCol
+속성명을 열 인덱스로 변환합니다.
+```javascript
+var colIndex = syn.uicontrols.$auigrid.propToCol('grdDataGrid', 'Name');
+```
+
+##### getPhysicalRowIndex
+논리적 행 인덱스를 물리적 행 인덱스로 변환합니다.
+```javascript
+var physicalIndex = syn.uicontrols.$auigrid.getPhysicalRowIndex('grdDataGrid', 0);
+```
+
+#### 검증 메서드
+
+##### checkEditValue
+편집된 값의 유효성을 검사합니다.
+```javascript
+var isValid = syn.uicontrols.$auigrid.checkEditValue('grdDataGrid', value);
+```
+
+##### checkEmptyValueCol
+특정 열의 빈 값을 확인합니다.
+```javascript
+var isEmpty = syn.uicontrols.$auigrid.checkEmptyValueCol('grdDataGrid', 'columnName');
+```
+
+##### checkUniqueValueCol
+특정 열의 고유값을 확인합니다.
+```javascript
+var isUnique = syn.uicontrols.$auigrid.checkUniqueValueCol('grdDataGrid', 'columnName');
+```
+
+##### checkValueCountCol
+특정 열의 값 개수를 확인합니다.
+```javascript
+var count = syn.uicontrols.$auigrid.checkValueCountCol('grdDataGrid', 'columnName');
+```
+
+#### Flag 관련 메서드
+
+##### getFlag
+특정 행의 플래그 상태를 가져옵니다.
+```javascript
+var flag = syn.uicontrols.$auigrid.getFlag('grdDataGrid', rowIndex);
+```
+
+##### setFlag
+특정 행의 플래그 상태를 설정합니다.
+```javascript
+syn.uicontrols.$auigrid.setFlag('grdDataGrid', rowIndex, 'U'); // Update flag
+```
+
+#### 레이아웃 메서드
+
+##### changeColumnLayout
+컬럼 레이아웃을 변경합니다.
+```javascript
+syn.uicontrols.$auigrid.changeColumnLayout('grdDataGrid', newLayout);
+```
+
+##### getItemsByValue
+특정 값으로 아이템을 검색합니다.
+```javascript
+var items = syn.uicontrols.$auigrid.getItemsByValue('grdDataGrid', 'searchValue');
+```
+
+##### getPhysicalColText
+물리적 열의 텍스트를 가져옵니다.
+```javascript
+var colText = syn.uicontrols.$auigrid.getPhysicalColText('grdDataGrid', colIndex);
+```
+
+### 이벤트
+
+#### afterSelectionEnd
+셀 선택이 완료된 후 발생하는 이벤트입니다.
+```javascript
+grdDataGrid_afterSelectionEnd(elID, rowIndex, columnIndex, dataField, value) {
+    // 선택 완료 후 처리 로직
+}
+```
+
+### 예제
+
+#### 기본 그리드 구성 예제
+```javascript
+// 데이터 설정
+var gridData = [
+    {ID: 1, Name: '홍길동', Age: 30, Department: '개발팀'},
+    {ID: 2, Name: '김철수', Age: 25, Department: '기획팀'},
+    {ID: 3, Name: '이영희', Age: 28, Department: '디자인팀'}
+];
+
+// 그리드에 데이터 로드
+syn.uicontrols.$auigrid.setValue('grdDataGrid', gridData);
+
+// 특정 셀 값 변경
+syn.uicontrols.$auigrid.setDataAtCell('grdDataGrid', 0, 1, '홍길순');
+
+// 새 행 추가
+syn.uicontrols.$auigrid.insertRow('grdDataGrid', {amount: 1});
+
+// 필터 적용
+syn.uicontrols.$auigrid.addCondition('grdDataGrid', 'Department', 'equals', '개발팀');
+```
+
+### 주의사항
+
+1. AUIGrid는 상용 라이브러리이므로 라이센스를 확인해야 합니다.
+2. 대량의 데이터를 처리할 때는 가상화 옵션을 고려해야 합니다.
+3. 그리드의 열 구성은 초기 설정에서 정의해야 합니다.
+4. 데이터 변경 시 플래그(Flag) 상태를 적절히 관리해야 합니다.
+
+### 참고자료
+- [AUIGrid 공식 사이트](https://www.auisoft.net/)
+
+---
+
+## syn.uicontrols.$codepicker {#codepicker}
+
+### 개요
+$codepicker는 코드 도움 팝업 기능을 제공하는 컴포넌트입니다. 사용자가 코드를 직접 입력하거나 팝업에서 선택할 수 있습니다.
+
+### 기본 사용법
+
+#### HTML 마크업
+```html
+<syn_codepicker id="chpSubjectID" syn-datafield="SubjectID"
+    syn-options="{
+        belongID: 'LD01',
+        dataSourceID: 'CHP005',
+        local: false,
+        isMultiSelect: false,
+        textBelongID: ['LD01', 'MD01'],
+        textDataFieldID: 'CodeText'
+    }">
+</syn_codepicker>
+```
+
+#### JavaScript 이벤트 처리
+```javascript
+chpSubjectID_change(previousValue, previousText, changeValue) {
+    console.log('코드 변경:', changeValue);
+}
+```
+
+### 주요 메서드
+
+#### getValue
+코드 값을 가져옵니다.
+```javascript
+var codeValue = syn.uicontrols.$codepicker.getValue('chpSubjectID');
+```
+
+#### setValue
+코드 값을 설정합니다.
+```javascript
+syn.uicontrols.$codepicker.setValue('chpSubjectID', 'HELLO');
+```
+
+#### setText
+텍스트 값을 설정합니다.
+```javascript
+syn.uicontrols.$codepicker.setText('chpSubjectID', 'WORLD');
+```
+
+#### clear
+코드와 텍스트를 모두 지웁니다.
+```javascript
+syn.uicontrols.$codepicker.clear('chpSubjectID');
+```
+
+#### open
+코드 도움 팝업을 엽니다.
+```javascript
+syn.uicontrols.$codepicker.open('chpSubjectID');
+```
+
+### 유틸리티 메서드
+
+#### toParameterString
+JSON 객체를 매개변수 문자열로 변환합니다.
+```javascript
+var parameterString = syn.uicontrols.$codepicker.toParameterString({
+    ApplicationID: 1,
+    ApplicationName: 'HELLO WORLD'
+});
+// 결과: "@ApplicationID:1;@ApplicationName:HELLO WORLD;"
+```
+
+#### toParameterObject
+매개변수 문자열을 JSON 객체로 변환합니다.
+```javascript
+var parameterObject = syn.uicontrols.$codepicker.toParameterObject('@ApplicationID:1;@ApplicationName:HELLO WORLD;');
+// 결과: {ApplicationID: '1', ApplicationName: 'HELLO WORLD'}
+```
+
+### 설정 옵션
+
+#### 기본 설정
+```javascript
+syn_options="{
+    dataSourceID: null,                // 데이터 소스 ID
+    storeSourceID: null,              // 저장 소스 ID
+    local: true,                      // 로컬 데이터 사용 여부
+    parameters: '',                   // 매개변수
+    isMultiSelect: false,             // 다중 선택 여부
+    isAutoSearch: true,               // 자동 검색 여부
+    isOnlineData: false,              // 온라인 데이터 사용 여부
+    viewType: '',                     // 뷰 타입
+    textBelongID: null,               // 텍스트 필드 그룹 ID
+    textDataFieldID: null,            // 텍스트 데이터 필드 ID
+    searchValue: '',                  // 검색 값
+    searchText: '',                   // 검색 텍스트
+    readonly: false,                  // 읽기 전용 여부
+    disabled: false,                  // 비활성화 여부
+    required: false                   // 필수 입력 여부
+}"
+```
+
+### 이벤트
+
+#### change
+코드 값이 변경될 때 발생하는 이벤트입니다.
+```javascript
+chpSubjectID_change(previousValue, previousText, changeValue) {
+    console.log('이전 값:', previousValue);
+    console.log('이전 텍스트:', previousText);
+    console.log('변경된 값:', changeValue);
+}
+```
+
+### 예제
+
+#### 기본 코드픽커 구성 예제
+```html
+<syn_codepicker id="chpDepartmentCode" syn-datafield="DepartmentCode"
+    syn-options="{
+        belongID: 'LD01',
+        dataSourceID: 'DEPT_CODE',
+        local: true,
+        textDataFieldID: 'DepartmentName',
+        textBelongID: ['LD01'],
+        required: true
+    }"
+    syn-events="['change']">
+</syn_codepicker>
+```
+
+```javascript
+chpDepartmentCode_change(previousValue, previousText, changeValue) {
+    // 부서 코드 변경 시 관련 필드 업데이트
+    if (changeValue && changeValue.length > 0) {
+        var department = changeValue[0];
+        syn.$l.get('txtDepartmentName').value = department.text;
+    }
+}
+```
+
+#### 다중 선택 코드픽커 예제
+```html
+<syn_codepicker id="chpSkillCodes" syn-datafield="SkillCodes"
+    syn-options="{
+        belongID: 'LD01',
+        dataSourceID: 'SKILL_CODE',
+        local: false,
+        isMultiSelect: true,
+        parameters: '@CompanyNo:001;'
+    }">
+</syn_codepicker>
+```
+
+```javascript
+// 매개변수를 동적으로 설정하는 경우
+$this.hook.frameEvent = function(eventName, jsonObject) {
+    if (eventName == 'codeInit') {
+        if (jsonObject.elID == 'chpSkillCodes') {
+            jsonObject.parameters = '@CompanyNo:' + syn.$w.User.CompanyNo + ';';
+        }
+    }
+    return jsonObject;
+}
+```
+
+#### 코드 반환 처리 예제
+```javascript
+$this.hook.frameEvent = function(eventName, jsonObject) {
+    if (eventName == 'codeReturn') {
+        if (jsonObject.elID == 'chpSubjectID') {
+            console.log('선택된 항목들:', jsonObject.result);
+            // 추가 처리 로직
+            for (var i = 0; i < jsonObject.result.length; i++) {
+                var item = jsonObject.result[i];
+                console.log('값:', item.value, '텍스트:', item.text);
+            }
+        }
+    }
+}
+```
+
+### 주의사항
+
+1. `dataSourceID`를 반드시 설정해야 코드 도움 팝업이 동작합니다.
+2. `textDataFieldID`를 설정하지 않으면 텍스트 필드가 생성되지 않습니다.
+3. `local: false`로 설정하면 서버에서 데이터를 동적으로 가져옵니다.
+4. 다중 선택 시에는 반환값이 배열 형태입니다.
+5. 매개변수는 `@ParameterName:Value;` 형식으로 전달해야 합니다.
+
+---
+
+## syn.uicontrols.$contextmenu {#contextmenu}
+
+### 개요
+$contextmenu는 우클릭 컨텍스트 메뉴 기능을 제공하는 컴포넌트입니다. jQuery UI Contextmenu를 기반으로 합니다.
+
+### 기본 사용법
+
+#### HTML 마크업
+```html
+<syn_contextmenu id="ctxButtonControl" syn-options="{
+    target: 'div',
+    delegate: 'input[type=button]'
+}" syn-events="['close', 'beforeOpen', 'open', 'select']">
+</syn_contextmenu>
+```
+
+#### JavaScript 이벤트 처리
+```javascript
+ctxButtonControl_select(evt, ui) {
+    console.log('메뉴 선택:', ui.cmd);
+}
+```
+
+### 주요 메서드
+
+#### open
+컨텍스트 메뉴를 엽니다.
+```javascript
+syn.uicontrols.$contextmenu.open('ctxButtonControl');
+```
+
+#### getControl
+컨트롤의 기본 객체를 반환합니다.
+```javascript
+var contextMenuControl = syn.uicontrols.$contextmenu.getControl('ctxButtonControl');
+```
+
+### 설정 옵션
+
+#### 기본 설정
+```javascript
+syn_options="{
+    target: 'targetCSSSelector',      // 대상 CSS 선택자
+    delegate: 'delegateCSSSelector',  // 위임 CSS 선택자
+    autoFocus: true,                  // 자동 포커스
+    closeOnWindowBlur: true,          // 윈도우 블러 시 닫기
+    hide: false,                      // 숨김 애니메이션
+    show: false,                      // 표시 애니메이션
+    menu: [                           // 메뉴 항목 설정
+        { title: 'Cut', cmd: 'cut' },
+        { title: 'Copy', cmd: 'copy', uiIcon: 'ui-icon-copy' },
+        { title: '---' },             // 구분선
+        {
+            title: 'More',
+            children: [               // 하위 메뉴
+                { title: 'Sub 1', cmd: 'sub1' },
+                { title: 'Sub 2', cmd: 'sub2' }
+            ]
+        }
+    ]
+}"
+```
+
+### 이벤트
+
+#### close
+메뉴가 닫힐 때 발생하는 이벤트입니다.
+```javascript
+ctxButtonControl_close(evt, ui) {
+    console.log('컨텍스트 메뉴가 닫혔습니다.');
+}
+```
+
+#### beforeOpen
+메뉴가 열리기 전에 발생하는 이벤트입니다.
+```javascript
+ctxButtonControl_beforeOpen(evt, ui) {
+    console.log('컨텍스트 메뉴가 열리기 전입니다.');
+    // 메뉴 항목 동적 변경 등의 처리 가능
+}
+```
+
+#### open
+메뉴가 열린 후 발생하는 이벤트입니다.
+```javascript
+ctxButtonControl_open(evt, ui) {
+    console.log('컨텍스트 메뉴가 열렸습니다.');
+}
+```
+
+#### select
+메뉴 항목이 선택될 때 발생하는 이벤트입니다.
+```javascript
+ctxButtonControl_select(evt, ui) {
+    console.log('선택된 명령:', ui.cmd);
+    
+    switch (ui.cmd) {
+        case 'cut':
+            // 잘라내기 처리
+            break;
+        case 'copy':
+            // 복사 처리
+            break;
+        case 'sub1':
+            // 하위 메뉴 1 처리
+            break;
+    }
+}
+```
+
+### 예제
+
+#### 기본 컨텍스트 메뉴 예제
+```html
+<div id="contentArea">
+    <button type="button">버튼 1</button>
+    <button type="button">버튼 2</button>
+    <button type="button">버튼 3</button>
+</div>
+
+<syn_contextmenu id="ctxContentMenu" syn-options="{
+    target: '#contentArea',
+    delegate: 'button',
+    menu: [
+        { title: '편집', cmd: 'edit', uiIcon: 'ui-icon-pencil' },
+        { title: '삭제', cmd: 'delete', uiIcon: 'ui-icon-trash' },
+        { title: '---' },
+        { 
+            title: '더보기',
+            children: [
+                { title: '복제', cmd: 'duplicate' },
+                { title: '이동', cmd: 'move' },
+                { title: '속성', cmd: 'properties' }
+            ]
+        }
+    ]
+}" syn-events="['select', 'beforeOpen']">
+</syn_contextmenu>
+```
+
+```javascript
+ctxContentMenu_beforeOpen(evt, ui) {
+    // 선택된 버튼에 따라 메뉴 항목 활성화/비활성화
+    var targetButton = evt.delegateTarget;
+    var buttonText = targetButton.textContent;
+    
+    // 동적으로 메뉴 제목 변경
+    var contextMenu = syn.uicontrols.$contextmenu.getControl('ctxContentMenu');
+    contextMenu.context.contextmenu('setTitle', 'edit', buttonText + ' 편집');
+}
+
+ctxContentMenu_select(evt, ui) {
+    var targetButton = evt.delegateTarget;
+    var buttonText = targetButton.textContent;
+    
+    switch (ui.cmd) {
+        case 'edit':
+            alert(buttonText + ' 버튼을 편집합니다.');
+            break;
+        case 'delete':
+            if (confirm(buttonText + ' 버튼을 삭제하시겠습니까?')) {
+                targetButton.remove();
+            }
+            break;
+        case 'duplicate':
+            var newButton = targetButton.cloneNode(true);
+            newButton.textContent = buttonText + ' 복제';
+            targetButton.parentNode.appendChild(newButton);
+            break;
+        case 'properties':
+            alert(buttonText + ' 속성 창을 엽니다.');
+            break;
+    }
+}
+```
+
+#### 테이블 행 컨텍스트 메뉴 예제
+```html
+<table id="dataTable">
+    <thead>
+        <tr>
+            <th>이름</th>
+            <th>나이</th>
+            <th>부서</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr data-id="1">
+            <td>홍길동</td>
+            <td>30</td>
+            <td>개발팀</td>
+        </tr>
+        <tr data-id="2">
+            <td>김철수</td>
+            <td>25</td>
+            <td>기획팀</td>
+        </tr>
+    </tbody>
+</table>
+
+<syn_contextmenu id="ctxTableMenu" syn-options="{
+    target: '#dataTable',
+    delegate: 'tbody tr',
+    menu: [
+        { title: '상세보기', cmd: 'detail' },
+        { title: '수정', cmd: 'edit' },
+        { title: '삭제', cmd: 'delete' },
+        { title: '---' },
+        { title: '위로 이동', cmd: 'moveUp' },
+        { title: '아래로 이동', cmd: 'moveDown' }
+    ]
+}" syn-events="['select']">
+</syn_contextmenu>
+```
+
+```javascript
+ctxTableMenu_select(evt, ui) {
+    var targetRow = evt.delegateTarget;
+    var rowId = targetRow.getAttribute('data-id');
+    var name = targetRow.cells[0].textContent;
+    
+    switch (ui.cmd) {
+        case 'detail':
+            alert('ID: ' + rowId + ', 이름: ' + name + '의 상세 정보');
+            break;
+        case 'edit':
+            // 수정 로직
+            break;
+        case 'delete':
+            if (confirm(name + '을(를) 삭제하시겠습니까?')) {
+                targetRow.remove();
+            }
+            break;
+        case 'moveUp':
+            var prevRow = targetRow.previousElementSibling;
+            if (prevRow) {
+                targetRow.parentNode.insertBefore(targetRow, prevRow);
+            }
+            break;
+        case 'moveDown':
+            var nextRow = targetRow.nextElementSibling;
+            if (nextRow) {
+                targetRow.parentNode.insertBefore(nextRow, targetRow);
+            }
+            break;
+    }
+}
+```
+
+### 주의사항
+
+1. jQuery UI Contextmenu 라이브러리가 필요합니다.
+2. `target`과 `delegate` 설정을 통해 메뉴가 적용될 대상을 정확히 지정해야 합니다.
+3. 메뉴 항목의 `cmd` 속성은 고유해야 합니다.
+4. 구분선은 `{ title: '---' }`로 표시합니다.
+5. 아이콘은 jQuery UI의 아이콘 클래스를 사용합니다.
+
+### 참고자료
+- [jQuery UI Contextmenu](https://github.com/mar10/jquery-ui-contextmenu)
+
+---
+
+## syn.uicontrols.$dateperiodpicker {#dateperiodpicker}
+
+### 개요
+$dateperiodpicker는 기간 선택 기능을 제공하는 컴포넌트입니다. 시작일과 종료일을 쉽게 선택할 수 있습니다.
+
+### 기본 사용법
+
+#### HTML 마크업
+```html
+<div class="input-group">
+    <syn_dateperiodpicker id="dtpInputRangeAt" syn-datafield="InputRangeAt" syn-options="{
+        value: 'day:-7',
+        belongID: ['LD01']
+    }"></syn_dateperiodpicker>
+</div>
+```
+
+#### JavaScript 이벤트 처리
+```javascript
+dtpInputRangeAt_onselect(elID, dateType, date) {
+    console.log('기간 선택:', elID, dateType, date);
+}
+
+dtpInputRangeAt_onconfirm(elID, startDate, endDate) {
+    console.log('기간 확정:', startDate, '~', endDate);
+}
+```
+
+### 주요 메서드
+
+#### getValue
+선택된 기간 값을 가져옵니다.
+```javascript
+var periodValue = syn.uicontrols.$dateperiodpicker.getValue('dtpInputRangeAt');
+// 반환값: "2023-01-01 ~ 2023-01-31"
+```
+
+#### setValue
+기간 값을 설정합니다.
+```javascript
+syn.uicontrols.$dateperiodpicker.setValue('dtpInputRangeAt', '2023-01-01,2023-01-31');
+```
+
+#### clear
+기간 값을 지웁니다.
+```javascript
+syn.uicontrols.$dateperiodpicker.clear('dtpInputRangeAt');
+```
+
+#### getControl
+컨트롤 정보를 가져옵니다.
+```javascript
+var control = syn.uicontrols.$dateperiodpicker.getControl('dtpInputRangeAt');
+if (control) {
+    console.log('시작일 텍스트박스 ID:', control.textbox1ID);
+    console.log('종료일 텍스트박스 ID:', control.textbox2ID);
+}
+```
+
+### 설정 옵션
+
+#### 기본 설정
+```javascript
+syn_options="{
+    width: '100%',                    // 너비
+    value: '',                        // 기본값 ('day:-7', 'month:1' 등)
+    defaultDate: null,                // 기본 날짜
+    setDefaultDate: false,            // 기본 날짜 설정 여부
+    minDate: null,                    // 최소 날짜
+    maxDate: null,                    // 최대 날짜
+    bound: false,                     // 바인딩 설정
+    format: 'YYYY-MM-DD',            // 날짜 형식
+    ariaLabel: '날짜를 선택 하세요',    // 접근성 라벨
+    showWeekNumber: false,            // 주차 번호 표시
+    showMonthAfterYear: true,         // 연도 뒤에 월 표시
+    showDaysInNextAndPreviousMonths: true,  // 이전/다음 월 일 표시
+    enableSelectionDaysInNextAndPreviousMonths: true, // 이전/다음 월 일 선택 가능
+    yearSuffix: '년',                 // 연도 접미사
+    firstDay: 0,                      // 주의 시작 요일 (0: 일요일)
+    numberOfMonths: 1,                // 표시할 월 수
+    startDataFieldID: '',             // 시작일 데이터 필드 ID
+    endDataFieldID: '',               // 종료일 데이터 필드 ID
+    belongID: null                    // 소속 그룹 ID
+}"
+```
+
+### 기간 설정 버튼
+
+기간 선택 팝업에는 다음과 같은 편의 버튼들이 제공됩니다:
+
+- **올해**: 현재 연도의 1월 1일 ~ 12월 31일
+- **오늘까지**: 현재 연도의 1월 1일 ~ 오늘
+- **오늘**: 오늘 날짜
+- **전일**: 어제 날짜
+- **주간**: 이번 주 (일요일 ~ 토요일)
+- **전주**: 지난 주
+- **당월**: 이번 달
+- **이전달**: 지난 달
+- **전년도**: 작년 전체
+- **전전년도**: 재작년 전체
+- **1분기 ~ 4분기**: 각 분기별 기간
+- **상반기**: 1월 ~ 6월
+- **하반기**: 7월 ~ 12월
+- **월별 체크박스**: 특정 월들을 선택
+
+### 이벤트
+
+#### onselect
+날짜가 선택될 때 발생하는 이벤트입니다.
+```javascript
+dtpInputRangeAt_onselect(elID, dateType, date) {
+    console.log('컨트롤 ID:', elID);
+    console.log('날짜 타입:', dateType); // 'startedAt' 또는 'endedAt'
+    console.log('선택된 날짜:', date);
+    
+    if (dateType === 'startedAt') {
+        console.log('시작일이 선택됨');
+    } else if (dateType === 'endedAt') {
+        console.log('종료일이 선택됨');
+    }
+}
+```
+
+#### onconfirm
+확인 버튼을 눌러 기간이 확정될 때 발생하는 이벤트입니다.
+```javascript
+dtpInputRangeAt_onconfirm(elID, startDate, endDate) {
+    console.log('컨트롤 ID:', elID);
+    console.log('확정된 시작일:', startDate);
+    console.log('확정된 종료일:', endDate);
+    
+    // 기간 일수 계산
+    var days = $date.diff(new Date(startDate), new Date(endDate)) + 1;
+    syn.$l.get('txtPeriodDays').value = days + '일';
+    
+    // 데이터 조회 등의 후속 처리
+    loadDataByPeriod(startDate, endDate);
+}
+
+function loadDataByPeriod(startDate, endDate) {
+    // 선택된 기간으로 데이터 조회
+    console.log('기간별 데이터 조회:', startDate, '~', endDate);
+}
+```
+
+### 예제
+
+#### 기본 기간 선택기 예제
+```html
+<div class="mb-3">
+    <label class="form-label">조회 기간</label>
+    <div class="input-group">
+        <syn_dateperiodpicker id="dtpSearchPeriod" syn-datafield="SearchPeriod" syn-options="{
+            value: 'month:-1',
+            belongID: ['LD01']
+        }" syn-events="['onselect', 'onconfirm']"></syn_dateperiodpicker>
+    </div>
+</div>
+```
+
+```javascript
+dtpSearchPeriod_onconfirm(elID, startDate, endDate) {
+    // 선택된 기간으로 데이터 조회
+    var searchData = {
+        startDate: startDate,
+        endDate: endDate
+    };
+    
+    // 그리드 데이터 조회
+    syn.uicontrols.$auigrid.clear('grdSearchResult');
+    searchDataByPeriod(searchData);
+}
+
+function searchDataByPeriod(searchData) {
+    // 실제 데이터 조회 로직
+    syn.$w.transactionObject('LD01', 'search');
+}
+```
+
+#### 개별 필드로 분리된 예제
+```html
+<div class="row">
+    <div class="col-md-12">
+        <label class="form-label">기간 선택</label>
+        <div class="input-group">
+            <syn_dateperiodpicker id="dtpReportPeriod" syn-options="{
+                value: 'day:-30',
+                startDataFieldID: 'ReportStartDate',
+                endDataFieldID: 'ReportEndDate',
+                belongID: ['LD01']
+            }" syn-events="['onconfirm']"></syn_dateperiodpicker>
+        </div>
+    </div>
+</div>
+
+<!-- 개별 필드들 -->
+<input type="hidden" id="txtReportStartDate" syn-datafield="ReportStartDate" syn-options="{belongID: ['LD01']}">
+<input type="hidden" id="txtReportEndDate" syn-datafield="ReportEndDate" syn-options="{belongID: ['LD01']}">
+```
+
+```javascript
+dtpReportPeriod_onconfirm(elID, startDate, endDate) {
+    console.log('리포트 기간 설정:', startDate, '~', endDate);
+    
+    // 개별 필드에도 값 설정 (자동으로 설정되지만 확인용)
+    console.log('시작일 필드 값:', syn.$l.get('txtReportStartDate').value);
+    console.log('종료일 필드 값:', syn.$l.get('txtReportEndDate').value);
+    
+    // 리포트 생성
+    generateReport(startDate, endDate);
+}
+
+function generateReport(startDate, endDate) {
+    syn.$w.alert('리포트를 생성합니다.\n기간: ' + startDate + ' ~ ' + endDate);
+}
+```
+
+#### 유효성 검사가 포함된 예제
+```html
+<div class="mb-3">
+    <label class="form-label">유효한 기간 선택 (최대 3개월)</label>
+    <div class="input-group">
+        <syn_dateperiodpicker id="dtpValidPeriod" syn-options="{
+            value: 'month:-1'
+        }" syn-events="['onconfirm']"></syn_dateperiodpicker>
+    </div>
+</div>
+```
+
+```javascript
+dtpValidPeriod_onconfirm(elID, startDate, endDate) {
+    // 최대 3개월 제한 검사
+    var startDateTime = new Date(startDate);
+    var endDateTime = new Date(endDate);
+    var diffMonths = (endDateTime.getFullYear() - startDateTime.getFullYear()) * 12 + 
+                    (endDateTime.getMonth() - startDateTime.getMonth());
+    
+    if (diffMonths > 3) {
+        syn.$w.alert('최대 3개월까지만 선택할 수 있습니다.');
+        return;
+    }
+    
+    // 과거 날짜만 허용
+    var today = new Date();
+    if (endDateTime > today) {
+        syn.$w.alert('미래 날짜는 선택할 수 없습니다.');
+        return;
+    }
+    
+    // 유효한 기간으로 처리
+    console.log('유효한 기간 선택:', startDate, '~', endDate);
+    processValidPeriod(startDate, endDate);
+}
+
+function processValidPeriod(startDate, endDate) {
+    // 유효한 기간으로 비즈니스 로직 처리
+    syn.$w.transactionObject('LD01', 'searchByValidPeriod');
+}
+```
+
+### Value 초기화 옵션
+
+| 값 | 설명 | 결과 |
+|---|---|---|
+| `'now'` | 오늘 하루 | 오늘 ~ 오늘 |
+| `'day:N'` | N일 전후 기간 | N일 전 ~ 오늘 (N < 0), 오늘 ~ N일 후 (N > 0) |
+| `'week:N'` | N주 전후 기간 | N주 전 시작 ~ 오늘 (N < 0) |
+| `'month:N'` | N개월 전후 기간 | N개월 전 시작 ~ 오늘 (N < 0) |
+| `'year:N'` | N년 전후 기간 | N년 전 시작 ~ 오늘 (N < 0) |
+
+### 주의사항
+
+1. 시작일이 종료일보다 클 수 없습니다 (자동 검증됨).
+2. 기간 선택 팝업은 전역으로 하나만 존재하며 여러 컨트롤이 공유합니다.
+3. `startDataFieldID`와 `endDataFieldID`를 설정하면 개별 필드로 데이터가 분리됩니다.
+4. 한국어 로케일과 Moment.js가 자동으로 설정됩니다.
+5. 팝업 외부 클릭 시 자동으로 닫힙니다.
+
+### 참고자료
+- [Pikaday](https://pikaday.com/)
+- [Moment.js](https://momentjs.com/)
+
+---
+
+## syn.uicontrols.$datepicker {#datepicker}
+
+### 개요
+$datepicker는 Pikaday와 Moment.js를 기반으로 하여 사용자 친화적인 날짜 선택 인터페이스를 제공합니다.
+
+### 기본 사용법
+
+#### HTML 마크업
+```html
+<div class="input-group">
+    <syn_datepicker id="dtpDatePicker" syn-options="{
+        format: 'YYYY-MM-DD'
+    }"></syn_datepicker>
+</div>
+```
+
+#### 범위 선택 사용법
+```html
+<div class="input-group">
+    <syn_datepicker id="dtpStartDate" syn-options="{
+        format: 'YYYY-MM-DD', 
+        useRangeSelect: true, 
+        rangeEndControlID: 'dtpEndDate'
+    }"></syn_datepicker>
+</div>
+<div class="input-group">
+    <syn_datepicker id="dtpEndDate" syn-options="{
+        format: 'YYYY-MM-DD', 
+        useRangeSelect: true, 
+        rangeStartControlID: 'dtpStartDate'
+    }"></syn_datepicker>
+</div>
+```
+
+#### JavaScript 이벤트 처리
+```javascript
+dtpDatePicker_onselect(elID, date) {
+    console.log('선택된 날짜:', date);
+}
+```
+
+### 주요 메서드
+
+#### getValue
+날짜 값을 가져옵니다.
+```javascript
+var dateValue = syn.uicontrols.$datepicker.getValue('dtpDatePicker');
+```
+
+#### setValue
+날짜 값을 설정합니다.
+```javascript
+syn.uicontrols.$datepicker.setValue('dtpDatePicker', '2023-12-31');
+```
+
+#### clear
+날짜를 지웁니다.
+```javascript
+syn.uicontrols.$datepicker.clear('dtpDatePicker');
+```
+
+#### getControl
+Pikaday 컨트롤 객체를 가져옵니다.
+```javascript
+var pikadayControl = syn.uicontrols.$datepicker.getControl('dtpDatePicker');
+if (pikadayControl) {
+    var selectedDate = pikadayControl.picker.getDate();
+}
+```
+
+### 설정 옵션
+
+#### 기본 설정
+```javascript
+syn_options="{
+    width: '100%',                    // 너비
+    value: '',                        // 기본값 ('now', 'day:-7', 'month:1' 등)
+    defaultDate: null,                // 기본 날짜
+    setDefaultDate: false,            // 기본 날짜 설정 여부
+    minDate: null,                    // 최소 날짜
+    maxDate: null,                    // 최대 날짜
+    bound: true,                      // 입력 필드와 바인딩
+    format: 'YYYY-MM-DD',            // 날짜 형식
+    ariaLabel: '날짜를 선택 하세요',    // 접근성 라벨
+    showWeekNumber: false,            // 주차 번호 표시
+    showMonthAfterYear: true,         // 연도 뒤에 월 표시
+    showDaysInNextAndPreviousMonths: true,  // 이전/다음 월 일 표시
+    enableSelectionDaysInNextAndPreviousMonths: true, // 이전/다음 월 일 선택 가능
+    yearSuffix: '년',                 // 연도 접미사
+    firstDay: 0,                      // 주의 시작 요일 (0: 일요일)
+    useRangeSelect: false,            // 범위 선택 사용
+    rangeStartControlID: null,        // 범위 시작 컨트롤 ID
+    rangeEndControlID: null,          // 범위 끝 컨트롤 ID
+    numberOfMonths: 1                 // 표시할 월 수
+}"
+```
+
+#### 다국어 설정
+```javascript
+syn_options="{
+    i18n: {
+        previousMonth: '이전 달',
+        nextMonth: '다음 달',
+        months: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+        weekdays: ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'],
+        weekdaysShort: ['일', '월', '화', '수', '목', '금', '토']
+    }
+}"
+```
+
+### 이벤트
+
+#### onselect
+날짜가 선택될 때 발생하는 이벤트입니다.
+```javascript
+dtpDatePicker_onselect(elID, date) {
+    console.log('컨트롤 ID:', elID);
+    console.log('선택된 날짜:', date);
+    
+    // 날짜 형식 변환
+    if (date) {
+        var formattedDate = $date.toString(date, 'd');
+        console.log('형식화된 날짜:', formattedDate);
+    }
+}
+```
+
+### 예제
+
+#### 기본 날짜 선택기 예제
+```html
+<div class="mb-3">
+    <label class="form-label">생년월일</label>
+    <div class="input-group">
+        <syn_datepicker id="dtpBirthDate" syn-datafield="BirthDate" syn-options="{
+            format: 'YYYY-MM-DD',
+            maxDate: new Date(),
+            yearSuffix: '년',
+            belongID: 'LD01'
+        }" syn-events="['onselect']"></syn_datepicker>
+    </div>
+</div>
+```
+
+```javascript
+dtpBirthDate_onselect(elID, date) {
+    if (date) {
+        // 나이 계산
+        var today = new Date();
+        var age = today.getFullYear() - date.getFullYear();
+        var monthDiff = today.getMonth() - date.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+            age--;
+        }
+        
+        syn.$l.get('txtAge').value = age;
+    }
+}
+```
+
+#### 기간 선택기 예제
+```html
+<div class="row">
+    <div class="col-md-6">
+        <label class="form-label">시작일</label>
+        <div class="input-group">
+            <syn_datepicker id="dtpStartDate" syn-datafield="StartDate" syn-options="{
+                format: 'YYYY-MM-DD',
+                useRangeSelect: true,
+                rangeEndControlID: 'dtpEndDate',
+                value: 'month:-1'
+            }" syn-events="['onselect']"></syn_datepicker>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">종료일</label>
+        <div class="input-group">
+            <syn_datepicker id="dtpEndDate" syn-datafield="EndDate" syn-options="{
+                format: 'YYYY-MM-DD',
+                useRangeSelect: true,
+                rangeStartControlID: 'dtpStartDate',
+                value: 'now'
+            }" syn-events="['onselect']"></syn_datepicker>
+        </div>
+    </div>
+</div>
+```
+
+```javascript
+dtpStartDate_onselect(elID, date) {
+    calculateDateDifference();
+}
+
+dtpEndDate_onselect(elID, date) {
+    calculateDateDifference();
+}
+
+function calculateDateDifference() {
+    var startDate = syn.uicontrols.$datepicker.getValue('dtpStartDate');
+    var endDate = syn.uicontrols.$datepicker.getValue('dtpEndDate');
+    
+    if (startDate && endDate) {
+        var diffDays = $date.diff(new Date(startDate), new Date(endDate), 'day');
+        syn.$l.get('txtDays').value = diffDays + '일';
+    }
+}
+```
+
+#### 특정 값으로 초기화하는 예제
+```html
+<div class="mb-3">
+    <label class="form-label">최근 7일</label>
+    <div class="input-group">
+        <syn_datepicker id="dtpRecentWeek" syn-options="{
+            format: 'YYYY-MM-DD',
+            value: 'day:-7'
+        }"></syn_datepicker>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">이번 달 첫 날</label>
+    <div class="input-group">
+        <syn_datepicker id="dtpThisMonth" syn-options="{
+            format: 'YYYY-MM-DD',
+            value: 'month:0'
+        }"></syn_datepicker>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">오늘</label>
+    <div class="input-group">
+        <syn_datepicker id="dtpToday" syn-options="{
+            format: 'YYYY-MM-DD',
+            value: 'now'
+        }"></syn_datepicker>
+    </div>
+</div>
+```
+
+#### 제한된 날짜 범위 예제
+```html
+<div class="mb-3">
+    <label class="form-label">예약일 (오늘부터 30일 이내)</label>
+    <div class="input-group">
+        <syn_datepicker id="dtpReservation" syn-options="{
+            format: 'YYYY-MM-DD',
+            minDate: new Date(),
+            maxDate: '$date.addDay(new Date(), 30)'
+        }"></syn_datepicker>
+    </div>
+</div>
+```
+
+### Value 초기화 옵션
+
+| 값 | 설명 | 예제 |
+|---|---|---|
+| `'now'` | 현재 날짜 | `value: 'now'` |
+| `'day:N'` | N일 전후 | `value: 'day:-7'` (7일 전), `value: 'day:3'` (3일 후) |
+| `'week:N'` | N주 전후 | `value: 'week:-1'` (1주 전) |
+| `'month:N'` | N개월 전후 | `value: 'month:-6'` (6개월 전) |
+| `'year:N'` | N년 전후 | `value: 'year:-1'` (1년 전) |
+
+### 주의사항
+
+1. Pikaday와 Moment.js 라이브러리가 필요합니다.
+2. 범위 선택 시 `rangeStartControlID`와 `rangeEndControlID`를 반드시 설정해야 합니다.
+3. `format` 옵션은 Moment.js의 형식을 따릅니다.
+4. 최소/최대 날짜는 Date 객체 또는 문자열로 설정할 수 있습니다.
+5. 한국어 로케일이 자동으로 설정됩니다.
+
+### 참고자료
+- [Pikaday](https://pikaday.com/)
+- [Moment.js](https://momentjs.com/)
+
+---
+
+## syn.uicontrols.$fileclient {#fileclient}
+
+### 개요
+$fileclient는 파일 업로드/다운로드 기능을 제공하는 컴포넌트입니다. 다양한 업로드 타입을 지원합니다.
+
+### 기본 사용법
+
+#### HTML 마크업
+```html
+<syn_fileclient id="txtProfile1FileID" syn-datafield="Profile1FileID" syn-options="{
+    repositoryID: 'LFSLP01'
+}"></syn_fileclient>
+```
+
+#### JavaScript 이벤트 처리
+```javascript
+// 파일 업로드 완료 후 콜백
+txtProfile1FileID_upload(action, result) {
+    console.log('파일 업로드 완료:', result);
+    if (result.items && result.items.length > 0) {
+        console.log('업로드된 파일 ID들:', result.items);
+    }
+}
+```
+
+### 주요 메서드
+
+#### getValue
+파일 ID 값을 가져옵니다.
+```javascript
+var fileIds = syn.uicontrols.$fileclient.getValue('txtProfile1FileID');
+// 반환값: "file1,file2,file3" (콤마로 구분된 파일 ID들)
+```
+
+#### setValue
+파일 ID 값을 설정합니다.
+```javascript
+syn.uicontrols.$fileclient.setValue('txtProfile1FileID', 'file1,file2');
+```
+
+#### clear
+파일 ID 값을 지웁니다.
+```javascript
+syn.uicontrols.$fileclient.clear('txtProfile1FileID');
+```
+
+#### fileDownload
+파일을 다운로드합니다.
+```javascript
+syn.uicontrols.$fileclient.fileDownload('LFSLP01', 'fileItemID');
+```
+
+#### getFileSetting
+파일 컨트롤의 설정을 가져옵니다.
+```javascript
+var setting = syn.uicontrols.$fileclient.getFileSetting('txtProfile1FileID');
+console.log('저장소 타입:', setting.storageType);
+console.log('업로드 타입:', setting.uploadType);
+```
+
+#### getItems
+파일 아이템 목록을 가져옵니다.
+```javascript
+syn.uicontrols.$fileclient.getItems('txtProfile1FileID', function(items) {
+    console.log('파일 목록:', items);
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        console.log('파일명:', item.FileName, '크기:', item.FileSize);
+    }
+});
+```
+
+#### getUploadUrl
+업로드 URL을 가져옵니다.
+```javascript
+var uploadUrl = syn.uicontrols.$fileclient.getUploadUrl('txtProfile1FileID');
+```
+
+#### virtualDeleteFile
+파일을 가상 삭제합니다.
+```javascript
+syn.uicontrols.$fileclient.virtualDeleteFile('LFSLP01', 'fileItemID', function(result) {
+    console.log('파일 삭제 결과:', result);
+});
+```
+
+#### getFileAction
+파일 액션을 실행합니다.
+```javascript
+syn.uicontrols.$fileclient.getFileAction('LFSLP01', {
+    action: 'getFileInfo',
+    itemID: 'fileItemID'
+}, function(result) {
+    console.log('파일 정보:', result);
+});
+```
+
+#### uploadBlobUri
+Blob URI를 업로드합니다.
+```javascript
+syn.uicontrols.$fileclient.uploadBlobUri('txtProfile1FileID', blobUri, 'filename.jpg', function(result) {
+    console.log('Blob 업로드 결과:', result);
+});
+```
+
+#### uploadUI
+업로드 UI를 표시합니다.
+```javascript
+syn.uicontrols.$fileclient.uploadUI('txtProfile1FileID');
+```
+
+### 설정 옵션
+
+#### 기본 설정
+```javascript
+syn_options="{
+    elementID: null,                  // 요소 ID
+    dialogTitle: '파일 업로드',        // 다이얼로그 제목
+    tokenID: '',                      // 토큰 ID
+    repositoryID: '',                 // 저장소 ID (필수)
+    dependencyID: '',                 // 의존성 ID
+    businessID: '',                   // 업무 ID
+    applicationID: '',                // 애플리케이션 ID
+    fileUpdateCallback: null,         // 파일 업데이트 콜백
+    accept: '*/*',                    // 허용 파일 타입
+    uploadUrl: '',                    // 업로드 URL
+    fileChangeHandler: undefined,     // 파일 변경 핸들러
+    custom1: undefined,               // 사용자 정의 1
+    custom2: undefined,               // 사용자 정의 2
+    custom3: undefined,               // 사용자 정의 3
+    minHeight: 360,                   // 최소 높이
+    fileManagerServer: '',            // 파일 매니저 서버
+    fileManagerPath: '/repository/api/storage' // 파일 매니저 경로
+}"
+```
+
+### 업로드 타입별 특징
+
+#### Single
+단일 파일 업로드 타입입니다.
+- 한 번에 하나의 파일만 업로드 가능
+- 기본적인 파일 선택 UI 제공
+
+#### Profile
+프로필 이미지 업로드 타입입니다.
+- 이미지 파일에 특화
+- 이미지 미리보기 기능 제공
+- 크롭 기능 지원 가능
+
+#### Multi
+다중 파일 업로드 타입입니다.
+- 여러 파일을 한 번에 업로드 가능
+- 드래그 앤 드롭 지원
+- 진행률 표시
+
+#### ImageLink
+이미지 링크 업로드 타입입니다.
+- 이미지 URL로 업로드
+- 외부 이미지 링크 지원
+
+### 이벤트
+
+#### upload
+파일 업로드 완료 시 발생하는 이벤트입니다.
+```javascript
+txtProfile1FileID_upload(action, result) {
+    console.log('업로드 액션:', action);
+    console.log('업로드 결과:', result);
+    
+    if (result && result.items) {
+        // 업로드된 파일 ID들을 처리
+        var fileIds = [];
+        for (var i = 0; i < result.items.length; i++) {
+            var item = result.items[i];
+            fileIds.push(item.ItemID);
+            console.log('파일명:', item.FileName);
+            console.log('파일 크기:', item.FileSize);
+        }
+        
+        // 컨트롤에 파일 ID 설정
+        syn.uicontrols.$fileclient.setValue('txtProfile1FileID', fileIds.join(','));
+        
+        // 추가 처리 로직
+        processUploadedFiles(result.items);
+    }
+}
+
+function processUploadedFiles(items) {
+    // 업로드된 파일들에 대한 후속 처리
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        console.log('처리할 파일:', item.FileName, item.ItemID);
+    }
+}
+```
+
+### 예제
+
+#### 프로필 이미지 업로드 예제
+```html
+<div class="mb-3">
+    <label class="form-label">프로필 이미지</label>
+    <syn_fileclient id="txtProfileImage" syn-datafield="ProfileImageID" syn-options="{
+        repositoryID: 'PROFILE_IMG',
+        dialogTitle: '프로필 이미지 업로드',
+        accept: 'image/*'
+    }" syn-events="['upload']"></syn_fileclient>
+</div>
+
+<div class="mb-3">
+    <img id="imgProfilePreview" src="" style="max-width: 200px; display: none;" alt="프로필 미리보기">
+</div>
+```
+
+```javascript
+txtProfileImage_upload(action, result) {
+    if (result && result.items && result.items.length > 0) {
+        var fileItem = result.items[0];
+        
+        // 미리보기 이미지 표시
+        var previewUrl = syn.Config.FileManagerServer + '/repository/api/storage/download-file?repositoryID=PROFILE_IMG&itemID=' + fileItem.ItemID;
+        var imgPreview = syn.$l.get('imgProfilePreview');
+        imgPreview.src = previewUrl;
+        imgPreview.style.display = 'block';
+        
+        // 사용자 정보 업데이트
+        updateUserProfile(fileItem.ItemID);
+    }
+}
+
+function updateUserProfile(imageFileID) {
+    // 사용자 프로필 이미지 정보 업데이트
+    var userData = {
+        UserID: syn.$w.User.UserID,
+        ProfileImageID: imageFileID
+    };
+    
+    // 서버에 사용자 정보 업데이트 요청
+    syn.$w.transactionObject('UD01', 'updateProfile', userData);
+}
+```
+
+#### 다중 문서 업로드 예제
+```html
+<div class="mb-3">
+    <label class="form-label">첨부 문서</label>
+    <syn_fileclient id="txtAttachments" syn-datafield="AttachmentIDs" syn-options="{
+        repositoryID: 'DOCUMENT_ATTACH',
+        dialogTitle: '문서 첨부',
+        accept: '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx'
+    }" syn-events="['upload']"></syn_fileclient>
+</div>
+
+<div class="mb-3">
+    <div id="divAttachmentList" class="border p-2 rounded">
+        <small class="text-muted">첨부된 파일이 없습니다.</small>
+    </div>
+</div>
+```
+
+```javascript
+txtAttachments_upload(action, result) {
+    if (result && result.items) {
+        // 첨부 파일 목록 표시
+        displayAttachmentList(result.items);
+        
+        // 전체 첨부 파일 ID 목록 업데이트
+        var fileIds = result.items.map(item => item.ItemID);
+        syn.uicontrols.$fileclient.setValue('txtAttachments', fileIds.join(','));
+    }
+}
+
+function displayAttachmentList(items) {
+    var listContainer = syn.$l.get('divAttachmentList');
+    var listHtml = [];
+    
+    if (items && items.length > 0) {
+        listHtml.push('<div class="fw-bold mb-2">첨부 파일 (' + items.length + '개)</div>');
+        
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            var fileSize = formatFileSize(item.FileSize);
+            
+            listHtml.push('<div class="d-flex justify-content-between align-items-center border-bottom py-1">');
+            listHtml.push('  <div>');
+            listHtml.push('    <i class="ti ti-file-text me-1"></i>');
+            listHtml.push('    <span>' + item.FileName + '</span>');
+            listHtml.push('    <small class="text-muted ms-2">(' + fileSize + ')</small>');
+            listHtml.push('  </div>');
+            listHtml.push('  <div>');
+            listHtml.push('    <button type="button" class="btn btn-sm btn-outline-primary" onclick="downloadFile(\'' + item.ItemID + '\')">');
+            listHtml.push('      <i class="ti ti-download"></i> 다운로드');
+            listHtml.push('    </button>');
+            listHtml.push('    <button type="button" class="btn btn-sm btn-outline-danger ms-1" onclick="deleteFile(\'' + item.ItemID + '\')">');
+            listHtml.push('      <i class="ti ti-trash"></i> 삭제');
+            listHtml.push('    </button>');
+            listHtml.push('  </div>');
+            listHtml.push('</div>');
+        }
+    } else {
+        listHtml.push('<small class="text-muted">첨부된 파일이 없습니다.</small>');
+    }
+    
+    listContainer.innerHTML = listHtml.join('');
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    var k = 1024;
+    var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function downloadFile(itemID) {
+    syn.uicontrols.$fileclient.fileDownload('DOCUMENT_ATTACH', itemID);
+}
+
+function deleteFile(itemID) {
+    if (confirm('파일을 삭제하시겠습니까?')) {
+        syn.uicontrols.$fileclient.virtualDeleteFile('DOCUMENT_ATTACH', itemID, function(result) {
+            if (result.success) {
+                // 파일 목록 새로고침
+                refreshAttachmentList();
+            }
+        });
+    }
+}
+
+function refreshAttachmentList() {
+    syn.uicontrols.$fileclient.getItems('txtAttachments', function(items) {
+        displayAttachmentList(items);
+    });
+}
+```
+
+### 주의사항
+
+1. `repositoryID`는 반드시 설정해야 하며, 파일 서버에 사전 등록된 저장소여야 합니다.
+2. 파일 서버 설정이 올바르지 않으면 업로드가 실패할 수 있습니다.
+3. 업로드 타입은 저장소 설정에 따라 자동으로 결정됩니다.
+4. 대용량 파일 업로드 시 브라우저 제한을 고려해야 합니다.
+5. 파일 다운로드는 브라우저의 보안 정책에 따라 제한될 수 있습니다.
+
+---
+
+## syn.uicontrols.$select {#select}
+
+### 개요
+$select는 드롭다운 목록 선택 기능을 제공하는 컴포넌트입니다. tail.select.js를 기반으로 합니다.
+
+### 기본 사용법
+
+#### HTML 마크업
+```html
+<select id="ddlFileExtension" syn-options="{
+    dataSourceID: 'CH000',
+    parameters: '@GROUPCODE:MS001;',
+    local: false,
+    toSynControl: true,
+    required: false
+}"></select>
+```
+
+#### 정적 옵션을 가진 select
+```html
+<select class="form-select" id="ddlProjectRole" syn-datafield="ProjectRole" syn-options="{
+    toSynControl: false,
+    belongID: ['LD01']
+}">
+    <option value="" selected="">전체</option>
+    <option value="D">개발</option>
+    <option value="B">업무</option>
+    <option value="O">운영</option>
+    <option value="M">관리</option>
+</select>
+```
+
+### 주요 메서드
+
+#### getValue
+선택된 값을 가져옵니다.
+```javascript
+var selectedValue = syn.uicontrols.$select.getValue('ddlFileExtension');
+```
+
+#### setValue
+값을 설정합니다.
+```javascript
+syn.uicontrols.$select.setValue('ddlFileExtension', 'pdf');
+```
+
+#### clear
+선택을 초기화합니다.
+```javascript
+syn.uicontrols.$select.clear('ddlFileExtension');
+```
+
+#### loadData
+데이터를 로드합니다.
+```javascript
+var dataSource = {
+    CodeColumnID: 'Code',
+    ValueColumnID: 'Name',
+    DataSource: [
+        {Code: 'KR', Name: '한국'},
+        {Code: 'US', Name: '미국'},
+        {Code: 'JP', Name: '일본'}
+    ]
+};
+syn.uicontrols.$select.loadData('ddlFileExtension', dataSource, false);
+```
+
+#### dataRefresh
+데이터를 새로고침합니다.
+```javascript
+syn.uicontrols.$select.dataRefresh('ddlFileExtension', {
+    dataSourceID: 'NEW_DATA_SOURCE',
+    parameters: '@PARAM:NEW_VALUE;'
+}, function() {
+    console.log('데이터 새로고침 완료');
+});
+```
+
+#### controlReload
+컨트롤을 다시 로드합니다.
+```javascript
+syn.uicontrols.$select.controlReload('ddlFileExtension');
+```
+
+#### getSelectedIndex
+선택된 인덱스를 가져옵니다.
+```javascript
+var selectedIndex = syn.uicontrols.$select.getSelectedIndex('ddlFileExtension');
+```
+
+#### setSelectedIndex
+인덱스로 선택을 설정합니다.
+```javascript
+syn.uicontrols.$select.setSelectedIndex('ddlFileExtension', 2);
+```
+
+#### getSelectedValue
+선택된 값을 가져옵니다.
+```javascript
+var selectedValue = syn.uicontrols.$select.getSelectedValue('ddlFileExtension');
+```
+
+#### setSelectedValue
+값으로 선택을 설정합니다.
+```javascript
+syn.uicontrols.$select.setSelectedValue('ddlFileExtension', 'xlsx');
+```
+
+#### getSelectedText
+선택된 텍스트를 가져옵니다.
+```javascript
+var selectedText = syn.uicontrols.$select.getSelectedText('ddlFileExtension');
+```
+
+#### setSelectedText
+텍스트로 선택을 설정합니다.
+```javascript
+syn.uicontrols.$select.setSelectedText('ddlFileExtension', 'Excel 파일');
+```
+
+#### getControl
+기본 컨트롤 객체를 가져옵니다.
+```javascript
+var selectControl = syn.uicontrols.$select.getControl('ddlFileExtension');
+```
+
+#### disabled
+컨트롤을 비활성화/활성화합니다.
+```javascript
+syn.uicontrols.$select.disabled('ddlFileExtension', true);  // 비활성화
+syn.uicontrols.$select.disabled('ddlFileExtension', false); // 활성화
+```
+
+#### setSelectedDisabled
+선택된 항목만 활성화하고 나머지는 비활성화합니다.
+```javascript
+syn.uicontrols.$select.setSelectedDisabled('ddlFileExtension', true);
+```
+
+### 설정 옵션
+
+#### 기본 설정
+```javascript
+syn_options="{
+    placeholder: '전체',               // 플레이스홀더 텍스트
+    required: false,                  // 필수 선택 여부
+    animate: false,                   // 애니메이션 사용 여부
+    local: true,                      // 로컬 데이터 사용 여부
+    search: false,                    // 검색 기능 사용 여부
+    multiSelectAll: false,            // 전체 선택 기능 (다중 선택용)
+    width: '100%',                    // 너비
+    classNames: null,                 // 추가 CSS 클래스
+    dataSourceID: null,               // 데이터 소스 ID
+    storeSourceID: null,              // 저장 소스 ID
+    parameters: null,                 // 매개변수 (@ParamName:Value;)
+    selectedValue: null,              // 기본 선택값
+    toSynControl: true                // HandStack 컨트롤로 변환 여부
+}"
+```
+
+### 이벤트
+
+#### change
+선택이 변경될 때 발생하는 이벤트입니다.
+```javascript
+ddlFileExtension_change(evt) {
+    var selectedValue = evt.target.value;
+    var selectedText = evt.target.options[evt.target.selectedIndex].text;
+    
+    console.log('선택된 값:', selectedValue);
+    console.log('선택된 텍스트:', selectedText);
+    
+    // 다른 컨트롤에 영향
+    handleFileExtensionChange(selectedValue);
+}
+
+function handleFileExtensionChange(extension) {
+    // 확장자에 따른 추가 처리
+    switch(extension) {
+        case 'xlsx':
+        case 'xls':
+            syn.$l.get('txtFileType').value = 'Excel 파일';
+            break;
+        case 'pdf':
+            syn.$l.get('txtFileType').value = 'PDF 문서';
+            break;
+        default:
+            syn.$l.get('txtFileType').value = '기타 파일';
+    }
+}
+```
+
+### 예제
+
+#### 데이터 소스 기반 select 예제
+```html
+<div class="mb-3">
+    <label class="form-label">파일 확장자</label>
+    <select id="ddlFileExtension" syn-datafield="FileExtension" syn-options="{
+        dataSourceID: 'FILE_EXTENSIONS',
+        local: true,
+        placeholder: '확장자 선택',
+        required: true,
+        search: true,
+        belongID: ['LD01']
+    }" syn-events="['change']"></select>
+</div>
+```
+
+#### 연동 select 예제 (국가 → 도시)
+```html
+<div class="row">
+    <div class="col-md-6">
+        <label class="form-label">국가</label>
+        <select id="ddlCountry" syn-datafield="CountryCode" syn-options="{
+            dataSourceID: 'COUNTRY_LIST',
+            local: true,
+            placeholder: '국가 선택'
+        }" syn-events="['change']"></select>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">도시</label>
+        <select id="ddlCity" syn-datafield="CityCode" syn-options="{
+            dataSourceID: 'CITY_LIST',
+            local: false,
+            placeholder: '도시 선택',
+            parameters: '@CountryCode:;'
+        }"></select>
+    </div>
+</div>
+```
+
+```javascript
+ddlCountry_change(evt) {
+    var countryCode = evt.target.value;
+    
+    if (countryCode) {
+        // 선택된 국가에 따라 도시 목록 새로고침
+        syn.uicontrols.$select.dataRefresh('ddlCity', {
+            dataSourceID: 'CITY_LIST',
+            parameters: '@CountryCode:' + countryCode + ';'
+        }, function() {
+            console.log('도시 목록 업데이트 완료');
+        });
+    } else {
+        // 국가가 선택되지 않으면 도시 목록 초기화
+        syn.uicontrols.$select.clear('ddlCity');
+    }
+}
+```
+
+#### 동적 옵션 생성 예제
+```html
+<div class="mb-3">
+    <label class="form-label">년도</label>
+    <select id="ddlYear" syn-datafield="Year" syn-options="{
+        placeholder: '년도 선택',
+        toSynControl: true
+    }"></select>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">월</label>
+    <select id="ddlMonth" syn-datafield="Month" syn-options="{
+        placeholder: '월 선택',
+        toSynControl: true
+    }"></select>
+</div>
+```
+
+```javascript
+// 페이지 로드 시 년도와 월 옵션 동적 생성
+document.addEventListener('DOMContentLoaded', function() {
+    // 년도 옵션 생성 (현재년도 기준 ±5년)
+    var currentYear = new Date().getFullYear();
+    var yearOptions = [];
+    for (var i = currentYear - 5; i <= currentYear + 5; i++) {
+        yearOptions.push('<option value="' + i + '">' + i + '년</option>');
+    }
+    syn.$l.get('ddlYear').innerHTML = '<option value="">년도 선택</option>' + yearOptions.join('');
+    syn.uicontrols.$select.controlReload('ddlYear');
+    
+    // 월 옵션 생성
+    var monthOptions = [];
+    var monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+    for (var i = 1; i <= 12; i++) {
+        monthOptions.push('<option value="' + i + '">' + monthNames[i-1] + '</option>');
+    }
+    syn.$l.get('ddlMonth').innerHTML = '<option value="">월 선택</option>' + monthOptions.join('');
+    syn.uicontrols.$select.controlReload('ddlMonth');
+});
+```
+
+#### 검색 기능이 있는 select 예제
+```html
+<div class="mb-3">
+    <label class="form-label">직원 선택</label>
+    <select id="ddlEmployee" syn-datafield="EmployeeID" syn-options="{
+        dataSourceID: 'EMPLOYEE_LIST',
+        local: false,
+        search: true,
+        placeholder: '직원 검색 및 선택',
+        width: '100%'
+    }" syn-events="['change']"></select>
+</div>
+```
+
+```javascript
+ddlEmployee_change(evt) {
+    var employeeID = evt.target.value;
+    var employeeName = evt.target.options[evt.target.selectedIndex].text;
+    
+    if (employeeID) {
+        console.log('선택된 직원 ID:', employeeID);
+        console.log('선택된 직원명:', employeeName);
+        
+        // 직원 정보 로드
+        loadEmployeeInfo(employeeID);
+    }
+}
+
+function loadEmployeeInfo(employeeID) {
+    // 직원 상세 정보 조회
+    syn.$w.transactionObject({
+        requestType: 'DataTransaction',
+        dataSourceID: 'EMPLOYEE_INFO',
+        parameters: [
+            { name: 'EmployeeID', value: employeeID }
+        ]
+    }, function(result) {
+        if (result.length > 0) {
+            var employee = result[0];
+            syn.$l.get('txtEmployeeName').value = employee.Name;
+            syn.$l.get('txtDepartment').value = employee.Department;
+            syn.$l.get('txtPosition').value = employee.Position;
+        }
+    });
+}
+```
+
+#### 조건부 활성화 예제
+```html
+<div class="mb-3">
+    <label class="form-label">서비스 타입</label>
+    <select id="ddlServiceType" syn-options="{
+        toSynControl: true
+    }">
+        <option value="">서비스 선택</option>
+        <option value="premium">프리미엄</option>
+        <option value="standard">스탠다드</option>
+        <option value="basic">베이직</option>
+    </select>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">옵션 서비스</label>
+    <select id="ddlOptionalService" syn-options="{
+        toSynControl: true
+    }" disabled>
+        <option value="">옵션 선택</option>
+        <option value="backup">백업 서비스</option>
+        <option value="support">기술 지원</option>
+        <option value="monitoring">모니터링</option>
+    </select>
+</div>
+```
+
+```javascript
+ddlServiceType_change(evt) {
+    var serviceType = evt.target.value;
+    
+    if (serviceType) {
+        // 서비스 타입이 선택되면 옵션 서비스 활성화
+        syn.uicontrols.$select.disabled('ddlOptionalService', false);
+        
+        // 서비스 타입별로 사용 가능한 옵션 제한
+        var availableOptions = getAvailableOptions(serviceType);
+        updateOptionalServiceOptions(availableOptions);
+    } else {
+        // 서비스 타입이 선택되지 않으면 옵션 서비스 비활성화
+        syn.uicontrols.$select.disabled('ddlOptionalService', true);
+        syn.uicontrols.$select.clear('ddlOptionalService');
+    }
+}
+
+function getAvailableOptions(serviceType) {
+    var allOptions = [
+        {value: 'backup', text: '백업 서비스'},
+        {value: 'support', text: '기술 지원'},
+        {value: 'monitoring', text: '모니터링'}
+    ];
+    
+    switch(serviceType) {
+        case 'premium':
+            return allOptions; // 모든 옵션 사용 가능
+        case 'standard':
+            return allOptions.slice(0, 2); // 백업, 기술지원만
+        case 'basic':
+            return allOptions.slice(0, 1); // 백업만
+        default:
+            return [];
+    }
+}
+
+function updateOptionalServiceOptions(options) {
+    var selectElement = syn.$l.get('ddlOptionalService');
+    selectElement.innerHTML = '<option value="">옵션 선택</option>';
+    
+    for (var i = 0; i < options.length; i++) {
+        var option = options[i];
+        var optionElement = document.createElement('option');
+        optionElement.value = option.value;
+        optionElement.textContent = option.text;
+        selectElement.appendChild(optionElement);
+    }
+    
+    syn.uicontrols.$select.controlReload('ddlOptionalService');
+}
+```
+
+### 주의사항
+
+1. `toSynControl: true`로 설정하면 tail.select.js 기반의 향상된 UI를 사용합니다.
+2. 데이터 소스 사용 시 `CodeColumnID`와 `ValueColumnID`가 정확히 설정되어야 합니다.
+3. 매개변수는 `@ParamName:Value;` 형식으로 전달해야 합니다.
+4. `search: true` 옵션은 많은 옵션이 있을 때 유용합니다.
+5. `controlReload()` 메서드는 옵션을 동적으로 변경한 후 호출해야 UI가 업데이트됩니다.
+
+### 참고자료
+- [tail.select.js](https://getbutterfly.com/tail-select)
+
+---
+
+## 기타 컨트롤들 {#other-controls}
+
+### syn.uicontrols.$htmleditor
+HTML 편집기 기능을 제공하는 컴포넌트입니다. TinyMCE를 기반으로 합니다.
+- `getValue(elID)` - HTML 내용을 가져옵니다
+- `getHtmlEditor(elID)` - TinyMCE 에디터 객체를 가져옵니다
+- `resizeImage(elID, maxWidth, maxHeight)` - 이미지 크기를 조정합니다
+
+### syn.uicontrols.$list
+데이터 조회에 특화된 그리드 컴포넌트입니다. DataTables를 기반으로 합니다.
+- `clear(elID)` - 리스트의 모든 데이터를 지웁니다
+- `setValue(elID, value)` - 리스트에 데이터를 설정합니다
+
+### syn.uicontrols.$organization
+조직도 데이터를 시각화하는 컴포넌트입니다. OrgChart를 기반으로 합니다.
+- `getControl(elID)` - 조직도 컨트롤 객체를 가져옵니다
+- `getRelatedNodes(elID, nodeID)` - 관련 노드들을 가져옵니다
+- `setValue(elID, value)` - 조직도 데이터를 설정합니다
+
+### syn.uicontrols.$radio
+라디오 버튼 그룹을 관리하는 컴포넌트입니다.
+- `getSelectedByText(elID)` - 선택된 라디오 버튼의 텍스트를 가져옵니다
+
+### syn.uicontrols.$sourceeditor
+소스 코드 편집기 기능을 제공하는 컴포넌트입니다. Monaco Editor를 기반으로 합니다.
+- `defaultSetting` - 기본 설정 정보
+
+### syn.uicontrols.$textarea
+여러 줄 텍스트 입력을 위한 컴포넌트입니다. CodeMirror를 기반으로 합니다.
+- `getValue(elID)` - 텍스트 값을 가져옵니다
+- `setValue(elID, value)` - 텍스트 값을 설정합니다
+
+### syn.uicontrols.$textbox
+단일 텍스트 입력을 위한 컴포넌트입니다. 다양한 입력 타입을 지원합니다.
+- `setValue(elID, value)` - 텍스트 값을 설정합니다
+
+### syn.uicontrols.$tree
+트리 구조 데이터를 표시하는 컴포넌트입니다. Fancytree를 기반으로 합니다.
+- `activateKey(elID, key)` - 특정 키의 노드를 활성화합니다
+- `clearFilter(elID)` - 필터를 지웁니다
+- `expendLevel(elID, level)` - 특정 레벨까지 펼칩니다
+- `filterNodes(elID, filter)` - 노드를 필터링합니다
+- `getControl(elID)` - 트리 컨트롤 객체를 가져옵니다
+- `getRootNodeID(elID)` - 루트 노드 ID를 가져옵니다
+- `setValue(elID, value)` - 트리 데이터를 설정합니다

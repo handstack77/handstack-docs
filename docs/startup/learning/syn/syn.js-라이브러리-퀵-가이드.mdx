@@ -1,0 +1,722 @@
+---
+sidebar_position: 2
+---
+
+# syn.js 라이브러리 퀵 가이드
+
+## 기본 사용법
+
+### 1. 브라우저 정보 (syn.$b)
+
+```javascript
+// 브라우저 기본 정보
+console.log(syn.$b.appName);        // 브라우저 이름
+console.log(syn.$b.isChrome);       // Chrome 여부
+console.log(syn.$b.isMobile());     // 모바일 여부
+console.log(syn.$b.screenWidth);    // 화면 너비
+console.log(syn.$b.screenHeight);   // 화면 높이
+
+// 시스템 폰트 목록 가져오기
+const fonts = syn.$b.getSystemFonts();
+console.log(fonts);
+
+// 브라우저 고유 지문(fingerprint) 생성
+const fingerprint = await syn.$b.fingerPrint();
+console.log(fingerprint);
+
+// 사용자 IP 주소 가져오기
+const ipAddress = await syn.$b.getIpAddress();
+console.log(ipAddress);
+```
+
+### 2. DOM 조작 (syn.$m)
+
+```javascript
+// Element 가져오기 및 조작
+const el = syn.$l.get('myElementId');
+
+// 값 설정/가져오기
+syn.$m.value(el, 'Hello World');
+const value = syn.$m.value(el);
+
+// 텍스트 설정/가져오기
+syn.$m.textContent(el, '안녕하세요');
+const text = syn.$m.textContent(el);
+
+// HTML 설정/가져오기
+syn.$m.innerHTML(el, '<b>굵은 텍스트</b>');
+const html = syn.$m.innerHTML(el);
+
+// 스타일 조작
+syn.$m.setStyle(el, 'color', 'red');
+syn.$m.addStyle(el, { 
+    backgroundColor: 'blue', 
+    color: 'white' 
+});
+
+// CSS 클래스 조작
+syn.$m.addClass(el, 'active highlight');
+syn.$m.removeClass(el, 'active');
+syn.$m.toggleClass(el, 'visible');
+const hasClass = syn.$m.hasClass(el, 'active');
+
+// Element 생성 및 추가
+const newEl = syn.$m.create({
+    tag: 'div',
+    id: 'newDiv',
+    className: 'my-class',
+    styles: { color: 'green' },
+    text: 'New Element'
+});
+syn.$m.appendChild('parentId', newEl);
+```
+
+### 3. 크기 및 위치 (syn.$d)
+
+```javascript
+// 문서 크기 가져오기
+const docSize = syn.$d.getDocumentSize();
+console.log(docSize.width, docSize.height);
+
+// 윈도우 크기 가져오기
+const winSize = syn.$d.getWindowSize();
+console.log(winSize.width, winSize.height);
+
+// Element 위치 정보
+const offset = syn.$d.offset('myElementId');
+console.log(offset.top, offset.left);
+
+// Element 크기 정보
+const size = syn.$d.getSize('myElementId');
+console.log(size.width, size.height);
+
+// 텍스트 크기 측정
+const textWidth = syn.$d.measureWidth('Hello World', '16px');
+const textHeight = syn.$d.measureHeight('Hello World', '200px', '16px');
+```
+
+### 4. 암호화 (syn.$c)
+
+```javascript
+// Base64 인코딩/디코딩
+const encoded = syn.$c.base64Encode('Hello World');
+const decoded = syn.$c.base64Decode(encoded);
+
+// SHA-256 해시
+const hash = syn.$c.sha256('Hello World');
+
+// 간단한 암호화/복호화
+const encrypted = syn.$c.encrypt('Hello World', 'myKey');
+const decrypted = syn.$c.decrypt(encrypted, 'myKey');
+
+// HMAC 생성 및 검증
+const signature = await syn.$c.generateHMAC('key', 'message');
+const isValid = await syn.$c.verifyHMAC('key', 'message', signature);
+
+// AES 암호화/복호화
+const aesResult = await syn.$c.aesEncode('Hello World', 'key123');
+const aesDecrypted = await syn.$c.aesDecode(aesResult, 'key123');
+```
+
+### 5. 키보드 처리 (syn.$k)
+
+```javascript
+// Element에 키보드 이벤트 설정
+syn.$k.setElement('inputElementId');
+
+// 특정 키에 이벤트 핸들러 추가
+syn.$k.addKeyCode('keydown', syn.$k.keyCodes.enter, function(evt) {
+    console.log('Enter키가 눌렸습니다');
+});
+
+syn.$k.addKeyCode('keyup', syn.$k.keyCodes.escape, function(evt) {
+    console.log('ESC키가 떼어졌습니다');
+});
+
+// 키 이벤트 제거
+syn.$k.removeKeyCode('keydown', syn.$k.keyCodes.enter);
+```
+
+### 6. 유효성 검사 (syn.$v)
+
+```javascript
+// Element 설정
+syn.$v.setElement('inputElementId');
+
+// 필수 입력 검증
+syn.$v.required('inputElementId', true, '필수 입력 항목입니다');
+
+// 패턴 검증
+syn.$v.pattern('emailInput', 'email', {
+    expr: syn.$v.regexs.email,
+    message: '올바른 이메일을 입력하세요'
+});
+
+// 숫자 범위 검증
+syn.$v.range('numberInput', 'range', {
+    min: 0,
+    max: 100,
+    minOperator: '>=',
+    maxOperator: '<=',
+    message: '0~100 사이의 값을 입력하세요'
+});
+
+// 커스텀 검증
+syn.$v.custom('customInput', 'customRule', {
+    functionName: 'myValidation',
+    message: '커스텀 검증 실패'
+});
+
+// 검증 실행
+const isValid = syn.$v.validateControl('inputElementId');
+if (!isValid) {
+    const messages = syn.$v.toMessages();
+    alert(messages);
+}
+```
+
+### 7. 공통 라이브러리 (syn.$l)
+
+```javascript
+// GUID 생성
+const guid = syn.$l.guid();
+
+// 랜덤 문자열 생성
+const randomStr = syn.$l.random(8, true); // 8자리 소문자
+
+// Element 가져오기
+const el = syn.$l.get('elementId');
+const elements = syn.$l.get('id1', 'id2', 'id3');
+
+// 이벤트 처리
+syn.$l.addEvent('buttonId', 'click', function(evt) {
+    console.log('버튼이 클릭되었습니다');
+});
+
+syn.$l.removeEvent('buttonId', 'click', handlerFunction);
+
+// 클릭 이벤트 발생시키기
+syn.$l.dispatchClick('buttonId');
+
+// JSON/텍스트 변환
+const jsonData = syn.$l.text2Json(csvText, ',', '\n');
+const textData = syn.$l.json2Text(jsonArray, ['col1', 'col2']);
+
+// 중첩 데이터 구조 변환
+const flatData = syn.$l.nested2Flat(treeData, 'id', 'parentId', 'children');
+const nestedData = syn.$l.flat2Nested(flatData, 'id', 'parentId', 'children');
+
+// Blob 처리
+const blob = syn.$l.createBlob('Hello World', 'text/plain');
+const base64 = await syn.$l.blobToBase64(blob);
+syn.$l.blobToDownload(blob, 'test.txt');
+```
+
+### 8. 화면 개발 (syn.$w)
+
+```javascript
+// 스토리지 조작
+syn.$w.setStorage('key', 'value', false); // sessionStorage
+syn.$w.setStorage('key', 'value', true);  // localStorage
+const value = syn.$w.getStorage('key');
+syn.$w.removeStorage('key');
+
+// 활성 컨트롤 가져오기
+const activeEl = syn.$w.activeControl(event);
+
+// 스크롤을 맨 위로
+syn.$w.scrollToTop();
+
+// 파일 다운로드
+syn.$w.fileDownload('/path/to/file', 'download.txt');
+
+// API 호출
+const result = await syn.$w.apiHttp('/api/data').send({
+    param1: 'value1',
+    param2: 'value2'
+});
+
+// 스크립트 동적 로드
+await syn.$w.loadScript('/js/external-script.js');
+
+// 스타일 동적 로드
+syn.$w.loadStyle('/css/external-style.css');
+
+// 텍스트/JSON 가져오기
+const textContent = await syn.$w.fetchText('/data.txt');
+const jsonData = await syn.$w.fetchJson('/api/data');
+```
+
+### 9. HTTP 요청 (syn.$r)
+
+```javascript
+// URL 파라미터 처리
+syn.$r.params['key'] = 'value';
+const paramValue = syn.$r.query('paramName');
+const fullUrl = syn.$r.url();
+
+// 쿠키 조작
+syn.$r.setCookie('cookieName', 'cookieValue');
+const cookieValue = syn.$r.getCookie('cookieName');
+syn.$r.deleteCookie('cookieName');
+
+// HTTP 요청
+const response = await syn.$r.httpRequest('GET', '/api/data');
+const postResponse = await syn.$r.httpRequest('POST', '/api/save', {
+    body: { key: 'value' }
+});
+
+// Fetch API 래퍼
+const fetchResult = await syn.$r.httpFetch('/api/data').send();
+const postResult = await syn.$r.httpFetch('/api/save').send({
+    key: 'value'
+});
+```
+
+### 10. 데이터 타입 확장
+
+#### 날짜 ($date)
+
+```javascript
+// 현재 시간
+const now = $date.now();
+
+// 날짜 형식 변환
+const dateStr = $date.toString(now, 'd');      // YYYY-MM-DD
+const timeStr = $date.toString(now, 't');      // HH:MM:SS  
+const fullStr = $date.toString(now, 'a');      // YYYY-MM-DD HH:MM:SS
+const korStr = $date.toString(now, 'n');       // 한국어 형식
+
+// 날짜 연산
+const tomorrow = $date.addDay(now, 1);
+const nextWeek = $date.addWeek(now, 1);
+const nextMonth = $date.addMonth(now, 1);
+
+// 날짜 비교
+const isToday = $date.isToday(someDate);
+const isBetween = $date.isBetween(targetDate, startDate, endDate);
+
+// 날짜 차이 계산
+const dayDiff = $date.diff(startDate, endDate, 'day');
+const hourDiff = $date.diff(startDate, endDate, 'hour');
+```
+
+#### 문자열 ($string)
+
+```javascript
+// 문자열 검사
+const isEmpty = $string.isNullOrEmpty(str);
+const isNum = $string.isNumber('12345');
+
+// 문자열 변환
+const num = $string.toNumber('12,345.67');
+const bool = $string.toBoolean('true');
+const dynamic = $string.toDynamic('123'); // 자동 타입 변환
+
+// HTML 처리
+const cleaned = $string.cleanHTML('<b>Hello</b>'); // 태그 제거
+const encoded = $string.toHtmlChar('<script>'); // HTML 엔티티 변환
+
+// 문자열 템플릿
+const result = $string.interpolate('안녕하세요 #{name}님!', {name: '홍길동'});
+
+// 문자열 길이 (바이트 기준)
+const byteLength = $string.length('안녕하세요');
+
+// 대문자 변환
+const capitalized = $string.capitalize('hello world');
+```
+
+#### 배열 ($array)
+
+```javascript
+// 배열 조작
+const unique = $array.distinct([1, 2, 2, 3, 3]);
+const sorted = $array.sort(['c', 'a', 'b'], true);
+const shuffled = $array.shuffle([1, 2, 3, 4, 5]);
+
+// 배열 연산
+const merged = $array.merge(arr1, arr2);
+const union = $array.union(arr1, arr2);
+const difference = $array.difference(arr1, arr2);
+const intersection = $array.intersect(arr1, arr2);
+
+// 객체 배열 정렬
+const objectSorted = $array.objectSort(users, 'name', true);
+
+// 그룹화
+const grouped = $array.groupBy(users, 'department');
+
+// 순위 매기기
+const ranks = $array.ranks([85, 92, 78, 92, 88]);
+```
+
+#### 숫자 ($number)
+
+```javascript
+// 랜덤 숫자
+const randomNum = $number.random(1, 100);
+
+// 범위 검사
+const inRange = $number.isRange(50, 0, 100);
+
+// 값 제한
+const limited = $number.limit(150, 0, 100); // 100
+
+// 백분율 계산
+const percent = $number.percent(25, 100); // 25
+
+// 시간 변환
+const duration = $number.duration(90000000);
+console.log(duration.hour, duration.minute);
+
+// 바이트 단위 문자열
+const byteStr = $number.toByteString(1048576); // "1 MB"
+```
+
+#### 객체 ($object)
+
+```javascript
+// 타입 검사
+const isNull = $object.isNull(value);
+const isArray = $object.isArray(value);
+const isObject = $object.isObject(value);
+const isEmpty = $object.isEmpty(value);
+
+// 타입 확인
+const type = $object.getType(value);
+
+// 기본값 반환
+const defaultVal = $object.defaultValue('string'); // ""
+
+// 객체 복제
+const cloned = $object.clone(originalObj, true); // 깊은 복사
+
+// 객체 확장
+const extended = $object.extend(target, source, true);
+
+// CSV 변환
+const csvString = $object.toCSV(dataArray);
+
+// 파라미터 문자열 변환
+const paramStr = $object.toParameterString({name: '홍길동', age: 30});
+```
+
+## 실제 화면 개발 예제
+
+### 기본 화면 구조
+
+```javascript
+'use strict';
+let $MyScreen = {
+    // 화면 구성에 필요한 환경설정
+    config: {
+        programID: 'HDS',
+        businessID: 'SMP',
+        transactionID: 'MyScreen',
+        dataSource: {},
+        actionButtons: []
+    },
+
+    // 화면내 전역변수 선언
+    prop: {
+        userId: null,
+        activeRow: null
+    },
+
+    // 거래 메서드 선언
+    transaction: {
+        // 목록 조회
+        LD01: {
+            inputs: [{ type: 'Row', dataFieldID: 'MainForm' }],
+            outputs: [{ type: 'Grid', dataFieldID: 'DataList' }]
+        },
+        
+        // 데이터 저장
+        MD01: {
+            inputs: [{ type: 'Row', dataFieldID: 'MainForm' }],
+            outputs: [{ type: 'Form', dataFieldID: 'MainForm' }]
+        }
+    },
+
+    // life cycle, 외부 이벤트 hook 선언
+    hook: {
+        pageLoad() {
+            // 페이지 로드 완료 후 실행
+            syn.$l.get('txtSearchKeyword').focus();
+            this.method.loadInitialData();
+        },
+
+        beforeTransaction(transactConfig) {
+            // 거래 실행 전 검증
+            if (transactConfig.functionID === 'MD01') {
+                if (!syn.$l.get('txtName').value) {
+                    alert('이름을 입력하세요');
+                    return false;
+                }
+            }
+            return true;
+        },
+
+        afterTransaction(error, functionID, responseData, additionalData) {
+            // 거래 완료 후 처리
+            if (error) {
+                syn.$l.eventLog('MyScreen.hook.afterTransaction', error, 'Error');
+                return;
+            }
+
+            if (functionID === 'LD01') {
+                console.log('데이터 로드 완료:', responseData);
+            }
+        }
+    },
+
+    // 사용자 이벤트 핸들러 선언
+    event: {
+        btnSearch_click() {
+            // 검색 버튼 클릭
+            syn.$w.transactionAction('LD01');
+        },
+
+        btnSave_click() {
+            // 저장 버튼 클릭
+            if (this.method.validateForm()) {
+                syn.$w.transactionAction('MD01');
+            }
+        },
+
+        txtSearchKeyword_keydown(evt) {
+            // 검색어 입력 필드에서 Enter키 처리
+            if (evt.keyCode === syn.$k.keyCodes.enter) {
+                this.event.btnSearch_click();
+            }
+        },
+
+        grdDataList_rowClick(rowIndex, columnIndex) {
+            // 그리드 행 클릭 처리
+            this.prop.activeRow = rowIndex;
+            const selectedData = this.method.getSelectedData();
+            this.method.loadDetailData(selectedData.id);
+        }
+    },
+
+    // 기능 메서드 선언
+    method: {
+        loadInitialData() {
+            // 초기 데이터 로드
+            syn.$w.transactionAction('LD01');
+        },
+
+        validateForm() {
+            // 폼 유효성 검사
+            const isValid = syn.$v.validateForm();
+            if (!isValid) {
+                alert(syn.$v.toMessages());
+            }
+            return isValid;
+        },
+
+        getSelectedData() {
+            // 선택된 그리드 데이터 반환
+            if (this.prop.activeRow !== null) {
+                // 그리드에서 선택된 행 데이터 가져오기
+                return syn.uicontrols.$auigrid.getDataAtRow('grdDataList', this.prop.activeRow);
+            }
+            return null;
+        },
+
+        loadDetailData(id) {
+            // 상세 데이터 로드
+            syn.$l.get('txtSelectedId').value = id;
+            // 추가 처리...
+        }
+    }
+};
+```
+
+### 유효성 검사 설정
+
+```javascript
+// 페이지 로드 시 유효성 검사 규칙 설정
+hook: {
+    pageLoad() {
+        // 필수 입력 설정
+        syn.$v.required('txtName', true, '이름은 필수 입력입니다');
+        syn.$v.required('txtEmail', true, '이메일은 필수 입력입니다');
+
+        // 패턴 검증 설정
+        syn.$v.pattern('txtEmail', 'email', {
+            expr: syn.$v.regexs.email,
+            message: '올바른 이메일 형식을 입력하세요'
+        });
+
+        syn.$v.pattern('txtPhone', 'phone', {
+            expr: syn.$v.regexs.mobilePhone,
+            message: '올바른 휴대폰 번호를 입력하세요'
+        });
+
+        // 숫자 범위 검증
+        syn.$v.range('txtAge', 'ageRange', {
+            min: 0,
+            max: 120,
+            minOperator: '>=',
+            maxOperator: '<=',
+            message: '나이는 0~120 사이여야 합니다'
+        });
+
+        // 커스텀 검증
+        syn.$v.custom('txtPassword', 'passwordStrength', {
+            functionName: 'validatePassword',
+            message: '비밀번호는 8자 이상이어야 합니다'
+        });
+    }
+},
+
+method: {
+    validatePassword(options) {
+        const password = syn.$l.get('txtPassword').value;
+        return password.length >= 8;
+    }
+}
+```
+
+## 고급 사용법
+
+### 거래 시스템 사용
+
+```javascript
+// 직접 거래 호출
+const directResult = await syn.$w.transactionDirect({
+    programID: 'HDS',
+    businessID: 'SMP', 
+    transactionID: 'MyTransaction',
+    functionID: 'GetUserList',
+    inputObjects: {
+        SearchKeyword: '홍길동',
+        PageSize: 10
+    }
+});
+
+// 거래 후 콜백 처리
+syn.$w.transactionAction('LD01', {
+    callback: (error, result, additionalData) => {
+        if (error) {
+            console.error('거래 오류:', error);
+            return;
+        }
+        
+        console.log('거래 성공:', result);
+        // 결과 처리...
+    }
+});
+```
+
+### 네트워크 통신 (iframe 간)
+
+```javascript
+// 부모 화면에서 자식 iframe과 연결
+const channel = syn.$n.rooms.connect({
+    window: document.getElementById('myIframe').contentWindow,
+    origin: '*',
+    scope: 'myChannel',
+    debugOutput: true
+});
+
+// 이벤트 바인딩
+channel.bind('dataRequest', function(transaction, params) {
+    // 자식에서 데이터 요청이 왔을 때 처리
+    const data = getDataFromDatabase(params.id);
+    transaction.complete(data);
+});
+
+// 자식 화면에서 부모에게 데이터 요청
+channel.call({
+    method: 'dataRequest',
+    params: { id: 123 },
+    success: function(result) {
+        console.log('받은 데이터:', result);
+    },
+    error: function(error, message) {
+        console.error('오류:', error, message);
+    }
+});
+```
+
+## 성능 최적화 팁
+
+### 1. 이벤트 관리
+
+```javascript
+// 이벤트 중복 등록 방지
+if (!syn.$l.hasEvent('myButton', 'click')) {
+    syn.$l.addEvent('myButton', 'click', handleClick);
+}
+
+// 페이지 언로드 시 이벤트 정리 (자동으로 처리됨)
+```
+
+### 2. 메모리 관리
+
+```javascript
+// 큰 객체는 사용 후 null 할당
+method: {
+    processLargeData() {
+        let largeData = this.getLargeDataSet();
+        
+        // 데이터 처리...
+        
+        largeData = null; // 메모리 해제
+    }
+}
+```
+
+### 3. 비동기 처리
+
+```javascript
+// Promise 기반 비동기 처리
+async loadUserData(userId) {
+    try {
+        const [userInfo, userPermissions] = await Promise.all([
+            syn.$w.fetchJson(`/api/users/${userId}`),
+            syn.$w.fetchJson(`/api/users/${userId}/permissions`)
+        ]);
+        
+        this.setUserInfo(userInfo);
+        this.setUserPermissions(userPermissions);
+        
+    } catch (error) {
+        syn.$l.eventLog('loadUserData', error, 'Error');
+    }
+}
+```
+
+## 디버깅 및 로깅
+
+```javascript
+// 이벤트 로깅
+syn.$l.eventLog('functionName', 'debug message', 'Information');
+syn.$l.eventLog('functionName', 'warning message', 'Warning');
+syn.$l.eventLog('functionName', 'error message', 'Error');
+
+// 상세 디버깅
+console.log('현재 활성 컨트롤:', syn.$w.activeControl());
+console.log('브라우저 정보:', {
+    name: syn.$b.appName,
+    version: syn.$b.appVersion,
+    isMobile: syn.$b.isMobile()
+});
+
+// 성능 측정
+console.time('dataProcessing');
+// 처리 작업...
+console.timeEnd('dataProcessing');
+```
+
+## 마무리
+
+syn.js 라이브러리는 HandStack 프레임워크의 핵심 구성요소로, 웹 개발에 필요한 대부분의 기능을 제공합니다. 이 가이드의 예제들을 참고하여 효율적이고 일관성 있는 코드를 작성하시기 바랍니다.
+
+더 자세한 정보는 다음 문서들을 참고하세요:
+
+- [HandStack 화면 HTML 작성 지침](../HandStack%20화면%20HTML%20작성%20지침.md)
+- [HandStack 화면 JavaScript 작성 지침](../HandStack%20화면%20JavaScript%20작성%20지침.md)
