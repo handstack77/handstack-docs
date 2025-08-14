@@ -2,9 +2,977 @@
 sidebar_position: 15
 ---
 
-# array
+# $array
 
-Javascript Array 객체에 대한 확장 함수를 제공합니다.
+## 개요
+$array는 JavaScript의 Array 객체를 확장하여 배열 조작과 처리를 더욱 편리하게 만들어주는 유틸리티 함수 모음입니다. 정렬, 필터링, 그룹화, 집합 연산 등 다양한 배열 처리 기능을 제공합니다.
+
+## 주요 기능
+
+### 배열 정렬 및 중복 제거
+
+#### distinct(arr)
+배열에서 중복된 값을 제거합니다.
+
+**구문**
+```javascript
+$array.distinct(arr)
+```
+
+**매개변수**
+- `arr` (Array): 중복을 제거할 배열
+
+**반환값**
+- `Array`: 중복이 제거된 새로운 배열
+
+**예제**
+```javascript
+var fruits = ['Apple', 'Banana', 'Banana', 'Mango', 'Cherry', 'Apple'];
+var uniqueFruits = $array.distinct(fruits);
+console.log(uniqueFruits); // ['Apple', 'Banana', 'Mango', 'Cherry']
+
+// 숫자 배열에서도 동작
+var numbers = [1, 2, 2, 3, 4, 4, 5];
+var uniqueNumbers = $array.distinct(numbers);
+console.log(uniqueNumbers); // [1, 2, 3, 4, 5]
+```
+
+#### sort(arr, isDesc?)
+배열을 정렬합니다.
+
+**구문**
+```javascript
+$array.sort(arr, isDesc?)
+```
+
+**매개변수**
+- `arr` (Array): 정렬할 배열
+- `isDesc` (Boolean, 선택사항): 내림차순 여부 (기본값: false)
+
+**반환값**
+- `Array`: 정렬된 새로운 배열
+
+**예제**
+```javascript
+var fruits = ['Banana', 'Apple', 'Cherry', 'Mango'];
+
+// 오름차순 정렬
+var ascending = $array.sort(fruits);
+console.log(ascending); // ['Apple', 'Banana', 'Cherry', 'Mango']
+
+// 내림차순 정렬
+var descending = $array.sort(fruits, true);
+console.log(descending); // ['Mango', 'Cherry', 'Banana', 'Apple']
+
+// 숫자 정렬
+var numbers = [10, 5, 40, 25, 1000, 1];
+var sortedNumbers = $array.sort(numbers);
+console.log(sortedNumbers); // [1, 5, 10, 25, 40, 1000]
+```
+
+#### objectSort(arr, propertyName, isDesc?)
+객체 배열을 특정 속성으로 정렬합니다.
+
+**구문**
+```javascript
+$array.objectSort(arr, propertyName, isDesc?)
+```
+
+**매개변수**
+- `arr` (Array): 객체 배열
+- `propertyName` (String): 정렬 기준 속성명
+- `isDesc` (Boolean, 선택사항): 내림차순 여부
+
+**반환값**
+- `Array`: 정렬된 새로운 배열
+
+**예제**
+```javascript
+var products = [
+    { name: 'Apple', price: 10, category: 'Fruit' },
+    { name: 'Banana', price: 5, category: 'Fruit' },
+    { name: 'Cherry', price: 15, category: 'Fruit' },
+    { name: 'Carrot', price: 3, category: 'Vegetable' }
+];
+
+// 가격 기준 오름차순
+var byPriceAsc = $array.objectSort(products, 'price');
+console.log(byPriceAsc.map(p => `${p.name}: ${p.price}`));
+// ['Carrot: 3', 'Banana: 5', 'Apple: 10', 'Cherry: 15']
+
+// 이름 기준 내림차순
+var byNameDesc = $array.objectSort(products, 'name', true);
+console.log(byNameDesc.map(p => p.name));
+// ['Cherry', 'Carrot', 'Banana', 'Apple']
+```
+
+### 배열 그룹화
+
+#### groupBy(arr, keySelector)
+배열 요소를 키에 따라 그룹화합니다.
+
+**구문**
+```javascript
+$array.groupBy(arr, keySelector)
+```
+
+**매개변수**
+- `arr` (Array): 그룹화할 배열
+- `keySelector` (String|Function): 그룹화 키 또는 키 선택 함수
+
+**반환값**
+- `Object`: 그룹화된 객체 (키별로 배열을 가짐)
+
+**예제**
+```javascript
+var products = [
+    { name: 'Apple', price: 10, category: 'Fruit' },
+    { name: 'Banana', price: 5, category: 'Fruit' },
+    { name: 'Cherry', price: 15, category: 'Fruit' },
+    { name: 'Carrot', price: 3, category: 'Vegetable' },
+    { name: 'Broccoli', price: 4, category: 'Vegetable' }
+];
+
+// 카테고리별 그룹화
+var byCategory = $array.groupBy(products, 'category');
+console.log(byCategory);
+// {
+//   'Fruit': [Apple, Banana, Cherry],
+//   'Vegetable': [Carrot, Broccoli]
+// }
+
+// 가격 범위별 그룹화 (함수 사용)
+var byPriceRange = $array.groupBy(products, function(item) {
+    return item.price <= 5 ? 'Cheap' : 'Expensive';
+});
+
+// 문자열 길이별 그룹화
+var words = ['하나', '둘', '셋', '넷'];
+var byLength = $array.groupBy(words, 'length');
+console.log(byLength);
+// { '1': ['셋', '넷'], '2': ['하나', '둘'] }
+
+// 숫자를 소수점 이하 버림으로 그룹화
+var numbers = [9.8, 7.1, 9.2, 7.9, 8.1];
+var byFloor = $array.groupBy(numbers, Math.floor);
+console.log(byFloor);
+// { '7': [7.1, 7.9], '8': [8.1], '9': [9.8, 9.2] }
+```
+
+### 배열 조작
+
+#### shuffle(arr)
+배열의 순서를 무작위로 섞습니다.
+
+**구문**
+```javascript
+$array.shuffle(arr)
+```
+
+**예제**
+```javascript
+var numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+var shuffled = $array.shuffle(numbers);
+console.log(shuffled); // [3, 7, 1, 9, 0, 5, 2, 8, 4, 6] (매번 다름)
+
+// 카드 섞기
+var cards = ['A', 'K', 'Q', 'J', '10', '9', '8', '7'];
+var shuffledCards = $array.shuffle(cards);
+console.log('섞인 카드:', shuffledCards);
+```
+
+#### addAt(arr, index, item)
+배열의 특정 위치에 요소를 추가합니다.
+
+**구문**
+```javascript
+$array.addAt(arr, index, item)
+```
+
+**매개변수**
+- `arr` (Array): 대상 배열
+- `index` (Number): 삽입할 위치
+- `item` (Any): 삽입할 항목
+
+**반환값**
+- `Array`: 새로운 배열
+
+**예제**
+```javascript
+var fruits = ['Apple', 'Banana', 'Cherry'];
+var result = $array.addAt(fruits, 1, 'Mango');
+console.log(result); // ['Apple', 'Mango', 'Banana', 'Cherry']
+
+// 맨 앞에 추가
+var result2 = $array.addAt(fruits, 0, 'Orange');
+console.log(result2); // ['Orange', 'Apple', 'Banana', 'Cherry']
+```
+
+#### removeAt(arr, index)
+배열의 특정 위치에서 요소를 제거합니다.
+
+**구문**
+```javascript
+$array.removeAt(arr, index)
+```
+
+**매개변수**
+- `arr` (Array): 대상 배열
+- `index` (Number): 제거할 위치
+
+**반환값**
+- `Array`: 새로운 배열
+
+**예제**
+```javascript
+var fruits = ['Apple', 'Banana', 'Mango', 'Cherry'];
+var result = $array.removeAt(fruits, 2);
+console.log(result); // ['Apple', 'Banana', 'Cherry'] (Mango 제거됨)
+
+// 마지막 요소 제거
+var result2 = $array.removeAt(fruits, fruits.length - 1);
+console.log(result2); // ['Apple', 'Banana', 'Mango']
+```
+
+#### contains(arr, item)
+배열에 특정 요소가 포함되어 있는지 확인합니다.
+
+**구문**
+```javascript
+$array.contains(arr, item)
+```
+
+**반환값**
+- `Boolean`: 포함 여부
+
+**예제**
+```javascript
+var fruits = ['Apple', 'Banana', 'Mango', 'Cherry'];
+
+console.log($array.contains(fruits, 'Banana')); // true
+console.log($array.contains(fruits, 'Orange')); // false
+
+// 객체 배열에서도 동작
+var users = [
+    { id: 1, name: 'John' },
+    { id: 2, name: 'Jane' }
+];
+
+var john = { id: 1, name: 'John' };
+console.log($array.contains(users, john)); // 참조 비교이므로 false
+```
+
+### 집합 연산
+
+#### merge(arr1, arr2)
+두 배열을 단순 병합합니다 (중복 허용).
+
+**구문**
+```javascript
+$array.merge(arr1, arr2)
+```
+
+**예제**
+```javascript
+var fruits1 = ['Apple', 'Banana'];
+var fruits2 = ['Mango', 'Banana', 'Cherry'];
+
+var merged = $array.merge(fruits1, fruits2);
+console.log(merged); // ['Apple', 'Banana', 'Mango', 'Banana', 'Cherry']
+```
+
+#### union(arr1, arr2)
+두 배열의 합집합을 구합니다 (중복 제거).
+
+**구문**
+```javascript
+$array.union(arr1, arr2)
+```
+
+**반환값**
+- `Array`: 합집합 배열
+
+**예제**
+```javascript
+var fruits1 = ['Apple', 'Banana', 'Mango'];
+var fruits2 = ['Mango', 'Cherry', 'Orange'];
+
+var union = $array.union(fruits1, fruits2);
+console.log(union); // ['Apple', 'Banana', 'Mango', 'Cherry', 'Orange']
+```
+
+#### difference(arr1, arr2)
+두 배열의 차집합을 구합니다 (arr1에는 있지만 arr2에는 없는 요소).
+
+**구문**
+```javascript
+$array.difference(arr1, arr2)
+```
+
+**반환값**
+- `Array`: 차집합 배열
+
+**예제**
+```javascript
+var fruits1 = ['Apple', 'Banana', 'Mango', 'Cherry'];
+var fruits2 = ['Banana', 'Orange', 'Cherry'];
+
+var difference = $array.difference(fruits1, fruits2);
+console.log(difference); // ['Apple', 'Mango'] (fruits1에만 있는 것들)
+```
+
+#### intersect(arr1, arr2)
+두 배열의 교집합을 구합니다.
+
+**구문**
+```javascript
+$array.intersect(arr1, arr2)
+```
+
+**반환값**
+- `Array`: 교집합 배열
+
+**예제**
+```javascript
+var fruits1 = ['Apple', 'Banana', 'Mango', 'Cherry'];
+var fruits2 = ['Banana', 'Orange', 'Cherry'];
+
+var intersection = $array.intersect(fruits1, fruits2);
+console.log(intersection); // ['Banana', 'Cherry'] (둘 다 있는 것들)
+```
+
+#### symmetryDifference(arr1, arr2)
+두 배열의 대칭 차집합을 구합니다 (둘 중 하나에만 있는 요소).
+
+**구문**
+```javascript
+$array.symmetryDifference(arr1, arr2)
+```
+
+**반환값**
+- `Array`: 대칭 차집합 배열
+
+**예제**
+```javascript
+var fruits1 = ['Apple', 'Banana', 'Mango', 'Cherry'];
+var fruits2 = ['Banana', 'Orange', 'Cherry', 'Grape'];
+
+var symDiff = $array.symmetryDifference(fruits1, fruits2);
+console.log(symDiff); // ['Apple', 'Mango', 'Orange', 'Grape']
+```
+
+### 배열 순위 계산
+
+#### ranks(arr)
+배열 요소의 순위를 계산합니다.
+
+**구문**
+```javascript
+$array.ranks(arr)
+```
+
+**매개변수**
+- `arr` (Array): 숫자 배열
+
+**반환값**
+- `Array`: 각 요소의 순위 배열
+
+**예제**
+```javascript
+var scores = [79, 5, 18, 5, 32, 1, 16, 1, 82, 13];
+var rankings = $array.ranks(scores);
+
+console.log('점수:', scores);
+console.log('순위:', rankings);
+
+// 점수와 순위를 함께 표시
+scores.forEach((score, index) => {
+    console.log(`${score}점 -> ${rankings[index]}등`);
+});
+
+// 82점 -> 1등
+// 79점 -> 2등  
+// 32점 -> 3등
+// 18점 -> 4등
+// 16점 -> 5등
+// 13점 -> 6등
+// 5점 -> 7등 (동점자 2명)
+// 1점 -> 9등 (동점자 2명)
+```
+
+## 실전 활용 예제
+
+### 1. 상품 관리 시스템
+```javascript
+function ProductManager() {
+    var products = [
+        { id: 1, name: 'iPhone 15', price: 1200000, category: 'Phone', brand: 'Apple', stock: 50 },
+        { id: 2, name: 'Galaxy S24', price: 1100000, category: 'Phone', brand: 'Samsung', stock: 30 },
+        { id: 3, name: 'iPad Pro', price: 1500000, category: 'Tablet', brand: 'Apple', stock: 20 },
+        { id: 4, name: 'MacBook Air', price: 1800000, category: 'Laptop', brand: 'Apple', stock: 15 },
+        { id: 5, name: 'Galaxy Tab', price: 800000, category: 'Tablet', brand: 'Samsung', stock: 25 },
+        { id: 6, name: 'AirPods Pro', price: 350000, category: 'Audio', brand: 'Apple', stock: 100 },
+        { id: 7, name: 'Galaxy Buds', price: 200000, category: 'Audio', brand: 'Samsung', stock: 80 }
+    ];
+    
+    // 카테고리별 상품 분류
+    function getProductsByCategory() {
+        return $array.groupBy(products, 'category');
+    }
+    
+    // 브랜드별 상품 분류
+    function getProductsByBrand() {
+        return $array.groupBy(products, 'brand');
+    }
+    
+    // 가격대별 분류 (함수 사용)
+    function getProductsByPriceRange() {
+        return $array.groupBy(products, function(product) {
+            if (product.price < 500000) return '저가형';
+            if (product.price < 1000000) return '중가형';
+            if (product.price < 1500000) return '고가형';
+            return '프리미엄';
+        });
+    }
+    
+    // 인기 상품 순위 (재고 기준)
+    function getPopularityRanking() {
+        var stockLevels = products.map(p => p.stock);
+        var rankings = $array.ranks(stockLevels);
+        
+        return products.map((product, index) => ({
+            ...product,
+            popularityRank: rankings[index]
+        }));
+    }
+    
+    // 상품 검색 및 필터링
+    function searchProducts(keyword, filters = {}) {
+        var filtered = products.filter(product => {
+            // 키워드 검색
+            var matchesKeyword = !keyword || 
+                product.name.toLowerCase().includes(keyword.toLowerCase());
+            
+            // 카테고리 필터
+            var matchesCategory = !filters.category || 
+                product.category === filters.category;
+            
+            // 브랜드 필터
+            var matchesBrand = !filters.brand || 
+                product.brand === filters.brand;
+            
+            // 가격 범위 필터
+            var matchesPrice = (!filters.minPrice || product.price >= filters.minPrice) &&
+                              (!filters.maxPrice || product.price <= filters.maxPrice);
+            
+            return matchesKeyword && matchesCategory && matchesBrand && matchesPrice;
+        });
+        
+        // 정렬 옵션 적용
+        if (filters.sortBy) {
+            filtered = $array.objectSort(filtered, filters.sortBy, filters.sortDesc);
+        }
+        
+        return filtered;
+    }
+    
+    // 추천 상품 (유사한 카테고리)
+    function getRecommendedProducts(productId, limit = 3) {
+        var targetProduct = products.find(p => p.id === productId);
+        if (!targetProduct) return [];
+        
+        var sameCategory = products.filter(p => 
+            p.category === targetProduct.category && p.id !== productId
+        );
+        
+        // 가격 기준으로 정렬하고 상위 N개 반환
+        var sorted = $array.objectSort(sameCategory, 'price');
+        return sorted.slice(0, limit);
+    }
+    
+    // 재고 부족 상품 찾기
+    function getLowStockProducts(threshold = 20) {
+        return products.filter(p => p.stock <= threshold);
+    }
+    
+    // 상품 비교 (여러 상품의 공통점과 차이점)
+    function compareProducts(productIds) {
+        var selectedProducts = products.filter(p => productIds.includes(p.id));
+        
+        // 공통 브랜드
+        var brands = $array.distinct(selectedProducts.map(p => p.brand));
+        var categories = $array.distinct(selectedProducts.map(p => p.category));
+        
+        return {
+            products: selectedProducts,
+            commonBrands: brands.length === 1 ? brands[0] : null,
+            commonCategories: categories.length === 1 ? categories[0] : null,
+            priceRange: {
+                min: Math.min(...selectedProducts.map(p => p.price)),
+                max: Math.max(...selectedProducts.map(p => p.price))
+            }
+        };
+    }
+    
+    return {
+        products,
+        getProductsByCategory,
+        getProductsByBrand,
+        getProductsByPriceRange,
+        getPopularityRanking,
+        searchProducts,
+        getRecommendedProducts,
+        getLowStockProducts,
+        compareProducts
+    };
+}
+
+// 사용 예제
+var productManager = ProductManager();
+
+// 카테고리별 상품 조회
+var byCategory = productManager.getProductsByCategory();
+console.log('폰 카테고리 상품:', byCategory.Phone?.length + '개');
+
+// 가격대별 분류
+var byPriceRange = productManager.getProductsByPriceRange();
+console.log('프리미엄 상품:', byPriceRange.프리미엄?.map(p => p.name));
+
+// 상품 검색
+var searchResult = productManager.searchProducts('Galaxy', {
+    category: 'Phone',
+    minPrice: 1000000,
+    sortBy: 'price',
+    sortDesc: true
+});
+console.log('검색 결과:', searchResult);
+
+// 인기 순위
+var rankings = productManager.getPopularityRanking();
+console.log('재고 기준 인기 상품 TOP 3:', 
+    rankings.filter(p => p.popularityRank <= 3).map(p => p.name));
+```
+
+### 2. 학생 성적 관리 시스템
+```javascript
+function GradeManager() {
+    var students = [
+        { id: 1, name: '김철수', scores: { korean: 85, english: 92, math: 78, science: 88 }, class: 'A' },
+        { id: 2, name: '이영희', scores: { korean: 95, english: 85, math: 92, science: 90 }, class: 'A' },
+        { id: 3, name: '박민수', scores: { korean: 78, english: 88, math: 95, science: 85 }, class: 'B' },
+        { id: 4, name: '정수진', scores: { korean: 88, english: 90, math: 85, science: 92 }, class: 'B' },
+        { id: 5, name: '최동현', scores: { korean: 92, english: 78, math: 88, science: 85 }, class: 'A' }
+    ];
+    
+    // 총점 및 평균 계산
+    function calculateTotalAndAverage() {
+        return students.map(student => {
+            var scores = Object.values(student.scores);
+            var total = scores.reduce((sum, score) => sum + score, 0);
+            var average = total / scores.length;
+            
+            return {
+                ...student,
+                total: total,
+                average: Math.round(average * 100) / 100
+            };
+        });
+    }
+    
+    // 전체 순위 계산
+    function calculateRanking() {
+        var studentsWithScores = calculateTotalAndAverage();
+        var totals = studentsWithScores.map(s => s.total);
+        var rankings = $array.ranks(totals);
+        
+        return studentsWithScores.map((student, index) => ({
+            ...student,
+            rank: rankings[index]
+        }));
+    }
+    
+    // 과목별 순위
+    function getSubjectRanking(subject) {
+        var scores = students.map(s => s.scores[subject]);
+        var rankings = $array.ranks(scores);
+        
+        return students.map((student, index) => ({
+            name: student.name,
+            score: student.scores[subject],
+            rank: rankings[index]
+        }));
+    }
+    
+    // 성적 구간별 분류
+    function getGradeDistribution() {
+        var studentsWithScores = calculateTotalAndAverage();
+        
+        return $array.groupBy(studentsWithScores, function(student) {
+            var avg = student.average;
+            if (avg >= 90) return 'A';
+            if (avg >= 80) return 'B';
+            if (avg >= 70) return 'C';
+            if (avg >= 60) return 'D';
+            return 'F';
+        });
+    }
+    
+    // 반별 성적 통계
+    function getClassStatistics() {
+        var studentsWithScores = calculateTotalAndAverage();
+        var byClass = $array.groupBy(studentsWithScores, 'class');
+        
+        var classStats = {};
+        Object.keys(byClass).forEach(className => {
+            var classStudents = byClass[className];
+            var averages = classStudents.map(s => s.average);
+            
+            classStats[className] = {
+                studentCount: classStudents.length,
+                classAverage: averages.reduce((sum, avg) => sum + avg, 0) / averages.length,
+                highest: Math.max(...averages),
+                lowest: Math.min(...averages),
+                topStudent: classStudents.find(s => s.average === Math.max(...averages))
+            };
+        });
+        
+        return classStats;
+    }
+    
+    // 과목별 평균 점수
+    function getSubjectAverages() {
+        var subjects = ['korean', 'english', 'math', 'science'];
+        var averages = {};
+        
+        subjects.forEach(subject => {
+            var scores = students.map(s => s.scores[subject]);
+            averages[subject] = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+        });
+        
+        return averages;
+    }
+    
+    // 성적 향상/하락 분석 (가상의 이전 성적과 비교)
+    function analyzeImprovement(previousScores) {
+        var currentWithScores = calculateTotalAndAverage();
+        
+        return currentWithScores.map(current => {
+            var previous = previousScores.find(p => p.id === current.id);
+            if (!previous) return { ...current, improvement: 'N/A' };
+            
+            var improvementPoints = current.average - previous.average;
+            var improvement;
+            
+            if (improvementPoints > 5) improvement = '크게 향상';
+            else if (improvementPoints > 0) improvement = '향상';
+            else if (improvementPoints === 0) improvement = '유지';
+            else if (improvementPoints > -5) improvement = '하락';
+            else improvement = '크게 하락';
+            
+            return {
+                ...current,
+                previousAverage: previous.average,
+                improvementPoints: Math.round(improvementPoints * 100) / 100,
+                improvement: improvement
+            };
+        });
+    }
+    
+    // 우수 학생 선발 (다양한 기준)
+    function selectTopStudents(criteria = 'total', topN = 3) {
+        var studentsWithScores = calculateTotalAndAverage();
+        
+        var sorted;
+        switch (criteria) {
+            case 'total':
+                sorted = $array.objectSort(studentsWithScores, 'total', true);
+                break;
+            case 'average':
+                sorted = $array.objectSort(studentsWithScores, 'average', true);
+                break;
+            case 'korean':
+            case 'english':
+            case 'math':
+            case 'science':
+                sorted = studentsWithScores.sort((a, b) => 
+                    b.scores[criteria] - a.scores[criteria]);
+                break;
+            default:
+                sorted = studentsWithScores;
+        }
+        
+        return sorted.slice(0, topN);
+    }
+    
+    return {
+        students,
+        calculateTotalAndAverage,
+        calculateRanking,
+        getSubjectRanking,
+        getGradeDistribution,
+        getClassStatistics,
+        getSubjectAverages,
+        analyzeImprovement,
+        selectTopStudents
+    };
+}
+
+// 사용 예제
+var gradeManager = GradeManager();
+
+// 전체 순위 조회
+var rankings = gradeManager.calculateRanking();
+console.log('전체 순위:');
+rankings.forEach(student => {
+    console.log(`${student.rank}등: ${student.name} (총점: ${student.total}, 평균: ${student.average})`);
+});
+
+// 과목별 순위 (수학)
+var mathRanking = gradeManager.getSubjectRanking('math');
+console.log('수학 과목 순위:', mathRanking.slice(0, 3));
+
+// 성적 분포
+var gradeDistribution = gradeManager.getGradeDistribution();
+console.log('성적 분포:');
+Object.keys(gradeDistribution).forEach(grade => {
+    console.log(`${grade}등급: ${gradeDistribution[grade].length}명`);
+});
+
+// 반별 통계
+var classStats = gradeManager.getClassStatistics();
+console.log('반별 평균:', classStats);
+
+// 과목별 평균
+var subjectAvgs = gradeManager.getSubjectAverages();
+console.log('과목별 평균:', subjectAvgs);
+```
+
+### 3. 데이터 분석 유틸리티
+```javascript
+function DataAnalyzer() {
+    // 기본 통계 계산
+    function calculateBasicStats(numbers) {
+        if (!Array.isArray(numbers) || numbers.length === 0) {
+            return null;
+        }
+        
+        var sorted = $array.sort([...numbers]);
+        var sum = numbers.reduce((acc, num) => acc + num, 0);
+        var mean = sum / numbers.length;
+        
+        // 중앙값
+        var median;
+        var mid = Math.floor(sorted.length / 2);
+        if (sorted.length % 2 === 0) {
+            median = (sorted[mid - 1] + sorted[mid]) / 2;
+        } else {
+            median = sorted[mid];
+        }
+        
+        // 최빈값
+        var frequency = {};
+        numbers.forEach(num => {
+            frequency[num] = (frequency[num] || 0) + 1;
+        });
+        
+        var maxFreq = Math.max(...Object.values(frequency));
+        var modes = Object.keys(frequency).filter(key => frequency[key] === maxFreq);
+        
+        // 분산과 표준편차
+        var variance = numbers.reduce((acc, num) => acc + Math.pow(num - mean, 2), 0) / numbers.length;
+        var standardDeviation = Math.sqrt(variance);
+        
+        return {
+            count: numbers.length,
+            sum: sum,
+            mean: Math.round(mean * 100) / 100,
+            median: median,
+            mode: modes.map(Number),
+            min: Math.min(...numbers),
+            max: Math.max(...numbers),
+            range: Math.max(...numbers) - Math.min(...numbers),
+            variance: Math.round(variance * 100) / 100,
+            standardDeviation: Math.round(standardDeviation * 100) / 100
+        };
+    }
+    
+    // 사분위수 계산
+    function calculateQuartiles(numbers) {
+        var sorted = $array.sort([...numbers]);
+        var n = sorted.length;
+        
+        function getPercentile(arr, percentile) {
+            var index = (percentile / 100) * (arr.length - 1);
+            var lower = Math.floor(index);
+            var upper = Math.ceil(index);
+            
+            if (lower === upper) {
+                return arr[lower];
+            }
+            
+            var weight = index - lower;
+            return arr[lower] * (1 - weight) + arr[upper] * weight;
+        }
+        
+        return {
+            Q1: getPercentile(sorted, 25),
+            Q2: getPercentile(sorted, 50), // 중앙값
+            Q3: getPercentile(sorted, 75),
+            IQR: getPercentile(sorted, 75) - getPercentile(sorted, 25)
+        };
+    }
+    
+    // 이상치 탐지
+    function detectOutliers(numbers) {
+        var quartiles = calculateQuartiles(numbers);
+        var lowerBound = quartiles.Q1 - 1.5 * quartiles.IQR;
+        var upperBound = quartiles.Q3 + 1.5 * quartiles.IQR;
+        
+        return {
+            outliers: numbers.filter(num => num < lowerBound || num > upperBound),
+            lowerBound: lowerBound,
+            upperBound: upperBound,
+            cleanData: numbers.filter(num => num >= lowerBound && num <= upperBound)
+        };
+    }
+    
+    // 히스토그램 데이터 생성
+    function createHistogram(numbers, bins = 10) {
+        var min = Math.min(...numbers);
+        var max = Math.max(...numbers);
+        var binWidth = (max - min) / bins;
+        
+        var histogram = [];
+        for (let i = 0; i < bins; i++) {
+            var rangeStart = min + i * binWidth;
+            var rangeEnd = min + (i + 1) * binWidth;
+            
+            var count = numbers.filter(num => 
+                i === bins - 1 ? num >= rangeStart && num <= rangeEnd : num >= rangeStart && num < rangeEnd
+            ).length;
+            
+            histogram.push({
+                range: `${rangeStart.toFixed(2)} - ${rangeEnd.toFixed(2)}`,
+                count: count,
+                percentage: Math.round((count / numbers.length) * 100 * 100) / 100
+            });
+        }
+        
+        return histogram;
+    }
+    
+    // 상관관계 분석
+    function calculateCorrelation(x, y) {
+        if (x.length !== y.length) {
+            throw new Error('두 배열의 길이가 같아야 합니다');
+        }
+        
+        var n = x.length;
+        var sumX = x.reduce((acc, val) => acc + val, 0);
+        var sumY = y.reduce((acc, val) => acc + val, 0);
+        var sumXY = x.reduce((acc, val, i) => acc + val * y[i], 0);
+        var sumX2 = x.reduce((acc, val) => acc + val * val, 0);
+        var sumY2 = y.reduce((acc, val) => acc + val * val, 0);
+        
+        var numerator = n * sumXY - sumX * sumY;
+        var denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+        
+        return denominator === 0 ? 0 : numerator / denominator;
+    }
+    
+    // 데이터 정규화
+    function normalize(numbers, method = 'minmax') {
+        switch (method) {
+            case 'minmax':
+                var min = Math.min(...numbers);
+                var max = Math.max(...numbers);
+                var range = max - min;
+                return range === 0 ? numbers.map(() => 0) : 
+                       numbers.map(num => (num - min) / range);
+                       
+            case 'zscore':
+                var stats = calculateBasicStats(numbers);
+                return numbers.map(num => (num - stats.mean) / stats.standardDeviation);
+                
+            default:
+                throw new Error('지원하지 않는 정규화 방법: ' + method);
+        }
+    }
+    
+    // 데이터 요약 보고서
+    function generateSummaryReport(data, title = '데이터 분석 보고서') {
+        var stats = calculateBasicStats(data);
+        var quartiles = calculateQuartiles(data);
+        var outliers = detectOutliers(data);
+        var histogram = createHistogram(data);
+        
+        return {
+            title: title,
+            basicStats: stats,
+            quartiles: quartiles,
+            outlierAnalysis: {
+                outliersCount: outliers.outliers.length,
+                outliersPercentage: Math.round((outliers.outliers.length / data.length) * 100 * 100) / 100,
+                outlierValues: outliers.outliers
+            },
+            distribution: histogram,
+            dataQuality: {
+                completeness: (data.filter(d => d != null).length / data.length) * 100,
+                uniqueValues: $array.distinct(data).length,
+                duplicateValues: data.length - $array.distinct(data).length
+            }
+        };
+    }
+    
+    return {
+        calculateBasicStats,
+        calculateQuartiles,
+        detectOutliers,
+        createHistogram,
+        calculateCorrelation,
+        normalize,
+        generateSummaryReport
+    };
+}
+
+// 사용 예제
+var analyzer = DataAnalyzer();
+
+// 샘플 데이터
+var salesData = [120, 150, 200, 180, 220, 190, 250, 300, 280, 320, 350, 400, 450, 500, 480];
+var advertisingBudget = [10, 15, 20, 18, 25, 20, 30, 35, 32, 38, 40, 45, 50, 55, 52];
+
+// 기본 통계
+var salesStats = analyzer.calculateBasicStats(salesData);
+console.log('매출 기본 통계:', salesStats);
+
+// 이상치 탐지
+var outlierAnalysis = analyzer.detectOutliers(salesData);
+console.log('이상치 분석:', outlierAnalysis);
+
+// 상관관계 분석
+var correlation = analyzer.calculateCorrelation(advertisingBudget, salesData);
+console.log('광고비와 매출의 상관관계:', correlation.toFixed(3));
+
+// 종합 보고서
+var report = analyzer.generateSummaryReport(salesData, '월별 매출 분석');
+console.log('분석 보고서:', report);
+
+// 히스토그램
+console.log('매출 분포:', report.distribution);
+```
+
+## 주의사항
+
+1. **원본 배열 보존**: 대부분의 함수들은 새로운 배열을 반환하므로 원본 배열이 변경되지 않습니다.
+2. **타입 일관성**: 배열 요소들의 타입이 일관되지 않으면 예상치 못한 결과가 나올 수 있습니다.
+3. **성능 고려**: 대용량 배열 처리 시에는 성능을 고려하여 적절한 알고리즘을 선택해야 합니다.
+4. **메모리 사용**: 큰 배열을 복사하거나 변환할 때 메모리 사용량에 주의해야 합니다.
+5. **빈 배열 처리**: 빈 배열이나 undefined 값들에 대한 적절한 처리가 필요합니다.
+
+## 관련 문서
+- [JavaScript Array MDN 문서](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array)
+- [함수형 프로그래밍 가이드](https://developer.mozilla.org/ko/docs/Web/JavaScript/Guide/Functions)
 
 ## 데모
 

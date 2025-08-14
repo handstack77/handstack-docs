@@ -4,7 +4,577 @@ sidebar_position: 4
 
 # syn.$d
 
-HTML Element 크기, 위치 제어 기능 제공합니다.
+## 개요
+syn.$d는 HandStack 웹 애플리케이션에서 HTML 요소의 크기, 위치, 스크롤 등 화면 레이아웃과 관련된 정보를 조회하고 제어하는 기능을 제공합니다. 문서 크기, 요소 위치, 마우스 좌표, 텍스트 측정 등의 기능을 포함합니다.
+
+## 주요 기능
+
+### 문서 및 창 크기 조회
+
+#### getDocumentSize(isTopWindow)
+문서의 전체 크기를 가져옵니다.
+
+**구문**
+```javascript
+syn.$d.getDocumentSize(isTopWindow?)
+```
+
+**매개변수**
+- `isTopWindow` (Boolean, 선택사항): `true`면 최상위 창의 문서 크기, `false` 또는 생략하면 현재 창의 문서 크기
+
+**반환값**
+- `Object`: 문서 크기 정보
+  - `width`: 문서의 전체 너비
+  - `height`: 문서의 전체 높이
+  - `frameWidth`: 뷰포트 너비
+  - `frameHeight`: 뷰포트 높이
+
+**예제**
+```javascript
+// 현재 문서 크기
+var docSize = syn.$d.getDocumentSize();
+console.log('문서 크기:', docSize.width + ' x ' + docSize.height);
+console.log('뷰포트 크기:', docSize.frameWidth + ' x ' + docSize.frameHeight);
+
+// 최상위 창의 문서 크기
+var topDocSize = syn.$d.getDocumentSize(true);
+console.log('최상위 문서 크기:', topDocSize.width + ' x ' + topDocSize.height);
+```
+
+#### getWindowSize(isTopWindow)
+브라우저 창의 크기를 가져옵니다.
+
+**구문**
+```javascript
+syn.$d.getWindowSize(isTopWindow?)
+```
+
+**매개변수**
+- `isTopWindow` (Boolean, 선택사항): `true`면 최상위 창의 크기, `false` 또는 생략하면 현재 창의 크기
+
+**반환값**
+- `Object`: 창 크기 정보
+  - `width`: 창의 너비
+  - `height`: 창의 높이
+
+**예제**
+```javascript
+// 현재 창 크기
+var windowSize = syn.$d.getWindowSize();
+console.log('창 크기:', windowSize.width + ' x ' + windowSize.height);
+
+// 반응형 처리
+if (windowSize.width < 768) {
+    document.body.classList.add('mobile');
+} else if (windowSize.width < 1024) {
+    document.body.classList.add('tablet');
+} else {
+    document.body.classList.add('desktop');
+}
+```
+
+### 스크롤 및 마우스 위치
+
+#### getScrollPosition(el)
+요소나 문서의 스크롤 위치를 가져옵니다.
+
+**구문**
+```javascript
+syn.$d.getScrollPosition(el?)
+```
+
+**매개변수**
+- `el` (String|Element, 선택사항): 요소 ID 또는 요소 객체. 생략하면 문서의 스크롤 위치
+
+**반환값**
+- `Object`: 스크롤 위치 정보
+  - `left`: 좌우 스크롤 위치
+  - `top`: 상하 스크롤 위치
+
+**예제**
+```javascript
+// 문서의 스크롤 위치
+var docScroll = syn.$d.getScrollPosition();
+console.log('문서 스크롤 위치:', docScroll.left, docScroll.top);
+
+// 특정 요소의 스크롤 위치
+var elementScroll = syn.$d.getScrollPosition('scrollContainer');
+console.log('요소 스크롤 위치:', elementScroll.left, elementScroll.top);
+```
+
+#### getMousePosition(evt)
+마우스의 현재 위치를 가져옵니다.
+
+**구문**
+```javascript
+syn.$d.getMousePosition(evt)
+```
+
+**매개변수**
+- `evt` (Event): 마우스 이벤트 객체
+
+**반환값**
+- `Object`: 마우스 위치 정보
+  - `x`: 문서 기준 X 좌표
+  - `y`: 문서 기준 Y 좌표
+  - `relativeX`: 요소 기준 상대 X 좌표
+  - `relativeY`: 요소 기준 상대 Y 좌표
+
+**예제**
+```javascript
+// 마우스 이벤트 핸들러에서 사용
+document.addEventListener('click', function(evt) {
+    var mousePos = syn.$d.getMousePosition(evt);
+    console.log('마우스 위치:', mousePos.x, mousePos.y);
+    console.log('상대 위치:', mousePos.relativeX, mousePos.relativeY);
+    
+    // 마우스 위치에 요소 생성
+    var marker = syn.$m.create({
+        tag: 'div',
+        className: 'mouse-marker',
+        styles: {
+            position: 'absolute',
+            left: mousePos.x + 'px',
+            top: mousePos.y + 'px',
+            width: '10px',
+            height: '10px',
+            backgroundColor: 'red',
+            borderRadius: '50%',
+            pointerEvents: 'none'
+        }
+    });
+    document.body.appendChild(marker);
+});
+```
+
+### 요소 위치 조회
+
+#### offset(el)
+요소의 문서 기준 위치를 가져옵니다.
+
+**구문**
+```javascript
+syn.$d.offset(el)
+```
+
+**매개변수**
+- `el` (String|Element): 요소 ID 또는 요소 객체
+
+**반환값**
+- `Object`: 위치 정보
+  - `top`: 문서 상단으로부터의 거리
+  - `left`: 문서 좌측으로부터의 거리
+
+**예제**
+```javascript
+var elementOffset = syn.$d.offset('myElement');
+console.log('요소 위치:', elementOffset.left, elementOffset.top);
+
+// 요소를 특정 위치로 이동
+syn.$m.setStyle('myElement', 'position', 'absolute');
+syn.$m.setStyle('myElement', 'left', (elementOffset.left + 100) + 'px');
+syn.$m.setStyle('myElement', 'top', (elementOffset.top + 50) + 'px');
+```
+
+#### offsetLeft(el) / offsetTop(el)
+요소의 절대 좌측/상단 위치를 가져옵니다.
+
+**구문**
+```javascript
+syn.$d.offsetLeft(el)
+syn.$d.offsetTop(el)
+```
+
+**예제**
+```javascript
+var left = syn.$d.offsetLeft('myElement');
+var top = syn.$d.offsetTop('myElement');
+console.log('절대 위치:', left, top);
+```
+
+#### parentOffsetLeft(el) / parentOffsetTop(el)
+부모 요소 기준 상대 위치를 가져옵니다.
+
+**구문**
+```javascript
+syn.$d.parentOffsetLeft(el)
+syn.$d.parentOffsetTop(el)
+```
+
+**예제**
+```javascript
+var relativeLeft = syn.$d.parentOffsetLeft('childElement');
+var relativeTop = syn.$d.parentOffsetTop('childElement');
+console.log('부모 기준 상대 위치:', relativeLeft, relativeTop);
+```
+
+### 요소 크기 조회
+
+#### getSize(el)
+요소의 다양한 크기 정보를 가져옵니다.
+
+**구문**
+```javascript
+syn.$d.getSize(el)
+```
+
+**매개변수**
+- `el` (String|Element): 요소 ID 또는 요소 객체
+
+**반환값**
+- `Object`: 크기 정보
+  - `width`: 콘텐츠 너비 (패딩 제외)
+  - `height`: 콘텐츠 높이 (패딩 제외)
+  - `clientWidth`: 콘텐츠 + 패딩 너비
+  - `clientHeight`: 콘텐츠 + 패딩 높이
+  - `offsetWidth`: 콘텐츠 + 패딩 + 보더 너비
+  - `offsetHeight`: 콘텐츠 + 패딩 + 보더 높이
+  - `marginWidth`: 전체 너비 (마진 포함)
+  - `marginHeight`: 전체 높이 (마진 포함)
+
+**예제**
+```javascript
+var size = syn.$d.getSize('myElement');
+console.log('크기 정보:', {
+    content: size.width + ' x ' + size.height,
+    client: size.clientWidth + ' x ' + size.clientHeight,
+    offset: size.offsetWidth + ' x ' + size.offsetHeight,
+    margin: size.marginWidth + ' x ' + size.marginHeight
+});
+
+// 요소 크기에 따른 조건부 처리
+if (size.width < 200) {
+    syn.$m.addClass('myElement', 'small-width');
+}
+```
+
+### 텍스트 측정
+
+#### measureWidth(text, fontSize)
+텍스트의 너비를 측정합니다.
+
+**구문**
+```javascript
+syn.$d.measureWidth(text, fontSize?)
+```
+
+**매개변수**
+- `text` (String): 측정할 텍스트
+- `fontSize` (String, 선택사항): 폰트 크기 (예: '14px')
+
+**반환값**
+- `String`: 텍스트 너비 (px 단위)
+
+**예제**
+```javascript
+var textWidth = syn.$d.measureWidth('Hello World', '16px');
+console.log('텍스트 너비:', textWidth);
+
+// 동적 요소 크기 조정
+var dynamicElement = syn.$l.get('dynamicText');
+var currentText = syn.$m.textContent(dynamicElement);
+var requiredWidth = syn.$d.measureWidth(currentText, '14px');
+syn.$m.setStyle(dynamicElement, 'width', requiredWidth);
+```
+
+#### measureHeight(text, width, fontSize)
+특정 너비에서 텍스트의 높이를 측정합니다.
+
+**구문**
+```javascript
+syn.$d.measureHeight(text, width?, fontSize?)
+```
+
+**매개변수**
+- `text` (String): 측정할 텍스트
+- `width` (String, 선택사항): 제한 너비
+- `fontSize` (String, 선택사항): 폰트 크기
+
+**반환값**
+- `String`: 텍스트 높이 (px 단위)
+
+**예제**
+```javascript
+var textHeight = syn.$d.measureHeight('긴 텍스트 내용...', '200px', '14px');
+console.log('텍스트 높이:', textHeight);
+```
+
+#### measureSize(text, fontSize, maxWidth)
+텍스트의 최적 크기를 측정합니다.
+
+**구문**
+```javascript
+syn.$d.measureSize(text, fontSize?, maxWidth?)
+```
+
+**매개변수**
+- `text` (String): 측정할 텍스트
+- `fontSize` (String, 선택사항): 폰트 크기
+- `maxWidth` (String|Number, 선택사항): 최대 너비
+
+**반환값**
+- `Object`: 크기 정보
+  - `width`: 최적 너비
+  - `height`: 최적 높이
+
+**예제**
+```javascript
+var textSize = syn.$d.measureSize('Sample text content', '16px', 300);
+console.log('최적 크기:', textSize.width + ' x ' + textSize.height);
+
+// 텍스트 크기에 맞춰 컨테이너 조정
+syn.$m.setStyle('textContainer', 'width', textSize.width);
+syn.$m.setStyle('textContainer', 'height', textSize.height);
+```
+
+## 실전 활용 예제
+
+### 1. 반응형 레이아웃 관리
+```javascript
+function setupResponsiveLayout() {
+    function updateLayout() {
+        var windowSize = syn.$d.getWindowSize();
+        var docSize = syn.$d.getDocumentSize();
+        
+        // 뷰포트 크기에 따른 레이아웃 조정
+        if (windowSize.width < 768) {
+            document.body.className = 'mobile-layout';
+        } else if (windowSize.width < 1024) {
+            document.body.className = 'tablet-layout';
+        } else {
+            document.body.className = 'desktop-layout';
+        }
+        
+        // 사이드바 높이 조정
+        var sidebar = syn.$l.get('sidebar');
+        if (sidebar) {
+            syn.$m.setStyle(sidebar, 'height', windowSize.height + 'px');
+        }
+        
+        console.log('레이아웃 업데이트:', {
+            viewport: windowSize.width + ' x ' + windowSize.height,
+            document: docSize.width + ' x ' + docSize.height
+        });
+    }
+    
+    // 초기 설정
+    updateLayout();
+    
+    // 창 크기 변경 시 레이아웃 업데이트
+    syn.$l.addEvent(window, 'resize', updateLayout);
+}
+
+setupResponsiveLayout();
+```
+
+### 2. 스크롤 기반 애니메이션
+```javascript
+function setupScrollAnimations() {
+    var elements = syn.$l.querySelectorAll('.animate-on-scroll');
+    
+    function checkScrollPosition() {
+        var scroll = syn.$d.getScrollPosition();
+        var windowSize = syn.$d.getWindowSize();
+        
+        elements.forEach(element => {
+            var offset = syn.$d.offset(element);
+            var size = syn.$d.getSize(element);
+            
+            // 요소가 뷰포트에 들어왔는지 확인
+            var isVisible = (
+                offset.top < scroll.top + windowSize.height &&
+                offset.top + size.height > scroll.top
+            );
+            
+            if (isVisible) {
+                syn.$m.addClass(element, 'visible');
+            } else {
+                syn.$m.removeClass(element, 'visible');
+            }
+        });
+    }
+    
+    // 스크롤 이벤트 등록
+    syn.$l.addEvent(window, 'scroll', checkScrollPosition);
+    
+    // 초기 확인
+    checkScrollPosition();
+}
+
+setupScrollAnimations();
+```
+
+### 3. 드래그 앤 드롭 구현
+```javascript
+function setupDragAndDrop() {
+    var dragElements = syn.$l.querySelectorAll('.draggable');
+    var isDragging = false;
+    var dragElement = null;
+    var startPos = { x: 0, y: 0 };
+    var elementOffset = { x: 0, y: 0 };
+    
+    dragElements.forEach(element => {
+        syn.$l.addEvent(element, 'mousedown', function(evt) {
+            isDragging = true;
+            dragElement = element;
+            
+            var mousePos = syn.$d.getMousePosition(evt);
+            var elemOffset = syn.$d.offset(element);
+            
+            startPos.x = mousePos.x;
+            startPos.y = mousePos.y;
+            elementOffset.x = mousePos.x - elemOffset.left;
+            elementOffset.y = mousePos.y - elemOffset.top;
+            
+            syn.$m.addClass(element, 'dragging');
+            syn.$m.setStyle(element, 'zIndex', '9999');
+            
+            evt.preventDefault();
+        });
+    });
+    
+    syn.$l.addEvent(document, 'mousemove', function(evt) {
+        if (!isDragging || !dragElement) return;
+        
+        var mousePos = syn.$d.getMousePosition(evt);
+        var newLeft = mousePos.x - elementOffset.x;
+        var newTop = mousePos.y - elementOffset.y;
+        
+        syn.$m.setStyle(dragElement, 'position', 'absolute');
+        syn.$m.setStyle(dragElement, 'left', newLeft + 'px');
+        syn.$m.setStyle(dragElement, 'top', newTop + 'px');
+    });
+    
+    syn.$l.addEvent(document, 'mouseup', function() {
+        if (dragElement) {
+            syn.$m.removeClass(dragElement, 'dragging');
+            syn.$m.setStyle(dragElement, 'zIndex', '');
+        }
+        
+        isDragging = false;
+        dragElement = null;
+    });
+}
+
+setupDragAndDrop();
+```
+
+### 4. 동적 텍스트 크기 조정
+```javascript
+function setupAutoTextResize() {
+    var textElements = syn.$l.querySelectorAll('.auto-resize-text');
+    
+    function resizeText(element) {
+        var container = syn.$m.parentElement(element);
+        var containerSize = syn.$d.getSize(container);
+        var text = syn.$m.textContent(element);
+        
+        // 컨테이너 크기에 맞는 최적 폰트 크기 찾기
+        var fontSize = 12;
+        var maxFontSize = 48;
+        
+        while (fontSize <= maxFontSize) {
+            var textSize = syn.$d.measureSize(text, fontSize + 'px', containerSize.width);
+            var textWidth = parseInt(textSize.width);
+            var textHeight = parseInt(textSize.height);
+            
+            if (textWidth > containerSize.width || textHeight > containerSize.height) {
+                fontSize -= 1;
+                break;
+            }
+            fontSize += 1;
+        }
+        
+        syn.$m.setStyle(element, 'fontSize', fontSize + 'px');
+        console.log('텍스트 크기 조정:', fontSize + 'px');
+    }
+    
+    textElements.forEach(element => {
+        resizeText(element);
+        
+        // 창 크기 변경 시 재조정
+        syn.$l.addEvent(window, 'resize', () => resizeText(element));
+    });
+}
+
+setupAutoTextResize();
+```
+
+### 5. 요소 중앙 정렬
+```javascript
+function centerElement(elementId, options = {}) {
+    var element = syn.$l.get(elementId);
+    var windowSize = syn.$d.getWindowSize();
+    var elementSize = syn.$d.getSize(element);
+    
+    var centerX = (windowSize.width - elementSize.offsetWidth) / 2;
+    var centerY = (windowSize.height - elementSize.offsetHeight) / 2;
+    
+    // 오프셋 조정
+    if (options.offsetX) centerX += options.offsetX;
+    if (options.offsetY) centerY += options.offsetY;
+    
+    syn.$m.setStyle(element, 'position', 'fixed');
+    syn.$m.setStyle(element, 'left', centerX + 'px');
+    syn.$m.setStyle(element, 'top', centerY + 'px');
+    
+    console.log('요소 중앙 정렬:', centerX, centerY);
+    
+    return { x: centerX, y: centerY };
+}
+
+// 사용 예제
+centerElement('modal', { offsetY: -50 });
+```
+
+### 6. 스크롤 위치 기반 네비게이션
+```javascript
+function setupScrollNavigation() {
+    var sections = syn.$l.querySelectorAll('.scroll-section');
+    var navItems = syn.$l.querySelectorAll('.nav-item');
+    
+    function updateActiveSection() {
+        var scroll = syn.$d.getScrollPosition();
+        var windowSize = syn.$d.getWindowSize();
+        var activeSection = null;
+        
+        sections.forEach((section, index) => {
+            var offset = syn.$d.offset(section);
+            var size = syn.$d.getSize(section);
+            
+            // 섹션이 뷰포트 중앙에 있는지 확인
+            if (
+                offset.top <= scroll.top + windowSize.height / 2 &&
+                offset.top + size.height >= scroll.top + windowSize.height / 2
+            ) {
+                activeSection = index;
+            }
+        });
+        
+        // 네비게이션 활성 상태 업데이트
+        navItems.forEach((nav, index) => {
+            if (index === activeSection) {
+                syn.$m.addClass(nav, 'active');
+            } else {
+                syn.$m.removeClass(nav, 'active');
+            }
+        });
+    }
+    
+    syn.$l.addEvent(window, 'scroll', updateActiveSection);
+    updateActiveSection();
+}
+
+setupScrollNavigation();
+```
+
+## 주의사항
+
+1. **성능 최적화**: 스크롤이나 리사이즈 이벤트 핸들러에서 dimension 함수를 과도하게 호출하면 성능 문제가 발생할 수 있습니다. 쓰로틀링이나 디바운싱을 고려하세요.
+2. **브라우저 호환성**: 일부 크기 측정 메서드는 브라우저별로 약간의 차이가 있을 수 있습니다.
+3. **동적 콘텐츠**: 동적으로 변경되는 콘텐츠의 크기를 측정할 때는 DOM 렌더링이 완료된 후에 측정해야 합니다.
+4. **CSS 영향**: CSS 트랜지션이나 애니메이션 중인 요소의 크기나 위치는 정확하지 않을 수 있습니다.
+
 
 ## 데모
 

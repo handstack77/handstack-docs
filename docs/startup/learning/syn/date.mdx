@@ -2,9 +2,754 @@
 sidebar_position: 14
 ---
 
-# date
+# $date
 
-Javascript Date 객체에 대한 확장 함수를 제공합니다.
+## 개요
+$date는 JavaScript의 Date 객체를 확장하여 날짜와 시간 처리를 더욱 편리하게 만들어주는 유틸리티 함수 모음입니다. 날짜 생성, 포맷팅, 계산, 비교 등의 다양한 기능을 제공합니다.
+
+## 주요 기능
+
+### 날짜 생성 및 복제
+
+#### now()
+현재 날짜와 시간을 반환합니다.
+
+**구문**
+```javascript
+$date.now()
+```
+
+**반환값**
+- `Date`: 현재 날짜/시간 객체
+
+**예제**
+```javascript
+var currentDate = $date.now();
+console.log('현재 시간:', currentDate);
+
+// 다른 함수와 함께 사용
+var tomorrow = $date.addDay($date.now(), 1);
+```
+
+#### clone(date)
+날짜 객체를 복사합니다.
+
+**구문**
+```javascript
+$date.clone(date)
+```
+
+**매개변수**
+- `date` (Date): 복사할 날짜 객체
+
+**반환값**
+- `Date`: 복사된 새로운 날짜 객체
+
+**예제**
+```javascript
+var originalDate = new Date('2023-12-25');
+var copiedDate = $date.clone(originalDate);
+
+// 복사본 수정 (원본에 영향 없음)
+copiedDate.setDate(26);
+console.log('원본:', originalDate);  // 25일 유지
+console.log('복사본:', copiedDate);  // 26일로 변경
+```
+
+### 날짜 비교
+
+#### equals(date1, date2)
+두 날짜가 정확히 같은지 비교합니다.
+
+**구문**
+```javascript
+$date.equals(date1, date2)
+```
+
+**반환값**
+- `Boolean`: 같으면 true, 다르면 false
+
+**예제**
+```javascript
+var date1 = new Date('2023-12-25 10:30:00');
+var date2 = new Date('2023-12-25 10:30:00');
+var date3 = new Date('2023-12-25 10:30:01');
+
+console.log($date.equals(date1, date2)); // true
+console.log($date.equals(date1, date3)); // false
+```
+
+#### equalDay(date1, date2)
+두 날짜의 년, 월, 일이 같은지 비교합니다.
+
+**구문**
+```javascript
+$date.equalDay(date1, date2)
+```
+
+**예제**
+```javascript
+var morning = new Date('2023-12-25 08:00:00');
+var evening = new Date('2023-12-25 20:30:00');
+
+console.log($date.equalDay(morning, evening)); // true (같은 날)
+```
+
+#### isToday(date)
+지정된 날짜가 오늘인지 확인합니다.
+
+**구문**
+```javascript
+$date.isToday(date)
+```
+
+**예제**
+```javascript
+var today = $date.now();
+var yesterday = $date.addDay($date.now(), -1);
+
+console.log($date.isToday(today));     // true
+console.log($date.isToday(yesterday)); // false
+```
+
+#### isBetween(date, startDate, endDate)
+날짜가 특정 범위 내에 있는지 확인합니다.
+
+**구문**
+```javascript
+$date.isBetween(date, startDate, endDate)
+```
+
+**예제**
+```javascript
+var checkDate = new Date('2023-12-15');
+var startDate = new Date('2023-12-01');
+var endDate = new Date('2023-12-31');
+
+console.log($date.isBetween(checkDate, startDate, endDate)); // true
+```
+
+### 날짜 포맷팅
+
+#### toString(date, format?)
+날짜를 문자열로 변환합니다.
+
+**구문**
+```javascript
+$date.toString(date, format?)
+```
+
+**매개변수**
+- `date` (Date): 변환할 날짜
+- `format` (String, 선택사항): 포맷 형식
+
+**포맷 옵션**
+- `'d'`: 날짜만 (YYYY-MM-DD)
+- `'t'`: 시간만 (HH:MM:SS)
+- `'a'`: 날짜와 시간 (YYYY-MM-DD HH:MM:SS)
+- `'f'`: 밀리초 포함 (YYYY-MM-DD HH:MM:SS.mmm)
+- `'s'`: ISO 문자열 (YYYY-MM-DDTHH:MM:SS.mmmZ)
+- `'n'`: 숫자만 (YYYYMMDDHHMMSS)
+- `'mdn'`: 월일숫자 (MMDD)
+- `'w'`: 요일 (월, 화, 수...)
+- `'wn'`: 요일 번호 (0=일, 1=월...)
+- `'m'`: 월 (MM)
+- `'ym'`: 년월 (YYYY-MM)
+
+**예제**
+```javascript
+var date = new Date('2023-12-25 14:30:45.123');
+
+console.log($date.toString(date, 'd'));   // "2023-12-25"
+console.log($date.toString(date, 't'));   // "14:30:45"
+console.log($date.toString(date, 'a'));   // "2023-12-25 14:30:45"
+console.log($date.toString(date, 'f'));   // "2023-12-25 14:30:45.123"
+console.log($date.toString(date, 'w'));   // "월" (요일)
+console.log($date.toString(date, 'ym'));  // "2023-12"
+```
+
+### 날짜 계산
+
+#### 날짜 더하기 함수들
+다양한 시간 단위로 날짜에 값을 더합니다.
+
+```javascript
+$date.addSecond(date, seconds)   // 초 더하기
+$date.addMinute(date, minutes)   // 분 더하기
+$date.addHour(date, hours)       // 시간 더하기
+$date.addDay(date, days)         // 일 더하기
+$date.addWeek(date, weeks)       // 주 더하기
+$date.addMonth(date, months)     // 월 더하기
+$date.addYear(date, years)       // 년 더하기
+```
+
+**예제**
+```javascript
+var baseDate = new Date('2023-12-25 10:00:00');
+
+// 시간 단위 더하기
+var after30Seconds = $date.addSecond(baseDate, 30);
+var after5Minutes = $date.addMinute(baseDate, 5);
+var after2Hours = $date.addHour(baseDate, 2);
+
+// 날짜 단위 더하기
+var tomorrow = $date.addDay(baseDate, 1);
+var nextWeek = $date.addWeek(baseDate, 1);
+var nextMonth = $date.addMonth(baseDate, 1);
+var nextYear = $date.addYear(baseDate, 1);
+
+// 음수로 빼기도 가능
+var yesterday = $date.addDay(baseDate, -1);
+var lastMonth = $date.addMonth(baseDate, -1);
+```
+
+#### diff(date1, date2, interval)
+두 날짜 간의 차이를 계산합니다.
+
+**구문**
+```javascript
+$date.diff(date1, date2, interval)
+```
+
+**매개변수**
+- `date1` (Date): 시작 날짜
+- `date2` (Date): 끝 날짜
+- `interval` (String): 단위 ('second', 'minute', 'hour', 'day', 'week', 'month', 'year')
+
+**반환값**
+- `Number`: 차이값
+
+**예제**
+```javascript
+var startDate = new Date('2023-01-01');
+var endDate = new Date('2023-12-31');
+
+console.log($date.diff(startDate, endDate, 'day'));   // 364
+console.log($date.diff(startDate, endDate, 'month')); // 11
+console.log($date.diff(startDate, endDate, 'year'));  // 0
+
+var startTime = new Date('2023-12-25 10:00:00');
+var endTime = new Date('2023-12-25 12:30:45');
+
+console.log($date.diff(startTime, endTime, 'hour'));   // 2
+console.log($date.diff(startTime, endTime, 'minute')); // 150
+```
+
+### 월 경계 처리
+
+#### getFirstDate(date) / getLastDate(date)
+해당 월의 첫 날과 마지막 날을 구합니다.
+
+**구문**
+```javascript
+$date.getFirstDate(date)  // 월 첫째 날
+$date.getLastDate(date)   // 월 마지막 날
+```
+
+**예제**
+```javascript
+var someDate = new Date('2023-12-15');
+
+var firstDay = $date.getFirstDate(someDate);
+var lastDay = $date.getLastDate(someDate);
+
+console.log('월 첫날:', $date.toString(firstDay, 'd'));  // "2023-12-01"
+console.log('월 마지막:', $date.toString(lastDay, 'd'));  // "2023-12-31"
+
+// 월간 리포트 기간 설정
+var reportStart = $date.getFirstDate($date.now());
+var reportEnd = $date.getLastDate($date.now());
+```
+
+### 유틸리티 함수
+
+#### toTicks(date)
+.NET Ticks 형식으로 변환합니다.
+
+**구문**
+```javascript
+$date.toTicks(date)
+```
+
+**반환값**
+- `Number`: .NET Ticks 값
+
+**예제**
+```javascript
+var date = new Date('2023-12-25');
+var ticks = $date.toTicks(date);
+console.log('Ticks:', ticks);
+```
+
+#### isDate(value)
+값이 유효한 날짜인지 확인합니다.
+
+**구문**
+```javascript
+$date.isDate(value)
+```
+
+**예제**
+```javascript
+console.log($date.isDate('2023-12-25'));           // true
+console.log($date.isDate('2023-13-25'));           // false (잘못된 월)
+console.log($date.isDate(new Date()));             // true
+console.log($date.isDate('invalid'));              // false
+```
+
+#### isISOString(value)
+ISO 8601 형식 문자열인지 확인합니다.
+
+**구문**
+```javascript
+$date.isISOString(value)
+```
+
+**예제**
+```javascript
+console.log($date.isISOString('2023-12-25T10:30:00.000Z')); // true
+console.log($date.isISOString('2023-12-25 10:30:00'));      // false
+console.log($date.isISOString('2023-12-25T10:30:00Z'));     // true
+```
+
+#### weekOfMonth(year, month)
+특정 월의 주차 정보를 반환합니다.
+
+**구문**
+```javascript
+$date.weekOfMonth(year, month)
+```
+
+**반환값**
+- `Array`: 주차별 날짜 정보 배열
+
+**예제**
+```javascript
+var weeks = $date.weekOfMonth(2023, 12);
+console.log('12월 주차 정보:', weeks);
+
+// 달력 생성 시 활용
+weeks.forEach((week, index) => {
+    console.log(`${index + 1}주차:`, week);
+});
+```
+
+### 시간 간격 상수
+
+#### interval
+시간 간격을 나타내는 상수 객체입니다.
+
+```javascript
+$date.interval = {
+    second: 0,
+    minute: 1,
+    hour: 2,
+    day: 3,
+    week: 4,
+    month: 5,
+    year: 6
+};
+```
+
+## 실전 활용 예제
+
+### 1. 업무 시간 계산기
+```javascript
+function WorkTimeCalculator() {
+    // 업무 시작/종료 시간 설정
+    var workStartHour = 9;   // 오전 9시
+    var workEndHour = 18;    // 오후 6시
+    var lunchBreakHours = 1; // 점심시간 1시간
+    
+    // 업무일 확인 (주말 제외)
+    function isWorkDay(date) {
+        var dayOfWeek = date.getDay();
+        return dayOfWeek >= 1 && dayOfWeek <= 5; // 월~금
+    }
+    
+    // 실제 업무 시간 계산
+    function calculateWorkHours(startDate, endDate) {
+        if (!$date.equalDay(startDate, endDate)) {
+            throw new Error('같은 날의 시간만 계산 가능합니다.');
+        }
+        
+        if (!isWorkDay(startDate)) {
+            return 0; // 주말은 업무시간 0
+        }
+        
+        var workStart = $date.clone(startDate);
+        workStart.setHours(workStartHour, 0, 0, 0);
+        
+        var workEnd = $date.clone(startDate);
+        workEnd.setHours(workEndHour, 0, 0, 0);
+        
+        var lunchStart = $date.clone(startDate);
+        lunchStart.setHours(12, 0, 0, 0);
+        
+        var lunchEnd = $date.addHour(lunchStart, lunchBreakHours);
+        
+        // 실제 근무 시작/종료 시간 조정
+        var actualStart = startDate < workStart ? workStart : startDate;
+        var actualEnd = endDate > workEnd ? workEnd : endDate;
+        
+        if (actualStart >= actualEnd) {
+            return 0;
+        }
+        
+        var totalMinutes = $date.diff(actualStart, actualEnd, 'minute');
+        
+        // 점심시간 제외
+        if (actualStart < lunchEnd && actualEnd > lunchStart) {
+            var lunchOverlapStart = actualStart > lunchStart ? actualStart : lunchStart;
+            var lunchOverlapEnd = actualEnd < lunchEnd ? actualEnd : lunchEnd;
+            
+            if (lunchOverlapStart < lunchOverlapEnd) {
+                totalMinutes -= $date.diff(lunchOverlapStart, lunchOverlapEnd, 'minute');
+            }
+        }
+        
+        return Math.max(0, totalMinutes / 60); // 시간으로 변환
+    }
+    
+    // 월간 업무시간 계산
+    function calculateMonthlyWorkHours(year, month) {
+        var firstDay = new Date(year, month - 1, 1);
+        var lastDay = $date.getLastDate(firstDay);
+        
+        var totalHours = 0;
+        var currentDate = $date.clone(firstDay);
+        
+        while (currentDate <= lastDay) {
+            if (isWorkDay(currentDate)) {
+                totalHours += 8 - lunchBreakHours; // 기본 업무시간 - 점심시간
+            }
+            currentDate = $date.addDay(currentDate, 1);
+        }
+        
+        return totalHours;
+    }
+    
+    // 연차/휴가 계산
+    function calculateRemainingVacation(joinDate, usedDays = 0) {
+        var now = $date.now();
+        var workYears = $date.diff(joinDate, now, 'year');
+        
+        var totalVacationDays = 15; // 기본 연차
+        if (workYears >= 3) totalVacationDays += Math.min(Math.floor((workYears - 1) / 2), 10);
+        
+        return totalVacationDays - usedDays;
+    }
+    
+    return {
+        isWorkDay,
+        calculateWorkHours,
+        calculateMonthlyWorkHours,
+        calculateRemainingVacation
+    };
+}
+
+// 사용 예제
+var calculator = WorkTimeCalculator();
+
+var workStart = new Date('2023-12-25 08:30:00');
+var workEnd = new Date('2023-12-25 19:00:00');
+
+if (calculator.isWorkDay(workStart)) {
+    var workHours = calculator.calculateWorkHours(workStart, workEnd);
+    console.log('업무 시간:', workHours + '시간');
+}
+
+var monthlyHours = calculator.calculateMonthlyWorkHours(2023, 12);
+console.log('12월 총 업무시간:', monthlyHours + '시간');
+```
+
+### 2. 날짜 범위 생성기
+```javascript
+function DateRangeGenerator() {
+    // 날짜 범위 생성
+    function generateRange(startDate, endDate, interval = 'day', step = 1) {
+        var dates = [];
+        var current = $date.clone(startDate);
+        
+        var addFunction;
+        switch (interval) {
+            case 'second': addFunction = $date.addSecond; break;
+            case 'minute': addFunction = $date.addMinute; break;
+            case 'hour': addFunction = $date.addHour; break;
+            case 'day': addFunction = $date.addDay; break;
+            case 'week': addFunction = $date.addWeek; break;
+            case 'month': addFunction = $date.addMonth; break;
+            case 'year': addFunction = $date.addYear; break;
+            default: throw new Error('지원하지 않는 간격입니다: ' + interval);
+        }
+        
+        while (current <= endDate) {
+            dates.push($date.clone(current));
+            current = addFunction(current, step);
+        }
+        
+        return dates;
+    }
+    
+    // 업무일만 생성 (주말 제외)
+    function generateWorkDays(startDate, endDate) {
+        var allDays = generateRange(startDate, endDate, 'day');
+        return allDays.filter(date => {
+            var dayOfWeek = date.getDay();
+            return dayOfWeek >= 1 && dayOfWeek <= 5;
+        });
+    }
+    
+    // 월의 모든 주말 찾기
+    function getWeekends(year, month) {
+        var firstDay = new Date(year, month - 1, 1);
+        var lastDay = $date.getLastDate(firstDay);
+        var allDays = generateRange(firstDay, lastDay, 'day');
+        
+        return allDays.filter(date => {
+            var dayOfWeek = date.getDay();
+            return dayOfWeek === 0 || dayOfWeek === 6; // 일요일 또는 토요일
+        });
+    }
+    
+    // 특정 요일만 찾기
+    function getDaysOfWeek(startDate, endDate, dayOfWeek) {
+        var allDays = generateRange(startDate, endDate, 'day');
+        return allDays.filter(date => date.getDay() === dayOfWeek);
+    }
+    
+    // 월말일들 생성 (여러 달)
+    function getMonthEnds(startYear, startMonth, endYear, endMonth) {
+        var monthEnds = [];
+        var currentDate = new Date(startYear, startMonth - 1, 1);
+        var endDate = new Date(endYear, endMonth - 1, 1);
+        
+        while (currentDate <= endDate) {
+            monthEnds.push($date.getLastDate(currentDate));
+            currentDate = $date.addMonth(currentDate, 1);
+        }
+        
+        return monthEnds;
+    }
+    
+    return {
+        generateRange,
+        generateWorkDays,
+        getWeekends,
+        getDaysOfWeek,
+        getMonthEnds
+    };
+}
+
+// 사용 예제
+var generator = DateRangeGenerator();
+
+// 일주일간의 날짜
+var weekDates = generator.generateRange(
+    new Date('2023-12-25'),
+    new Date('2023-12-31'),
+    'day'
+);
+
+console.log('일주일 날짜들:');
+weekDates.forEach(date => {
+    console.log($date.toString(date, 'd') + ' (' + $date.toString(date, 'w') + ')');
+});
+
+// 12월 업무일만
+var workDays = generator.generateWorkDays(
+    new Date('2023-12-01'),
+    new Date('2023-12-31')
+);
+
+console.log('12월 업무일 수:', workDays.length);
+
+// 매월 마지막 날
+var yearEndDates = generator.getMonthEnds(2023, 1, 2023, 12);
+console.log('2023년 월말일들:');
+yearEndDates.forEach(date => {
+    console.log($date.toString(date, 'd'));
+});
+```
+
+### 3. 기념일 및 이벤트 관리
+```javascript
+function EventManager() {
+    var events = [];
+    
+    // 이벤트 추가
+    function addEvent(name, date, type = 'single', recurrence = null) {
+        events.push({
+            id: syn.$l.guid(),
+            name: name,
+            date: $date.clone(date),
+            type: type, // 'single', 'yearly', 'monthly', 'weekly'
+            recurrence: recurrence,
+            created: $date.now()
+        });
+    }
+    
+    // 반복 이벤트의 다음 발생일 계산
+    function getNextOccurrence(event, fromDate = $date.now()) {
+        if (event.type === 'single') {
+            return event.date >= fromDate ? event.date : null;
+        }
+        
+        var nextDate = $date.clone(event.date);
+        
+        // 시작일이 현재보다 과거라면 다음 발생일로 이동
+        while (nextDate < fromDate) {
+            switch (event.type) {
+                case 'yearly':
+                    nextDate = $date.addYear(nextDate, 1);
+                    break;
+                case 'monthly':
+                    nextDate = $date.addMonth(nextDate, 1);
+                    break;
+                case 'weekly':
+                    nextDate = $date.addWeek(nextDate, 1);
+                    break;
+            }
+        }
+        
+        return nextDate;
+    }
+    
+    // 특정 기간의 이벤트 조회
+    function getEventsInRange(startDate, endDate) {
+        var eventsInRange = [];
+        
+        events.forEach(event => {
+            if (event.type === 'single') {
+                if ($date.isBetween(event.date, startDate, endDate)) {
+                    eventsInRange.push({
+                        ...event,
+                        occurrenceDate: event.date
+                    });
+                }
+            } else {
+                // 반복 이벤트의 모든 발생일 찾기
+                var currentDate = getNextOccurrence(event, startDate);
+                
+                while (currentDate && currentDate <= endDate) {
+                    eventsInRange.push({
+                        ...event,
+                        occurrenceDate: $date.clone(currentDate)
+                    });
+                    
+                    switch (event.type) {
+                        case 'yearly':
+                            currentDate = $date.addYear(currentDate, 1);
+                            break;
+                        case 'monthly':
+                            currentDate = $date.addMonth(currentDate, 1);
+                            break;
+                        case 'weekly':
+                            currentDate = $date.addWeek(currentDate, 1);
+                            break;
+                    }
+                    
+                    if (currentDate > endDate) break;
+                }
+            }
+        });
+        
+        return eventsInRange.sort((a, b) => a.occurrenceDate - b.occurrenceDate);
+    }
+    
+    // 다가오는 이벤트 (N일 이내)
+    function getUpcomingEvents(days = 7) {
+        var now = $date.now();
+        var futureDate = $date.addDay(now, days);
+        return getEventsInRange(now, futureDate);
+    }
+    
+    // 생일까지 남은 일수
+    function getDaysUntilBirthday(birthDate) {
+        var now = $date.now();
+        var thisYearBirthday = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+        
+        if (thisYearBirthday < now) {
+            thisYearBirthday = $date.addYear(thisYearBirthday, 1);
+        }
+        
+        return $date.diff(now, thisYearBirthday, 'day');
+    }
+    
+    // 기념일까지 남은 시간 (상세)
+    function getTimeUntilEvent(eventDate) {
+        var now = $date.now();
+        
+        if (eventDate <= now) {
+            return { passed: true };
+        }
+        
+        var days = $date.diff(now, eventDate, 'day');
+        var hours = $date.diff(now, eventDate, 'hour') % 24;
+        var minutes = $date.diff(now, eventDate, 'minute') % 60;
+        
+        return {
+            passed: false,
+            days: days,
+            hours: hours,
+            minutes: minutes,
+            totalHours: $date.diff(now, eventDate, 'hour'),
+            totalMinutes: $date.diff(now, eventDate, 'minute')
+        };
+    }
+    
+    return {
+        addEvent,
+        getNextOccurrence,
+        getEventsInRange,
+        getUpcomingEvents,
+        getDaysUntilBirthday,
+        getTimeUntilEvent
+    };
+}
+
+// 사용 예제
+var eventManager = EventManager();
+
+// 다양한 이벤트 추가
+eventManager.addEvent('크리스마스', new Date('2023-12-25'), 'yearly');
+eventManager.addEvent('생일', new Date('1990-06-15'), 'yearly');
+eventManager.addEvent('급여일', new Date('2023-12-25'), 'monthly');
+eventManager.addEvent('팀 미팅', new Date('2023-12-27'), 'weekly');
+eventManager.addEvent('프로젝트 마감', new Date('2023-12-31'), 'single');
+
+// 이번 달 이벤트
+var thisMonthEvents = eventManager.getEventsInRange(
+    $date.getFirstDate($date.now()),
+    $date.getLastDate($date.now())
+);
+
+console.log('이번 달 이벤트:');
+thisMonthEvents.forEach(event => {
+    console.log(`${event.name}: ${$date.toString(event.occurrenceDate, 'd')} (${$date.toString(event.occurrenceDate, 'w')})`);
+});
+
+// 다가오는 이벤트
+var upcomingEvents = eventManager.getUpcomingEvents(30);
+console.log('30일 내 예정 이벤트:', upcomingEvents.length + '개');
+
+// 생일까지 남은 일수
+var birthday = new Date($date.now().getFullYear(), 5, 15); // 6월 15일
+var daysUntilBirthday = eventManager.getDaysUntilBirthday(birthday);
+console.log('생일까지:', daysUntilBirthday + '일');
+```
+
+## 주의사항
+
+1. **시간대 고려**: JavaScript Date 객체는 로컬 시간대를 사용하므로, 다른 시간대와의 작업 시 주의가 필요합니다.
+2. **월 계산**: JavaScript에서 월은 0부터 시작하므로 (0=1월, 11=12월) 주의해야 합니다.
+3. **윤년 처리**: 날짜 계산 시 윤년을 고려해야 하며, 2월 29일 등의 특수한 경우를 주의해야 합니다.
+4. **성능**: 많은 날짜 계산이 필요한 경우 성능을 고려하여 최적화해야 합니다.
+5. **브라우저 호환성**: 구형 브라우저에서는 일부 Date 메서드가 지원되지 않을 수 있습니다.
+
+## 관련 문서
+- [JavaScript Date 객체 MDN 문서](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Date)
+- [ISO 8601 날짜 형식](https://en.wikipedia.org/wiki/ISO_8601)
 
 ## 데모
 

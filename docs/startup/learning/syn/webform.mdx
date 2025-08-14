@@ -4,7 +4,380 @@ sidebar_position: 10
 
 # syn.$w
 
-화면 개발 및 거래 업무 기능 제공합니다.
+## 개요
+syn.$w는 HandStack 웹 애플리케이션 개발을 위한 핵심 함수들을 제공합니다. 사용자 인터페이스, 데이터 저장, 거래 처리, 다이얼로그 관리 등 웹폼 개발에 필요한 모든 기능을 포함합니다.
+
+## 주요 함수
+
+### 사용자 인터페이스 관련
+
+#### syn.$w.alert(message, callback)
+사용자에게 알림 메시지를 표시합니다.
+
+**매개변수**
+- `message` (String): 표시할 메시지
+- `callback` (Function, 선택사항): 알림 닫기 후 실행할 콜백 함수
+
+**예제**
+```javascript
+syn.$w.alert('작업이 완료되었습니다.', function() {
+    console.log('알림이 닫혔습니다.');
+});
+```
+
+#### syn.$w.notify(message, options)
+토스트 알림을 표시합니다.
+
+**예제**
+```javascript
+syn.$w.notify('파일이 성공적으로 저장되었습니다.', {
+    type: 'success',
+    timeout: 3000
+});
+```
+
+#### syn.$w.showDialog(url, options, callback)
+모달 대화상자를 표시합니다.
+
+**예제**
+```javascript
+syn.$w.showDialog('/dialog/userInfo.html', {
+    width: 500,
+    height: 300,
+    title: '사용자 정보'
+}, function(result) {
+    if (result) {
+        console.log('대화상자 결과:', result);
+    }
+});
+```
+
+### 데이터 저장 관련
+
+#### syn.$w.setStorage(key, value, isLocal)
+브라우저 스토리지에 값을 저장합니다.
+
+**매개변수**
+- `key` (String): 저장 키
+- `value` (Any): 저장할 값
+- `isLocal` (Boolean): true면 localStorage, false면 sessionStorage
+
+**예제**
+```javascript
+// 세션 스토리지에 저장
+syn.$w.setStorage('currentUser', userInfo);
+
+// 로컬 스토리지에 저장
+syn.$w.setStorage('userPreference', preferences, true);
+```
+
+#### syn.$w.getStorage(key, isLocal)
+브라우저 스토리지에서 값을 가져옵니다.
+
+**예제**
+```javascript
+var currentUser = syn.$w.getStorage('currentUser');
+var preferences = syn.$w.getStorage('userPreference', true);
+```
+
+#### syn.$w.removeStorage(key, isLocal)
+브라우저 스토리지에서 값을 제거합니다.
+
+**예제**
+```javascript
+syn.$w.removeStorage('tempData');
+syn.$w.removeStorage('oldPreference', true);
+```
+
+### 거래 및 데이터 처리 관련
+
+#### syn.$w.transactionAction(actionID)
+정의된 거래 액션을 실행합니다.
+
+**예제**
+```javascript
+syn.$w.transactionAction('getUserList');
+```
+
+#### syn.$w.transactionDirect(request, callback)
+직접 거래를 수행합니다.
+
+**예제**
+```javascript
+syn.$w.transactionDirect({
+    programID: 'HRM',
+    businessID: 'USER',
+    transactionID: 'getUserInfo',
+    screenID: 'HRM010',
+    startTracker: true,
+    inputs: [
+        {
+            requestID: 'REQ001',
+            items: [{
+                userID: 'admin'
+            }]
+        }
+    ]
+}, function(result) {
+    console.log('거래 결과:', result);
+});
+```
+
+#### syn.$w.getterValue(dataSourceID)
+데이터 소스에서 값을 가져옵니다.
+
+**예제**
+```javascript
+var formData = syn.$w.getterValue('MainForm');
+```
+
+#### syn.$w.setterValue(dataSourceID, data)
+데이터 소스에 값을 설정합니다.
+
+**예제**
+```javascript
+syn.$w.setterValue('MainForm', [{
+    userName: '홍길동',
+    userEmail: 'hong@example.com'
+}]);
+```
+
+### 스크립트 및 리소스 관리
+
+#### syn.$w.loadScript(url, callback)
+외부 JavaScript 파일을 동적으로 로드합니다.
+
+**예제**
+```javascript
+syn.$w.loadScript('/js/external-library.js', function() {
+    console.log('스크립트가 로드되었습니다.');
+    // 로드된 라이브러리 사용
+});
+```
+
+#### syn.$w.fileDownload(url, fileName)
+파일을 다운로드합니다.
+
+**예제**
+```javascript
+syn.$w.fileDownload('/api/report/download', 'monthly-report.pdf');
+```
+
+### UI 컴포넌트 관리
+
+#### syn.$w.addUIButton(options)
+동적으로 UI 버튼을 추가합니다.
+
+**예제**
+```javascript
+syn.$w.addUIButton({
+    id: 'btnCustom',
+    text: '사용자 정의',
+    icon: 'ti ti-settings',
+    onClick: function() {
+        console.log('사용자 정의 버튼 클릭');
+    }
+});
+```
+
+#### syn.$w.updateUIButton(buttonID, options)
+기존 UI 버튼을 업데이트합니다.
+
+**예제**
+```javascript
+syn.$w.updateUIButton('btnSave', {
+    text: '저장 완료',
+    disabled: true
+});
+```
+
+### 창 및 탭 관리
+
+#### syn.$w.windowOpen(url, options)
+새 창을 엽니다.
+
+**예제**
+```javascript
+syn.$w.windowOpen('/report/view', {
+    width: 1024,
+    height: 768,
+    center: true
+});
+```
+
+#### syn.$w.closeTabUI()
+현재 탭을 닫습니다.
+
+#### syn.$w.setTabTitleText(text)
+탭 제목을 설정합니다.
+
+**예제**
+```javascript
+syn.$w.setTabTitleText('사용자 관리 - 편집 모드');
+```
+
+### 시스템 정보 및 유틸리티
+
+#### syn.$w.User
+현재 로그인 사용자 정보를 담고 있는 객체입니다.
+
+**속성**
+- `UserID`: 사용자 ID
+- `UserName`: 사용자 이름
+- `DepartmentID`: 부서 ID
+- `WorkCompanyNo`: 회사 번호
+
+**예제**
+```javascript
+console.log('현재 사용자:', syn.$w.User.UserName);
+console.log('부서:', syn.$w.User.DepartmentID);
+```
+
+#### syn.$w.Variable
+애플리케이션 변수 정보를 담고 있는 객체입니다.
+
+**예제**
+```javascript
+console.log('애플리케이션 ID:', syn.$w.Variable.ApplicationID);
+```
+
+#### syn.$w.argumentsExtend(target, source)
+객체의 속성을 확장합니다.
+
+**예제**
+```javascript
+var defaultOptions = {
+    width: 300,
+    height: 200,
+    modal: true
+};
+
+var customOptions = {
+    width: 500,
+    title: '사용자 정의'
+};
+
+var finalOptions = syn.$w.argumentsExtend(defaultOptions, customOptions);
+// 결과: { width: 500, height: 200, modal: true, title: '사용자 정의' }
+```
+
+## 설정 객체들
+
+### syn.$w.alertOptions
+알림 대화상자 기본 설정입니다.
+
+### syn.$w.dialogOptions
+모달 대화상자 기본 설정입니다.
+
+### syn.$w.popupOptions
+팝업 창 기본 설정입니다.
+
+## 이벤트 및 통신
+
+### syn.$w.channels
+채널 기반 통신을 관리합니다.
+
+### syn.$w.executeChannelMessage(message)
+채널 메시지를 실행합니다.
+
+### syn.$w.sendAlarmMessage(message)
+알람 메시지를 전송합니다.
+
+## 실전 활용 예제
+
+### 1. 사용자 정보 관리 폼
+```javascript
+// 사용자 정보 로드
+function loadUserInfo() {
+    syn.$w.transactionDirect({
+        programID: 'HRM',
+        businessID: 'USER',
+        transactionID: 'getUserInfo',
+        inputs: [{
+            requestID: 'REQ001',
+            items: [{ userID: syn.$w.User.UserID }]
+        }]
+    }, function(result) {
+        if (result.acknowledge === 1) {
+            syn.$w.setterValue('UserForm', result.outputs[0].items);
+        }
+    });
+}
+
+// 사용자 정보 저장
+function saveUserInfo() {
+    var formData = syn.$w.getterValue('UserForm');
+    
+    syn.$w.transactionDirect({
+        programID: 'HRM',
+        businessID: 'USER',
+        transactionID: 'updateUserInfo',
+        inputs: [{
+            requestID: 'REQ001',
+            items: formData
+        }]
+    }, function(result) {
+        if (result.acknowledge === 1) {
+            syn.$w.alert('사용자 정보가 저장되었습니다.');
+        } else {
+            syn.$w.alert('저장 중 오류가 발생했습니다.');
+        }
+    });
+}
+```
+
+### 2. 동적 UI 생성
+```javascript
+// 조건에 따른 버튼 추가
+function setupDynamicButtons() {
+    if (syn.$w.User.Role === 'Admin') {
+        syn.$w.addUIButton({
+            id: 'btnAdmin',
+            text: '관리자 기능',
+            icon: 'ti ti-settings',
+            onClick: function() {
+                syn.$w.showDialog('/admin/settings.html', {
+                    title: '관리자 설정',
+                    width: 600,
+                    height: 400
+                });
+            }
+        });
+    }
+}
+```
+
+### 3. 파일 처리
+```javascript
+// 파일 업로드 후 다운로드
+function handleFileUpload(fileList) {
+    // 파일 업로드 처리
+    var uploadResult = processFileUpload(fileList);
+    
+    if (uploadResult.success) {
+        syn.$w.notify('파일 업로드가 완료되었습니다.', {
+            type: 'success'
+        });
+        
+        // 다운로드 링크 제공
+        syn.$w.addUIButton({
+            id: 'btnDownload',
+            text: '다운로드',
+            onClick: function() {
+                syn.$w.fileDownload(uploadResult.downloadUrl, uploadResult.fileName);
+            }
+        });
+    }
+}
+```
+
+## 참고사항
+
+1. **비동기 처리**: 대부분의 함수들은 비동기적으로 동작하므로 콜백 함수 사용이 중요합니다
+2. **데이터 바인딩**: getterValue/setterValue는 syn-datafield 속성과 연동됩니다
+3. **사용자 권한**: syn.$w.User 정보를 활용하여 권한 기반 UI를 구현할 수 있습니다
+4. **메모리 관리**: 동적으로 생성된 UI 요소들은 적절히 정리해야 합니다
+
 
 ## 데모
 

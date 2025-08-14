@@ -4,7 +4,399 @@ sidebar_position: 3
 
 # syn.$b
 
-웹 브라우저의 정보를 확인합니다.
+## 개요
+syn.$b는 HandStack 웹 애플리케이션에서 브라우저 및 디바이스 정보를 확인하는 기능을 제공합니다. 브라우저 종류 검사, 디바이스 정보 확인, 시스템 폰트 조회, 브라우저 지문 생성 등의 기능을 포함합니다.
+
+## 주요 기능
+
+### 브라우저 정보 속성
+
+#### 기본 브라우저 정보
+브라우저의 기본 정보를 확인할 수 있습니다.
+
+```javascript
+// 브라우저 애플리케이션 이름
+console.log(syn.$b.appName);
+
+// 브라우저 코드 이름
+console.log(syn.$b.appCodeName);
+
+// 브라우저 버전
+console.log(syn.$b.appVersion);
+
+// 쿠키 사용 가능 여부
+console.log(syn.$b.cookieEnabled);
+
+// PDF 뷰어 사용 가능 여부
+console.log(syn.$b.pdfViewerEnabled);
+
+// 플랫폼 정보
+console.log(syn.$b.platform);
+
+// 디바이스 플랫폼 (browser, node, android, ios)
+console.log(syn.$b.devicePlatform);
+
+// 사용자 에이전트 정보
+console.log(syn.$b.userAgent);
+
+// 디바이스 픽셀 비율
+console.log(syn.$b.devicePixelRatio);
+
+// 브라우저 언어
+console.log(syn.$b.language);
+```
+
+#### 화면 정보
+디스플레이 관련 정보를 확인할 수 있습니다.
+
+```javascript
+// 화면이 확장되었는지 여부
+console.log(syn.$b.isExtended);
+
+// 화면 너비
+console.log(syn.$b.screenWidth);
+
+// 화면 높이
+console.log(syn.$b.screenHeight);
+```
+
+#### 브라우저 종류 검사
+현재 실행 중인 브라우저 종류를 확인할 수 있습니다.
+
+```javascript
+// WebKit 기반 브라우저 여부
+console.log(syn.$b.isWebkit);
+
+// Chrome 브라우저 여부
+console.log(syn.$b.isChrome);
+
+// Edge 브라우저 여부
+console.log(syn.$b.isEdge);
+
+// Firefox 브라우저 여부
+console.log(syn.$b.isFF);
+
+// Safari 브라우저 여부
+console.log(syn.$b.isSafari);
+
+// Internet Explorer 여부
+console.log(syn.$b.isIE);
+
+// Opera 브라우저 여부
+console.log(syn.$b.isOpera);
+
+// 모바일 디바이스 여부
+console.log(syn.$b.isMobile);
+```
+
+#### 운영체제 검사
+현재 운영체제를 확인할 수 있습니다.
+
+```javascript
+// Mac 운영체제 여부
+console.log(syn.$b.isMac);
+
+// Linux 운영체제 여부
+console.log(syn.$b.isLinux);
+
+// Windows 운영체제 여부
+console.log(syn.$b.isWindow);
+```
+
+### 메서드
+
+#### getSystemFonts()
+시스템에 설치된 폰트 목록을 가져옵니다.
+
+**구문**
+```javascript
+syn.$b.getSystemFonts(fontListToCheck?)
+```
+
+**매개변수**
+- `fontListToCheck` (Array, 선택사항): 확인할 폰트 목록. 지정하지 않으면 기본 폰트 목록을 검사합니다.
+
+**반환값**
+- `Array`: 사용 가능한 폰트 목록
+
+**예제**
+```javascript
+// 기본 폰트 목록 확인
+var systemFonts = syn.$b.getSystemFonts();
+console.log('사용 가능한 폰트:', systemFonts);
+
+// 특정 폰트만 확인
+var checkFonts = ['Arial', 'Helvetica', '맑은 고딕', 'Noto Sans KR'];
+var availableFonts = syn.$b.getSystemFonts(checkFonts);
+console.log('확인된 폰트:', availableFonts);
+```
+
+#### getCanvas2dRender()
+Canvas 2D 렌더링을 통한 브라우저 지문 데이터를 생성합니다.
+
+**구문**
+```javascript
+syn.$b.getCanvas2dRender()
+```
+
+**반환값**
+- `String`: Canvas 2D 렌더링 결과의 Data URL
+
+**예제**
+```javascript
+var canvas2d = syn.$b.getCanvas2dRender();
+console.log('Canvas 2D 지문:', canvas2d);
+```
+
+#### getWebglRender()
+WebGL 렌더링을 통한 브라우저 지문 데이터를 생성합니다.
+
+**구문**
+```javascript
+syn.$b.getWebglRender()
+```
+
+**반환값**
+- `String`: WebGL 렌더링 결과의 Data URL
+
+**예제**
+```javascript
+var webglRender = syn.$b.getWebglRender();
+console.log('WebGL 지문:', webglRender);
+```
+
+#### getPlugins()
+브라우저에 설치된 플러그인 목록을 가져옵니다.
+
+**구문**
+```javascript
+syn.$b.getPlugins()
+```
+
+**반환값**
+- `Array`: 플러그인 정보 배열
+
+**예제**
+```javascript
+var plugins = syn.$b.getPlugins();
+console.log('설치된 플러그인:', plugins);
+```
+
+#### fingerPrint()
+브라우저 고유 지문을 생성합니다.
+
+**구문**
+```javascript
+syn.$b.fingerPrint()
+```
+
+**반환값**
+- `Promise<String>`: 브라우저 지문 해시 값
+
+**예제**
+```javascript
+async function getBrowserFingerprint() {
+    var fingerprint = await syn.$b.fingerPrint();
+    console.log('브라우저 지문:', fingerprint);
+    
+    // 사용자 식별이나 보안 목적으로 활용
+    localStorage.setItem('browserFingerprint', fingerprint);
+}
+
+getBrowserFingerprint();
+```
+
+#### windowWidth()
+현재 브라우저 창의 너비를 가져옵니다.
+
+**구문**
+```javascript
+syn.$b.windowWidth()
+```
+
+**반환값**
+- `Number`: 브라우저 창의 너비 (픽셀)
+
+**예제**
+```javascript
+var width = syn.$b.windowWidth();
+console.log('브라우저 창 너비:', width + 'px');
+```
+
+#### windowHeight()
+현재 브라우저 창의 높이를 가져옵니다.
+
+**구문**
+```javascript
+syn.$b.windowHeight()
+```
+
+**반환값**
+- `Number`: 브라우저 창의 높이 (픽셀)
+
+**예제**
+```javascript
+var height = syn.$b.windowHeight();
+console.log('브라우저 창 높이:', height + 'px');
+```
+
+#### getIpAddress()
+클라이언트의 IP 주소를 가져옵니다.
+
+**구문**
+```javascript
+syn.$b.getIpAddress()
+```
+
+**반환값**
+- `Promise<String>`: IP 주소
+
+**예제**
+```javascript
+async function getClientIP() {
+    try {
+        var ipAddress = await syn.$b.getIpAddress();
+        console.log('클라이언트 IP:', ipAddress);
+    } catch (error) {
+        console.error('IP 주소 조회 실패:', error);
+    }
+}
+
+getClientIP();
+```
+
+## 실전 활용 예제
+
+### 1. 반응형 웹 디자인을 위한 디바이스 감지
+```javascript
+function setupResponsiveLayout() {
+    if (syn.$b.isMobile) {
+        document.body.classList.add('mobile-layout');
+    }
+    
+    var width = syn.$b.windowWidth();
+    if (width < 768) {
+        document.body.classList.add('small-screen');
+    }
+    
+    console.log('디바이스 정보:', {
+        platform: syn.$b.platform,
+        isMobile: syn.$b.isMobile,
+        screenSize: `${syn.$b.screenWidth} x ${syn.$b.screenHeight}`
+    });
+}
+
+setupResponsiveLayout();
+```
+
+### 2. 브라우저별 호환성 처리
+```javascript
+function setupBrowserCompatibility() {
+    if (syn.$b.isIE) {
+        alert('Internet Explorer는 지원되지 않습니다. 다른 브라우저를 사용해주세요.');
+        return false;
+    }
+    
+    if (syn.$b.isChrome) {
+        console.log('Chrome 브라우저 최적화 적용');
+        document.documentElement.classList.add('chrome-browser');
+    } else if (syn.$b.isFF) {
+        console.log('Firefox 브라우저 최적화 적용');
+        document.documentElement.classList.add('firefox-browser');
+    } else if (syn.$b.isSafari) {
+        console.log('Safari 브라우저 최적화 적용');
+        document.documentElement.classList.add('safari-browser');
+    }
+    
+    return true;
+}
+
+if (setupBrowserCompatibility()) {
+    // 애플리케이션 초기화 계속
+}
+```
+
+### 3. 시스템 정보 수집 및 분석
+```javascript
+async function collectSystemInfo() {
+    var systemInfo = {
+        browser: {
+            name: syn.$b.appName,
+            version: syn.$b.appVersion,
+            userAgent: syn.$b.userAgent
+        },
+        device: {
+            platform: syn.$b.platform,
+            isMobile: syn.$b.isMobile,
+            screenSize: `${syn.$b.screenWidth} x ${syn.$b.screenHeight}`,
+            pixelRatio: syn.$b.devicePixelRatio
+        },
+        features: {
+            cookieEnabled: syn.$b.cookieEnabled,
+            pdfViewerEnabled: syn.$b.pdfViewerEnabled
+        }
+    };
+    
+    // 고급 정보 수집
+    try {
+        systemInfo.fonts = syn.$b.getSystemFonts();
+        systemInfo.plugins = syn.$b.getPlugins();
+        systemInfo.fingerprint = await syn.$b.fingerPrint();
+        systemInfo.ipAddress = await syn.$b.getIpAddress();
+    } catch (error) {
+        console.warn('고급 시스템 정보 수집 실패:', error);
+    }
+    
+    console.log('수집된 시스템 정보:', systemInfo);
+    return systemInfo;
+}
+
+// 사용 예제
+collectSystemInfo().then(info => {
+    // 분석 서버로 정보 전송
+    fetch('/api/analytics/system-info', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(info)
+    });
+});
+```
+
+### 4. 브라우저 보안 검사
+```javascript
+async function securityCheck() {
+    var fingerprint = await syn.$b.fingerPrint();
+    var storedFingerprint = localStorage.getItem('trustedFingerprint');
+    
+    if (storedFingerprint && storedFingerprint !== fingerprint) {
+        console.warn('브라우저 환경이 변경되었습니다');
+        // 추가 인증 요구 등의 보안 조치
+        return false;
+    }
+    
+    if (!storedFingerprint) {
+        localStorage.setItem('trustedFingerprint', fingerprint);
+    }
+    
+    return true;
+}
+
+// 애플리케이션 시작 시 보안 검사
+securityCheck().then(isSecure => {
+    if (isSecure) {
+        console.log('보안 검사 통과');
+    } else {
+        console.log('보안 검사 실패');
+    }
+});
+```
+
+## 주의사항
+
+1. **브라우저 감지 정확도**: 사용자 에이전트는 변조될 수 있으므로 절대적인 신뢰는 금물입니다.
+2. **성능 고려**: 시스템 폰트 검사나 브라우저 지문 생성은 시간이 소요될 수 있습니다.
+3. **개인정보 보호**: 브라우저 지문은 사용자를 식별할 수 있는 정보이므로 개인정보 보호 정책을 준수해야 합니다.
+4. **Cross-Origin 제한**: IP 주소 조회는 외부 서비스에 의존하므로 네트워크 환경에 따라 실패할 수 있습니다.
 
 ## 데모
 

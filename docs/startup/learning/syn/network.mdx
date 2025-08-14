@@ -4,7 +4,899 @@ sidebar_position: 12
 
 # syn.$n
 
-iframe 화면 간에 양방향 통신 기능을 제공합니다.
+## 개요
+syn.$n은 HandStack에서 iframe 화면 간에 양방향 통신 기능을 제공하는 네트워크 통신 라이브러리입니다. 부모 창과 자식 iframe 간의 안전한 메시지 전달, 이벤트 바인딩, 채널 관리 등의 기능을 통해 복잡한 웹 애플리케이션에서의 창 간 통신을 간단하게 만들어줍니다.
+
+## 주요 기능
+
+### 채널 연결
+
+#### syn.$n.rooms.connect(options)
+새로운 통신 채널을 생성하고 연결합니다.
+
+**구문**
+```javascript
+syn.$n.rooms.connect(options)
+```
+
+**매개변수**
+- `options` (Object): 연결 설정 객체
+  - `window` (Window): 통신할 대상 윈도우
+  - `origin` (String): 허용할 origin (보안), '*'는 모든 origin 허용
+  - `scope` (String): 채널 범위 식별자
+  - `debugOutput` (Boolean): 디버그 출력 여부
+
+**반환값**
+- `Channel`: 통신 채널 객체
+
+**예제**
+```javascript
+// 부모 창에서 iframe과 연결
+var iframe = document.getElementById('myIframe');
+var channel = syn.$n.rooms.connect({
+    window: iframe.contentWindow,
+    origin: '*',
+    scope: 'main-iframe-channel',
+    debugOutput: true
+});
+
+// 자식 iframe에서 부모와 연결
+var parentChannel = syn.$n.rooms.connect({
+    window: window.parent,
+    origin: '*',
+    scope: 'child-parent-channel'
+});
+```
+
+### 이벤트 바인딩
+
+#### channel.bind(eventName, handler)
+채널에 이벤트 핸들러를 바인딩합니다.
+
+**구문**
+```javascript
+channel.bind(eventName, handler)
+```
+
+**매개변수**
+- `eventName` (String): 이벤트 이름
+- `handler` (Function): 이벤트 처리 함수
+
+**예제**
+```javascript
+// 메시지 수신 이벤트 바인딩
+channel.bind('userMessage', function(event, data) {
+    console.log('사용자 메시지 수신:', data);
+    // 응답 전송
+    channel.emit({
+        method: 'messageReceived',
+        params: ['메시지를 받았습니다']
+    });
+});
+
+// 데이터 요청 이벤트 바인딩
+channel.bind('dataRequest', function(event, requestData) {
+    console.log('데이터 요청:', requestData);
+    
+    // 데이터 처리
+    var responseData = processRequest(requestData);
+    
+    // 응답 전송
+    return responseData;
+});
+```
+
+### 메시지 전송
+
+#### channel.call(options)
+원격 함수를 호출하고 응답을 받습니다.
+
+**구문**
+```javascript
+channel.call(options)
+```
+
+**매개변수**
+- `options` (Object): 호출 설정 객체
+  - `method` (String): 호출할 메서드 이름
+  - `params` (Array): 전달할 매개변수 배열
+  - `success` (Function): 성공 콜백 함수
+  - `error` (Function): 오류 콜백 함수
+
+**예제**
+```javascript
+// 부모 창에서 iframe의 함수 호출
+channel.call({
+    method: 'updateUserData',
+    params: [{
+        id: 123,
+        name: '홍길동',
+        email: 'hong@example.com'
+    }],
+    success: function(result) {
+        console.log('사용자 데이터 업데이트 성공:', result);
+    },
+    error: function(error, message) {
+        console.error('업데이트 실패:', error, message);
+    }
+});
+
+// 자식 iframe에서 부모 창의 함수 호출
+channel.call({
+    method: 'navigateTo',
+    params: ['/users/123'],
+    success: function(result) {
+        console.log('네비게이션 성공:', result);
+    }
+});
+```
+
+#### channel.emit(options)
+이벤트를 발생시킵니다.
+
+**구문**
+```javascript
+channel.emit(options)
+```
+
+**매개변수**
+- `options` (Object): 이벤트 설정 객체
+  - `method` (String): 이벤트 이름
+  - `params` (Array): 전달할 데이터 배열
+  - `success` (Function): 성공 콜백 (선택사항)
+  - `error` (Function): 오류 콜백 (선택사항)
+
+**예제**
+```javascript
+// 상태 변경 이벤트 발생
+channel.emit({
+    method: 'statusChanged',
+    params: ['loading', 'Starting data load...']
+});
+
+// 파일 업로드 완료 이벤트
+channel.emit({
+    method: 'fileUploaded',
+    params: [{
+        filename: 'document.pdf',
+        size: 1024000,
+        url: '/uploads/document.pdf'
+    }],
+    success: function() {
+        console.log('파일 업로드 이벤트 전송 완료');
+    }
+});
+```
+
+## 실전 활용 예제
+
+### 1. 부모-자식 iframe 통신 시스템
+```javascript
+// === 부모 창 (main.html) ===
+let $main = {
+    prop: {
+        iframeChannels: []
+    },
+
+    hook: {
+        pageLoad() {
+            // iframe 로드 완료 후 채널 연결
+            var iframe = document.getElementById('childFrame');
+            iframe.onload = function() {
+                $this.method.connectToIframe('child-channel');
+            };
+        }
+    },
+
+    method: {
+        connectToIframe(channelId) {
+            var iframe = document.getElementById('childFrame');
+            
+            var channel = syn.$n.rooms.connect({
+                debugOutput: true,
+                window: iframe.contentWindow,
+                origin: '*',
+                scope: channelId
+            });
+
+            // 자식으로부터의 메시지 처리
+            channel.bind('childMessage', function(event, data) {
+                console.log('자식으로부터 메시지:', data);
+                $this.method.processChildMessage(data);
+            });
+
+            // 데이터 요청 처리
+            channel.bind('requestData', function(event, requestType) {
+                return $this.method.getDataForChild(requestType);
+            });
+
+            // 채널 저장
+            $this.prop.iframeChannels.push({
+                id: channelId,
+                channel: channel
+            });
+        },
+
+        sendMessageToChild(channelId, message) {
+            var channelInfo = $this.prop.iframeChannels.find(function(item) {
+                return item.id === channelId;
+            });
+
+            if (channelInfo) {
+                channelInfo.channel.call({
+                    method: 'parentMessage',
+                    params: [message],
+                    success: function(response) {
+                        console.log('자식 응답:', response);
+                    },
+                    error: function(error) {
+                        console.error('메시지 전송 실패:', error);
+                    }
+                });
+            }
+        },
+
+        processChildMessage(data) {
+            switch(data.type) {
+                case 'userAction':
+                    $this.method.handleUserAction(data.payload);
+                    break;
+                case 'statusUpdate':
+                    $this.method.updateStatus(data.payload);
+                    break;
+            }
+        },
+
+        getDataForChild(requestType) {
+            switch(requestType) {
+                case 'userProfile':
+                    return {
+                        id: 123,
+                        name: '홍길동',
+                        email: 'hong@example.com',
+                        role: 'admin'
+                    };
+                case 'appSettings':
+                    return {
+                        theme: 'dark',
+                        language: 'ko',
+                        notifications: true
+                    };
+                default:
+                    return null;
+            }
+        }
+    },
+
+    event: {
+        btnSendToChild_click() {
+            var message = {
+                type: 'command',
+                action: 'refresh',
+                timestamp: new Date()
+            };
+            
+            $this.method.sendMessageToChild('child-channel', message);
+        }
+    }
+};
+
+// === 자식 창 (child.html) ===
+let $child = {
+    prop: {
+        parentChannel: null
+    },
+
+    hook: {
+        pageLoad() {
+            // 부모와 연결이 필요한 경우에만
+            if (window !== window.parent) {
+                $this.method.connectToParent('child-channel');
+            }
+        }
+    },
+
+    method: {
+        connectToParent(channelId) {
+            $this.prop.parentChannel = syn.$n.rooms.connect({
+                window: window.parent,
+                origin: '*',
+                scope: channelId
+            });
+
+            // 부모로부터의 메시지 처리
+            $this.prop.parentChannel.bind('parentMessage', function(event, data) {
+                console.log('부모로부터 메시지:', data);
+                $this.method.processParentMessage(data);
+            });
+        },
+
+        processParentMessage(data) {
+            switch(data.type) {
+                case 'command':
+                    $this.method.executeCommand(data.action);
+                    break;
+                case 'dataUpdate':
+                    $this.method.updateData(data.payload);
+                    break;
+            }
+        },
+
+        sendMessageToParent(message) {
+            if ($this.prop.parentChannel) {
+                $this.prop.parentChannel.emit({
+                    method: 'childMessage',
+                    params: [message]
+                });
+            }
+        },
+
+        requestDataFromParent(dataType) {
+            return new Promise(function(resolve, reject) {
+                if ($this.prop.parentChannel) {
+                    $this.prop.parentChannel.call({
+                        method: 'requestData',
+                        params: [dataType],
+                        success: function(data) {
+                            resolve(data);
+                        },
+                        error: function(error) {
+                            reject(error);
+                        }
+                    });
+                } else {
+                    reject('부모 채널이 연결되지 않았습니다');
+                }
+            });
+        }
+    },
+
+    event: {
+        btnNotifyParent_click() {
+            var message = {
+                type: 'userAction',
+                payload: {
+                    action: 'buttonClick',
+                    element: 'btnNotifyParent',
+                    timestamp: new Date()
+                }
+            };
+            
+            $this.method.sendMessageToParent(message);
+        },
+
+        async btnRequestUserData_click() {
+            try {
+                var userData = await $this.method.requestDataFromParent('userProfile');
+                console.log('사용자 데이터:', userData);
+                
+                // UI 업데이트
+                document.getElementById('userName').textContent = userData.name;
+                document.getElementById('userEmail').textContent = userData.email;
+            } catch (error) {
+                console.error('데이터 요청 실패:', error);
+            }
+        }
+    }
+};
+```
+
+### 2. 다중 iframe 관리 시스템
+```javascript
+// 다중 iframe 관리자
+let $multiIframeManager = {
+    prop: {
+        channels: new Map(),
+        messageQueue: [],
+        broadcastChannels: []
+    },
+
+    method: {
+        registerIframe(iframeId, channelId) {
+            var iframe = document.getElementById(iframeId);
+            if (!iframe) return false;
+
+            var channel = syn.$n.rooms.connect({
+                debugOutput: false,
+                window: iframe.contentWindow,
+                origin: '*',
+                scope: channelId
+            });
+
+            // 공통 이벤트 바인딩
+            channel.bind('ready', function(event, data) {
+                console.log(iframeId + ' 준비 완료:', data);
+                $this.method.processQueuedMessages(channelId);
+            });
+
+            channel.bind('broadcast', function(event, message) {
+                $this.method.broadcastToOthers(channelId, message);
+            });
+
+            $this.prop.channels.set(channelId, {
+                iframe: iframe,
+                channel: channel,
+                ready: false
+            });
+
+            return true;
+        },
+
+        sendMessage(channelId, method, params) {
+            var channelInfo = $this.prop.channels.get(channelId);
+            
+            if (!channelInfo) {
+                console.error('채널을 찾을 수 없습니다:', channelId);
+                return;
+            }
+
+            if (!channelInfo.ready) {
+                // 준비되지 않은 경우 큐에 저장
+                $this.prop.messageQueue.push({
+                    channelId: channelId,
+                    method: method,
+                    params: params
+                });
+                return;
+            }
+
+            channelInfo.channel.call({
+                method: method,
+                params: params,
+                success: function(result) {
+                    console.log('메시지 전송 성공:', result);
+                },
+                error: function(error) {
+                    console.error('메시지 전송 실패:', error);
+                }
+            });
+        },
+
+        processQueuedMessages(channelId) {
+            var channelInfo = $this.prop.channels.get(channelId);
+            if (channelInfo) {
+                channelInfo.ready = true;
+            }
+
+            // 대기 중인 메시지 처리
+            var queuedMessages = $this.prop.messageQueue.filter(function(msg) {
+                return msg.channelId === channelId;
+            });
+
+            queuedMessages.forEach(function(msg) {
+                $this.method.sendMessage(msg.channelId, msg.method, msg.params);
+            });
+
+            // 처리된 메시지 제거
+            $this.prop.messageQueue = $this.prop.messageQueue.filter(function(msg) {
+                return msg.channelId !== channelId;
+            });
+        },
+
+        broadcastToAll(method, params, excludeChannel) {
+            $this.prop.channels.forEach(function(channelInfo, channelId) {
+                if (channelId !== excludeChannel) {
+                    $this.method.sendMessage(channelId, method, params);
+                }
+            });
+        },
+
+        broadcastToOthers(senderChannelId, message) {
+            this.broadcastToAll('broadcast', [message], senderChannelId);
+        },
+
+        closeChannel(channelId) {
+            var channelInfo = $this.prop.channels.get(channelId);
+            if (channelInfo && channelInfo.channel) {
+                // 채널 정리 (필요시 추가 정리 작업)
+                $this.prop.channels.delete(channelId);
+                console.log('채널 종료:', channelId);
+            }
+        }
+    },
+
+    hook: {
+        pageLoad() {
+            // 여러 iframe 등록
+            $this.method.registerIframe('iframe1', 'channel-1');
+            $this.method.registerIframe('iframe2', 'channel-2');
+            $this.method.registerIframe('iframe3', 'channel-3');
+        }
+    },
+
+    event: {
+        btnBroadcastMessage_click() {
+            var message = {
+                type: 'announcement',
+                title: '공지사항',
+                content: '모든 사용자에게 전달되는 메시지입니다',
+                timestamp: new Date()
+            };
+
+            $this.method.broadcastToAll('systemMessage', [message]);
+        },
+
+        btnSendToSpecific_click() {
+            var targetChannel = document.getElementById('selectTargetChannel').value;
+            var message = document.getElementById('txtMessage').value;
+
+            $this.method.sendMessage(targetChannel, 'specificMessage', [{
+                text: message,
+                sender: 'parent',
+                timestamp: new Date()
+            }]);
+        }
+    }
+};
+```
+
+### 3. 실시간 협업 시스템
+```javascript
+// 실시간 협업 관리자
+let $collaborationManager = {
+    prop: {
+        participants: new Map(),
+        documentState: {
+            content: '',
+            version: 0,
+            lastModified: null
+        }
+    },
+
+    method: {
+        addParticipant(participantId, channel) {
+            $this.prop.participants.set(participantId, {
+                channel: channel,
+                cursor: { line: 0, column: 0 },
+                selection: null,
+                isActive: true
+            });
+
+            // 참가자 이벤트 바인딩
+            channel.bind('documentEdit', function(event, edit) {
+                $this.method.handleDocumentEdit(participantId, edit);
+            });
+
+            channel.bind('cursorMove', function(event, position) {
+                $this.method.handleCursorMove(participantId, position);
+            });
+
+            channel.bind('participantLeave', function(event) {
+                $this.method.removeParticipant(participantId);
+            });
+
+            // 현재 문서 상태 전송
+            $this.method.syncDocumentState(participantId);
+            
+            // 다른 참가자들에게 알림
+            $this.method.notifyParticipantJoined(participantId);
+        },
+
+        handleDocumentEdit(participantId, edit) {
+            // 문서 버전 확인
+            if (edit.baseVersion !== $this.prop.documentState.version) {
+                // 충돌 해결 필요
+                $this.method.resolveConflict(participantId, edit);
+                return;
+            }
+
+            // 문서 업데이트 적용
+            $this.method.applyEdit(edit);
+            
+            // 다른 참가자들에게 변경사항 전파
+            $this.method.broadcastEdit(participantId, edit);
+        },
+
+        applyEdit(edit) {
+            var content = $this.prop.documentState.content;
+            
+            switch(edit.type) {
+                case 'insert':
+                    content = content.slice(0, edit.position) + 
+                             edit.text + 
+                             content.slice(edit.position);
+                    break;
+                case 'delete':
+                    content = content.slice(0, edit.position) + 
+                             content.slice(edit.position + edit.length);
+                    break;
+                case 'replace':
+                    content = content.slice(0, edit.position) + 
+                             edit.newText + 
+                             content.slice(edit.position + edit.oldText.length);
+                    break;
+            }
+
+            $this.prop.documentState = {
+                content: content,
+                version: $this.prop.documentState.version + 1,
+                lastModified: new Date()
+            };
+        },
+
+        broadcastEdit(excludeParticipant, edit) {
+            $this.prop.participants.forEach(function(participant, participantId) {
+                if (participantId !== excludeParticipant) {
+                    participant.channel.emit({
+                        method: 'documentUpdated',
+                        params: [edit, $this.prop.documentState.version]
+                    });
+                }
+            });
+        },
+
+        handleCursorMove(participantId, position) {
+            var participant = $this.prop.participants.get(participantId);
+            if (participant) {
+                participant.cursor = position;
+                
+                // 다른 참가자들에게 커서 위치 업데이트
+                $this.prop.participants.forEach(function(otherParticipant, otherParticipantId) {
+                    if (otherParticipantId !== participantId) {
+                        otherParticipant.channel.emit({
+                            method: 'cursorUpdated',
+                            params: [participantId, position]
+                        });
+                    }
+                });
+            }
+        },
+
+        syncDocumentState(participantId) {
+            var participant = $this.prop.participants.get(participantId);
+            if (participant) {
+                participant.channel.emit({
+                    method: 'documentSync',
+                    params: [$this.prop.documentState]
+                });
+            }
+        },
+
+        resolveConflict(participantId, edit) {
+            // 간단한 충돌 해결: 최신 버전으로 동기화
+            $this.method.syncDocumentState(participantId);
+            
+            var participant = $this.prop.participants.get(participantId);
+            if (participant) {
+                participant.channel.emit({
+                    method: 'conflictResolved',
+                    params: ['문서가 최신 버전으로 동기화되었습니다']
+                });
+            }
+        }
+    }
+};
+
+// 협업 참가자 (iframe 내부)
+let $collaborationParticipant = {
+    prop: {
+        participantId: null,
+        parentChannel: null,
+        documentVersion: 0,
+        isEditing: false
+    },
+
+    method: {
+        initialize(participantId) {
+            $this.prop.participantId = participantId;
+            
+            if (window !== window.parent) {
+                $this.prop.parentChannel = syn.$n.rooms.connect({
+                    window: window.parent,
+                    origin: '*',
+                    scope: 'collaboration-' + participantId
+                });
+
+                // 협업 이벤트 바인딩
+                $this.method.bindCollaborationEvents();
+                
+                // 참가자 등록
+                $this.method.joinCollaboration();
+            }
+        },
+
+        bindCollaborationEvents() {
+            // 문서 동기화
+            $this.prop.parentChannel.bind('documentSync', function(event, documentState) {
+                $this.method.updateDocument(documentState);
+            });
+
+            // 문서 업데이트
+            $this.prop.parentChannel.bind('documentUpdated', function(event, edit, version) {
+                $this.method.applyRemoteEdit(edit, version);
+            });
+
+            // 커서 업데이트
+            $this.prop.parentChannel.bind('cursorUpdated', function(event, participantId, position) {
+                $this.method.showParticipantCursor(participantId, position);
+            });
+        },
+
+        joinCollaboration() {
+            if ($this.prop.parentChannel) {
+                $this.prop.parentChannel.emit({
+                    method: 'participantJoin',
+                    params: [$this.prop.participantId]
+                });
+            }
+        },
+
+        sendEdit(edit) {
+            edit.baseVersion = $this.prop.documentVersion;
+            
+            if ($this.prop.parentChannel) {
+                $this.prop.parentChannel.emit({
+                    method: 'documentEdit',
+                    params: [edit]
+                });
+            }
+        },
+
+        sendCursorPosition(position) {
+            if ($this.prop.parentChannel) {
+                $this.prop.parentChannel.emit({
+                    method: 'cursorMove',
+                    params: [position]
+                });
+            }
+        }
+    },
+
+    event: {
+        editor_textChange(event) {
+            if (!$this.prop.isEditing) {
+                var edit = {
+                    type: 'insert',
+                    position: event.start,
+                    text: event.text,
+                    timestamp: new Date()
+                };
+                
+                $this.method.sendEdit(edit);
+            }
+        },
+
+        editor_cursorMove(event) {
+            $this.method.sendCursorPosition({
+                line: event.line,
+                column: event.column
+            });
+        }
+    }
+};
+```
+
+### 4. 보안 메시지 전송 시스템
+```javascript
+// 보안 통신 관리자
+let $secureMessaging = {
+    prop: {
+        allowedOrigins: ['https://trusted-domain.com'],
+        encryptionKey: null,
+        channels: new Map()
+    },
+
+    method: {
+        createSecureChannel(targetWindow, origin, scope) {
+            // origin 검증
+            if ($this.prop.allowedOrigins.indexOf(origin) === -1 && origin !== '*') {
+                throw new Error('허용되지 않은 origin: ' + origin);
+            }
+
+            var channel = syn.$n.rooms.connect({
+                window: targetWindow,
+                origin: origin,
+                scope: scope,
+                debugOutput: false
+            });
+
+            // 보안 이벤트 바인딩
+            channel.bind('handshake', function(event, publicKey) {
+                $this.method.performHandshake(scope, publicKey);
+            });
+
+            channel.bind('secureMessage', function(event, encryptedData) {
+                $this.method.handleSecureMessage(scope, encryptedData);
+            });
+
+            $this.prop.channels.set(scope, channel);
+            return channel;
+        },
+
+        performHandshake(channelScope, remotePublicKey) {
+            // 간단한 키 교환 시뮬레이션
+            var sharedSecret = $this.method.generateSharedSecret(remotePublicKey);
+            $this.prop.encryptionKey = sharedSecret;
+
+            var channel = $this.prop.channels.get(channelScope);
+            if (channel) {
+                channel.emit({
+                    method: 'handshakeComplete',
+                    params: [true]
+                });
+            }
+        },
+
+        sendSecureMessage(channelScope, message) {
+            var channel = $this.prop.channels.get(channelScope);
+            if (!channel || !$this.prop.encryptionKey) {
+                throw new Error('보안 채널이 준비되지 않았습니다');
+            }
+
+            var encryptedMessage = $this.method.encrypt(message);
+            var signature = $this.method.sign(encryptedMessage);
+
+            channel.emit({
+                method: 'secureMessage',
+                params: [{
+                    data: encryptedMessage,
+                    signature: signature,
+                    timestamp: Date.now()
+                }]
+            });
+        },
+
+        handleSecureMessage(channelScope, encryptedData) {
+            try {
+                // 서명 검증
+                if (!$this.method.verifySignature(encryptedData.data, encryptedData.signature)) {
+                    throw new Error('메시지 서명 검증 실패');
+                }
+
+                // 타임스탬프 검증 (재전송 공격 방지)
+                var now = Date.now();
+                if (now - encryptedData.timestamp > 300000) { // 5분 초과
+                    throw new Error('메시지가 너무 오래되었습니다');
+                }
+
+                // 복호화
+                var decryptedMessage = $this.method.decrypt(encryptedData.data);
+                
+                // 메시지 처리
+                $this.method.processMessage(channelScope, decryptedMessage);
+
+            } catch (error) {
+                console.error('보안 메시지 처리 오류:', error);
+            }
+        },
+
+        encrypt(message) {
+            // 실제 구현에서는 Web Crypto API 사용
+            return btoa(JSON.stringify(message) + $this.prop.encryptionKey);
+        },
+
+        decrypt(encryptedData) {
+            // 실제 구현에서는 Web Crypto API 사용
+            var decoded = atob(encryptedData);
+            var messageJson = decoded.replace($this.prop.encryptionKey, '');
+            return JSON.parse(messageJson);
+        },
+
+        sign(data) {
+            // 간단한 해시 기반 서명 시뮬레이션
+            return btoa(data + $this.prop.encryptionKey).slice(0, 16);
+        },
+
+        verifySignature(data, signature) {
+            var expectedSignature = $this.method.sign(data);
+            return signature === expectedSignature;
+        },
+
+        generateSharedSecret(remotePublicKey) {
+            // 실제 구현에서는 ECDH 키 교환 사용
+            return 'shared-secret-' + Date.now();
+        }
+    }
+};
+```
+
+## 참고사항
+
+1. **보안**: origin을 '*'로 설정하면 모든 도메인에서 접근 가능하므로 프로덕션에서는 구체적인 도메인을 지정해야 합니다
+2. **성능**: 대량의 메시지 전송 시 스로틀링을 고려해야 합니다
+3. **메모리**: 사용하지 않는 채널은 적절히 정리해야 메모리 누수를 방지할 수 있습니다
+4. **디버깅**: debugOutput 옵션을 통해 개발 시 메시지 흐름을 추적할 수 있습니다
+5. **호환성**: 일부 브라우저에서는 postMessage의 동작이 다를 수 있으므로 충분한 테스트가 필요합니다
 
 ## 데모
 

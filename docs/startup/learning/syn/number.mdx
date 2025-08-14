@@ -2,9 +2,426 @@
 sidebar_position: 17
 ---
 
-# number
+# $number
 
-Javascript Number 객체에 대한 확장 함수를 제공합니다.
+## 개요
+$number는 JavaScript의 숫자 처리를 확장하여 수학 연산, 범위 검사, 형식 변환 등을 더욱 편리하게 만들어주는 유틸리티 함수 모음입니다. 랜덤 숫자 생성, 범위 제한, 백분율 계산, 바이트 단위 변환 등의 다양한 기능을 제공합니다.
+
+## 주요 기능
+
+### 랜덤 숫자 생성
+
+#### random(min, max)
+지정된 범위 내에서 랜덤 숫자를 생성합니다.
+
+**구문**
+```javascript
+$number.random(min, max)
+```
+
+**매개변수**
+- `min` (Number): 최소값
+- `max` (Number): 최대값
+
+**반환값**
+- `Number`: 지정된 범위 내의 랜덤 정수
+
+**예제**
+```javascript
+// 1부터 10까지의 랜덤 숫자
+var randomNum = $number.random(1, 10);
+console.log(randomNum); // 예: 7
+
+// 주사위 굴리기
+var dice = $number.random(1, 6);
+console.log('주사위 결과:', dice);
+
+// 랜덤 ID 생성
+var randomId = $number.random(1000, 9999);
+console.log('랜덤 ID:', randomId); // 예: 5847
+```
+
+### 범위 검사 및 제한
+
+#### isRange(value, min, max)
+숫자가 지정된 범위 내에 있는지 확인합니다.
+
+**구문**
+```javascript
+$number.isRange(value, min, max)
+```
+
+**매개변수**
+- `value` (Number): 확인할 값
+- `min` (Number): 최소값
+- `max` (Number): 최대값
+
+**반환값**
+- `Boolean`: 범위 내에 있으면 true, 없으면 false
+
+**예제**
+```javascript
+// 점수 범위 확인
+var score = 85;
+var isValidScore = $number.isRange(score, 0, 100);
+console.log('유효한 점수:', isValidScore); // true
+
+// 나이 범위 확인
+function checkAge(age) {
+    if ($number.isRange(age, 0, 120)) {
+        return '유효한 나이입니다';
+    } else {
+        return '나이가 범위를 벗어났습니다';
+    }
+}
+
+console.log(checkAge(25)); // 유효한 나이입니다
+console.log(checkAge(150)); // 나이가 범위를 벗어났습니다
+```
+
+#### limit(value, min, max)
+숫자를 지정된 범위로 제한합니다.
+
+**구문**
+```javascript
+$number.limit(value, min, max)
+```
+
+**매개변수**
+- `value` (Number): 제한할 값
+- `min` (Number): 최소값
+- `max` (Number): 최대값
+
+**반환값**
+- `Number`: 범위로 제한된 값
+
+**예제**
+```javascript
+// 값 범위 제한
+var result1 = $number.limit(150, 0, 100); // 100
+var result2 = $number.limit(-10, 0, 100); // 0
+var result3 = $number.limit(50, 0, 100);  // 50
+
+console.log(result1, result2, result3); // 100, 0, 50
+
+// 볼륨 조절
+function setVolume(volume) {
+    var limitedVolume = $number.limit(volume, 0, 100);
+    console.log('볼륨 설정:', limitedVolume + '%');
+    return limitedVolume;
+}
+
+setVolume(120); // 볼륨 설정: 100%
+setVolume(-5);  // 볼륨 설정: 0%
+setVolume(75);  // 볼륨 설정: 75%
+```
+
+### 백분율 계산
+
+#### percent(value, total)
+전체 값에 대한 백분율을 계산합니다.
+
+**구문**
+```javascript
+$number.percent(value, total)
+```
+
+**매개변수**
+- `value` (Number): 부분 값
+- `total` (Number): 전체 값
+
+**반환값**
+- `Number`: 백분율 (0-100)
+
+**예제**
+```javascript
+// 점수 백분율
+var correctAnswers = 85;
+var totalQuestions = 100;
+var percentage = $number.percent(correctAnswers, totalQuestions);
+console.log('정답률:', percentage + '%'); // 정답률: 85%
+
+// 진행률 계산
+var completed = 25;
+var total = 40;
+var progress = $number.percent(completed, total);
+console.log('진행률:', progress + '%'); // 진행률: 62.5%
+
+// 할인율 계산
+var discount = 15000;
+var originalPrice = 50000;
+var discountRate = $number.percent(discount, originalPrice);
+console.log('할인율:', discountRate + '%'); // 할인율: 30%
+```
+
+### 시간 변환
+
+#### duration(milliseconds)
+밀리초를 시간 단위로 변환합니다.
+
+**구문**
+```javascript
+$number.duration(milliseconds)
+```
+
+**매개변수**
+- `milliseconds` (Number): 밀리초
+
+**반환값**
+- `Object`: 시간 단위로 분해된 객체
+  - `day`: 일
+  - `hour`: 시간
+  - `minute`: 분
+  - `second`: 초
+  - `millisecond`: 밀리초
+
+**예제**
+```javascript
+// 3시간 30분을 밀리초로 계산 후 변환
+var ms = (3 * 60 * 60 * 1000) + (30 * 60 * 1000);
+var duration = $number.duration(ms);
+
+console.log('일:', duration.day);         // 0
+console.log('시간:', duration.hour);      // 3
+console.log('분:', duration.minute);      // 30
+console.log('초:', duration.second);      // 0
+
+// 동영상 재생 시간 표시
+function formatPlayTime(milliseconds) {
+    var time = $number.duration(milliseconds);
+    var hours = time.hour.toString().padStart(2, '0');
+    var minutes = time.minute.toString().padStart(2, '0');
+    var seconds = time.second.toString().padStart(2, '0');
+    
+    return hours + ':' + minutes + ':' + seconds;
+}
+
+var videoLength = 7890000; // 2시간 11분 30초
+console.log('재생 시간:', formatPlayTime(videoLength)); // 재생 시간: 02:11:30
+```
+
+### 바이트 크기 변환
+
+#### toByteString(bytes)
+바이트 수를 읽기 쉬운 문자열로 변환합니다.
+
+**구문**
+```javascript
+$number.toByteString(bytes)
+```
+
+**매개변수**
+- `bytes` (Number): 바이트 수
+
+**반환값**
+- `String`: 읽기 쉬운 크기 표현 (예: "1.5 MB")
+
+**예제**
+```javascript
+// 파일 크기 표시
+var fileSize1 = 1024;
+var fileSize2 = 1048576;
+var fileSize3 = 1073741824;
+var fileSize4 = 1536;
+
+console.log($number.toByteString(fileSize1)); // "1 KB"
+console.log($number.toByteString(fileSize2)); // "1 MB"
+console.log($number.toByteString(fileSize3)); // "1 GB"
+console.log($number.toByteString(fileSize4)); // "1.5 KB"
+
+// 업로드 파일 크기 검증
+function checkFileSize(fileSize) {
+    var maxSize = 10 * 1024 * 1024; // 10MB
+    
+    if (fileSize > maxSize) {
+        return '파일 크기가 ' + $number.toByteString(maxSize) + '를 초과했습니다';
+    }
+    
+    return '파일 크기: ' + $number.toByteString(fileSize);
+}
+
+console.log(checkFileSize(5242880));  // 파일 크기: 5 MB
+console.log(checkFileSize(15728640)); // 파일 크기가 10 MB를 초과했습니다
+```
+
+## 실전 활용 예제
+
+### 1. 게임 점수 시스템
+```javascript
+function GameScore() {
+    this.score = 0;
+    this.maxScore = 999999;
+    this.minScore = 0;
+}
+
+GameScore.prototype.addScore = function(points) {
+    var newScore = this.score + points;
+    this.score = $number.limit(newScore, this.minScore, this.maxScore);
+    return this.score;
+};
+
+GameScore.prototype.getAccuracy = function(hits, attempts) {
+    if (attempts === 0) return 0;
+    return Math.round($number.percent(hits, attempts));
+};
+
+// 사용 예시
+var player = new GameScore();
+player.addScore(15000);
+console.log('현재 점수:', player.score);
+
+var accuracy = player.getAccuracy(85, 100);
+console.log('정확도:', accuracy + '%');
+```
+
+### 2. 프로그레스 바 구현
+```javascript
+function ProgressBar(total) {
+    this.total = total;
+    this.current = 0;
+}
+
+ProgressBar.prototype.update = function(value) {
+    this.current = $number.limit(value, 0, this.total);
+    var percentage = $number.percent(this.current, this.total);
+    
+    this.render(Math.round(percentage));
+    return percentage;
+};
+
+ProgressBar.prototype.render = function(percentage) {
+    var bar = '█'.repeat(Math.floor(percentage / 5));
+    var empty = '░'.repeat(20 - Math.floor(percentage / 5));
+    console.log('[' + bar + empty + '] ' + percentage + '%');
+};
+
+// 파일 다운로드 진행률
+var download = new ProgressBar(100);
+var progress = 0;
+
+var interval = setInterval(function() {
+    progress += $number.random(1, 10);
+    download.update(progress);
+    
+    if (progress >= 100) {
+        clearInterval(interval);
+        console.log('다운로드 완료!');
+    }
+}, 500);
+```
+
+### 3. 통계 계산기
+```javascript
+function Statistics(data) {
+    this.data = data || [];
+}
+
+Statistics.prototype.getRandomSample = function(count) {
+    var samples = [];
+    var dataLength = this.data.length;
+    
+    for (var i = 0; i < count; i++) {
+        var randomIndex = $number.random(0, dataLength - 1);
+        samples.push(this.data[randomIndex]);
+    }
+    
+    return samples;
+};
+
+Statistics.prototype.getPercentile = function(value) {
+    var total = this.data.length;
+    var belowCount = this.data.filter(function(item) {
+        return item < value;
+    }).length;
+    
+    return Math.round($number.percent(belowCount, total));
+};
+
+Statistics.prototype.normalizeValues = function(min, max) {
+    var currentMin = Math.min.apply(Math, this.data);
+    var currentMax = Math.max.apply(Math, this.data);
+    var range = currentMax - currentMin;
+    
+    return this.data.map(function(value) {
+        var normalized = (value - currentMin) / range;
+        return min + normalized * (max - min);
+    });
+};
+
+// 사용 예시
+var scores = new Statistics([75, 82, 91, 68, 95, 73, 88, 77, 84, 92]);
+
+// 랜덤 샘플 추출
+var samples = scores.getRandomSample(3);
+console.log('랜덤 샘플:', samples);
+
+// 80점의 백분위수
+var percentile = scores.getPercentile(80);
+console.log('80점 백분위수:', percentile);
+
+// 0-100 범위로 정규화
+var normalized = scores.normalizeValues(0, 100);
+console.log('정규화된 점수:', normalized);
+```
+
+### 4. 시간 관리 유틸리티
+```javascript
+function TimeTracker() {
+    this.startTime = null;
+    this.endTime = null;
+}
+
+TimeTracker.prototype.start = function() {
+    this.startTime = Date.now();
+    console.log('시간 측정 시작');
+};
+
+TimeTracker.prototype.stop = function() {
+    this.endTime = Date.now();
+    var elapsed = this.endTime - this.startTime;
+    var duration = $number.duration(elapsed);
+    
+    console.log('경과 시간:', 
+        duration.hour + '시간 ' + 
+        duration.minute + '분 ' + 
+        duration.second + '초'
+    );
+    
+    return elapsed;
+};
+
+TimeTracker.prototype.getEfficiency = function(targetTime) {
+    if (!this.startTime || !this.endTime) {
+        return 0;
+    }
+    
+    var actualTime = this.endTime - this.startTime;
+    var efficiency = $number.percent(targetTime, actualTime);
+    
+    return $number.limit(efficiency, 0, 200); // 최대 200% 효율성
+};
+
+// 작업 시간 측정
+var tracker = new TimeTracker();
+tracker.start();
+
+// 시뮬레이션: 작업 수행
+setTimeout(function() {
+    tracker.stop();
+    
+    var targetTime = 3000; // 3초 목표
+    var efficiency = tracker.getEfficiency(targetTime);
+    console.log('작업 효율성:', Math.round(efficiency) + '%');
+}, 2000);
+```
+
+## 참고사항
+
+1. **정확성**: 부동소수점 연산 시 정밀도 문제를 고려해야 합니다
+2. **성능**: 대량의 숫자 처리 시 루프 최적화를 고려합니다
+3. **유효성 검사**: 입력값이 숫자인지 확인하는 것이 중요합니다
+4. **국제화**: 숫자 형식이 지역에 따라 다를 수 있습니다
+5. **범위 제한**: 자바스크립트의 Number.MAX_SAFE_INTEGER를 고려합니다
 
 ## 데모
 

@@ -4,7 +4,886 @@ sidebar_position: 8
 
 # syn.$v
 
-화면 내 사용자 입력 항목에 대한 유효성 검사 기능 제공합니다.
+## 개요
+syn.$v는 HandStack 웹 애플리케이션에서 폼 입력 데이터의 유효성 검사 기능을 제공합니다. 필수 입력, 패턴 매칭, 범위 검증, 사용자 정의 검증 등 다양한 검증 규칙을 지원합니다.
+
+## 주요 기능
+
+### 유효성 검사 유형
+
+#### valueType (검증 결과 유형)
+유효성 검사 결과를 나타내는 상수입니다.
+
+```javascript
+syn.$v.valueType = {
+    valid: 0,           // 유효함
+    valueMissing: 1,    // 값이 누락됨
+    typeMismatch: 2,    // 타입 불일치
+    patternMismatch: 3, // 패턴 불일치
+    tooLong: 4,         // 너무 김
+    rangeUnderflow: 5,  // 범위 미만
+    rangeOverflow: 6,   // 범위 초과
+    stepMismatch: 7     // 단계 불일치
+};
+```
+
+#### validType (검증 규칙 유형)
+검증 규칙의 유형을 나타내는 상수입니다.
+
+```javascript
+syn.$v.validType = {
+    required: 0,    // 필수 입력
+    pattern: 1,     // 패턴 검증
+    range: 2,       // 범위 검증
+    custom: 3       // 사용자 정의 검증
+};
+```
+
+### 기본 설정 및 관리
+
+#### isContinue
+검증 실패 시 계속 진행할지 여부를 설정합니다.
+
+```javascript
+// 첫 번째 실패 시 중단
+syn.$v.isContinue = false;
+
+// 모든 검증을 실행하고 결과 수집
+syn.$v.isContinue = true;
+```
+
+#### messages
+검증 실패 메시지를 저장하는 배열입니다.
+
+```javascript
+// 검증 후 실패 메시지 확인
+console.log('검증 실패 메시지:', syn.$v.messages);
+```
+
+### 요소 설정 및 검증 규칙
+
+#### setElement(el)
+검증할 대상 요소를 설정합니다.
+
+**구문**
+```javascript
+syn.$v.setElement(el)
+```
+
+**매개변수**
+- `el` (String|Element): 요소 ID 또는 요소 객체
+
+**반환값**
+- `Object`: syn.$v 객체 (메서드 체이닝 가능)
+
+#### required(el, isRequired, message)
+필수 입력 검증을 설정합니다.
+
+**구문**
+```javascript
+syn.$v.required(el, isRequired, message)
+```
+
+**매개변수**
+- `el` (String|Element): 요소 ID 또는 요소 객체
+- `isRequired` (Boolean): 필수 입력 여부
+- `message` (String): 검증 실패 메시지
+
+**예제**
+```javascript
+// 이름 필드 필수 입력 설정
+syn.$v.required('txtUserName', true, '사용자 이름을 입력해주세요.');
+
+// 선택사항으로 변경
+syn.$v.required('txtNickname', false, '');
+```
+
+#### pattern(el, validID, options)
+패턴 검증 규칙을 설정합니다.
+
+**구문**
+```javascript
+syn.$v.pattern(el, validID, options)
+```
+
+**매개변수**
+- `el` (String|Element): 요소 ID 또는 요소 객체
+- `validID` (String): 검증 규칙 식별자
+- `options` (Object): 검증 옵션
+  - `expr` (RegExp): 정규표현식
+  - `message` (String): 검증 실패 메시지
+
+**예제**
+```javascript
+// 이메일 형식 검증
+syn.$v.pattern('txtEmail', 'email', {
+    expr: syn.$v.regexs.email,
+    message: '올바른 이메일 주소를 입력해주세요.'
+});
+
+// 숫자만 입력 허용
+syn.$v.pattern('txtAge', 'numeric', {
+    expr: syn.$v.regexs.numeric,
+    message: '숫자만 입력 가능합니다.'
+});
+
+// 사용자 정의 패턴
+syn.$v.pattern('txtProductCode', 'productCode', {
+    expr: /^PRD-[A-Z0-9]{6}$/,
+    message: '제품 코드는 PRD-로 시작하고 6자리 영숫자가 와야 합니다.'
+});
+```
+
+#### range(el, validID, options)
+범위 검증 규칙을 설정합니다.
+
+**구문**
+```javascript
+syn.$v.range(el, validID, options)
+```
+
+**매개변수**
+- `el` (String|Element): 요소 ID 또는 요소 객체
+- `validID` (String): 검증 규칙 식별자
+- `options` (Object): 검증 옵션
+  - `min` (Number): 최소값
+  - `max` (Number): 최대값
+  - `minOperator` (String): 최소값 비교 연산자
+  - `maxOperator` (String): 최대값 비교 연산자
+  - `message` (String): 검증 실패 메시지
+
+**예제**
+```javascript
+// 나이 범위 검증 (18세 이상 100세 이하)
+syn.$v.range('txtAge', 'ageRange', {
+    min: 18,
+    max: 100,
+    minOperator: '>=',
+    maxOperator: '<=',
+    message: '나이는 18세 이상 100세 이하여야 합니다.'
+});
+
+// 점수 범위 검증 (0초과 100미만)
+syn.$v.range('txtScore', 'scoreRange', {
+    min: 0,
+    max: 100,
+    minOperator: '>',
+    maxOperator: '<',
+    message: '점수는 0초과 100미만이어야 합니다.'
+});
+```
+
+#### custom(el, validID, options)
+사용자 정의 검증 규칙을 설정합니다.
+
+**구문**
+```javascript
+syn.$v.custom(el, validID, options)
+```
+
+**매개변수**
+- `el` (String|Element): 요소 ID 또는 요소 객체
+- `validID` (String): 검증 규칙 식별자
+- `options` (Object): 검증 옵션
+  - `functionName` (String): 검증 함수명
+  - `message` (String): 검증 실패 메시지
+  - 기타 사용자 정의 매개변수
+
+**예제**
+```javascript
+// 사용자 정의 검증 함수
+$this.method = {
+    validatePassword: function(options) {
+        var password = syn.$l.get('txtPassword').value;
+        var confirmPassword = syn.$l.get('txtConfirmPassword').value;
+        
+        // 비밀번호 복잡도 검사
+        if (password.length < 8) return false;
+        if (!/[A-Z]/.test(password)) return false;
+        if (!/[a-z]/.test(password)) return false;
+        if (!/[0-9]/.test(password)) return false;
+        if (!/[!@#$%^&*]/.test(password)) return false;
+        
+        return true;
+    },
+    
+    validatePasswordMatch: function(options) {
+        var password = syn.$l.get('txtPassword').value;
+        var confirmPassword = syn.$l.get('txtConfirmPassword').value;
+        return password === confirmPassword;
+    }
+};
+
+// 사용자 정의 검증 규칙 설정
+syn.$v.custom('txtPassword', 'passwordComplexity', {
+    functionName: 'validatePassword',
+    message: '비밀번호는 8자 이상이며, 대소문자, 숫자, 특수문자를 포함해야 합니다.'
+});
+
+syn.$v.custom('txtConfirmPassword', 'passwordMatch', {
+    functionName: 'validatePasswordMatch',
+    message: '비밀번호가 일치하지 않습니다.'
+});
+```
+
+### 검증 실행
+
+#### validateControl(el)
+단일 요소의 유효성을 검사합니다.
+
+**구문**
+```javascript
+syn.$v.validateControl(el)
+```
+
+**매개변수**
+- `el` (String|Element): 요소 ID 또는 요소 객체
+
+**반환값**
+- `Boolean`: 유효성 검사 결과
+
+**예제**
+```javascript
+// 개별 필드 검증
+var isValidEmail = syn.$v.validateControl('txtEmail');
+if (!isValidEmail) {
+    var errorMessage = syn.$v.toMessages();
+    alert(errorMessage);
+}
+```
+
+#### validateControls(els)
+여러 요소의 유효성을 검사합니다.
+
+**구문**
+```javascript
+syn.$v.validateControls(els)
+```
+
+**매개변수**
+- `els` (Array): 요소 배열
+
+**반환값**
+- `Boolean`: 전체 유효성 검사 결과
+
+**예제**
+```javascript
+// 여러 필드 동시 검증
+var fieldsToValidate = ['txtUserName', 'txtEmail', 'txtAge'];
+var isAllValid = syn.$v.validateControls(fieldsToValidate);
+
+if (!isAllValid) {
+    var errorMessages = syn.$v.toMessages();
+    alert('입력 오류:\n' + errorMessages);
+}
+```
+
+#### validateForm()
+등록된 모든 요소의 유효성을 검사합니다.
+
+**구문**
+```javascript
+syn.$v.validateForm()
+```
+
+**반환값**
+- `Boolean`: 전체 폼 유효성 검사 결과
+
+**예제**
+```javascript
+// 전체 폼 검증
+function submitForm() {
+    var isFormValid = syn.$v.validateForm();
+    
+    if (isFormValid) {
+        // 폼 제출 진행
+        document.querySelector('form').submit();
+    } else {
+        // 오류 메시지 표시
+        var errorMessages = syn.$v.toMessages();
+        showErrorDialog(errorMessages);
+    }
+}
+```
+
+### 유틸리티 메서드
+
+#### toMessages()
+검증 실패 메시지를 반환하고 메시지 배열을 초기화합니다.
+
+**구문**
+```javascript
+syn.$v.toMessages()
+```
+
+**반환값**
+- `String`: 줄바꿈으로 구분된 오류 메시지
+
+#### clear()
+모든 검증 설정과 메시지를 초기화합니다.
+
+**구문**
+```javascript
+syn.$v.clear()
+```
+
+**예제**
+```javascript
+// 폼 재설정 시 검증 규칙도 초기화
+function resetForm() {
+    document.querySelector('form').reset();
+    syn.$v.clear();
+    // 새로운 검증 규칙 설정...
+}
+```
+
+### 기본 제공 정규표현식
+
+#### regexs
+자주 사용되는 패턴의 정규표현식을 제공합니다.
+
+```javascript
+syn.$v.regexs = {
+    alphabet: /^[a-zA-Z0-9]*$/,                              // 영숫자
+    juminNo: /^\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])[-]?([1-4]|9)\d{6}$/,  // 주민등록번호
+    numeric: /^-?(\d+|\d{1,3}(,\d{3})*)(\.\d+)?$/,         // 숫자
+    email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i,  // 이메일
+    url: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i,  // URL
+    ipAddress: /^(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$|^localhost$/i,  // IP 주소
+    date: /^\d{4}-\d{2}-\d{2}$/,                            // 날짜 (YYYY-MM-DD)
+    mobilePhone: /^01[016789]\d{7,8}$/,                     // 휴대폰 번호
+    seoulPhone: /^02\d{7,8}$/,                              // 서울 전화번호
+    areaPhone: /^0(3[1-3]|4[1-4]|5[1-5]|6[1-4])\d{7,8}$/  // 지역 전화번호
+};
+```
+
+**사용 예제**
+```javascript
+// 이메일 형식 검증
+syn.$v.pattern('txtEmail', 'email', {
+    expr: syn.$v.regexs.email,
+    message: '올바른 이메일 형식이 아닙니다.'
+});
+
+// 휴대폰 번호 검증
+syn.$v.pattern('txtMobile', 'mobile', {
+    expr: syn.$v.regexs.mobilePhone,
+    message: '올바른 휴대폰 번호를 입력하세요. (예: 01012345678)'
+});
+```
+
+## 실전 활용 예제
+
+### 1. 사용자 등록 폼 검증
+```javascript
+function setupUserRegistrationValidation() {
+    // 필수 입력 필드 설정
+    syn.$v.required('txtUserId', true, '사용자 ID를 입력해주세요.')
+           .required('txtPassword', true, '비밀번호를 입력해주세요.')
+           .required('txtConfirmPassword', true, '비밀번호 확인을 입력해주세요.')
+           .required('txtUserName', true, '사용자 이름을 입력해주세요.')
+           .required('txtEmail', true, '이메일을 입력해주세요.');
+    
+    // 패턴 검증
+    syn.$v.pattern('txtUserId', 'userIdPattern', {
+        expr: /^[a-zA-Z0-9_]{4,20}$/,
+        message: '사용자 ID는 4-20자의 영문, 숫자, 언더스코어만 사용 가능합니다.'
+    });
+    
+    syn.$v.pattern('txtEmail', 'emailPattern', {
+        expr: syn.$v.regexs.email,
+        message: '올바른 이메일 형식을 입력해주세요.'
+    });
+    
+    syn.$v.pattern('txtUserName', 'namePattern', {
+        expr: /^[가-힣a-zA-Z\s]{2,50}$/,
+        message: '이름은 2-50자의 한글 또는 영문만 입력 가능합니다.'
+    });
+    
+    // 비밀번호 복잡도 검증
+    syn.$v.pattern('txtPassword', 'passwordPattern', {
+        expr: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/,
+        message: '비밀번호는 8-20자이며, 대소문자, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.'
+    });
+    
+    // 사용자 정의 검증
+    $this.method.validatePasswordMatch = function() {
+        var password = syn.$l.get('txtPassword').value;
+        var confirmPassword = syn.$l.get('txtConfirmPassword').value;
+        return password === confirmPassword;
+    };
+    
+    $this.method.validateUserIdDuplicate = function() {
+        var userId = syn.$l.get('txtUserId').value;
+        // 실제로는 서버 API 호출
+        var existingUsers = ['admin', 'test', 'user1'];
+        return !existingUsers.includes(userId);
+    };
+    
+    syn.$v.custom('txtConfirmPassword', 'passwordMatch', {
+        functionName: 'validatePasswordMatch',
+        message: '비밀번호가 일치하지 않습니다.'
+    });
+    
+    syn.$v.custom('txtUserId', 'duplicateCheck', {
+        functionName: 'validateUserIdDuplicate',
+        message: '이미 사용 중인 사용자 ID입니다.'
+    });
+    
+    // 실시간 검증 (입력 시점)
+    var fields = ['txtUserId', 'txtPassword', 'txtConfirmPassword', 'txtUserName', 'txtEmail'];
+    fields.forEach(fieldId => {
+        syn.$l.addEvent(fieldId, 'blur', function() {
+            var isValid = syn.$v.validateControl(fieldId);
+            var fieldElement = syn.$l.get(fieldId);
+            
+            if (isValid) {
+                syn.$m.removeClass(fieldElement, 'is-invalid');
+                syn.$m.addClass(fieldElement, 'is-valid');
+            } else {
+                syn.$m.removeClass(fieldElement, 'is-valid');
+                syn.$m.addClass(fieldElement, 'is-invalid');
+                
+                var errorMsg = syn.$v.toMessages();
+                showFieldError(fieldId, errorMsg);
+            }
+        });
+    });
+    
+    // 폼 제출 시 전체 검증
+    syn.$l.addEvent('btnSubmit', 'click', function(evt) {
+        evt.preventDefault();
+        
+        syn.$v.isContinue = true; // 모든 오류 수집
+        var isFormValid = syn.$v.validateForm();
+        
+        if (isFormValid) {
+            submitUserRegistration();
+        } else {
+            var allErrors = syn.$v.toMessages();
+            showValidationSummary(allErrors);
+        }
+    });
+    
+    function showFieldError(fieldId, message) {
+        var fieldElement = syn.$l.get(fieldId);
+        var errorContainer = fieldElement.parentElement.querySelector('.error-message');
+        
+        if (!errorContainer) {
+            errorContainer = syn.$m.create({
+                tag: 'div',
+                className: 'error-message text-danger',
+                styles: { fontSize: '0.875em', marginTop: '0.25rem' }
+            });
+            fieldElement.parentElement.appendChild(errorContainer);
+        }
+        
+        syn.$m.textContent(errorContainer, message);
+    }
+    
+    function showValidationSummary(errors) {
+        var errorList = errors.split('\n').filter(msg => msg.trim());
+        var summaryHtml = '<ul>' + errorList.map(error => `<li>${error}</li>`).join('') + '</ul>';
+        
+        syn.$w.alert(`입력 정보를 확인해주세요:${summaryHtml}`);
+    }
+    
+    function submitUserRegistration() {
+        var formData = {
+            userId: syn.$l.get('txtUserId').value,
+            password: syn.$l.get('txtPassword').value,
+            userName: syn.$l.get('txtUserName').value,
+            email: syn.$l.get('txtEmail').value
+        };
+        
+        console.log('사용자 등록 데이터:', formData);
+        // 실제 등록 API 호출
+    }
+}
+
+setupUserRegistrationValidation();
+```
+
+### 2. 동적 폼 검증
+```javascript
+function setupDynamicFormValidation() {
+    var dynamicFields = [];
+    
+    // 동적 필드 추가
+    function addDynamicField(fieldType, isRequired = false) {
+        var fieldId = 'dynamic_' + syn.$l.random(8);
+        var fieldHtml = '';
+        
+        switch (fieldType) {
+            case 'text':
+                fieldHtml = `
+                    <div class="form-group mb-3">
+                        <label class="form-label">텍스트 입력</label>
+                        <input type="text" id="${fieldId}" class="form-control">
+                    </div>
+                `;
+                break;
+            case 'email':
+                fieldHtml = `
+                    <div class="form-group mb-3">
+                        <label class="form-label">이메일</label>
+                        <input type="email" id="${fieldId}" class="form-control">
+                    </div>
+                `;
+                break;
+            case 'number':
+                fieldHtml = `
+                    <div class="form-group mb-3">
+                        <label class="form-label">숫자</label>
+                        <input type="number" id="${fieldId}" class="form-control">
+                    </div>
+                `;
+                break;
+        }
+        
+        var container = syn.$l.get('dynamicFieldsContainer');
+        syn.$m.innerHTML(container, syn.$m.innerHTML(container) + fieldHtml);
+        
+        // 검증 규칙 설정
+        setupFieldValidation(fieldId, fieldType, isRequired);
+        dynamicFields.push({ id: fieldId, type: fieldType, required: isRequired });
+        
+        return fieldId;
+    }
+    
+    function setupFieldValidation(fieldId, fieldType, isRequired) {
+        if (isRequired) {
+            syn.$v.required(fieldId, true, '이 필드는 필수 입력 항목입니다.');
+        }
+        
+        switch (fieldType) {
+            case 'email':
+                syn.$v.pattern(fieldId, 'email', {
+                    expr: syn.$v.regexs.email,
+                    message: '올바른 이메일 형식을 입력해주세요.'
+                });
+                break;
+            case 'number':
+                syn.$v.pattern(fieldId, 'numeric', {
+                    expr: syn.$v.regexs.numeric,
+                    message: '숫자만 입력 가능합니다.'
+                });
+                syn.$v.range(fieldId, 'numberRange', {
+                    min: 0,
+                    max: 999999,
+                    minOperator: '>=',
+                    maxOperator: '<=',
+                    message: '0 이상 999999 이하의 값을 입력해주세요.'
+                });
+                break;
+            case 'text':
+                syn.$v.range(fieldId, 'textLength', {
+                    min: 2,
+                    max: 100,
+                    minOperator: '>=',
+                    maxOperator: '<=',
+                    message: '2자 이상 100자 이하로 입력해주세요.'
+                });
+                break;
+        }
+        
+        // 실시간 검증
+        syn.$l.addEvent(fieldId, 'blur', function() {
+            validateDynamicField(fieldId);
+        });
+    }
+    
+    function validateDynamicField(fieldId) {
+        var isValid = syn.$v.validateControl(fieldId);
+        var fieldElement = syn.$l.get(fieldId);
+        
+        if (isValid) {
+            syn.$m.removeClass(fieldElement, 'is-invalid');
+            syn.$m.addClass(fieldElement, 'is-valid');
+            clearFieldError(fieldId);
+        } else {
+            syn.$m.removeClass(fieldElement, 'is-valid');
+            syn.$m.addClass(fieldElement, 'is-invalid');
+            
+            var errorMsg = syn.$v.toMessages();
+            showFieldError(fieldId, errorMsg);
+        }
+    }
+    
+    function showFieldError(fieldId, message) {
+        var fieldElement = syn.$l.get(fieldId);
+        var formGroup = fieldElement.closest('.form-group');
+        var errorElement = formGroup.querySelector('.field-error');
+        
+        if (!errorElement) {
+            errorElement = syn.$m.create({
+                tag: 'div',
+                className: 'field-error invalid-feedback',
+                styles: { display: 'block' }
+            });
+            formGroup.appendChild(errorElement);
+        }
+        
+        syn.$m.textContent(errorElement, message);
+    }
+    
+    function clearFieldError(fieldId) {
+        var fieldElement = syn.$l.get(fieldId);
+        var formGroup = fieldElement.closest('.form-group');
+        var errorElement = formGroup.querySelector('.field-error');
+        
+        if (errorElement) {
+            syn.$m.remove(errorElement);
+        }
+    }
+    
+    // 필드 제거
+    function removeDynamicField(fieldId) {
+        var fieldElement = syn.$l.get(fieldId);
+        if (fieldElement) {
+            syn.$m.remove(fieldElement.closest('.form-group'));
+            dynamicFields = dynamicFields.filter(field => field.id !== fieldId);
+            // 검증 규칙도 제거 (필요 시 구현)
+        }
+    }
+    
+    // 동적 폼 전체 검증
+    function validateDynamicForm() {
+        syn.$v.isContinue = true;
+        var fieldIds = dynamicFields.map(field => field.id);
+        var isValid = syn.$v.validateControls(fieldIds);
+        
+        if (!isValid) {
+            var errors = syn.$v.toMessages();
+            syn.$w.alert('다음 오류를 수정해주세요:\n' + errors);
+        }
+        
+        return isValid;
+    }
+    
+    // 이벤트 등록
+    syn.$l.addEvent('btnAddTextField', 'click', () => addDynamicField('text', true));
+    syn.$l.addEvent('btnAddEmailField', 'click', () => addDynamicField('email', true));
+    syn.$l.addEvent('btnAddNumberField', 'click', () => addDynamicField('number', false));
+    syn.$l.addEvent('btnValidateForm', 'click', validateDynamicForm);
+}
+
+setupDynamicFormValidation();
+```
+
+### 3. 다단계 폼 검증
+```javascript
+function setupMultiStepFormValidation() {
+    var currentStep = 1;
+    var totalSteps = 3;
+    var stepValidations = {};
+    
+    // 각 단계별 검증 규칙 설정
+    function setupStepValidations() {
+        // 1단계: 개인정보
+        stepValidations[1] = ['txtFirstName', 'txtLastName', 'txtBirthDate'];
+        syn.$v.required('txtFirstName', true, '이름을 입력해주세요.')
+               .required('txtLastName', true, '성을 입력해주세요.')
+               .required('txtBirthDate', true, '생년월일을 입력해주세요.');
+        
+        syn.$v.pattern('txtFirstName', 'namePattern', {
+            expr: /^[가-힣a-zA-Z\s]{1,50}$/,
+            message: '이름은 한글 또는 영문만 입력 가능합니다.'
+        });
+        
+        syn.$v.pattern('txtBirthDate', 'datePattern', {
+            expr: syn.$v.regexs.date,
+            message: '날짜는 YYYY-MM-DD 형식으로 입력해주세요.'
+        });
+        
+        // 2단계: 연락처 정보
+        stepValidations[2] = ['txtEmail', 'txtPhone', 'txtAddress'];
+        syn.$v.required('txtEmail', true, '이메일을 입력해주세요.')
+               .required('txtPhone', true, '전화번호를 입력해주세요.')
+               .required('txtAddress', true, '주소를 입력해주세요.');
+        
+        syn.$v.pattern('txtEmail', 'email', {
+            expr: syn.$v.regexs.email,
+            message: '올바른 이메일 형식을 입력해주세요.'
+        });
+        
+        syn.$v.pattern('txtPhone', 'phone', {
+            expr: syn.$v.regexs.mobilePhone,
+            message: '올바른 휴대폰 번호를 입력해주세요.'
+        });
+        
+        // 3단계: 추가 정보
+        stepValidations[3] = ['txtJobTitle', 'txtCompany'];
+        syn.$v.required('txtJobTitle', true, '직책을 입력해주세요.')
+               .required('txtCompany', false, ''); // 선택사항
+        
+        // 사용자 정의 검증
+        $this.method.validateAge = function() {
+            var birthDate = new Date(syn.$l.get('txtBirthDate').value);
+            var today = new Date();
+            var age = today.getFullYear() - birthDate.getFullYear();
+            
+            if (today.getMonth() < birthDate.getMonth() || 
+                (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            return age >= 18 && age <= 100;
+        };
+        
+        syn.$v.custom('txtBirthDate', 'ageCheck', {
+            functionName: 'validateAge',
+            message: '나이는 18세 이상 100세 이하여야 합니다.'
+        });
+    }
+    
+    // 현재 단계 검증
+    function validateCurrentStep() {
+        var fieldsToValidate = stepValidations[currentStep] || [];
+        syn.$v.isContinue = true;
+        
+        var isStepValid = syn.$v.validateControls(fieldsToValidate);
+        
+        if (!isStepValid) {
+            var errors = syn.$v.toMessages();
+            showStepErrors(errors);
+        } else {
+            clearStepErrors();
+        }
+        
+        return isStepValid;
+    }
+    
+    function showStepErrors(errors) {
+        var errorContainer = syn.$l.get('stepErrorContainer');
+        if (!errorContainer) {
+            errorContainer = syn.$m.create({
+                tag: 'div',
+                id: 'stepErrorContainer',
+                className: 'alert alert-danger',
+                styles: { display: 'none' }
+            });
+            
+            var currentStepElement = syn.$l.get(`step${currentStep}`);
+            currentStepElement.insertBefore(errorContainer, currentStepElement.firstChild);
+        }
+        
+        var errorList = errors.split('\n').filter(msg => msg.trim());
+        var errorHtml = '<ul class="mb-0">' + 
+            errorList.map(error => `<li>${error}</li>`).join('') + 
+            '</ul>';
+        
+        syn.$m.innerHTML(errorContainer, `<strong>다음 오류를 수정해주세요:</strong>${errorHtml}`);
+        syn.$m.setStyle(errorContainer, 'display', 'block');
+    }
+    
+    function clearStepErrors() {
+        var errorContainer = syn.$l.get('stepErrorContainer');
+        if (errorContainer) {
+            syn.$m.remove(errorContainer);
+        }
+    }
+    
+    // 다음 단계로 이동
+    function nextStep() {
+        if (validateCurrentStep()) {
+            if (currentStep < totalSteps) {
+                hideStep(currentStep);
+                currentStep++;
+                showStep(currentStep);
+                updateStepIndicator();
+            }
+        }
+    }
+    
+    // 이전 단계로 이동
+    function previousStep() {
+        if (currentStep > 1) {
+            hideStep(currentStep);
+            currentStep--;
+            showStep(currentStep);
+            updateStepIndicator();
+            clearStepErrors();
+        }
+    }
+    
+    function showStep(step) {
+        var stepElement = syn.$l.get(`step${step}`);
+        syn.$m.setStyle(stepElement, 'display', 'block');
+    }
+    
+    function hideStep(step) {
+        var stepElement = syn.$l.get(`step${step}`);
+        syn.$m.setStyle(stepElement, 'display', 'none');
+    }
+    
+    function updateStepIndicator() {
+        for (let i = 1; i <= totalSteps; i++) {
+            var indicator = syn.$l.get(`stepIndicator${i}`);
+            if (indicator) {
+                if (i === currentStep) {
+                    syn.$m.addClass(indicator, 'active');
+                } else if (i < currentStep) {
+                    syn.$m.addClass(indicator, 'completed');
+                    syn.$m.removeClass(indicator, 'active');
+                } else {
+                    syn.$m.removeClass(indicator, 'active completed');
+                }
+            }
+        }
+    }
+    
+    // 폼 제출
+    function submitMultiStepForm() {
+        // 전체 폼 검증
+        syn.$v.isContinue = true;
+        var allFields = Object.values(stepValidations).flat();
+        var isFormValid = syn.$v.validateControls(allFields);
+        
+        if (isFormValid) {
+            // 모든 데이터 수집
+            var formData = {};
+            allFields.forEach(fieldId => {
+                var fieldElement = syn.$l.get(fieldId);
+                if (fieldElement) {
+                    formData[fieldId.replace('txt', '')] = fieldElement.value;
+                }
+            });
+            
+            console.log('다단계 폼 제출 데이터:', formData);
+            syn.$w.alert('폼이 성공적으로 제출되었습니다!');
+        } else {
+            var errors = syn.$v.toMessages();
+            syn.$w.alert('폼에 오류가 있습니다:\n' + errors);
+        }
+    }
+    
+    // 이벤트 바인딩
+    syn.$l.addEvent('btnNext', 'click', nextStep);
+    syn.$l.addEvent('btnPrevious', 'click', previousStep);
+    syn.$l.addEvent('btnSubmitForm', 'click', submitMultiStepForm);
+    
+    // 초기화
+    setupStepValidations();
+    updateStepIndicator();
+    
+    // 첫 번째 단계만 표시
+    for (let i = 2; i <= totalSteps; i++) {
+        hideStep(i);
+    }
+}
+
+setupMultiStepFormValidation();
+```
+
+## 주의사항
+
+1. **성능 최적화**: 많은 수의 요소에 검증 규칙을 설정할 때는 성능에 주의하세요.
+2. **메모리 관리**: 동적으로 생성된 요소의 검증 규칙은 요소 제거 시 함께 정리해야 합니다.
+3. **사용자 경험**: 실시간 검증과 제출 시 검증의 균형을 맞춰 사용자 경험을 향상시키세요.
+4. **국제화**: 오류 메시지는 다국어를 고려하여 외부 리소스로 관리하는 것이 좋습니다.
+5. **보안**: 클라이언트 측 검증만으로는 충분하지 않으므로 서버 측 검증도 반드시 구현하세요.
+
 
 ## 데모
 

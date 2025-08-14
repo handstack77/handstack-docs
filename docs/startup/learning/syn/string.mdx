@@ -2,9 +2,1078 @@
 sidebar_position: 16
 ---
 
-# string
+# $string
 
-Javascript String 객체에 대한 확장 함수를 제공합니다.
+## 개요
+$string은 HandStack에서 JavaScript의 String 객체를 확장하여 문자열 처리와 변환을 더욱 편리하게 만들어주는 유틸리티 함수 모음입니다. 타입 변환, HTML 처리, 템플릿 보간, 유효성 검사 등 다양한 문자열 관련 기능을 제공합니다.
+
+## 주요 기능
+
+### 기본 변환 및 검사
+
+#### toValue(value, defaultValue?)
+다양한 타입의 값을 문자열로 변환합니다.
+
+**구문**
+```javascript
+$string.toValue(value, defaultValue?)
+```
+
+**매개변수**
+- `value` (Any): 변환할 값
+- `defaultValue` (String, 선택사항): 기본값
+
+**반환값**
+- `String`: 변환된 문자열
+
+**예제**
+```javascript
+// 다양한 타입 변환
+console.log($string.toValue('hello'));          // 'hello'
+console.log($string.toValue(12345));            // '12345'
+console.log($string.toValue(true));             // 'true'
+console.log($string.toValue(new Date()));       // 날짜 문자열
+console.log($string.toValue({}));               // '[object Object]'
+console.log($string.toValue(null, 'default'));  // 'default'
+console.log($string.toValue(undefined, 'N/A')); // 'N/A'
+
+// 객체나 배열을 JSON 문자열로
+var obj = { name: 'John', age: 30 };
+console.log($string.toValue(obj)); // JSON 문자열로 변환
+```
+
+#### isNullOrEmpty(value)
+값이 null, undefined 또는 빈 문자열인지 확인합니다.
+
+**구문**
+```javascript
+$string.isNullOrEmpty(value)
+```
+
+**반환값**
+- `Boolean`: null, undefined, 빈 문자열이면 true
+
+**예제**
+```javascript
+console.log($string.isNullOrEmpty(''));         // true
+console.log($string.isNullOrEmpty(null));       // true
+console.log($string.isNullOrEmpty(undefined));  // true
+console.log($string.isNullOrEmpty('hello'));    // false
+console.log($string.isNullOrEmpty(0));          // false
+console.log($string.isNullOrEmpty(false));      // false
+
+// 폼 유효성 검사에 활용
+function validateForm() {
+    var name = document.getElementById('txtName').value;
+    if ($string.isNullOrEmpty(name)) {
+        alert('이름을 입력해주세요.');
+        return false;
+    }
+    return true;
+}
+```
+
+#### length(value)
+문자열의 실제 길이를 반환합니다 (한글 고려).
+
+**구문**
+```javascript
+$string.length(value)
+```
+
+**예제**
+```javascript
+console.log($string.length('hello'));           // 5
+console.log($string.length('안녕하세요'));      // 5 (한글도 정확히 계산)
+console.log($string.length('hello 안녕'));     // 8
+console.log('hello 안녕'.length);              // 8 (네이티브 length와 동일)
+
+// 바이트 길이가 아닌 실제 문자 개수 반환
+var mixedText = 'Hello 안녕하세요 123';
+console.log($string.length(mixedText));         // 실제 문자 수
+```
+
+### HTML 처리
+
+#### br(value)
+줄바꿈 문자를 `<br>` 태그로 변환합니다.
+
+**구문**
+```javascript
+$string.br(value)
+```
+
+**예제**
+```javascript
+var multilineText = 'First line\nSecond line\nThird line';
+var htmlText = $string.br(multilineText);
+console.log(htmlText); // 'First line<br>Second line<br>Third line'
+
+// 텍스트 영역의 내용을 HTML에 표시
+var textareaContent = document.getElementById('comment').value;
+var htmlContent = $string.br(textareaContent);
+document.getElementById('preview').innerHTML = htmlContent;
+```
+
+#### sanitizeHTML(html)
+HTML 문자열을 안전하게 처리합니다 (XSS 방지).
+
+**구문**
+```javascript
+$string.sanitizeHTML(html)
+```
+
+**예제**
+```javascript
+var userInput = '<script>alert("XSS")</script><p>Safe content</p>';
+var safeHTML = $string.sanitizeHTML(userInput);
+console.log(safeHTML); // script 태그 제거된 안전한 HTML
+
+// 사용자 입력을 안전하게 처리
+function displayUserContent(content) {
+    var safeContent = $string.sanitizeHTML(content);
+    document.getElementById('userContent').innerHTML = safeContent;
+}
+```
+
+#### cleanHTML(html)
+HTML 태그를 모두 제거하여 순수한 텍스트만 반환합니다.
+
+**구문**
+```javascript
+$string.cleanHTML(html)
+```
+
+**예제**
+```javascript
+var htmlContent = '<div class="content"><p>Hello <b>World</b></p></div>';
+var plainText = $string.cleanHTML(htmlContent);
+console.log(plainText); // 'Hello World'
+
+// 미리보기 텍스트 생성
+function createPreviewText(htmlContent, maxLength = 100) {
+    var plainText = $string.cleanHTML(htmlContent);
+    return plainText.length > maxLength ? 
+           plainText.substring(0, maxLength) + '...' : 
+           plainText;
+}
+```
+
+#### toHtmlChar(value) / toCharHtml(value)
+HTML 특수 문자와 일반 문자 간 변환합니다.
+
+**구문**
+```javascript
+$string.toHtmlChar(value)  // 특수문자를 HTML 엔티티로
+$string.toCharHtml(value)  // HTML 엔티티를 특수문자로
+```
+
+**예제**
+```javascript
+// 특수문자를 HTML 엔티티로 변환
+var userInput = '<div>Hello & "World"</div>';
+var encoded = $string.toHtmlChar(userInput);
+console.log(encoded); // '&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;'
+
+// HTML 엔티티를 특수문자로 변환
+var htmlEntity = '&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;';
+var decoded = $string.toCharHtml(htmlEntity);
+console.log(decoded); // '<div>Hello & "World"</div>'
+
+// 안전한 HTML 표시
+function safeDisplay(userText) {
+    return $string.toHtmlChar(userText);
+}
+```
+
+### 템플릿 및 보간
+
+#### interpolate(template, data)
+템플릿 문자열에 데이터를 보간합니다.
+
+**구문**
+```javascript
+$string.interpolate(template, data)
+```
+
+**매개변수**
+- `template` (String): `#{property}` 형식의 템플릿 문자열
+- `data` (Object|Array): 보간할 데이터
+
+**반환값**
+- `String|Array`: 보간된 결과
+
+**예제**
+```javascript
+// 단일 객체 보간
+var user = {
+    name: '홍길동',
+    age: 30,
+    email: 'hong@example.com'
+};
+
+var template = '이름: #{name}, 나이: #{age}세, 이메일: #{email}';
+var result = $string.interpolate(template, user);
+console.log(result); // '이름: 홍길동, 나이: 30세, 이메일: hong@example.com'
+
+// HTML 템플릿 보간
+var htmlTemplate = `
+<div class="user-card">
+    <h3>#{name}</h3>
+    <p>나이: #{age}세</p>
+    <p>이메일: #{email}</p>
+</div>`;
+
+var userCard = $string.interpolate(htmlTemplate, user);
+
+// 배열 데이터로 여러 결과 생성
+var users = [
+    { name: '김철수', age: 25 },
+    { name: '이영희', age: 28 },
+    { name: '박민수', age: 32 }
+];
+
+var userTemplate = '<li>#{name} (#{age}세)</li>';
+var userList = $string.interpolate(userTemplate, users);
+console.log(userList); // ['<li>김철수 (25세)</li>', '<li>이영희 (28세)</li>', ...]
+
+// 이메일 템플릿 생성
+var emailTemplate = `
+안녕하세요 #{name}님,
+
+#{product} 주문이 완료되었습니다.
+주문번호: #{orderNumber}
+결제금액: #{amount}원
+
+감사합니다.
+`;
+
+var orderData = {
+    name: '홍길동',
+    product: 'iPhone 15',
+    orderNumber: 'ORD-123456',
+    amount: 1200000
+};
+
+var personalizedEmail = $string.interpolate(emailTemplate, orderData);
+```
+
+### 타입 변환
+
+#### isNumber(value)
+문자열이 유효한 숫자인지 확인합니다.
+
+**구문**
+```javascript
+$string.isNumber(value)
+```
+
+**예제**
+```javascript
+console.log($string.isNumber('123'));       // true
+console.log($string.isNumber('-456.789'));  // true
+console.log($string.isNumber('12,345'));    // true (쉼표 포함 숫자)
+console.log($string.isNumber('abc'));       // false
+console.log($string.isNumber(''));          // false
+
+// 사용자 입력 검증
+function validateNumberInput(input) {
+    if (!$string.isNumber(input)) {
+        alert('숫자를 입력해주세요.');
+        return false;
+    }
+    return true;
+}
+```
+
+#### toNumber(value)
+문자열을 숫자로 변환합니다.
+
+**구문**
+```javascript
+$string.toNumber(value)
+```
+
+**예제**
+```javascript
+console.log($string.toNumber('123'));        // 123
+console.log($string.toNumber('-456.789'));   // -456.789
+console.log($string.toNumber('12,345'));     // 12345 (쉼표 제거)
+console.log($string.toNumber('$1,234.56'));  // 1234.56 (통화 기호 제거)
+
+// 금액 계산
+function calculateTotal(priceStrings) {
+    return priceStrings
+        .map(price => $string.toNumber(price))
+        .reduce((total, price) => total + price, 0);
+}
+
+var prices = ['$1,200', '₩500,000', '¥300'];
+var total = calculateTotal(prices);
+```
+
+#### toNumberString(value)
+문자열에서 숫자만 추출합니다.
+
+**구문**
+```javascript
+$string.toNumberString(value)
+```
+
+**예제**
+```javascript
+console.log($string.toNumberString('abc123def'));     // '123'
+console.log($string.toNumberString('가격: 1,234원'));  // '1234'
+console.log($string.toNumberString('Tel: 010-1234-5678')); // '01012345678'
+
+// 전화번호에서 숫자만 추출
+function extractPhoneNumber(phoneInput) {
+    return $string.toNumberString(phoneInput);
+}
+
+var formattedPhone = '010-1234-5678';
+var cleanPhone = extractPhoneNumber(formattedPhone); // '01012345678'
+```
+
+#### toBoolean(value)
+문자열을 Boolean으로 변환합니다.
+
+**구문**
+```javascript
+$string.toBoolean(value)
+```
+
+**예제**
+```javascript
+// 다양한 true 값들
+console.log($string.toBoolean('true'));   // true
+console.log($string.toBoolean('True'));   // true
+console.log($string.toBoolean('TRUE'));   // true
+console.log($string.toBoolean('Y'));      // true
+console.log($string.toBoolean('1'));      // true
+
+// 다양한 false 값들
+console.log($string.toBoolean('false'));  // false
+console.log($string.toBoolean('False'));  // false
+console.log($string.toBoolean('N'));      // false
+console.log($string.toBoolean('0'));      // false
+console.log($string.toBoolean(''));       // false
+
+// 설정 값 처리
+function loadSettings(configString) {
+    var config = JSON.parse(configString);
+    return {
+        notifications: $string.toBoolean(config.notifications),
+        darkMode: $string.toBoolean(config.darkMode),
+        autoSave: $string.toBoolean(config.autoSave)
+    };
+}
+```
+
+#### toDynamic(value, emptyIsNull?)
+값을 적절한 타입으로 자동 변환합니다.
+
+**구문**
+```javascript
+$string.toDynamic(value, emptyIsNull?)
+```
+
+**매개변수**
+- `value` (String): 변환할 값
+- `emptyIsNull` (Boolean): 빈 문자열을 null로 처리할지 여부
+
+**예제**
+```javascript
+console.log($string.toDynamic('true'));          // true (Boolean)
+console.log($string.toDynamic('123'));           // 123 (Number)
+console.log($string.toDynamic('123.45'));        // 123.45 (Number)
+console.log($string.toDynamic('2023-12-25'));    // Date 객체
+console.log($string.toDynamic('hello'));         // 'hello' (String)
+console.log($string.toDynamic(''));              // '' (빈 문자열)
+console.log($string.toDynamic('', true));        // null
+
+// CSV 데이터 처리
+function parseCSVRow(csvRow) {
+    return csvRow.split(',').map(cell => $string.toDynamic(cell.trim()));
+}
+
+var csvData = 'John Doe,30,true,2023-01-15,50000.00';
+var parsedData = parseCSVRow(csvData);
+// ['John Doe', 30, true, Date, 50000.00]
+```
+
+#### toParseType(value, type)
+값을 특정 타입으로 변환합니다.
+
+**구문**
+```javascript
+$string.toParseType(value, type)
+```
+
+**매개변수**
+- `value` (String): 변환할 값
+- `type` (String): 목표 타입 ('string', 'number', 'boolean', 'date')
+
+**예제**
+```javascript
+console.log($string.toParseType('123', 'number'));     // 123
+console.log($string.toParseType('true', 'boolean'));   // true
+console.log($string.toParseType('2023-12-25', 'date'));// Date 객체
+console.log($string.toParseType(123, 'string'));       // '123'
+
+// API 응답 데이터 타입 변환
+function convertApiResponse(response, schema) {
+    var converted = {};
+    
+    Object.keys(schema).forEach(key => {
+        if (response[key] !== undefined) {
+            converted[key] = $string.toParseType(response[key], schema[key]);
+        }
+    });
+    
+    return converted;
+}
+
+var apiResponse = {
+    id: '123',
+    name: 'Product',
+    price: '99.99',
+    active: 'true',
+    createdAt: '2023-12-25T10:30:00Z'
+};
+
+var schema = {
+    id: 'number',
+    name: 'string',
+    price: 'number',
+    active: 'boolean',
+    createdAt: 'date'
+};
+
+var typedData = convertApiResponse(apiResponse, schema);
+```
+
+### 문자열 조작
+
+#### split(value, separator)
+향상된 문자열 분할 기능을 제공합니다.
+
+**구문**
+```javascript
+$string.split(value, separator)
+```
+
+**예제**
+```javascript
+// 기본 분할
+var result = $string.split('a,b,c,d', ',');
+console.log(result); // ['a', 'b', 'c', 'd']
+
+// 빈 문자열 처리
+var result2 = $string.split('a,,c,d', ',');
+console.log(result2); // ['a', '', 'c', 'd']
+
+// 다양한 구분자
+var csvLine = 'name;age;city;country';
+var fields = $string.split(csvLine, ';');
+console.log(fields); // ['name', 'age', 'city', 'country']
+```
+
+#### capitalize(value)
+문자열의 첫 글자를 대문자로 변환합니다.
+
+**구문**
+```javascript
+$string.capitalize(value)
+```
+
+**예제**
+```javascript
+console.log($string.capitalize('hello world'));      // 'Hello world'
+console.log($string.capitalize('HELLO WORLD'));      // 'Hello world'
+console.log($string.capitalize('hELLO wORLD'));      // 'Hello world'
+
+// 여러 단어의 첫 글자를 모두 대문자로
+function titleCase(text) {
+    return text.split(' ')
+               .map(word => $string.capitalize(word))
+               .join(' ');
+}
+
+console.log(titleCase('hello world javascript')); // 'Hello World Javascript'
+```
+
+### 데이터 변환
+
+#### toJson(csvText, options?)
+CSV 텍스트를 JSON 배열로 변환합니다.
+
+**구문**
+```javascript
+$string.toJson(csvText, options?)
+```
+
+**매개변수**
+- `csvText` (String): CSV 형식의 텍스트
+- `options` (Object, 선택사항): 변환 옵션
+  - `delimiter`: 구분자 (기본값: ',')
+  - `hasHeader`: 헤더 행 여부 (기본값: true)
+
+**예제**
+```javascript
+// 기본 CSV 변환
+var csvData = 'name,age,city\nJohn,30,New York\nJane,25,Los Angeles';
+var jsonArray = $string.toJson(csvData);
+console.log(jsonArray);
+// [
+//   { name: 'John', age: '30', city: 'New York' },
+//   { name: 'Jane', age: '25', city: 'Los Angeles' }
+// ]
+
+// 세미콜론 구분자 사용
+var csvData2 = 'name;age;city\nJohn;30;New York\nJane;25;Los Angeles';
+var jsonArray2 = $string.toJson(csvData2, { delimiter: ';' });
+
+// 헤더 없는 CSV
+var csvData3 = 'John,30,New York\nJane,25,Los Angeles';
+var jsonArray3 = $string.toJson(csvData3, { hasHeader: false });
+// [
+//   { col0: 'John', col1: '30', col2: 'New York' },
+//   { col0: 'Jane', col1: '25', col2: 'Los Angeles' }
+// ]
+
+// 파일 업로드 처리
+function handleCSVUpload(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var csvContent = e.target.result;
+        var jsonData = $string.toJson(csvContent);
+        
+        // JSON 데이터로 테이블 생성
+        createTable(jsonData);
+    };
+    reader.readAsText(file);
+}
+```
+
+#### toParameterObject(paramString)
+매개변수 문자열을 객체로 변환합니다.
+
+**구문**
+```javascript
+$string.toParameterObject(paramString)
+```
+
+**매개변수**
+- `paramString` (String): `@Name:Value;` 형식의 매개변수 문자열
+
+**예제**
+```javascript
+var paramString = '@Name:홍길동;@Age:30;@City:서울;@Active:true';
+var paramObject = $string.toParameterObject(paramString);
+console.log(paramObject);
+// {
+//   Name: '홍길동',
+//   Age: '30',
+//   City: '서울',
+//   Active: 'true'
+// }
+
+// URL 쿼리 스트링과 유사한 처리
+var queryString = '@filter:active;@page:2;@size:10;@sort:name';
+var queryParams = $string.toParameterObject(queryString);
+
+// API 호출 매개변수 생성
+function buildApiParams(paramString) {
+    var params = $string.toParameterObject(paramString);
+    var queryString = Object.keys(params)
+        .map(key => `${key}=${encodeURIComponent(params[key])}`)
+        .join('&');
+    
+    return queryString;
+}
+
+var apiParams = buildApiParams('@userId:123;@status:active;@date:2023-12-25');
+// 'userId=123&status=active&date=2023-12-25'
+```
+
+## 실전 활용 예제
+
+### 1. 템플릿 엔진 구현
+```javascript
+function TemplateEngine() {
+    var templates = {};
+    
+    // 템플릿 등록
+    function register(name, template) {
+        templates[name] = template;
+    }
+    
+    // 템플릿 렌더링
+    function render(templateName, data, options = {}) {
+        var template = templates[templateName];
+        if (!template) {
+            throw new Error(`템플릿을 찾을 수 없습니다: ${templateName}`);
+        }
+        
+        var result = $string.interpolate(template, data);
+        
+        // 옵션 처리
+        if (options.escapeHtml) {
+            result = Array.isArray(result) ? 
+                result.map(r => $string.toHtmlChar(r)) : 
+                $string.toHtmlChar(result);
+        }
+        
+        if (options.nl2br) {
+            result = Array.isArray(result) ? 
+                result.map(r => $string.br(r)) : 
+                $string.br(result);
+        }
+        
+        return result;
+    }
+    
+    // 조건부 템플릿
+    function renderWithCondition(templateName, data, condition) {
+        if (typeof condition === 'function') {
+            return condition(data) ? render(templateName, data) : '';
+        }
+        
+        return condition ? render(templateName, data) : '';
+    }
+    
+    // 루프 템플릿
+    function renderLoop(templateName, dataArray, options = {}) {
+        if (!Array.isArray(dataArray)) {
+            return '';
+        }
+        
+        var results = dataArray.map((item, index) => {
+            var extendedData = {
+                ...item,
+                _index: index,
+                _isFirst: index === 0,
+                _isLast: index === dataArray.length - 1,
+                _isEven: index % 2 === 0,
+                _isOdd: index % 2 === 1
+            };
+            
+            return render(templateName, extendedData);
+        });
+        
+        return options.join !== undefined ? results.join(options.join) : results;
+    }
+    
+    return {
+        register,
+        render,
+        renderWithCondition,
+        renderLoop
+    };
+}
+
+// 사용 예제
+var templateEngine = TemplateEngine();
+
+// 템플릿 등록
+templateEngine.register('userCard', `
+<div class="user-card">
+    <img src="#{avatar}" alt="#{name}">
+    <h3>#{name}</h3>
+    <p>#{email}</p>
+    <span class="badge">#{role}</span>
+</div>
+`);
+
+templateEngine.register('userListItem', `
+<li class="#{_isEven ? 'even' : 'odd'}">
+    #{_index + 1}. #{name} (#{email})
+</li>
+`);
+
+// 단일 사용자 카드
+var user = {
+    name: '홍길동',
+    email: 'hong@example.com',
+    avatar: '/images/avatar1.jpg',
+    role: 'Admin'
+};
+
+var userCard = templateEngine.render('userCard', user, { escapeHtml: true });
+
+// 사용자 목록
+var users = [
+    { name: '김철수', email: 'kim@example.com' },
+    { name: '이영희', email: 'lee@example.com' },
+    { name: '박민수', email: 'park@example.com' }
+];
+
+var userList = templateEngine.renderLoop('userListItem', users, { join: '\n' });
+console.log(`<ul>${userList}</ul>`);
+```
+
+### 2. 데이터 변환 유틸리티
+```javascript
+function DataConverter() {
+    // CSV를 다양한 형태로 변환
+    function convertCSV(csvText, outputFormat = 'json', options = {}) {
+        var jsonData = $string.toJson(csvText, options);
+        
+        switch (outputFormat) {
+            case 'json':
+                return jsonData;
+                
+            case 'xml':
+                return convertToXML(jsonData);
+                
+            case 'table':
+                return generateHTMLTable(jsonData);
+                
+            case 'typescript':
+                return generateTypeScript(jsonData);
+                
+            default:
+                return jsonData;
+        }
+    }
+    
+    function convertToXML(jsonData) {
+        var xml = '<?xml version="1.0" encoding="UTF-8"?>\n<root>\n';
+        
+        jsonData.forEach(item => {
+            xml += '  <item>\n';
+            Object.keys(item).forEach(key => {
+                var value = $string.toHtmlChar($string.toValue(item[key]));
+                xml += `    <${key}>${value}</${key}>\n`;
+            });
+            xml += '  </item>\n';
+        });
+        
+        xml += '</root>';
+        return xml;
+    }
+    
+    function generateHTMLTable(jsonData) {
+        if (jsonData.length === 0) return '<table></table>';
+        
+        var headers = Object.keys(jsonData[0]);
+        
+        var html = '<table class="table">\n';
+        html += '  <thead>\n    <tr>\n';
+        
+        headers.forEach(header => {
+            html += `      <th>${$string.toHtmlChar(header)}</th>\n`;
+        });
+        
+        html += '    </tr>\n  </thead>\n  <tbody>\n';
+        
+        jsonData.forEach(row => {
+            html += '    <tr>\n';
+            headers.forEach(header => {
+                var value = $string.toHtmlChar($string.toValue(row[header]));
+                html += `      <td>${value}</td>\n`;
+            });
+            html += '    </tr>\n';
+        });
+        
+        html += '  </tbody>\n</table>';
+        return html;
+    }
+    
+    function generateTypeScript(jsonData) {
+        if (jsonData.length === 0) return 'interface DataItem {}';
+        
+        var sample = jsonData[0];
+        var typescript = 'interface DataItem {\n';
+        
+        Object.keys(sample).forEach(key => {
+            var value = sample[key];
+            var type = 'string';
+            
+            if ($string.isNumber(value)) {
+                type = 'number';
+            } else if ($string.toBoolean(value) !== null) {
+                type = 'boolean';
+            } else if ($date.isISOString(value)) {
+                type = 'Date';
+            }
+            
+            typescript += `  ${key}: ${type};\n`;
+        });
+        
+        typescript += '}';
+        return typescript;
+    }
+    
+    // URL 매개변수 문자열 변환
+    function parseURLParams(url) {
+        var paramString = url.split('?')[1] || '';
+        var params = {};
+        
+        if (paramString) {
+            paramString.split('&').forEach(param => {
+                var [key, value] = param.split('=');
+                if (key) {
+                    params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+                }
+            });
+        }
+        
+        return params;
+    }
+    
+    // 폼 데이터를 다양한 형태로 직렬화
+    function serializeFormData(formElement, format = 'json') {
+        var formData = new FormData(formElement);
+        var data = {};
+        
+        for (let [key, value] of formData.entries()) {
+            // 동적 타입 변환 적용
+            data[key] = $string.toDynamic(value);
+        }
+        
+        switch (format) {
+            case 'json':
+                return JSON.stringify(data, null, 2);
+                
+            case 'xml':
+                return convertToXML([data]);
+                
+            case 'query':
+                return Object.keys(data)
+                    .map(key => `${key}=${encodeURIComponent($string.toValue(data[key]))}`)
+                    .join('&');
+                    
+            case 'handstack':
+                return Object.keys(data)
+                    .map(key => `@${key}:${$string.toValue(data[key])}`)
+                    .join(';');
+                    
+            default:
+                return data;
+        }
+    }
+    
+    return {
+        convertCSV,
+        parseURLParams,
+        serializeFormData
+    };
+}
+
+// 사용 예제
+var converter = DataConverter();
+
+// CSV 데이터 변환
+var csvData = `name,age,email,active
+John Doe,30,john@example.com,true
+Jane Smith,25,jane@example.com,false
+Mike Johnson,35,mike@example.com,true`;
+
+var htmlTable = converter.convertCSV(csvData, 'table');
+var xmlData = converter.convertCSV(csvData, 'xml');
+var typescript = converter.convertCSV(csvData, 'typescript');
+
+console.log('HTML 테이블:', htmlTable);
+console.log('TypeScript 인터페이스:', typescript);
+
+// URL 매개변수 파싱
+var url = 'https://example.com/api?page=2&size=10&filter=active&sort=name';
+var params = converter.parseURLParams(url);
+console.log('URL 매개변수:', params);
+```
+
+### 3. 텍스트 분석 도구
+```javascript
+function TextAnalyzer() {
+    // 텍스트 통계 분석
+    function analyzeText(text) {
+        if ($string.isNullOrEmpty(text)) {
+            return null;
+        }
+        
+        var cleanText = $string.cleanHTML(text);
+        var words = cleanText.split(/\s+/).filter(word => word.length > 0);
+        var sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        var paragraphs = cleanText.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+        
+        // 단어 빈도 계산
+        var wordFrequency = {};
+        words.forEach(word => {
+            var cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
+            if (cleanWord) {
+                wordFrequency[cleanWord] = (wordFrequency[cleanWord] || 0) + 1;
+            }
+        });
+        
+        // 가장 자주 사용된 단어들
+        var sortedWords = Object.entries(wordFrequency)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 10);
+        
+        return {
+            characterCount: $string.length(cleanText),
+            characterCountWithSpaces: $string.length(text),
+            wordCount: words.length,
+            sentenceCount: sentences.length,
+            paragraphCount: paragraphs.length,
+            averageWordsPerSentence: Math.round(words.length / sentences.length * 100) / 100,
+            averageSentencesPerParagraph: Math.round(sentences.length / paragraphs.length * 100) / 100,
+            mostFrequentWords: sortedWords,
+            readingTimeMinutes: Math.ceil(words.length / 200) // 평균 읽기 속도 200단어/분
+        };
+    }
+    
+    // 키워드 추출
+    function extractKeywords(text, maxKeywords = 10) {
+        var cleanText = $string.cleanHTML(text).toLowerCase();
+        
+        // 불용어 목록 (간단한 예시)
+        var stopWords = new Set([
+            '그리고', '그런데', '하지만', '그러나', '따라서', '그래서', '그러므로',
+            '또한', '또는', '그것', '이것', '저것', '여기서', '거기서', '이곳',
+            '저곳', '지금', '그때', '이때', '저때', '오늘', '어제', '내일',
+            'and', 'the', 'is', 'in', 'to', 'of', 'a', 'an', 'as', 'at',
+            'be', 'or', 'an', 'are', 'by', 'for', 'from', 'has', 'he', 'in'
+        ]);
+        
+        var words = cleanText.split(/\s+/)
+            .map(word => word.replace(/[^\w가-힣]/g, ''))
+            .filter(word => word.length > 1 && !stopWords.has(word));
+        
+        // 단어 빈도 계산
+        var frequency = {};
+        words.forEach(word => {
+            frequency[word] = (frequency[word] || 0) + 1;
+        });
+        
+        return Object.entries(frequency)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, maxKeywords)
+            .map(([word, count]) => ({ word, count }));
+    }
+    
+    // 텍스트 요약 (단순한 추출식 요약)
+    function summarizeText(text, maxSentences = 3) {
+        var sentences = $string.cleanHTML(text)
+            .split(/[.!?]+/)
+            .filter(s => s.trim().length > 10);
+        
+        if (sentences.length <= maxSentences) {
+            return sentences.join('. ') + '.';
+        }
+        
+        // 각 문장의 점수 계산 (단순히 길이와 위치 기반)
+        var scoredSentences = sentences.map((sentence, index) => {
+            var words = sentence.split(/\s+/).length;
+            var positionScore = 1 - (index / sentences.length); // 앞쪽 문장에 높은 점수
+            var lengthScore = words / 20; // 적절한 길이의 문장에 높은 점수
+            
+            return {
+                sentence: sentence.trim(),
+                score: positionScore * 0.3 + lengthScore * 0.7,
+                index: index
+            };
+        });
+        
+        // 상위 문장들을 원래 순서대로 정렬
+        var topSentences = scoredSentences
+            .sort((a, b) => b.score - a.score)
+            .slice(0, maxSentences)
+            .sort((a, b) => a.index - b.index);
+        
+        return topSentences.map(s => s.sentence).join('. ') + '.';
+    }
+    
+    // 감성 분석 (매우 단순한 버전)
+    function analyzeSentiment(text) {
+        var cleanText = $string.cleanHTML(text).toLowerCase();
+        
+        var positiveWords = [
+            '좋은', '훌륭한', '멋진', '최고', '행복', '즐거운', '기쁜', '만족',
+            'good', 'great', 'excellent', 'amazing', 'happy', 'joy', 'love', 'best'
+        ];
+        
+        var negativeWords = [
+            '나쁜', '최악', '슬픈', '화난', '실망', '끔찍한', '싫은', '미워',
+            'bad', 'worst', 'sad', 'angry', 'hate', 'terrible', 'awful', 'disappointed'
+        ];
+        
+        var positiveCount = 0;
+        var negativeCount = 0;
+        
+        positiveWords.forEach(word => {
+            var regex = new RegExp(word, 'g');
+            var matches = cleanText.match(regex);
+            if (matches) positiveCount += matches.length;
+        });
+        
+        negativeWords.forEach(word => {
+            var regex = new RegExp(word, 'g');
+            var matches = cleanText.match(regex);
+            if (matches) negativeCount += matches.length;
+        });
+        
+        var total = positiveCount + negativeCount;
+        if (total === 0) {
+            return { sentiment: 'neutral', confidence: 0 };
+        }
+        
+        var positiveRatio = positiveCount / total;
+        var sentiment;
+        
+        if (positiveRatio > 0.6) sentiment = 'positive';
+        else if (positiveRatio < 0.4) sentiment = 'negative';
+        else sentiment = 'neutral';
+        
+        return {
+            sentiment: sentiment,
+            confidence: Math.abs(positiveRatio - 0.5) * 2,
+            positiveWords: positiveCount,
+            negativeWords: negativeCount
+        };
+    }
+    
+    return {
+        analyzeText,
+        extractKeywords,
+        summarizeText,
+        analyzeSentiment
+    };
+}
+
+// 사용 예제
+var analyzer = TextAnalyzer();
+
+var sampleText = `
+인공지능과 기계학습은 현대 기술의 가장 흥미로운 분야 중 하나입니다.
+이러한 기술들은 우리의 일상생활을 변화시키고 있으며, 미래에는 더욱 
+중요한 역할을 할 것으로 예상됩니다. 하지만 동시에 여러 도전과제도 
+존재합니다. 우리는 이러한 기술을 현명하게 활용해야 합니다.
+`;
+
+var analysis = analyzer.analyzeText(sampleText);
+console.log('텍스트 분석 결과:', analysis);
+
+var keywords = analyzer.extractKeywords(sampleText);
+console.log('추출된 키워드:', keywords);
+
+var summary = analyzer.summarizeText(sampleText, 2);
+console.log('요약:', summary);
+
+var sentiment = analyzer.analyzeSentiment(sampleText);
+console.log('감성 분석:', sentiment);
+```
+
+## 주의사항
+
+1. **인코딩 처리**: 다양한 언어와 문자 인코딩을 처리할 때 주의가 필요합니다.
+2. **성능 고려**: 대용량 텍스트 처리 시에는 성능을 고려해야 합니다.
+3. **보안**: HTML 처리 시 XSS 공격을 방지하기 위한 적절한 처리가 필요합니다.
+4. **정규표현식**: 복잡한 패턴 매칭 시에는 정규표현식의 성능과 정확성을 고려해야 합니다.
+5. **다국어 지원**: 한글, 영어 외의 언어 처리 시에는 추가적인 고려사항이 있을 수 있습니다.
+
 
 ## 데모
 

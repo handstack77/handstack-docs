@@ -4,7 +4,1035 @@ sidebar_position: 11
 
 # syn.$r
 
-http 요청 및 URL, Cookie 조작 기능 제공합니다.
+## 개요
+syn.$r은 HandStack에서 HTTP 요청 처리, URL 조작, 쿠키 관리 등의 웹 통신과 관련된 다양한 기능을 제공하는 라이브러리입니다. AJAX 요청, URL 파라미터 처리, 쿠키 설정/조회, Blob URL 생성 등의 기능을 통해 웹 애플리케이션의 데이터 통신을 효율적으로 처리할 수 있습니다.
+
+## 주요 기능
+
+### URL 파라미터 처리
+
+#### syn.$r.params
+현재 페이지의 URL 파라미터를 객체 형태로 저장합니다.
+
+**구문**
+```javascript
+syn.$r.params
+```
+
+**예제**
+```javascript
+// URL: http://example.com/page?name=홍길동&age=30&active=true
+console.log(syn.$r.params); // {name: '홍길동', age: '30', active: 'true'}
+
+// 파라미터 추가/수정
+syn.$r.params.department = '개발팀';
+syn.$r.params.level = '5';
+
+// 파라미터 삭제
+delete syn.$r.params.active;
+```
+
+#### syn.$r.query(name)
+특정 URL 파라미터 값을 가져옵니다.
+
+**구문**
+```javascript
+syn.$r.query(name)
+```
+
+**매개변수**
+- `name` (String): 파라미터 이름
+
+**반환값**
+- `String`: 파라미터 값 (없으면 undefined)
+
+**예제**
+```javascript
+// URL: http://example.com/page?userId=123&userName=홍길동
+var userId = syn.$r.query('userId');     // '123'
+var userName = syn.$r.query('userName'); // '홍길동'
+var nonexistent = syn.$r.query('email'); // undefined
+
+// 조건부 처리
+if (syn.$r.query('debug') === 'true') {
+    console.log('디버그 모드 활성화');
+}
+
+// 기본값 설정
+var pageSize = syn.$r.query('pageSize') || '10';
+var sortOrder = syn.$r.query('sort') || 'asc';
+```
+
+#### syn.$r.url()
+현재 파라미터를 포함한 완전한 URL을 생성합니다.
+
+**구문**
+```javascript
+syn.$r.url()
+```
+
+**반환값**
+- `String`: 파라미터가 포함된 완전한 URL
+
+**예제**
+```javascript
+// 기본 URL: http://example.com/page
+syn.$r.params.name = '홍길동';
+syn.$r.params.age = '30';
+
+var fullUrl = syn.$r.url();
+console.log(fullUrl); // http://example.com/page?name=홍길동&age=30
+
+// URL 히스토리 업데이트
+function updateUrlWithoutReload() {
+    syn.$r.params.page = '2';
+    syn.$r.params.filter = 'active';
+    
+    var newUrl = syn.$r.url();
+    window.history.pushState({}, '', newUrl);
+}
+```
+
+### 쿠키 관리
+
+#### syn.$r.setCookie(name, value, options)
+쿠키를 설정합니다.
+
+**구문**
+```javascript
+syn.$r.setCookie(name, value, options)
+```
+
+**매개변수**
+- `name` (String): 쿠키 이름
+- `value` (String): 쿠키 값
+- `options` (Object, 선택사항): 쿠키 옵션
+  - `expires` (Date): 만료 날짜
+  - `path` (String): 경로
+  - `domain` (String): 도메인
+  - `secure` (Boolean): HTTPS 전용 여부
+  - `sameSite` (String): SameSite 정책
+
+**예제**
+```javascript
+// 기본 쿠키 설정
+syn.$r.setCookie('username', '홍길동');
+
+// 옵션을 포함한 쿠키 설정
+var expiryDate = new Date();
+expiryDate.setDate(expiryDate.getDate() + 7); // 7일 후 만료
+
+syn.$r.setCookie('userPreferences', JSON.stringify({
+    theme: 'dark',
+    language: 'ko',
+    notifications: true
+}), {
+    expires: expiryDate,
+    path: '/',
+    secure: true,
+    sameSite: 'Strict'
+});
+
+// 세션 쿠키 (브라우저 종료 시 삭제)
+syn.$r.setCookie('sessionId', 'abc123');
+
+// 로그인 상태 저장
+function saveLoginState(user) {
+    syn.$r.setCookie('isLoggedIn', 'true', {
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24시간
+        path: '/',
+        secure: location.protocol === 'https:'
+    });
+    
+    syn.$r.setCookie('userId', user.id, {
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        path: '/'
+    });
+}
+```
+
+#### syn.$r.getCookie(name)
+쿠키 값을 가져옵니다.
+
+**구문**
+```javascript
+syn.$r.getCookie(name)
+```
+
+**매개변수**
+- `name` (String): 쿠키 이름
+
+**반환값**
+- `String`: 쿠키 값 (없으면 null)
+
+**예제**
+```javascript
+// 쿠키 값 조회
+var username = syn.$r.getCookie('username');
+if (username) {
+    console.log('환영합니다, ' + username + '님!');
+} else {
+    console.log('로그인이 필요합니다.');
+}
+
+// JSON 쿠키 파싱
+var preferencesJson = syn.$r.getCookie('userPreferences');
+if (preferencesJson) {
+    try {
+        var preferences = JSON.parse(preferencesJson);
+        applyUserPreferences(preferences);
+    } catch (e) {
+        console.error('사용자 설정 파싱 오류:', e);
+    }
+}
+
+// 사용자 인증 상태 확인
+function isUserLoggedIn() {
+    return syn.$r.getCookie('isLoggedIn') === 'true';
+}
+
+function getCurrentUserId() {
+    return syn.$r.getCookie('userId');
+}
+```
+
+#### syn.$r.deleteCookie(name, options)
+쿠키를 삭제합니다.
+
+**구문**
+```javascript
+syn.$r.deleteCookie(name, options)
+```
+
+**매개변수**
+- `name` (String): 삭제할 쿠키 이름
+- `options` (Object, 선택사항): 쿠키 경로나 도메인 옵션
+
+**예제**
+```javascript
+// 기본 쿠키 삭제
+syn.$r.deleteCookie('username');
+
+// 경로를 지정한 쿠키 삭제
+syn.$r.deleteCookie('userPreferences', { path: '/' });
+
+// 로그아웃 처리
+function logoutUser() {
+    syn.$r.deleteCookie('isLoggedIn');
+    syn.$r.deleteCookie('userId');
+    syn.$r.deleteCookie('sessionId');
+    syn.$r.deleteCookie('userPreferences', { path: '/' });
+    
+    // 페이지 리디렉션
+    window.location.href = '/login';
+}
+
+// 만료된 쿠키 정리
+function clearExpiredCookies() {
+    var cookiesToCheck = ['tempData', 'guestSession', 'previewMode'];
+    
+    cookiesToCheck.forEach(function(cookieName) {
+        if (syn.$r.getCookie(cookieName)) {
+            syn.$r.deleteCookie(cookieName);
+        }
+    });
+}
+```
+
+### Blob URL 관리
+
+#### syn.$r.createBlobUrl(blob)
+Blob 객체에서 URL을 생성합니다.
+
+**구문**
+```javascript
+syn.$r.createBlobUrl(blob)
+```
+
+**매개변수**
+- `blob` (Blob): Blob 객체
+
+**반환값**
+- `String`: Blob URL
+
+**예제**
+```javascript
+// 텍스트 파일 생성 및 다운로드
+function downloadTextFile(content, filename) {
+    var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    var url = syn.$r.createBlobUrl(blob);
+    
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    
+    // 메모리 정리
+    syn.$r.revokeBlobUrl(url);
+}
+
+// JSON 데이터 내보내기
+function exportDataAsJson(data, filename) {
+    var jsonString = JSON.stringify(data, null, 2);
+    var blob = new Blob([jsonString], { type: 'application/json' });
+    var url = syn.$r.createBlobUrl(blob);
+    
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = filename || 'data.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    syn.$r.revokeBlobUrl(url);
+}
+
+// 이미지 미리보기
+function previewImageFile(file) {
+    var url = syn.$r.createBlobUrl(file);
+    var img = document.createElement('img');
+    img.src = url;
+    img.onload = function() {
+        syn.$r.revokeBlobUrl(url); // 이미지 로드 후 URL 해제
+    };
+    document.getElementById('imagePreview').appendChild(img);
+}
+```
+
+#### syn.$r.revokeBlobUrl(url)
+Blob URL을 해제하여 메모리를 정리합니다.
+
+**구문**
+```javascript
+syn.$r.revokeBlobUrl(url)
+```
+
+**매개변수**
+- `url` (String): 해제할 Blob URL
+
+**예제**
+```javascript
+var blob = new Blob(['Hello World'], { type: 'text/plain' });
+var url = syn.$r.createBlobUrl(blob);
+
+// URL 사용
+console.log('Blob URL:', url);
+
+// 사용 완료 후 정리
+syn.$r.revokeBlobUrl(url);
+```
+
+## 실전 활용 예제
+
+### 1. 사용자 세션 관리 시스템
+```javascript
+let $sessionManager = {
+    prop: {
+        sessionKey: 'userSession',
+        settingsKey: 'userSettings',
+        sessionTimeout: 30 * 60 * 1000, // 30분
+        checkInterval: 60 * 1000 // 1분마다 체크
+    },
+
+    hook: {
+        pageLoad() {
+            $this.method.initializeSession();
+            $this.method.startSessionCheck();
+            $this.method.loadUserSettings();
+        }
+    },
+
+    method: {
+        initializeSession() {
+            var session = $this.method.getSession();
+            if (session && $this.method.isSessionValid(session)) {
+                $this.method.refreshSession();
+                console.log('기존 세션 복원:', session.user.name);
+            } else {
+                $this.method.clearSession();
+            }
+        },
+
+        login(credentials) {
+            return new Promise(function(resolve, reject) {
+                // 실제 구현에서는 서버 API 호출
+                setTimeout(function() {
+                    if (credentials.username && credentials.password) {
+                        var sessionData = {
+                            user: {
+                                id: credentials.username,
+                                name: credentials.username === 'admin' ? '관리자' : '사용자',
+                                role: credentials.username === 'admin' ? 'admin' : 'user'
+                            },
+                            loginTime: Date.now(),
+                            lastActivity: Date.now(),
+                            sessionId: 'sess_' + Date.now() + '_' + Math.random()
+                        };
+
+                        $this.method.saveSession(sessionData);
+                        $this.method.saveLoginState(true);
+                        resolve(sessionData);
+                    } else {
+                        reject(new Error('잘못된 인증 정보입니다'));
+                    }
+                }, 1000);
+            });
+        },
+
+        logout() {
+            $this.method.clearSession();
+            $this.method.saveLoginState(false);
+            
+            // URL 파라미터 정리
+            delete syn.$r.params.userId;
+            delete syn.$r.params.sessionId;
+            
+            window.location.href = syn.$r.url();
+        },
+
+        saveSession(sessionData) {
+            var sessionJson = JSON.stringify(sessionData);
+            
+            // 쿠키에 저장 (보안상 최소한의 정보만)
+            syn.$r.setCookie($this.prop.sessionKey, sessionData.sessionId, {
+                expires: new Date(Date.now() + $this.prop.sessionTimeout),
+                path: '/',
+                secure: location.protocol === 'https:',
+                sameSite: 'Strict'
+            });
+
+            // localStorage에 상세 정보 저장
+            localStorage.setItem($this.prop.sessionKey + '_data', sessionJson);
+        },
+
+        getSession() {
+            var sessionId = syn.$r.getCookie($this.prop.sessionKey);
+            var sessionData = localStorage.getItem($this.prop.sessionKey + '_data');
+            
+            if (sessionId && sessionData) {
+                try {
+                    var session = JSON.parse(sessionData);
+                    if (session.sessionId === sessionId) {
+                        return session;
+                    }
+                } catch (e) {
+                    console.error('세션 데이터 파싱 오류:', e);
+                }
+            }
+            
+            return null;
+        },
+
+        isSessionValid(session) {
+            if (!session || !session.lastActivity) {
+                return false;
+            }
+            
+            var now = Date.now();
+            var timeSinceLastActivity = now - session.lastActivity;
+            
+            return timeSinceLastActivity < $this.prop.sessionTimeout;
+        },
+
+        refreshSession() {
+            var session = $this.method.getSession();
+            if (session) {
+                session.lastActivity = Date.now();
+                $this.method.saveSession(session);
+                
+                // URL 파라미터 업데이트
+                syn.$r.params.userId = session.user.id;
+                syn.$r.params.t = Date.now(); // 캐시 방지
+            }
+        },
+
+        clearSession() {
+            syn.$r.deleteCookie($this.prop.sessionKey);
+            localStorage.removeItem($this.prop.sessionKey + '_data');
+        },
+
+        saveLoginState(isLoggedIn) {
+            syn.$r.setCookie('isLoggedIn', isLoggedIn.toString(), {
+                expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1년
+                path: '/'
+            });
+        },
+
+        isLoggedIn() {
+            return syn.$r.getCookie('isLoggedIn') === 'true';
+        },
+
+        startSessionCheck() {
+            setInterval(function() {
+                var session = $this.method.getSession();
+                if (session) {
+                    if ($this.method.isSessionValid(session)) {
+                        $this.method.refreshSession();
+                    } else {
+                        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+                        $this.method.logout();
+                    }
+                }
+            }, $this.prop.checkInterval);
+        },
+
+        loadUserSettings() {
+            var settingsJson = syn.$r.getCookie($this.prop.settingsKey);
+            if (settingsJson) {
+                try {
+                    var settings = JSON.parse(settingsJson);
+                    $this.method.applySettings(settings);
+                } catch (e) {
+                    console.error('설정 로드 오류:', e);
+                }
+            }
+        },
+
+        saveUserSettings(settings) {
+            var settingsJson = JSON.stringify(settings);
+            syn.$r.setCookie($this.prop.settingsKey, settingsJson, {
+                expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1년
+                path: '/'
+            });
+        },
+
+        applySettings(settings) {
+            // 테마 적용
+            if (settings.theme) {
+                document.body.className = 'theme-' + settings.theme;
+            }
+            
+            // 언어 설정
+            if (settings.language) {
+                document.documentElement.lang = settings.language;
+            }
+            
+            // 기타 설정 적용
+            console.log('사용자 설정 적용:', settings);
+        }
+    },
+
+    event: {
+        btnLogin_click() {
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            
+            $this.method.login({ username: username, password: password })
+                .then(function(sessionData) {
+                    console.log('로그인 성공:', sessionData);
+                    
+                    // 메인 페이지로 리디렉션
+                    syn.$r.params.welcome = 'true';
+                    window.location.href = syn.$r.url();
+                })
+                .catch(function(error) {
+                    alert('로그인 실패: ' + error.message);
+                });
+        },
+
+        btnLogout_click() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                $this.method.logout();
+            }
+        },
+
+        btnSaveSettings_click() {
+            var settings = {
+                theme: document.getElementById('themeSelect').value,
+                language: document.getElementById('languageSelect').value,
+                notifications: document.getElementById('notificationCheck').checked
+            };
+            
+            $this.method.saveUserSettings(settings);
+            $this.method.applySettings(settings);
+            alert('설정이 저장되었습니다.');
+        }
+    }
+};
+```
+
+### 2. 파일 다운로드 관리자
+```javascript
+let $downloadManager = {
+    prop: {
+        downloads: [],
+        maxConcurrentDownloads: 3
+    },
+
+    method: {
+        downloadFile(url, filename, options) {
+            options = options || {};
+            
+            return new Promise(function(resolve, reject) {
+                var downloadId = 'download_' + Date.now() + '_' + Math.random();
+                
+                var downloadInfo = {
+                    id: downloadId,
+                    url: url,
+                    filename: filename,
+                    status: 'pending',
+                    progress: 0,
+                    startTime: Date.now(),
+                    options: options
+                };
+                
+                $this.prop.downloads.push(downloadInfo);
+                
+                fetch(url)
+                    .then(function(response) {
+                        if (!response.ok) {
+                            throw new Error('HTTP ' + response.status + ' ' + response.statusText);
+                        }
+                        
+                        downloadInfo.status = 'downloading';
+                        downloadInfo.totalSize = response.headers.get('content-length');
+                        
+                        return response.blob();
+                    })
+                    .then(function(blob) {
+                        downloadInfo.status = 'completed';
+                        downloadInfo.endTime = Date.now();
+                        downloadInfo.blob = blob;
+                        
+                        // 실제 다운로드 실행
+                        $this.method.triggerDownload(blob, filename);
+                        
+                        resolve(downloadInfo);
+                    })
+                    .catch(function(error) {
+                        downloadInfo.status = 'failed';
+                        downloadInfo.error = error.message;
+                        downloadInfo.endTime = Date.now();
+                        
+                        reject(error);
+                    });
+            });
+        },
+
+        triggerDownload(blob, filename) {
+            var url = syn.$r.createBlobUrl(blob);
+            
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.style.display = 'none';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // 잠시 후 URL 해제
+            setTimeout(function() {
+                syn.$r.revokeBlobUrl(url);
+            }, 1000);
+        },
+
+        downloadMultipleFiles(fileList) {
+            var promises = fileList.map(function(file, index) {
+                return new Promise(function(resolve) {
+                    // 동시 다운로드 수 제한
+                    setTimeout(function() {
+                        $this.method.downloadFile(file.url, file.filename, file.options)
+                            .then(resolve)
+                            .catch(resolve); // 실패해도 계속 진행
+                    }, index * 500); // 0.5초 간격
+                });
+            });
+            
+            return Promise.all(promises);
+        },
+
+        downloadAsZip(files, zipFilename) {
+            // JSZip 라이브러리 사용 시뮬레이션
+            var zip = new JSZip(); // 실제로는 JSZip 라이브러리 필요
+            
+            var promises = files.map(function(file) {
+                if (file.blob) {
+                    zip.file(file.filename, file.blob);
+                    return Promise.resolve();
+                } else {
+                    return fetch(file.url)
+                        .then(function(response) { return response.blob(); })
+                        .then(function(blob) {
+                            zip.file(file.filename, blob);
+                        });
+                }
+            });
+            
+            Promise.all(promises)
+                .then(function() {
+                    return zip.generateAsync({ type: 'blob' });
+                })
+                .then(function(zipBlob) {
+                    $this.method.triggerDownload(zipBlob, zipFilename || 'files.zip');
+                })
+                .catch(function(error) {
+                    console.error('ZIP 생성 오류:', error);
+                });
+        },
+
+        exportDataAsCSV(data, filename) {
+            var csvContent = '';
+            
+            if (data.length > 0) {
+                // 헤더 생성
+                var headers = Object.keys(data[0]);
+                csvContent += headers.join(',') + '\n';
+                
+                // 데이터 행 생성
+                data.forEach(function(row) {
+                    var values = headers.map(function(header) {
+                        var value = row[header] || '';
+                        // CSV 이스케이프 처리
+                        if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+                            value = '"' + value.replace(/"/g, '""') + '"';
+                        }
+                        return value;
+                    });
+                    csvContent += values.join(',') + '\n';
+                });
+            }
+            
+            var blob = new Blob(['\uFEFF' + csvContent], { 
+                type: 'text/csv;charset=utf-8' 
+            });
+            
+            $this.method.triggerDownload(blob, filename || 'data.csv');
+        },
+
+        exportDataAsJSON(data, filename) {
+            var jsonString = JSON.stringify(data, null, 2);
+            var blob = new Blob([jsonString], { 
+                type: 'application/json;charset=utf-8' 
+            });
+            
+            $this.method.triggerDownload(blob, filename || 'data.json');
+        },
+
+        getDownloadHistory() {
+            return $this.prop.downloads.map(function(download) {
+                return {
+                    id: download.id,
+                    filename: download.filename,
+                    status: download.status,
+                    startTime: new Date(download.startTime),
+                    duration: download.endTime ? download.endTime - download.startTime : null,
+                    error: download.error
+                };
+            });
+        },
+
+        clearDownloadHistory() {
+            $this.prop.downloads = [];
+        }
+    },
+
+    event: {
+        btnDownloadFile_click() {
+            var url = document.getElementById('fileUrl').value;
+            var filename = document.getElementById('fileName').value;
+            
+            if (!url) {
+                alert('다운로드할 파일 URL을 입력하세요.');
+                return;
+            }
+            
+            $this.method.downloadFile(url, filename)
+                .then(function(result) {
+                    console.log('다운로드 완료:', result);
+                })
+                .catch(function(error) {
+                    alert('다운로드 실패: ' + error.message);
+                });
+        },
+
+        btnDownloadMultiple_click() {
+            var fileList = [
+                { url: '/api/reports/sales.pdf', filename: '매출보고서.pdf' },
+                { url: '/api/reports/inventory.xlsx', filename: '재고현황.xlsx' },
+                { url: '/api/reports/summary.docx', filename: '요약보고서.docx' }
+            ];
+            
+            $this.method.downloadMultipleFiles(fileList)
+                .then(function(results) {
+                    var successful = results.filter(function(r) { return r.status === 'completed'; });
+                    console.log('다운로드 완료:', successful.length + '/' + results.length);
+                });
+        },
+
+        btnExportCSV_click() {
+            var data = [
+                { name: '홍길동', age: 30, department: '개발팀' },
+                { name: '김철수', age: 25, department: '영업팀' },
+                { name: '이영희', age: 28, department: '마케팅팀' }
+            ];
+            
+            $this.method.exportDataAsCSV(data, '직원목록.csv');
+        },
+
+        btnExportJSON_click() {
+            var data = {
+                exportDate: new Date().toISOString(),
+                users: [
+                    { id: 1, name: '홍길동', active: true },
+                    { id: 2, name: '김철수', active: false }
+                ]
+            };
+            
+            $this.method.exportDataAsJSON(data, '사용자데이터.json');
+        }
+    }
+};
+```
+
+### 3. URL 라우팅 및 네비게이션 관리자
+```javascript
+let $routeManager = {
+    prop: {
+        routes: {},
+        currentRoute: null,
+        history: [],
+        maxHistorySize: 50
+    },
+
+    hook: {
+        pageLoad() {
+            $this.method.initializeRouting();
+            $this.method.loadCurrentRoute();
+        }
+    },
+
+    method: {
+        initializeRouting() {
+            // 브라우저 뒤로/앞으로 버튼 처리
+            window.addEventListener('popstate', function(event) {
+                $this.method.handlePopState(event);
+            });
+            
+            // 기본 라우트 등록
+            $this.method.registerRoute('home', {
+                path: '/',
+                title: '홈',
+                handler: function() { $this.method.showHomePage(); }
+            });
+            
+            $this.method.registerRoute('users', {
+                path: '/users',
+                title: '사용자 관리',
+                handler: function() { $this.method.showUsersPage(); }
+            });
+            
+            $this.method.registerRoute('settings', {
+                path: '/settings',
+                title: '설정',
+                handler: function() { $this.method.showSettingsPage(); }
+            });
+        },
+
+        registerRoute(name, config) {
+            $this.prop.routes[name] = config;
+        },
+
+        navigateTo(routeName, params) {
+            params = params || {};
+            var route = $this.prop.routes[routeName];
+            
+            if (!route) {
+                console.error('존재하지 않는 라우트:', routeName);
+                return;
+            }
+            
+            // URL 파라미터 업데이트
+            syn.$r.params = params;
+            syn.$r.params.route = routeName;
+            
+            var newUrl = syn.$r.url();
+            
+            // 히스토리에 추가
+            $this.method.addToHistory({
+                route: routeName,
+                params: params,
+                title: route.title,
+                url: newUrl,
+                timestamp: Date.now()
+            });
+            
+            // URL 업데이트
+            window.history.pushState({ route: routeName, params: params }, route.title, newUrl);
+            document.title = route.title;
+            
+            // 라우트 핸들러 실행
+            if (route.handler) {
+                route.handler(params);
+            }
+            
+            $this.prop.currentRoute = routeName;
+        },
+
+        loadCurrentRoute() {
+            var routeName = syn.$r.query('route') || 'home';
+            var params = {};
+            
+            // URL 파라미터를 params에 복사 (route 제외)
+            for (var key in syn.$r.params) {
+                if (key !== 'route') {
+                    params[key] = syn.$r.params[key];
+                }
+            }
+            
+            var route = $this.prop.routes[routeName];
+            if (route && route.handler) {
+                route.handler(params);
+                $this.prop.currentRoute = routeName;
+            }
+        },
+
+        handlePopState(event) {
+            if (event.state && event.state.route) {
+                var route = $this.prop.routes[event.state.route];
+                if (route && route.handler) {
+                    route.handler(event.state.params || {});
+                    $this.prop.currentRoute = event.state.route;
+                }
+            } else {
+                $this.method.loadCurrentRoute();
+            }
+        },
+
+        addToHistory(entry) {
+            $this.prop.history.unshift(entry);
+            
+            // 히스토리 크기 제한
+            if ($this.prop.history.length > $this.prop.maxHistorySize) {
+                $this.prop.history = $this.prop.history.slice(0, $this.prop.maxHistorySize);
+            }
+        },
+
+        getHistory() {
+            return $this.prop.history;
+        },
+
+        goBack() {
+            window.history.back();
+        },
+
+        goForward() {
+            window.history.forward();
+        },
+
+        refresh() {
+            if ($this.prop.currentRoute) {
+                var route = $this.prop.routes[$this.prop.currentRoute];
+                if (route && route.handler) {
+                    route.handler(syn.$r.params);
+                }
+            }
+        },
+
+        // 라우트 핸들러들
+        showHomePage() {
+            document.getElementById('content').innerHTML = `
+                <h1>홈</h1>
+                <p>환영합니다!</p>
+                <div>
+                    <button onclick="$routeManager.method.navigateTo('users')">사용자 관리</button>
+                    <button onclick="$routeManager.method.navigateTo('settings')">설정</button>
+                </div>
+            `;
+        },
+
+        showUsersPage() {
+            var page = syn.$r.query('page') || '1';
+            var search = syn.$r.query('search') || '';
+            
+            document.getElementById('content').innerHTML = `
+                <h1>사용자 관리</h1>
+                <div>
+                    <input type="text" id="searchInput" value="${search}" placeholder="사용자 검색">
+                    <button onclick="$routeManager.method.searchUsers()">검색</button>
+                </div>
+                <p>현재 페이지: ${page}</p>
+                <div>
+                    <button onclick="$routeManager.method.changePage(1)">1페이지</button>
+                    <button onclick="$routeManager.method.changePage(2)">2페이지</button>
+                </div>
+            `;
+        },
+
+        showSettingsPage() {
+            document.getElementById('content').innerHTML = `
+                <h1>설정</h1>
+                <div>
+                    <label>
+                        <input type="checkbox" id="darkMode"> 다크 모드
+                    </label>
+                </div>
+                <div>
+                    <button onclick="$routeManager.method.saveSettings()">저장</button>
+                </div>
+            `;
+        },
+
+        searchUsers() {
+            var searchTerm = document.getElementById('searchInput').value;
+            $this.method.navigateTo('users', { 
+                search: searchTerm, 
+                page: '1' 
+            });
+        },
+
+        changePage(pageNumber) {
+            var search = syn.$r.query('search') || '';
+            $this.method.navigateTo('users', { 
+                page: pageNumber.toString(),
+                search: search 
+            });
+        },
+
+        saveSettings() {
+            var darkMode = document.getElementById('darkMode').checked;
+            
+            // 설정 저장
+            syn.$r.setCookie('darkMode', darkMode.toString(), {
+                expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+                path: '/'
+            });
+            
+            alert('설정이 저장되었습니다.');
+        }
+    },
+
+    event: {
+        btnHome_click() {
+            $this.method.navigateTo('home');
+        },
+
+        btnUsers_click() {
+            $this.method.navigateTo('users');
+        },
+
+        btnSettings_click() {
+            $this.method.navigateTo('settings');
+        },
+
+        btnBack_click() {
+            $this.method.goBack();
+        },
+
+        btnRefresh_click() {
+            $this.method.refresh();
+        }
+    }
+};
+```
+
+## 참고사항
+
+1. **보안**: 쿠키에 민감한 정보를 저장할 때는 secure, httpOnly, sameSite 옵션을 적절히 설정해야 합니다
+2. **성능**: Blob URL은 사용 후 반드시 해제하여 메모리 누수를 방지해야 합니다
+3. **호환성**: 일부 쿠키 옵션은 HTTPS 환경에서만 동작할 수 있습니다
+4. **URL 길이**: URL 파라미터가 너무 길면 브라우저나 서버에서 제한이 있을 수 있습니다
+5. **인코딩**: 한글이나 특수문자가 포함된 파라미터는 적절히 인코딩해야 합니다
 
 ## 데모
 

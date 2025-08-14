@@ -4,7 +4,1180 @@ sidebar_position: 9
 
 # syn.$l
 
-공통 라이브러리 기능을 제공합니다.
+## 개요
+syn.$l은 HandStack 웹 애플리케이션에서 자주 사용되는 공통 기능들을 제공하는 핵심 라이브러리입니다. 요소 조회, 이벤트 관리, 유틸리티 함수, 로깅, 네트워크 통신 등 다양한 기능을 포함합니다.
+
+## 주요 기능
+
+### 요소 조회 및 선택
+
+#### get(elID, ...args)
+하나 또는 여러 요소를 ID로 조회합니다.
+
+**구문**
+```javascript
+syn.$l.get(elID)        // 단일 요소
+syn.$l.get(elID1, elID2, ...) // 여러 요소
+```
+
+**매개변수**
+- `elID` (String): 요소 ID
+
+**반환값**
+- 단일 요소: `Element` 또는 `null`
+- 여러 요소: `Array<Element>`
+
+**예제**
+```javascript
+// 단일 요소 조회
+var nameInput = syn.$l.get('txtUserName');
+if (nameInput) {
+    nameInput.focus();
+}
+
+// 여러 요소 동시 조회
+var [nameInput, emailInput, phoneInput] = syn.$l.get('txtName', 'txtEmail', 'txtPhone');
+
+// 배열로 반환받기
+var inputs = syn.$l.get('txtName', 'txtEmail', 'txtPhone');
+inputs.forEach(input => {
+    if (input) {
+        syn.$m.addClass(input, 'required-field');
+    }
+});
+```
+
+#### querySelector(selector, el?)
+CSS 선택자로 요소를 조회합니다.
+
+**구문**
+```javascript
+syn.$l.querySelector(selector, el?)
+```
+
+**매개변수**
+- `selector` (String): CSS 선택자
+- `el` (Element, 선택사항): 검색 범위 요소 (기본값: document)
+
+**반환값**
+- `Element`: 첫 번째 일치하는 요소
+
+**예제**
+```javascript
+// 클래스로 첫 번째 요소 찾기
+var firstButton = syn.$l.querySelector('.btn-primary');
+
+// 속성으로 요소 찾기
+var requiredInput = syn.$l.querySelector('input[required]');
+
+// 특정 컨테이너 내에서 검색
+var container = syn.$l.get('formContainer');
+var submitBtn = syn.$l.querySelector('button[type="submit"]', container);
+```
+
+#### querySelectorAll(selector, el?)
+CSS 선택자로 모든 일치하는 요소를 조회합니다.
+
+**구문**
+```javascript
+syn.$l.querySelectorAll(selector, el?)
+```
+
+**반환값**
+- `NodeList`: 모든 일치하는 요소들
+
+**예제**
+```javascript
+// 모든 입력 필드 선택
+var allInputs = syn.$l.querySelectorAll('input, select, textarea');
+allInputs.forEach(input => {
+    syn.$l.addEvent(input, 'focus', highlightField);
+});
+
+// 특정 클래스를 가진 모든 요소
+var errorMessages = syn.$l.querySelectorAll('.error-message');
+errorMessages.forEach(msg => syn.$m.setStyle(msg, 'display', 'none'));
+```
+
+### 이벤트 관리
+
+#### addEvent(el, eventName, handler)
+요소에 이벤트 핸들러를 등록합니다.
+
+**구문**
+```javascript
+syn.$l.addEvent(el, eventName, handler)
+```
+
+**매개변수**
+- `el` (String|Element): 요소 ID 또는 요소 객체
+- `eventName` (String): 이벤트 이름
+- `handler` (Function): 이벤트 핸들러 함수
+
+**반환값**
+- `Object`: syn.$l 객체 (메서드 체이닝 가능)
+
+**예제**
+```javascript
+// 단일 이벤트 등록
+syn.$l.addEvent('btnSave', 'click', function(evt) {
+    console.log('저장 버튼 클릭됨');
+    saveData();
+});
+
+// 메서드 체이닝으로 여러 이벤트 등록
+syn.$l.addEvent('txtSearch', 'keyup', performSearch)
+       .addEvent('txtSearch', 'focus', highlightSearchBox)
+       .addEvent('txtSearch', 'blur', validateSearchInput);
+
+// 화살표 함수 사용
+syn.$l.addEvent('btnCancel', 'click', (evt) => {
+    evt.preventDefault();
+    closeModal();
+});
+```
+
+#### addEvents(els, eventName, handler)
+여러 요소에 동일한 이벤트 핸들러를 등록합니다.
+
+**구문**
+```javascript
+syn.$l.addEvents(els, eventName, handler)
+```
+
+**매개변수**
+- `els` (String|Array): CSS 선택자 또는 요소 배열
+- `eventName` (String): 이벤트 이름
+- `handler` (Function): 이벤트 핸들러 함수
+
+**예제**
+```javascript
+// CSS 선택자로 여러 요소에 이벤트 등록
+syn.$l.addEvents('input[type="text"]', 'focus', function(evt) {
+    syn.$m.addClass(evt.target, 'focused');
+});
+
+syn.$l.addEvents('button.action-btn', 'click', function(evt) {
+    var action = evt.target.dataset.action;
+    executeAction(action);
+});
+
+// 요소 배열에 이벤트 등록
+var menuItems = syn.$l.querySelectorAll('.menu-item');
+syn.$l.addEvents(menuItems, 'click', handleMenuClick);
+```
+
+#### removeEvent(el, eventName, handler?)
+이벤트 핸들러를 제거합니다.
+
+**구문**
+```javascript
+syn.$l.removeEvent(el, eventName, handler?)
+```
+
+**매개변수**
+- `el` (String|Element): 요소 ID 또는 요소 객체
+- `eventName` (String): 이벤트 이름
+- `handler` (Function, 선택사항): 제거할 특정 핸들러
+
+**예제**
+```javascript
+// 특정 핸들러 제거
+var clickHandler = function() { console.log('클릭됨'); };
+syn.$l.addEvent('myButton', 'click', clickHandler);
+syn.$l.removeEvent('myButton', 'click', clickHandler);
+
+// 해당 이벤트의 모든 핸들러 제거
+syn.$l.removeEvent('myButton', 'click');
+```
+
+#### dispatchClick(el)
+프로그래밍 방식으로 클릭 이벤트를 발생시킵니다.
+
+**구문**
+```javascript
+syn.$l.dispatchClick(el)
+```
+
+**예제**
+```javascript
+// 다른 버튼 클릭을 트리거
+syn.$l.addEvent('btnTrigger', 'click', function() {
+    syn.$l.dispatchClick('btnTarget');
+});
+
+// 폼 유효성 검사 후 제출 버튼 클릭
+function validateAndSubmit() {
+    if (isFormValid()) {
+        syn.$l.dispatchClick('btnSubmit');
+    }
+}
+```
+
+### 유틸리티 함수
+
+#### guid()
+GUID (Globally Unique Identifier)를 생성합니다.
+
+**구문**
+```javascript
+syn.$l.guid()
+```
+
+**반환값**
+- `String`: GUID 문자열
+
+**예제**
+```javascript
+var uniqueId = syn.$l.guid();
+console.log('생성된 GUID:', uniqueId);
+
+// 동적 요소 ID 생성
+var newElementId = 'element_' + syn.$l.guid();
+var dynamicDiv = syn.$m.create({
+    tag: 'div',
+    id: newElementId,
+    text: '동적 생성된 요소'
+});
+```
+
+#### random(length?, isLowerCase?)
+랜덤 문자열을 생성합니다.
+
+**구문**
+```javascript
+syn.$l.random(length?, isLowerCase?)
+```
+
+**매개변수**
+- `length` (Number, 선택사항): 문자열 길이 (기본값: 8)
+- `isLowerCase` (Boolean, 선택사항): 소문자만 사용 여부 (기본값: false)
+
+**반환값**
+- `String`: 랜덤 문자열
+
+**예제**
+```javascript
+// 기본 8자리 랜덤 문자열
+var randomStr = syn.$l.random();
+console.log('랜덤 문자열:', randomStr);
+
+// 16자리 랜덤 문자열
+var longRandom = syn.$l.random(16);
+
+// 소문자만 사용하는 12자리 문자열
+var lowerRandom = syn.$l.random(12, true);
+
+// 임시 파일명 생성
+var tempFileName = 'temp_' + syn.$l.random(8) + '.txt';
+```
+
+#### stringToArrayBuffer(str) / arrayBufferToString(buffer)
+문자열과 ArrayBuffer 간 변환 함수입니다.
+
+**예제**
+```javascript
+// 문자열을 ArrayBuffer로 변환
+var text = 'Hello, World!';
+var buffer = syn.$l.stringToArrayBuffer(text);
+console.log('ArrayBuffer:', buffer);
+
+// ArrayBuffer를 문자열로 변환
+var convertedText = syn.$l.arrayBufferToString(buffer);
+console.log('변환된 텍스트:', convertedText);
+
+// 파일 업로드 시 활용
+function processFileAsArrayBuffer(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var arrayBuffer = e.target.result;
+        var textContent = syn.$l.arrayBufferToString(arrayBuffer);
+        console.log('파일 내용:', textContent);
+    };
+    reader.readAsArrayBuffer(file);
+}
+```
+
+### 네트워크 및 통신
+
+#### xmlHttp()
+XMLHttpRequest 객체를 생성합니다.
+
+**구문**
+```javascript
+syn.$l.xmlHttp()
+```
+
+**반환값**
+- `XMLHttpRequest`: XMLHttpRequest 객체
+
+**예제**
+```javascript
+// 기본 AJAX 요청
+function makeAjaxRequest(url, data) {
+    var xhr = syn.$l.xmlHttp();
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+                console.log('응답 데이터:', response);
+            } else {
+                console.error('요청 실패:', xhr.status);
+            }
+        }
+    };
+    
+    xhr.send(JSON.stringify(data));
+}
+```
+
+#### fetchTimeout(resource, options)
+타임아웃이 포함된 fetch 요청을 수행합니다.
+
+**구문**
+```javascript
+syn.$l.fetchTimeout(resource, options)
+```
+
+**매개변수**
+- `resource` (String): 요청 URL
+- `options` (Object): fetch 옵션 (timeout 포함)
+
+**반환값**
+- `Promise`: fetch Promise
+
+**예제**
+```javascript
+// 타임아웃 설정된 요청
+async function fetchDataWithTimeout() {
+    try {
+        var response = await syn.$l.fetchTimeout('/api/data', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            timeout: 5000 // 5초 타임아웃
+        });
+        
+        if (response.ok) {
+            var data = await response.json();
+            console.log('데이터:', data);
+        } else {
+            throw new Error('HTTP 오류: ' + response.status);
+        }
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.error('요청 타임아웃');
+        } else {
+            console.error('요청 오류:', error);
+        }
+    }
+}
+```
+
+### 로깅 및 디버깅
+
+#### eventLog(event, data, logLevel?)
+이벤트 로그를 기록합니다.
+
+**구문**
+```javascript
+syn.$l.eventLog(event, data, logLevel?)
+```
+
+**매개변수**
+- `event` (String): 이벤트 이름
+- `data` (Any): 로그 데이터
+- `logLevel` (String, 선택사항): 로그 레벨 ('Debug', 'Information', 'Warning', 'Error')
+
+**예제**
+```javascript
+// 정보 로그
+syn.$l.eventLog('UserLogin', {
+    userId: 'john.doe',
+    timestamp: new Date().toISOString(),
+    ipAddress: '192.168.1.100'
+}, 'Information');
+
+// 경고 로그
+syn.$l.eventLog('InvalidInput', {
+    field: 'email',
+    value: 'invalid-email',
+    reason: 'Format validation failed'
+}, 'Warning');
+
+// 오류 로그
+syn.$l.eventLog('ApiError', {
+    endpoint: '/api/users',
+    status: 500,
+    message: 'Internal server error'
+}, 'Error');
+
+// 디버그 로그 (개발 환경에서만)
+if (syn.Config.IsDebugMode) {
+    syn.$l.eventLog('DebugInfo', {
+        functionName: 'validateForm',
+        parameters: formData,
+        result: validationResult
+    }, 'Debug');
+}
+```
+
+### 데이터 변환 및 처리
+
+#### deepClone(obj)
+객체를 깊은 복사합니다.
+
+**구문**
+```javascript
+syn.$l.deepClone(obj)
+```
+
+**매개변수**
+- `obj` (Object): 복사할 객체
+
+**반환값**
+- `Object`: 깊은 복사된 객체
+
+**예제**
+```javascript
+var originalData = {
+    user: {
+        name: 'John Doe',
+        preferences: {
+            theme: 'dark',
+            language: 'ko'
+        },
+        roles: ['admin', 'user']
+    }
+};
+
+// 깊은 복사
+var clonedData = syn.$l.deepClone(originalData);
+
+// 복사본 수정 (원본에 영향 없음)
+clonedData.user.name = 'Jane Doe';
+clonedData.user.preferences.theme = 'light';
+clonedData.user.roles.push('guest');
+
+console.log('원본:', originalData);
+console.log('복사본:', clonedData);
+```
+
+#### merge(target, ...sources)
+여러 객체를 병합합니다.
+
+**구문**
+```javascript
+syn.$l.merge(target, ...sources)
+```
+
+**예제**
+```javascript
+var defaultConfig = {
+    timeout: 30000,
+    retries: 3,
+    debug: false
+};
+
+var userConfig = {
+    timeout: 60000,
+    apiKey: 'user-api-key'
+};
+
+var envConfig = {
+    debug: true,
+    environment: 'development'
+};
+
+// 설정 병합
+var finalConfig = syn.$l.merge({}, defaultConfig, userConfig, envConfig);
+console.log('최종 설정:', finalConfig);
+```
+
+## 실전 활용 예제
+
+### 1. 동적 테이블 생성 및 관리
+```javascript
+function createDynamicTable(containerId, data) {
+    var container = syn.$l.get(containerId);
+    if (!container || !data || data.length === 0) return;
+    
+    // 테이블 구조 생성
+    var table = syn.$m.create({
+        tag: 'table',
+        className: 'table table-striped',
+        id: 'dynamicTable_' + syn.$l.random(6)
+    });
+    
+    // 헤더 생성
+    var thead = syn.$m.create({ tag: 'thead' });
+    var headerRow = syn.$m.create({ tag: 'tr' });
+    
+    var columns = Object.keys(data[0]);
+    columns.forEach(column => {
+        var th = syn.$m.create({
+            tag: 'th',
+            text: column,
+            className: 'sortable',
+            attributes: { 'data-column': column }
+        });
+        
+        syn.$m.appendChild(headerRow, th);
+    });
+    
+    // 액션 컬럼 추가
+    var actionTh = syn.$m.create({
+        tag: 'th',
+        text: '액션',
+        styles: { width: '120px' }
+    });
+    syn.$m.appendChild(headerRow, actionTh);
+    
+    syn.$m.appendChild(thead, headerRow);
+    syn.$m.appendChild(table, thead);
+    
+    // 바디 생성
+    var tbody = syn.$m.create({ tag: 'tbody' });
+    
+    data.forEach((rowData, index) => {
+        var row = syn.$m.create({
+            tag: 'tr',
+            attributes: { 'data-index': index }
+        });
+        
+        columns.forEach(column => {
+            var td = syn.$m.create({
+                tag: 'td',
+                text: rowData[column] || ''
+            });
+            syn.$m.appendChild(row, td);
+        });
+        
+        // 액션 버튼들
+        var actionTd = syn.$m.create({ tag: 'td' });
+        
+        var editBtn = syn.$m.create({
+            tag: 'button',
+            className: 'btn btn-sm btn-outline-primary me-1',
+            text: '편집',
+            attributes: { 'data-action': 'edit', 'data-index': index }
+        });
+        
+        var deleteBtn = syn.$m.create({
+            tag: 'button',
+            className: 'btn btn-sm btn-outline-danger',
+            text: '삭제',
+            attributes: { 'data-action': 'delete', 'data-index': index }
+        });
+        
+        syn.$m.appendChild(actionTd, editBtn);
+        syn.$m.appendChild(actionTd, deleteBtn);
+        syn.$m.appendChild(row, actionTd);
+        syn.$m.appendChild(tbody, row);
+    });
+    
+    syn.$m.appendChild(table, tbody);
+    syn.$m.appendChild(container, table);
+    
+    // 이벤트 등록
+    setupTableEvents(table, data);
+}
+
+function setupTableEvents(table, data) {
+    // 정렬 기능
+    syn.$l.addEvents('th.sortable', 'click', function(evt) {
+        var column = evt.target.dataset.column;
+        sortTable(table, column);
+    });
+    
+    // 액션 버튼 이벤트
+    syn.$l.addEvents('[data-action]', 'click', function(evt) {
+        var action = evt.target.dataset.action;
+        var index = parseInt(evt.target.dataset.index);
+        
+        switch (action) {
+            case 'edit':
+                editRow(table, index, data[index]);
+                break;
+            case 'delete':
+                if (confirm('정말 삭제하시겠습니까?')) {
+                    deleteRow(table, index);
+                    data.splice(index, 1);
+                }
+                break;
+        }
+    });
+    
+    // 행 더블클릭으로 편집
+    syn.$l.addEvents('tbody tr', 'dblclick', function(evt) {
+        var index = parseInt(evt.currentTarget.dataset.index);
+        editRow(table, index, data[index]);
+    });
+}
+
+function sortTable(table, column) {
+    var rows = Array.from(table.querySelectorAll('tbody tr'));
+    var sortDirection = table.dataset.sortDirection === 'asc' ? 'desc' : 'asc';
+    
+    rows.sort((a, b) => {
+        var aValue = a.querySelector(`td:nth-child(${getColumnIndex(table, column) + 1})`).textContent;
+        var bValue = b.querySelector(`td:nth-child(${getColumnIndex(table, column) + 1})`).textContent;
+        
+        if (sortDirection === 'asc') {
+            return aValue.localeCompare(bValue);
+        } else {
+            return bValue.localeCompare(aValue);
+        }
+    });
+    
+    var tbody = table.querySelector('tbody');
+    syn.$m.innerHTML(tbody, '');
+    rows.forEach(row => syn.$m.appendChild(tbody, row));
+    
+    table.dataset.sortDirection = sortDirection;
+    
+    // 정렬 표시 업데이트
+    syn.$l.querySelectorAll('th.sortable').forEach(th => {
+        syn.$m.removeClass(th, 'sorted-asc sorted-desc');
+    });
+    
+    var currentHeader = table.querySelector(`th[data-column="${column}"]`);
+    syn.$m.addClass(currentHeader, `sorted-${sortDirection}`);
+}
+
+// 사용 예제
+var sampleData = [
+    { name: '홍길동', age: 30, department: '개발팀', email: 'hong@example.com' },
+    { name: '김철수', age: 25, department: '마케팅팀', email: 'kim@example.com' },
+    { name: '이영희', age: 28, department: '디자인팀', email: 'lee@example.com' }
+];
+
+createDynamicTable('tableContainer', sampleData);
+```
+
+### 2. 범용 AJAX 통신 유틸리티
+```javascript
+var AjaxUtil = {
+    // 기본 설정
+    defaults: {
+        timeout: 30000,
+        retries: 3,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    },
+    
+    // GET 요청
+    async get(url, options = {}) {
+        return this.request(url, { ...options, method: 'GET' });
+    },
+    
+    // POST 요청
+    async post(url, data, options = {}) {
+        return this.request(url, {
+            ...options,
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    
+    // PUT 요청
+    async put(url, data, options = {}) {
+        return this.request(url, {
+            ...options,
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    },
+    
+    // DELETE 요청
+    async delete(url, options = {}) {
+        return this.request(url, { ...options, method: 'DELETE' });
+    },
+    
+    // 범용 요청 메서드
+    async request(url, options = {}) {
+        const config = { ...this.defaults, ...options };
+        let lastError;
+        
+        // 재시도 로직
+        for (let attempt = 1; attempt <= config.retries; attempt++) {
+            try {
+                syn.$l.eventLog('AjaxRequest', {
+                    url: url,
+                    method: config.method || 'GET',
+                    attempt: attempt
+                }, 'Debug');
+                
+                const response = await syn.$l.fetchTimeout(url, {
+                    method: config.method || 'GET',
+                    headers: config.headers,
+                    body: config.body,
+                    timeout: config.timeout
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                syn.$l.eventLog('AjaxResponse', {
+                    url: url,
+                    status: response.status,
+                    dataSize: JSON.stringify(data).length
+                }, 'Debug');
+                
+                return {
+                    success: true,
+                    data: data,
+                    status: response.status,
+                    headers: response.headers
+                };
+                
+            } catch (error) {
+                lastError = error;
+                
+                syn.$l.eventLog('AjaxError', {
+                    url: url,
+                    attempt: attempt,
+                    error: error.message
+                }, 'Warning');
+                
+                // 마지막 시도가 아니면 잠시 대기
+                if (attempt < config.retries) {
+                    await this.delay(1000 * attempt); // 지수 백오프
+                }
+            }
+        }
+        
+        // 모든 재시도 실패
+        syn.$l.eventLog('AjaxFailure', {
+            url: url,
+            error: lastError.message,
+            attempts: config.retries
+        }, 'Error');
+        
+        return {
+            success: false,
+            error: lastError.message,
+            status: lastError.status || 0
+        };
+    },
+    
+    // 지연 함수
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    },
+    
+    // 파일 업로드
+    async uploadFile(url, file, options = {}) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // 추가 필드들
+        if (options.fields) {
+            Object.entries(options.fields).forEach(([key, value]) => {
+                formData.append(key, value);
+            });
+        }
+        
+        const uploadOptions = {
+            ...options,
+            method: 'POST',
+            body: formData,
+            headers: {
+                // Content-Type을 설정하지 않음 (브라우저가 자동으로 multipart/form-data 설정)
+                ...(options.headers || {})
+            }
+        };
+        
+        // Content-Type 제거 (FormData 사용 시)
+        delete uploadOptions.headers['Content-Type'];
+        
+        return this.request(url, uploadOptions);
+    },
+    
+    // 진행률을 포함한 업로드
+    uploadWithProgress(url, file, options = {}) {
+        return new Promise((resolve, reject) => {
+            const xhr = syn.$l.xmlHttp();
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            if (options.fields) {
+                Object.entries(options.fields).forEach(([key, value]) => {
+                    formData.append(key, value);
+                });
+            }
+            
+            // 진행률 콜백
+            xhr.upload.onprogress = function(evt) {
+                if (evt.lengthComputable) {
+                    const percentComplete = (evt.loaded / evt.total) * 100;
+                    if (options.onProgress) {
+                        options.onProgress(percentComplete, evt.loaded, evt.total);
+                    }
+                }
+            };
+            
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve({
+                        success: true,
+                        data: JSON.parse(xhr.responseText),
+                        status: xhr.status
+                    });
+                } else {
+                    reject({
+                        success: false,
+                        error: `HTTP ${xhr.status}: ${xhr.statusText}`,
+                        status: xhr.status
+                    });
+                }
+            };
+            
+            xhr.onerror = function() {
+                reject({
+                    success: false,
+                    error: 'Network error',
+                    status: 0
+                });
+            };
+            
+            xhr.open('POST', url, true);
+            
+            // 헤더 설정
+            if (options.headers) {
+                Object.entries(options.headers).forEach(([key, value]) => {
+                    if (key !== 'Content-Type') { // FormData 사용 시 Content-Type 자동 설정
+                        xhr.setRequestHeader(key, value);
+                    }
+                });
+            }
+            
+            xhr.send(formData);
+        });
+    }
+};
+
+// 사용 예제
+async function exampleUsage() {
+    // 간단한 GET 요청
+    var result = await AjaxUtil.get('/api/users');
+    if (result.success) {
+        console.log('사용자 목록:', result.data);
+    }
+    
+    // POST 요청으로 데이터 전송
+    var newUser = { name: '홍길동', email: 'hong@example.com' };
+    var createResult = await AjaxUtil.post('/api/users', newUser);
+    if (createResult.success) {
+        console.log('사용자 생성 성공:', createResult.data);
+    }
+    
+    // 파일 업로드
+    var fileInput = syn.$l.get('fileUpload');
+    if (fileInput.files.length > 0) {
+        var uploadResult = await AjaxUtil.uploadFile('/api/upload', fileInput.files[0], {
+            fields: { category: 'documents', userId: '12345' }
+        });
+        
+        if (uploadResult.success) {
+            console.log('파일 업로드 성공:', uploadResult.data);
+        }
+    }
+    
+    // 진행률 표시 업로드
+    AjaxUtil.uploadWithProgress('/api/upload', fileInput.files[0], {
+        onProgress: (percent, loaded, total) => {
+            console.log(`업로드 진행률: ${percent.toFixed(2)}%`);
+            updateProgressBar(percent);
+        }
+    }).then(result => {
+        if (result.success) {
+            console.log('업로드 완료:', result.data);
+        }
+    }).catch(error => {
+        console.error('업로드 실패:', error);
+    });
+}
+```
+
+### 3. 로컬 스토리지 관리 유틸리티
+```javascript
+var StorageUtil = {
+    // 기본 설정
+    prefix: 'app_',
+    version: '1.0',
+    
+    // 키 생성
+    getKey(key) {
+        return `${this.prefix}${key}_${this.version}`;
+    },
+    
+    // 저장
+    set(key, value, options = {}) {
+        try {
+            var storageKey = this.getKey(key);
+            var data = {
+                value: value,
+                timestamp: Date.now(),
+                expires: options.expires ? Date.now() + options.expires : null,
+                type: typeof value,
+                version: this.version
+            };
+            
+            var serialized = JSON.stringify(data);
+            
+            if (options.compress && serialized.length > 1024) {
+                serialized = syn.$c.LZString.compressToBase64(serialized);
+                data.compressed = true;
+            }
+            
+            localStorage.setItem(storageKey, JSON.stringify({ ...data, compressed: options.compress }));
+            
+            syn.$l.eventLog('StorageSet', {
+                key: key,
+                size: serialized.length,
+                compressed: !!options.compress
+            }, 'Debug');
+            
+            return true;
+        } catch (error) {
+            syn.$l.eventLog('StorageError', {
+                operation: 'set',
+                key: key,
+                error: error.message
+            }, 'Error');
+            return false;
+        }
+    },
+    
+    // 조회
+    get(key, defaultValue = null) {
+        try {
+            var storageKey = this.getKey(key);
+            var stored = localStorage.getItem(storageKey);
+            
+            if (!stored) return defaultValue;
+            
+            var data = JSON.parse(stored);
+            
+            // 만료 확인
+            if (data.expires && Date.now() > data.expires) {
+                this.remove(key);
+                return defaultValue;
+            }
+            
+            // 압축 해제
+            if (data.compressed && typeof data.value === 'string') {
+                data.value = JSON.parse(syn.$c.LZString.decompressFromBase64(data.value));
+            }
+            
+            return data.value;
+        } catch (error) {
+            syn.$l.eventLog('StorageError', {
+                operation: 'get',
+                key: key,
+                error: error.message
+            }, 'Error');
+            return defaultValue;
+        }
+    },
+    
+    // 제거
+    remove(key) {
+        try {
+            var storageKey = this.getKey(key);
+            localStorage.removeItem(storageKey);
+            return true;
+        } catch (error) {
+            syn.$l.eventLog('StorageError', {
+                operation: 'remove',
+                key: key,
+                error: error.message
+            }, 'Error');
+            return false;
+        }
+    },
+    
+    // 모든 앱 데이터 제거
+    clear() {
+        try {
+            var keysToRemove = [];
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                var key = localStorage.key(i);
+                if (key.startsWith(this.prefix)) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            
+            syn.$l.eventLog('StorageClear', {
+                removedCount: keysToRemove.length
+            }, 'Information');
+            
+            return true;
+        } catch (error) {
+            syn.$l.eventLog('StorageError', {
+                operation: 'clear',
+                error: error.message
+            }, 'Error');
+            return false;
+        }
+    },
+    
+    // 만료된 항목 정리
+    cleanup() {
+        var cleanedCount = 0;
+        var keys = Object.keys(localStorage);
+        
+        keys.forEach(key => {
+            if (key.startsWith(this.prefix)) {
+                try {
+                    var data = JSON.parse(localStorage.getItem(key));
+                    if (data.expires && Date.now() > data.expires) {
+                        localStorage.removeItem(key);
+                        cleanedCount++;
+                    }
+                } catch (error) {
+                    // 잘못된 형식의 데이터 제거
+                    localStorage.removeItem(key);
+                    cleanedCount++;
+                }
+            }
+        });
+        
+        syn.$l.eventLog('StorageCleanup', {
+            cleanedCount: cleanedCount
+        }, 'Information');
+        
+        return cleanedCount;
+    },
+    
+    // 저장소 사용량 확인
+    getUsage() {
+        var totalSize = 0;
+        var appSize = 0;
+        var itemCount = 0;
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+            var value = localStorage.getItem(key);
+            var size = (key + value).length;
+            
+            totalSize += size;
+            
+            if (key.startsWith(this.prefix)) {
+                appSize += size;
+                itemCount++;
+            }
+        }
+        
+        return {
+            total: totalSize,
+            app: appSize,
+            items: itemCount,
+            percentage: totalSize > 0 ? (appSize / totalSize * 100).toFixed(2) : 0
+        };
+    },
+    
+    // 데이터 내보내기
+    export() {
+        var exportData = {};
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+            if (key.startsWith(this.prefix)) {
+                var originalKey = key.replace(new RegExp(`^${this.prefix}`), '').replace(`_${this.version}`, '');
+                exportData[originalKey] = this.get(originalKey);
+            }
+        }
+        
+        return {
+            version: this.version,
+            timestamp: Date.now(),
+            data: exportData
+        };
+    },
+    
+    // 데이터 가져오기
+    import(exportData) {
+        if (!exportData || !exportData.data) return false;
+        
+        try {
+            Object.entries(exportData.data).forEach(([key, value]) => {
+                this.set(key, value);
+            });
+            
+            syn.$l.eventLog('StorageImport', {
+                itemCount: Object.keys(exportData.data).length,
+                version: exportData.version
+            }, 'Information');
+            
+            return true;
+        } catch (error) {
+            syn.$l.eventLog('StorageError', {
+                operation: 'import',
+                error: error.message
+            }, 'Error');
+            return false;
+        }
+    }
+};
+
+// 사용 예제
+function storageExamples() {
+    // 기본 저장/조회
+    StorageUtil.set('user_preferences', {
+        theme: 'dark',
+        language: 'ko',
+        notifications: true
+    });
+    
+    var preferences = StorageUtil.get('user_preferences');
+    console.log('사용자 설정:', preferences);
+    
+    // 만료 시간 설정 (1시간)
+    StorageUtil.set('session_token', 'abc123', {
+        expires: 60 * 60 * 1000 // 1시간
+    });
+    
+    // 압축 저장 (큰 데이터)
+    var largeData = generateLargeDataObject();
+    StorageUtil.set('cache_data', largeData, {
+        compress: true,
+        expires: 24 * 60 * 60 * 1000 // 24시간
+    });
+    
+    // 사용량 확인
+    var usage = StorageUtil.getUsage();
+    console.log('스토리지 사용량:', usage);
+    
+    // 주기적 정리 (앱 시작 시)
+    StorageUtil.cleanup();
+    
+    // 데이터 백업
+    var backup = StorageUtil.export();
+    console.log('백업 데이터:', backup);
+}
+```
+
+## 주의사항
+
+1. **메모리 관리**: 이벤트 리스너를 등록한 후에는 필요 시 적절히 제거해야 메모리 누수를 방지할 수 있습니다.
+2. **에러 처리**: 네트워크 요청이나 DOM 조작 시에는 적절한 에러 처리를 해야 합니다.
+3. **성능 고려**: 대량의 DOM 요소에 이벤트를 등록할 때는 이벤트 델리게이션을 고려하세요.
+4. **브라우저 호환성**: 일부 기능은 구형 브라우저에서 지원되지 않을 수 있습니다.
+5. **보안**: 로그에 민감한 정보가 기록되지 않도록 주의해야 합니다.
+
 
 ## 데모
 
