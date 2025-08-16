@@ -43,6 +43,9 @@
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="blog\2025-08-16-AI-를-활용한-실무-SQL-생성-팁을-공유합니다\img\" />
+	</ItemGroup>
 
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<!--<Exec Command="npm run build" WorkingDirectory="$(ProjectDir)" />-->
