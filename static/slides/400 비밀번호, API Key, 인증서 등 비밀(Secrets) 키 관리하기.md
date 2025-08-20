@@ -147,16 +147,12 @@ HandStack은 HTTP 요청 헤더를 통해 클라이언트를 식별하고 인가
 ```json
 {
     "ManagementHost": { ... },
-    "Licenses": { ... },
     "Secrets": { ... }
 }
 ```
 
 - `ManagementHost`
   - 비밀 키를 관리(등록, 삭제)할 수 있는 관리자 클라이언트 정보를 정의합니다.
-
-- `Licenses`
-  - ack 서버에서 사용하는 상용 제품의 라이선스 키 정보를 관리합니다.
 
 - `Secrets`
   - 각 클라이언트의 요청 조건과 일치하는 비밀 키 정보를 관리합니다.
@@ -172,17 +168,6 @@ HandStack은 HTTP 요청 헤더를 통해 클라이언트를 식별하고 인가
         "IpAddress": "[IP 주소]",
         "HostName": "[HostName]",
         "SystemVaultKey": "[Strong@Passw0rd]"
-    },
-    "Licenses": {
-        "[라이선스 키 고유 ID]": {
-            "CompanyName": "[회사명]",
-            "AuthorizedHost": "[도메인 또는 IP 주소]",
-            "Key": "[라이언스 키 문자열]",
-            "CreatedAt": "[발급 일시]",
-            "ExpiresAt": "[만료 일시 또는 무제한 null]",
-            "Environment": "[적용 환경: Development, Test, Production]",
-            "SignKey": "[회사명|CreatedAt|ExpiresAt|Environment|localhost,...] sha256"
-        }
     },
     "Secrets": {
         "HandStack-MachineID|HandStack-IP|HandStack-HostName": [
