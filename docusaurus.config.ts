@@ -4,7 +4,7 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-    title: 'HandStack은 오픈소스 기반의 비즈니스 데이터 소유권을 확보하는 정보 시스템 개발 솔루션입니다.',
+    title: 'HandStack 의 목표는 개발자가 좋아하고 기업이 신뢰하는 비즈니스 앱 개발 플랫폼을 구축하는 것입니다.',
     tagline: '',
     favicon: '/favicon.ico',
 
