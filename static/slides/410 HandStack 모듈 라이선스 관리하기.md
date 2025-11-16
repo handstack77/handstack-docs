@@ -323,7 +323,7 @@ node license-cli.js create --module-id "custom-api-module" `
 ```bash
 handstack encryptcontracts `
   --file="C:\..\modulename.dll" `
-  --directory="C:\..\modulename\bin\Debug\net8.0\Contracts"
+  --directory="C:\..\modulename\bin\Debug\net10.0\Contracts"
 ```
 - 어셈블리 파일에 포함된 공개 키와 토큰 키를 사용하여 암호화를 수행합니다.
 

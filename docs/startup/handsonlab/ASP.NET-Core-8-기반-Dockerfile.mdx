@@ -2,9 +2,9 @@
 sidebar_position: 10
 ---
 
-# ASP.NET Core 8 기반 Dockerfile 가이드
+# ASP.NET Core 10 기반 Dockerfile 가이드
 
-ASP.NET Core 8을 기반으로 하는 경량화된 Dockerlize 앱을 만들기 위한 Dockerfile의 구조와 각 단계에 대한 설명을 포함합니다. 해당 Dockerfile은 멀티스테이지 빌드를 활용하여 최적화된 이미지를 생성하는 방식으로 작성되었습니다.
+ASP.NET Core 10 을 기반으로 하는 경량화된 Dockerlize 앱을 만들기 위한 Dockerfile의 구조와 각 단계에 대한 설명을 포함합니다. 해당 Dockerfile은 멀티스테이지 빌드를 활용하여 최적화된 이미지를 생성하는 방식으로 작성되었습니다.
 
 ---
 
@@ -12,14 +12,14 @@ ASP.NET Core 8을 기반으로 하는 경량화된 Dockerlize 앱을 만들기 �
 
 ### 베이스 이미지 설정
 ```dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS base
 WORKDIR /app
 EXPOSE 8421
 EXPOSE 9229
 ```
 
-- `FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base`
-  - **ASP.NET Core 8 런타임**을 포함한 **Alpine Linux** 기반의 가벼운 이미지를 사용합니다.
+- `FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS base`
+  - **ASP.NET Core 10 런타임**을 포함한 **Alpine Linux** 기반의 가벼운 이미지를 사용합니다.
   - Alpine은 최소한의 패키지만 포함하고 있어 **보안성이 높고, 이미지 크기가 작습니다.**
   
 - `WORKDIR /app`
@@ -35,7 +35,7 @@ EXPOSE 9229
 
 ### 빌드 환경 설정
 ```dockerfile
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY ["YourApp.csproj", "./"]
 RUN dotnet restore "./YourApp.csproj"
@@ -44,8 +44,8 @@ WORKDIR "/src/."
 RUN dotnet build "YourApp.csproj" -c Release -o /app/build
 ```
 
-- `FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build`
-  - **.NET SDK 8.0** 이미지를 사용하여 애플리케이션을 빌드합니다.
+- `FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build`
+  - **.NET SDK 10.0** 이미지를 사용하여 애플리케이션을 빌드합니다.
   - SDK는 컴파일과 빌드, 패키지 관리 등을 수행하는 역할을 합니다.
 
 - `WORKDIR /src`
@@ -115,7 +115,7 @@ ENTRYPOINT ["dotnet", "YourApp.dll"]
 ---
 
 ## 전체 Dockerfile 및 요약
-이 Dockerfile은 **멀티스테이지 빌드**를 활용하여 효율적인 ASP.NET Core 8 애플리케이션을 컨테이너화하는 방식을 설명합니다. Alpine 기반의 **경량 런타임 이미지**를 활용하여 **보안성과 성능을 높이면서도 빌드 속도를 최적화**할 수 있습니다.
+이 Dockerfile은 **멀티스테이지 빌드**를 활용하여 효율적인 ASP.NET Core 10 애플리케이션을 컨테이너화하는 방식을 설명합니다. Alpine 기반의 **경량 런타임 이미지**를 활용하여 **보안성과 성능을 높이면서도 빌드 속도를 최적화**할 수 있습니다.
 
 ### 멀티스테이지 빌드의 이점
 - **이미지 크기 최적화**:
@@ -147,14 +147,14 @@ docker run -d -p 8421:8421 --name yourapp-container yourapp-image
 - `--name yourapp-container`: 컨테이너 이름 지정
 
 ```dockerfile
-# 베이스 이미지로 ASP.NET Core 8 사용
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
+# 베이스 이미지로 ASP.NET Core 10 사용
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS base
 WORKDIR /app
 EXPOSE 8421
 EXPOSE 9229
 
 # 빌드 이미지로 SDK 사용
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY ["YourApp.csproj", "./"]
 RUN dotnet restore "./YourApp.csproj"
