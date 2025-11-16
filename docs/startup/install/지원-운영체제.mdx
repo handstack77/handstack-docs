@@ -8,80 +8,47 @@ sidebar_position: 10
 
 ## .NET 10 지원 운영체제
 
-## Windows
+> HandStack은 x64 아키텍처 기반의 Windows 11+, Ubuntu 22.04+, macOS 12+ (Monterey)에서 주로 개발하고 테스트합니다.  
+> 아래 표는 .NET 10 이 지원하는 운영체제 범위를, 현재 .NET LTS 버전의 정책을 바탕으로 정리한 것입니다.  
+> 실제 설치 시에는 반드시 [.NET 공식 설치 문서](https://learn.microsoft.com/dotnet/core/install/)에서 최신 정보를 확인하세요.
 
-|운영체제|버전|아키텍처|지원정보|
+### Windows
+
+|운영체제|버전(예시)|아키텍처|지원정보|
 |---|---|---|---|
-|[Windows 10 Client][Windows-client]|버전 1607+|x64, x86, Arm64|[Windows][Windows-lifecycle]|
-|[Windows 11][Windows-client]|버전 22000+|x64, x86, Arm64|[Windows][Windows-lifecycle]|
-|[Windows Server][Windows-Server]|2012+ (*)|x64, x86|[Windows Server][Windows-Server-lifecycle]|
-|[Windows Server Core][Windows-Server]|2012+ (*)|x64, x86|[Windows Server][Windows-Server-lifecycle]|
-|[Nano Server][Nano-Server]|버전 1809+|x64|[Windows Server][Windows-Server-lifecycle]|
+|[Windows 10 Client][Windows-client]|버전 1607+ (릴리스 시점에 변경 가능)|x64, Arm64|[Windows][Windows-lifecycle]|
+|[Windows 11][Windows-client]|버전 22000+|x64, Arm64|[Windows][Windows-lifecycle]|
+|[Windows Server][Windows-Server]|2016+ 또는 .NET 10 공식 지원 버전|x64, Arm64|[Windows Server][Windows-Server-lifecycle]|
+|[Windows Server Core][Windows-Server]|2016+ 또는 .NET 10 공식 지원 버전|x64, Arm64|[Windows Server][Windows-Server-lifecycle]|
+|[Nano Server][Nano-Server]|버전 1809+ (컨테이너)|x64|[Windows Server][Windows-Server-lifecycle]|
 
-[Windows-client]: https://www.microsoft.com/windows/
-[Windows-lifecycle]: https://support.microsoft.com/help/13853/windows-lifecycle-fact-sheet
-[win-client-docker]: https://hub.docker.com/_/microsoft-windows
-[Windows-Server-lifecycle]: https://learn.microsoft.com/windows-server/get-started/windows-server-release-info
-[Nano-Server]: https://learn.microsoft.com/windows-server/get-started/getting-started-with-nano-server
-[Windows-Server]: https://learn.microsoft.com/windows-server/
+.NET 10은 Windows 11 Arm64에서 **네이티브 Arm64**와 **x64 에뮬레이션** 환경 모두에서 실행될 수 있습니다.
 
-.NET 10은 Windows 11 Arm64의 x64 에뮬레이터에서 지원됩니다.
+### Linux
 
-## Linux
+> 아래 배포판 및 버전은 작성 시점 기준 예시입니다. .NET 10 릴리스 시점에는 지원 범위가 변경될 수 있습니다.
 
-|운영체제|버전|아키텍처|지원정보|
+|운영체제|버전(예시)|아키텍처|지원정보|
 |---|---|---|---|
-|[Alpine Linux][Alpine]|3.16+|x64, Arm64, Arm32|[Alpine][Alpine-lifecycle]|
-|[Debian][Debian]|11+|x64, Arm64, Arm32|[Debian][Debian-lifecycle]|
-|[Fedora][Fedora]|38+|x64|[Fedora][Fedora-lifecycle]|
+|[Alpine Linux][Alpine]|3.16+|x64, Arm64|[Alpine][Alpine-lifecycle]|
+|[Debian][Debian]|11+|x64, Arm64|[Debian][Debian-lifecycle]|
+|[Fedora][Fedora]|현재 .NET LTS에서 지원되는 최소 버전 이상 (예: 38+)|x64|[Fedora][Fedora-lifecycle]|
 |[openSUSE][OpenSUSE]|15+|x64|[OpenSUSE][OpenSUSE-lifecycle]|
 |[Oracle Linux][Oracle-Linux]|8+|x64|[Oracle][Oracle-lifecycle]|
 |[Red Hat Enterprise Linux][RHEL]|8+|x64, Arm64|[Red Hat][RHEL-lifecycle]|
-|[SUSE Enterprise Linux (SLES)][SLES]|12 SP5+|x64|[SUSE][SLES-lifecycle]|
-|[Ubuntu][Ubuntu]|20.04+|x64, Arm64, Arm32 |[Ubuntu][Ubuntu-lifecycle]|
+|[SUSE Enterprise Linux (SLES)][SLES]|12 SP5+ 또는 이후 지원 버전|x64|[SUSE][SLES-lifecycle]|
+|[Ubuntu][Ubuntu]|22.04+|x64, Arm64|[Ubuntu][Ubuntu-lifecycle]|
 
-[Alpine]: https://alpinelinux.org/
-[Alpine-lifecycle]: https://alpinelinux.org/releases/
-[CentOS]: https://www.centos.org/
-[CentOS-lifecycle]:https://wiki.centos.org/FAQ/General
-[CentOS-docker]: https://hub.docker.com/_/centos
-[CentOS-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-centos8
-[Debian]: https://www.debian.org/
-[Debian-lifecycle]: https://wiki.debian.org/DebianReleases
-[Debian-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-debian10
-[Fedora]: https://getfedora.org/
-[Fedora-lifecycle]: https://fedoraproject.org/wiki/End_of_life
-[Fedora-docker]: https://hub.docker.com/_/fedora
-[Fedora-msft-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-fedora32
-[Fedora-pm]: https://fedoraproject.org/wiki/DotNet
-[OpenSUSE]: https://opensuse.org/
-[OpenSUSE-lifecycle]: https://en.opensuse.org/Lifetime
-[OpenSUSE-docker]: https://hub.docker.com/r/opensuse/leap
-[OpenSUSE-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-opensuse15
-[Oracle-Linux]: https://www.oracle.com/linux/
-[Oracle-Lifecycle]: https://www.oracle.com/a/ocom/docs/elsp-lifetime-069338.pdf
-[RHEL]: https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux
-[RHEL-lifecycle]: https://access.redhat.com/support/policy/updates/errata/
-[RHEL-msft-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-rhel8
-[RHEL-pm]: https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/developing_.net_applications_in_rhel_8/using-net-core-on-rhel_gsg#installing-net-core_gsg
-[SLES]: https://www.suse.com/products/server/
-[SLES-lifecycle]: https://www.suse.com/lifecycle/
-[SLES-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-sles15
-[Ubuntu]: https://ubuntu.com/
-[Ubuntu-lifecycle]: https://wiki.ubuntu.com/Releases
-[Ubuntu-pm]: https://learn.microsoft.com/dotnet/core/install/linux-package-manager-ubuntu-2004
-[glibc]: https://www.gnu.org/software/libc/
-[musl]: https://musl.libc.org/
+Arm32 지원 여부는 배포판 및 .NET 버전에 따라 다르므로, 필요 시 [.NET Linux 설치 문서](https://learn.microsoft.com/dotnet/core/install/linux)를 별도로 확인해야 합니다.
 
-## macOS
+### macOS
 
 |운영체제|버전|아키텍처|
 |---|---|---|
-|[macOS][macOS]|12.0+|x64, Arm64|
+|[macOS][macOS]|12.0+ (Monterey) 이상, .NET 10 공식 지원 버전|x64, Arm64|
 
-M1, M2, M3와 같은 Arm64 CPU가 탑재된 macOS에서 .NET 10은 Rosetta 2 x64 에뮬레이터에서 지원됩니다.
-
-[macOS]: https://support.apple.com/macos
+Apple Silicon(M1, M2, M3 등) 기반 macOS에서는 .NET 10이 **네이티브 Arm64**로 동작하며,  
+필요 시 Rosetta 2를 통한 x64 에뮬레이션 환경에서도 실행할 수 있습니다.
 
 ---
 
@@ -89,6 +56,6 @@ M1, M2, M3와 같은 Arm64 CPU가 탑재된 macOS에서 .NET 10은 Rosetta 2 x64
 
 Node.js 20 버전의 알려진 최소 운영체제 요구사항은 다음과 같습니다.
 
-- **Windows**: Windows 7, Windows Server 2008 R2+
-- **Linux**: Ubuntu 18+, RHEL / CentOS 8+, Debian 10+
+- **Windows**: Windows 10+, Windows Server 2016+
+- **Linux**: Ubuntu 22.04+, Debian 10+
 - **macOS**: Big Sur(11.x)+
