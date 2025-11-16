@@ -1,0 +1,376 @@
+---
+sidebar_position: 30
+---
+
+# Ubuntu 22.04+ 추천 개발 도구 설치하기
+
+소프트웨어 개발자와 운영자를 위한 좋은 도구는 생산성을 10배 이상 높일 수 있습니다. 이 글에서는 **Ubuntu 22.04+** 에서 개발자와 운영자를 위한 추천 도구를 설치하는 방법을 소개합니다.
+
+## 기본 준비
+
+먼저 패키지 목록을 최신 상태로 업데이트합니다.
+
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+필요 시 자주 쓰는 기본 도구도 설치해 둡니다.
+
+```bash
+sudo apt install -y build-essential curl wget git ca-certificates software-properties-common apt-transport-https gnupg lsb-release
+```
+
+---
+
+## 팁) 필수 프로그램 한번에 설치하기
+
+Windows에서 `winget-packages.json`을 가져와 한 번에 설치했던 것처럼, Ubuntu에서는 **APT 패키지 목록 파일**을 만들어 한 번에 설치할 수 있습니다.
+
+예시: `apt-packages.txt`로 설치할 패키지를 관리합니다.
+
+```bash
+cd /tmp
+cat << 'EOF' > apt-packages.txt
+# 개발 도구
+git
+build-essential
+curl
+wget
+
+# 편의 도구
+htop
+tree
+
+# 필요 시 계속 추가...
+EOF
+
+# 주석(#) 제외하고 한 번에 설치
+sudo xargs -a <(grep -vE '^\s*#' apt-packages.txt) apt install -y
+```
+
+GUI 앱까지 포함해서 “완전 자동화” 하고 싶다면 `bash` 설치 스크립트를 하나 만들어서 `apt`, `snap`, `flatpak` 명령을 순서대로 넣어두는 방식으로 관리하는 것을 추천합니다.
+
+---
+
+## IDE 및 확장 프로그램
+
+### Visual Studio Code + JetBrains Rider 등
+
+Visual Studio 2022 Community 자체는 Linux를 공식 지원하지 않습니다. 대신 다음 조합을 추천합니다.
+
+- C#/.NET 개발:  
+  - **Visual Studio Code** + C# 확장  
+  - 상용 IDE 사용 시 JetBrains Rider Community (https://www.jetbrains.com/ko-kr/rider/download/?section=linux)
+
+### Visual Studio Code
+
+```bash
+sudo snap install code --classic
+# 또는 Microsoft 공식 리포지토리 이용(선호 시)
+# wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+# sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+# sudo apt update
+# sudo apt install -y code
+```
+
+### PyCharm Community
+
+```bash
+sudo snap install pycharm-community --classic
+```
+
+### Sublime Text 설치
+
+```bash
+wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo gpg --dearmor -o /usr/share/keyrings/sublimehq-archive.gpg
+echo "deb [signed-by=/usr/share/keyrings/sublimehq-archive.gpg] https://download.sublimetext.com/ apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list
+sudo apt update
+sudo apt install -y sublime-text
+```
+
+### Meld / KDiff3 소스 비교 기능 편집기 도구
+
+```bash
+sudo apt install -y meld
+# 또는
+sudo apt install -y kdiff3
+```
+
+### DBeaver
+
+```bash
+sudo snap install dbeaver-ce
+# 또는
+# wget https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
+# sudo apt install -y ./dbeaver-ce_latest_amd64.deb
+```
+
+### DB Browser for SQLite
+
+```bash
+sudo apt install -y sqlitebrowser
+```
+
+---
+
+## Ubuntu 유틸리티
+
+### Free Commander XE (대체: Double Commander / Thunar / Nemo 등)
+
+```bash
+sudo apt install -y doublecmd-gtk
+# 또는
+sudo apt install -y doublecmd-qt
+```
+
+### fsearch / recoll / ripgrep+fd 검색 도구
+
+`fsearch`는 Everything과 비슷한 UI/사용성을 제공합니다.
+
+```bash
+sudo apt install -y fsearch
+```
+
+CLI 기반 빠른 검색 도구:
+
+```bash
+sudo apt install -y fd-find ripgrep
+# fd가 fdfind로 설치되므로 별칭 설정을 권장
+echo 'alias fd=fdfind' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### FileZilla 파일 전송 클라이언트
+
+```bash
+sudo apt install -y filezilla
+```
+
+### FortiClient VPN
+
+Fortinet에서 Linux용 VPN 클라이언트를 제공합니다. 공식 .deb 패키지 다운로드 후 설치합니다.
+
+```bash
+cd /tmp
+# 아래 URL은 예시, 실제 최신 버전은 Fortinet 포털에서 확인 필요
+wget "https://links.fortinet.com/forticlient/deb/latest" -O forticlient.deb
+sudo apt install -y ./forticlient.deb
+```
+
+또는 OpenVPN/네이티브 IPSec/SSL VPN 등으로 대체 구성 가능.
+
+### Postman
+
+```bash
+sudo snap install postman
+```
+
+### IrfanView (대체: nomacs / gThumb / Gwenview / feh 등)
+
+```bash
+sudo apt install -y nomacs
+```
+
+### Process Explorer (대체: htop / gtop / system-monitor / bpftrace 등)
+
+```bash
+sudo apt install -y htop
+```
+
+GUI 시스템 모니터:
+
+```bash
+sudo apt install -y gnome-system-monitor
+```
+
+### Chrome 브라우저
+
+```bash
+cd /tmp
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt install -y ./google-chrome-stable_current_amd64.deb
+```
+
+### Brave 브라우저
+
+```bash
+sudo apt install -y curl
+sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+sudo apt update
+sudo apt install -y brave-browser
+```
+
+### Mattermost
+
+```bash
+sudo snap install mattermost-desktop
+```
+
+### Zoom
+
+```bash
+cd /tmp
+wget https://zoom.us/client/latest/zoom_amd64.deb
+sudo apt install -y ./zoom_amd64.deb
+```
+
+### PeaZip / Ark / File Roller 등 압축 도구
+
+```bash
+sudo apt install -y p7zip-full zip unzip tar gzip bzip2 xz-utils
+sudo snap install peazip
+```
+
+---
+
+## 소스 제어(git, svn) 관리
+
+### Git
+
+```bash
+sudo apt install -y git
+```
+
+### Beyond Compare
+
+Beyond Compare는 Linux용 .deb 패키지를 제공합니다.
+
+```bash
+cd /tmp
+# 실제 최신 링크는 Scooter Software 웹사이트에서 확인 필요
+wget https://www.scootersoftware.com/bcompare-4.4.7.28397_amd64.deb -O bcompare.deb
+sudo apt install -y ./bcompare.deb
+```
+
+---
+
+## 개발 환경 SW
+
+### Java (OpenJDK 17) 설치
+
+```bash
+sudo apt install -y openjdk-17-jdk
+java -version
+```
+
+### .NET 10.0 SDK 설치
+
+Ubuntu 22.04에서 .NET 10 설치 예시는 아래와 같습니다.
+
+> .NET 10은 2025년 11월 11일에 릴리스되었습니다. 패키지 관리자 피드에 패키지가 표시되거나 특정 Linux 배포판에 패키지가 포함되는 데 시간이 걸릴 수 있습니다.
+
+.NET은 Ubuntu .NET 백포트 패키지 리포지토리에서 사용할 수 있습니다. 리포지토리를 추가하려면 터미널을 열고 다음 명령을 실행합니다.
+
+```bash
+# Microsoft 패키지 리포지토리 등록
+sudo add-apt-repository ppa:dotnet/backports
+sudo apt update
+
+# 예: .NET SDK 10.0 설치
+sudo apt install -y dotnet-sdk-10.0
+
+dotnet --info
+```
+
+> 최신 버전은 [Microsoft .NET 공식 문서](https://learn.microsoft.com/dotnet/core/install/linux-ubuntu) 참고.
+
+### Docker Desktop (대체: Docker Engine + Docker Compose)
+
+Docker Desktop 대신 리눅스에서는 **Docker Engine** 및 **docker compose 플러그인** 설치가 일반적입니다.
+
+```bash
+# 의존 패키지
+sudo apt install -y ca-certificates curl gnupg lsb-release
+
+# Docker 공식 GPG 키 등록
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+# 리포지토리 추가
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# 설치
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# 현재 사용자 docker 그룹 추가
+sudo usermod -aG docker $USER
+# 이후 로그아웃/로그인 또는
+newgrp docker
+
+docker version
+docker compose version
+```
+
+### Python Anaconda3 설치
+
+#### Miniconda (권장: 가볍고 필요 패키지만 설치)
+
+```bash
+cd /tmp
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+# 안내에 따라 라이선스 동의 및 설치 경로 지정
+# 설치 후:
+source ~/.bashrc
+conda --version
+```
+
+#### Anaconda (풀 패키지)
+
+```bash
+cd /tmp
+wget https://repo.anaconda.com/archive/Anaconda3-latest-Linux-x86_64.sh
+bash Anaconda3-latest-Linux-x86_64.sh
+source ~/.bashrc
+conda --version
+```
+
+### Node.js 설치 (LTS)
+
+NVM(Node Version Manager)를 사용하는 것을 추천합니다.
+
+```bash
+# NVM 설치
+curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+# 셸 재시작 또는 아래 명령 실행
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# LTS 버전 설치
+nvm install --lts
+nvm use --lts
+
+node -v
+npm -v
+```
+
+---
+
+## 분석 및 디버깅 도구
+
+### Fiddler Everywhere
+
+Fiddler Everywhere는 Linux용 설치 파일을 제공합니다.
+
+```bash
+cd /tmp
+# Telerik 사이트에서 최신 AppImage 또는 .deb 파일 다운로드 후 설치
+# 예시 (실제 URL은 변경될 수 있음)
+wget https://downloads.getfiddler.com/linux/fiddler-everywhere_latest_amd64.deb -O fiddler-everywhere.deb
+sudo apt install -y ./fiddler-everywhere.deb
+```
+
+### Wireshark
+
+```bash
+sudo apt install -y wireshark
+# non-root 사용자 패킷 캡처 허용
+sudo dpkg-reconfigure wireshark-common
+sudo usermod -aG wireshark $USER
+# 재로그인 필요
+```
