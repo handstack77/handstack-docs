@@ -529,13 +529,13 @@ sc.exe create MyWebApp binPath="C:\path\to\publish\YourApp.exe" DisplayName="My 
 
 ```dockerfile
 # 1. Build Stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /source
 COPY . .
 RUN dotnet publish -c Release -o /app/publish
 
 # 2. Final Stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "YourApp.dll"]

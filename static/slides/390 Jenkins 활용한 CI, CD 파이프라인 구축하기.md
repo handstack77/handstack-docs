@@ -125,8 +125,8 @@ section.tinytext>blockquote {
   li {font-size: 28px;}
 </style>
 
-- dotnet-hosting-8.0.18-win.exe
-- dotnet-sdk-8.0.412-win-x64.exe
+- dotnet-hosting-10.0.100-win.exe
+- dotnet-sdk-10.0.100-win-x64.exe
 - Git-2.50.1-64-bit.exe
 - jenkins.msi
 - node-v22.17.0-x64.msi
@@ -198,7 +198,7 @@ notepad winget-packages.json
 ```bash
 winget import --import-file winget-packages.json
 ```
-> [dotnet-hosting-8.0.18-win.exe 다운로드](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-8.0.18-windows-hosting-bundle-installer)
+> [dotnet-hosting-10.0.100-win.exe 다운로드](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-10.0.100-windows-hosting-bundle-installer)
 > [jenkins.msi 다운로드](https://www.jenkins.io/download/thank-you-downloading-windows-installer-stable/)
 
 ---

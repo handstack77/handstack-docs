@@ -492,13 +492,13 @@
 <h3 id="dockerfile-%EC%9E%91%EC%84%B1-%EC%98%88%EC%8B%9C-aspnet-core"><code>Dockerfile</code> 작성 예시 (ASP.NET Core)</h3>
 <p>멀티스테이지 빌드를 사용하여 최종 이미지 크기를 최적화합니다.</p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-dockerfile"><span class="hljs-comment"># 1. Build Stage</span>
-<span class="hljs-keyword">FROM</span> mcr.microsoft.com/dotnet/sdk:<span class="hljs-number">8.0</span> AS build
+<span class="hljs-keyword">FROM</span> mcr.microsoft.com/dotnet/sdk:<span class="hljs-number">10.0</span> AS build
 <span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /source</span>
 <span class="hljs-keyword">COPY</span><span class="language-bash"> . .</span>
 <span class="hljs-keyword">RUN</span><span class="language-bash"> dotnet publish -c Release -o /app/publish</span>
 
 <span class="hljs-comment"># 2. Final Stage</span>
-<span class="hljs-keyword">FROM</span> mcr.microsoft.com/dotnet/aspnet:<span class="hljs-number">8.0</span>
+<span class="hljs-keyword">FROM</span> mcr.microsoft.com/dotnet/aspnet:<span class="hljs-number">10.0</span>
 <span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app</span>
 <span class="hljs-keyword">COPY</span><span class="language-bash"> --from=build /app/publish .</span>
 <span class="hljs-keyword">ENTRYPOINT</span><span class="language-bash"> [<span class="hljs-string">&quot;dotnet&quot;</span>, <span class="hljs-string">&quot;YourApp.dll&quot;</span>]</span>
