@@ -1,5 +1,5 @@
 ---
-description: 새로운 Handstack 모듈(View + Contract)을 스캐폴딩합니다. ID(예: CDM999)를 입력받아 JS, HTML, XML 파일을 생성합니다.
+description: 새로운 Handstack 모듈(화면 및 기능) 코드를 스캐폴딩합니다. ID(CDM999)를 입력받아 JS, HTML, XML 파일을 생성합니다.
 ---
 
 # handstack-scaffold
