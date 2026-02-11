@@ -4,11 +4,12 @@ sidebar_position: 21
 
 # 필수 프로그램 설치하기
 
-개발에 필요한 필수 환경 구성을 위한 Git, .NET Core, Node.js, curl 도구는 크로스 플랫폼 개발을 지원하므로 공식 웹 사이트에서 Windows, macOS, Linux에서 실행되는 설치 관리자를 제공합니다. 
+개발에 필요한 필수 환경 구성을 위한 Git, .NET Core, Node.js, curl, PowerShell 7 도구는 크로스 플랫폼 개발을 지원하므로 공식 웹 사이트에서 Windows, macOS, Linux에서 실행되는 설치 관리자를 제공합니다. 
 
 * [git 2.44.0+ 다운로드](https://git-scm.com/downloads)
 * [.NET Core 10.0 다운로드](https://dotnet.microsoft.com/ko-kr/download/dotnet/10.0)
 * [Node.js v20.12.2 LTS 다운로드](https://nodejs.org/en/download)
+* [Windows, Linux 및 macOS에 PowerShell 설치](https://learn.microsoft.com/ko-kr/powershell/scripting/install/install-powershell?view=powershell-7.5)
 
 설치 관리자를 이용한 설치는 대부분 권장되며 간단한 설치 방법을 제공합니다. 
 
@@ -46,6 +47,14 @@ Node.js LTS를 설치하는 방법은 명령 프롬프트를 열고 다음 명�
 winget install -e --id=OpenJS.NodeJS.LTS
 ```
 
+### Winget 을 이용한 PowerShell 설치
+
+PowerShell을 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 최신 버전의 PowerShell 을 설치합니다.
+
+```bash
+winget install -e --id=Microsoft.PowerShell
+```
+
 업데이트 할 패키지를 검색하기 위해 다음 명령을 실행합니다.
 
 ```bash
@@ -53,6 +62,7 @@ winget search Git.Git
 winget search Microsoft.DotNet
 winget search OpenJS.NodeJS
 winget search cURL.cURL
+winget search Microsoft.PowerShell
 ```
 
 설치 된 패키지를 최신 버전으로 업데이트하는 방법은 다음과 같습니다.
@@ -105,6 +115,14 @@ brew install curl
 ```
 
 위의 명령어는 curl 을 다운로드 하고 설치합니다.
+
+### Homebrew 를 이용한 powershell 설치
+
+```bash
+brew install powershell
+```
+
+위의 명령어는 powershell 을 다운로드 하고 설치합니다.
 
 이렇게 하면 CLI 에서 을 macOS 에 설치할 수 있습니다. 이 과정은 관리자 권한이 필요할 수 있습니다.
 
@@ -169,6 +187,14 @@ sudo apt install -y curl
 ```
 
 위의 명령어는 curl 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
+
+### apt 를 이용한 powershell 설치
+
+```bash
+sudo apt install -y powershell
+```
+
+위의 명령어는 powershell 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
 
 
 apt를 사용하여 업데이트가 필요한 패키지의 목록을 확인하려면 apt list --upgradable 명령어를 사용하면 됩니다. 이 명령어는 현재 설치된 패키지 중에서 업데이트가 가능한 패키지의 목록을 보여줍니다.
