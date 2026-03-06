@@ -1,0 +1,631 @@
+﻿---
+sidebar_position: 80
+---
+
+# tabler-icons 서브셋 웹폰트 제작하기
+
+https://github.com/tabler/tabler-icons 저장소에 있는 소스를 기반으로 지정된 아이콘 목록을 기준으로 `outline`과 `filled`를 한 개의 웹폰트로 합쳐서 빌드하는 전용 스크립트를 제공합니다.
+
+Tabler Icons 새 버전이 나왔을 때 같은 서브셋을 다시 빌드하려면 아래 절차를 따르면 됩니다.
+
+## 핵심 요약
+
+- 실행 명령: `node ./.build/build-webfont-subset.mjs`
+- 빌드 스크립트: `./.build/build-webfont-subset.mjs`
+- 아이콘 허용 목록: `./.build/webfont-subset-icons.mjs`
+- 공용 웹폰트 유틸: `./packages/icons-webfont/.build/utilities.mjs`
+
+### 1. 의존성 설치
+
+tabler-icons 프로젝트는 `pnpm` 기준으로 구성되어 있습니다. `npm install`은 `catalog:`와 `workspace:` 의존성을 처리하지 못하므로 사용하지 않습니다.
+
+```sh
+corepack enable
+corepack prepare pnpm@10.30.3 --activate
+pnpm install
+```
+
+이미 `pnpm`이 설치되어 있다면 아래만 실행하면 됩니다.
+
+```sh
+pnpm install
+```
+
+### 2. 아이콘 목록 수정
+
+서브셋 대상 아이콘은 `./.build/webfont-subset-icons.mjs`에서 관리합니다.
+
+규칙:
+
+- 기준 파일명은 `./icons/outline`과 `./icons/filled`에서 공통으로 사용되는 아이콘 이름입니다.
+- 각 항목은 `*.svg` 형태로 유지합니다.
+- 중복 항목은 빌드 스크립트가 자동으로 제거합니다.
+- `outline` 또는 `filled` 중 한쪽에 없는 아이콘은 경고를 출력하고, 존재하는 스타일만 포함합니다.
+
+### 3. 서브셋 빌드 실행
+
+기본 스트로크 두께는 `2`입니다.
+
+```sh
+node ./.build/build-webfont-subset.mjs
+```
+
+다른 스트로크 두께로 `outline`을 만들려면 CLI 인자를 넘기면 됩니다.
+
+```sh
+node ./.build/build-webfont-subset.mjs --stroke-width=1.5
+```
+
+이 스크립트가 하는 일:
+
+- `packages/icons-webfont/dist`의 이전 결과물을 삭제합니다.
+- 선택된 아이콘의 `outline` 버전과 `filled` 버전을 한 개의 폰트 파일로 합칩니다.
+- `outline` 아이콘은 기본값 `2` 또는 전달한 `stroke-width`로 외곽선을 두껍게 변환합니다.
+- `outline` 아이콘은 기존 이름 그대로 `.ti-아이콘명` 클래스로 생성합니다.
+- `filled` 아이콘은 같은 폰트 안에서 `.ti-아이콘명-filled` 클래스로 생성합니다.
+- 선택된 아이콘만 포함한 `woff2`, `woff`, `ttf`, CSS를 생성합니다.
+- 서브셋에 없는 아이콘을 가리키는 alias CSS는 자동으로 제외합니다.
+
+### 4. 결과 확인
+
+생성 파일:
+
+- `./packages/icons-webfont/dist/fonts/tabler-icons.woff2`
+- `./packages/icons-webfont/dist/fonts/tabler-icons.woff`
+- `./packages/icons-webfont/dist/fonts/tabler-icons.ttf`
+- `./packages/icons-webfont/dist/tabler-icons.css`
+- `./packages/icons-webfont/dist/tabler-icons.min.css`
+
+빌드 로그에서 확인할 내용:
+
+- 처리된 `outline` 아이콘 개수
+- 처리된 `filled` 아이콘 개수
+- 누락되어 건너뛴 `outline` 아이콘 목록
+- 누락되어 건너뛴 `filled` 아이콘 목록
+- 최종 출력 디렉터리
+
+생성되는 클래스 예시:
+
+- `outline`: `.ti-alert-circle`
+- `filled`: `.ti-alert-circle-filled`
+
+### 5. 문제 해결
+
+`Skipping missing outline icons`가 출력되면 `./icons/outline`에 해당 파일이 있는지 확인합니다.
+
+`Skipping missing filled icons`가 출력되면 `./icons/filled`에 해당 파일이 있는지 확인합니다. 일부 아이콘은 `outline`만 있고 `filled`는 없을 수 있습니다.
+
+스트로크 두께를 바꾸려면 `node ./.build/build-webfont-subset.mjs --stroke-width=1.5`처럼 실행합니다.
+
+`stroke-width`에 `0` 이하 값이나 숫자가 아닌 값을 주면 빌드가 실패합니다.
+
+현재 버전에는 없던 아이콘이 다음 버전에서 추가되면, 허용 목록에만 이미 들어 있다면 스크립트를 바꾸지 않고 다시 실행하는 것만으로 자동 반영됩니다.
+
+### 서브셋 목록 스크립트
+
+아래 코드는 현재 `./.build/build-subset-icons.mjs`의 전체 내용입니다. https://tabler.io/icons 에서 아이콘의 식별 ID를 확인하여 프로젝트에 맞게 목록을 편집하세요.
+
+```js
+export const webfontSubsetIcons = [
+  'adjustments.svg',
+  'alert-circle.svg',
+  'alert-triangle.svg',
+  'arrow-back-up.svg',
+  'arrow-left.svg',
+  'arrow-right.svg',
+  'basket-pause.svg',
+  'bell.svg',
+  'bell-x.svg',
+  'bold.svg',
+  'book.svg',
+  'brand-abstract.svg',
+  'brand-azure.svg',
+  'brand-github.svg',
+  'brand-x.svg',
+  'bug.svg',
+  'building-store.svg',
+  'calendar.svg',
+  'cancel.svg',
+  'cash-banknote.svg',
+  'category.svg',
+  'check.svg',
+  'checklist.svg',
+  'chevron-left.svg',
+  'chevron-right.svg',
+  'chevron-up.svg',
+  'circle.svg',
+  'circle-check.svg',
+  'circle-minus.svg',
+  'clipboard.svg',
+  'clipboard-text.svg',
+  'clock-cancel.svg',
+  'cloud.svg',
+  'cloud-rain.svg',
+  'copy.svg',
+  'crane.svg',
+  'currency-won.svg',
+  'details.svg',
+  'device-desktop.svg',
+  'device-floppy.svg',
+  'device-mobile-message.svg',
+  'device-mobile-message-circle.svg',
+  'device-mobile-message-star.svg',
+  'dots.svg',
+  'dots-vertical.svg',
+  'download.svg',
+  'edit.svg',
+  'eye.svg',
+  'eye-up.svg',
+  'file.svg',
+  'file-database.svg',
+  'file-description.svg',
+  'file-download.svg',
+  'file-minus.svg',
+  'file-plus.svg',
+  'file-text.svg',
+  'file-type-pdf.svg',
+  'files.svg',
+  'folder-open.svg',
+  'frame.svg',
+  'hanger.svg',
+  'heart-check.svg',
+  'help-circle.svg',
+  'history.svg',
+  'home.svg',
+  'hourglass-low.svg',
+  'info-circle.svg',
+  'input-spark.svg',
+  'italic.svg',
+  'keyboard-hide.svg',
+  'layout-dashboard.svg',
+  'layout-sidebar-left-collapse.svg',
+  'lock-open.svg',
+  'login.svg',
+  'login-2.svg',
+  'logout-2.svg',
+  'mail.svg',
+  'map-pin.svg',
+  'menu-2.svg',
+  'minus.svg',
+  'mood-look-up.svg',
+  'mood-smile.svg',
+  'mood-spark.svg',
+  'moon.svg',
+  'news.svg',
+  'paperclip.svg',
+  'phone.svg',
+  'photo.svg',
+  'plus.svg',
+  'printer.svg',
+  'refresh.svg',
+  'refresh-dot.svg',
+  's-turn-right.svg',
+  'scissors.svg',
+  'search.svg',
+  'send.svg',
+  'settings.svg',
+  'shopping-bag.svg',
+  'speakerphone.svg',
+  'square.svg',
+  'star.svg',
+  'sun.svg',
+  'table.svg',
+  'table-export.svg',
+  'trash.svg',
+  'trending-up.svg',
+  'truck-delivery.svg',
+  'underline.svg',
+  'upload.svg',
+  'urgent.svg',
+  'user.svg',
+  'user-cog.svg',
+  'users.svg',
+  'view-360.svg',
+  'window.svg',
+  'writing-sign.svg',
+];
+```
+
+### 빌드 스크립트
+
+아래 코드는 현재 `./.build/build-webfont-subset.mjs`의 전체 내용입니다.
+
+```js
+import path from 'node:path';
+import { createRequire } from 'node:module';
+import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises';
+import * as sass from 'sass';
+import {
+  getAliases,
+  getAllIcons,
+  getArgvs,
+  getPackageDir,
+  getPackageJson,
+} from './helpers.mjs';
+import { webfontSubsetIcons } from './webfont-subset-icons.mjs';
+import {
+  buildSvgFont,
+  loadSvgFiles,
+  offsetPath,
+  processIcons,
+  removeComments,
+  reorientPath,
+  splitPaths,
+} from '../packages/icons-webfont/.build/utilities.mjs';
+
+const packageJson = getPackageJson();
+const aliases = getAliases(true);
+const packageDir = path.resolve(getPackageDir('icons-webfont'));
+const packageRequire = createRequire(path.join(packageDir, 'package.json'));
+const svg2ttf = packageRequire('svg2ttf');
+const ttf2woff = packageRequire('ttf2woff');
+const wawoff2 = packageRequire('wawoff2');
+const argvs = getArgvs();
+const distDir = path.join(packageDir, 'dist');
+const outlinedDir = path.join(packageDir, 'icons-outlined');
+const filledDir = path.join(packageDir, 'icons-filled');
+const strokeWidth = parseStrokeWidth(
+  argvs['stroke-width'] ?? argvs.strokeWidth ?? process.env.TABLER_SUBSET_STROKE_WIDTH ?? 2,
+);
+const strokeName = `subset-${String(strokeWidth).replace(/[^0-9a-z]+/gi, '-')}`;
+const fontName = 'tabler-icons';
+
+const requestedIcons = [...new Set(webfontSubsetIcons.map((icon) => path.basename(icon, '.svg')))];
+const allIcons = getAllIcons(true);
+const outlineIconMap = new Map(allIcons.outline.map((icon) => [icon.name, icon]));
+const filledIconMap = new Map(allIcons.filled.map((icon) => [icon.name, icon]));
+
+const selectedOutlineIcons = [];
+const selectedFilledIcons = [];
+const missingOutlineIcons = [];
+const missingFilledIcons = [];
+
+requestedIcons.forEach((iconName) => {
+  const outlineIcon = outlineIconMap.get(iconName);
+  const filledIcon = filledIconMap.get(iconName);
+
+  if (outlineIcon) {
+    selectedOutlineIcons.push(outlineIcon);
+  } else {
+    missingOutlineIcons.push(`${iconName}.svg`);
+  }
+
+  if (filledIcon) {
+    selectedFilledIcons.push(filledIcon);
+  } else {
+    missingFilledIcons.push(`${iconName}.svg`);
+  }
+});
+
+if (selectedOutlineIcons.length === 0 && selectedFilledIcons.length === 0) {
+  throw new Error('No valid subset icons were found in outline or filled styles.');
+}
+
+if (missingOutlineIcons.length > 0) {
+  console.warn(`Skipping missing outline icons: ${missingOutlineIcons.join(', ')}`);
+}
+
+if (missingFilledIcons.length > 0) {
+  console.warn(`Skipping missing filled icons: ${missingFilledIcons.join(', ')}`);
+}
+
+await rm(distDir, { recursive: true, force: true });
+await rm(outlinedDir, { recursive: true, force: true });
+await rm(filledDir, { recursive: true, force: true });
+
+await mkdir(path.join(outlinedDir, strokeName), { recursive: true });
+await mkdir(filledDir, { recursive: true });
+await mkdir(distDir, { recursive: true });
+
+await copyFile(path.resolve(packageDir, '..', '..', 'LICENSE'), path.join(packageDir, 'LICENSE'));
+
+console.log(`Using outline stroke width ${strokeWidth}`);
+
+await processIcons(
+  selectedOutlineIcons,
+  path.join(outlinedDir, strokeName),
+  'outline',
+  packageDir,
+  strokeName,
+  (svgContent) => {
+    svgContent = removeComments(svgContent);
+    svgContent = splitPaths(svgContent);
+    svgContent = offsetPath(svgContent, strokeWidth);
+    svgContent = reorientPath(svgContent);
+    svgContent = svgContent.replace(/stroke-width="[^"]*"/, `stroke-width="${strokeWidth}"`);
+
+    return svgContent;
+  },
+);
+
+await processIcons(
+  selectedFilledIcons,
+  filledDir,
+  'filled',
+  packageDir,
+);
+
+const outlineStreams = await loadSvgFiles(path.join(outlinedDir, strokeName));
+const filledStreams = await loadSvgFiles(filledDir);
+const mergedStreams = mergeStreams(outlineStreams, filledStreams);
+const glyphs = mergedStreams
+  .map((stream) => ({
+    ...stream.metadata,
+    unicodeHex: stream.metadata.unicode[0].codePointAt(0).toString(16),
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+const glyphNames = new Set(glyphs.map(({ name }) => name));
+const mergedAliases = buildAliases(glyphNames);
+
+await writeCombinedFont(mergedStreams, glyphs, mergedAliases);
+await buildCss(
+  path.join(distDir, `${fontName}.scss`),
+  path.join(distDir, `${fontName}.css`),
+  'expanded',
+);
+await buildCss(
+  path.join(distDir, `${fontName}.scss`),
+  path.join(distDir, `${fontName}.min.css`),
+  'compressed',
+);
+
+console.log(
+  `Built subset webfont with ${selectedOutlineIcons.length} outline icons and ${selectedFilledIcons.length} filled icons.`,
+);
+console.log(`Output written to ${distDir}`);
+
+function parseStrokeWidth(value) {
+  const parsed = Number.parseFloat(String(value));
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    throw new Error(`Invalid stroke width: ${value}`);
+  }
+
+  return parsed;
+}
+
+function mergeStreams(outlineStreams, filledStreams) {
+  const usedCodePoints = new Set();
+  let nextPrivateUseCodePoint = 0xe000;
+
+  const assignMetadata = (stream, name, preferredCodePoint) => {
+    let codePoint = preferredCodePoint;
+
+    while (usedCodePoints.has(codePoint) || !Number.isInteger(codePoint)) {
+      while (usedCodePoints.has(nextPrivateUseCodePoint)) {
+        nextPrivateUseCodePoint += 1;
+      }
+
+      codePoint = nextPrivateUseCodePoint;
+      nextPrivateUseCodePoint += 1;
+    }
+
+    usedCodePoints.add(codePoint);
+    stream.metadata = {
+      ...stream.metadata,
+      name,
+      unicode: [String.fromCodePoint(codePoint)],
+    };
+
+    return stream;
+  };
+
+  const mergedOutlineStreams = outlineStreams.map((stream) =>
+    assignMetadata(
+      stream,
+      stream.metadata.name,
+      stream.metadata.unicode[0].codePointAt(0),
+    ),
+  );
+  const mergedFilledStreams = filledStreams.map((stream) =>
+    assignMetadata(
+      stream,
+      `${stream.metadata.name}-filled`,
+      stream.metadata.unicode[0].codePointAt(0),
+    ),
+  );
+
+  return [...mergedOutlineStreams, ...mergedFilledStreams];
+}
+
+function buildAliases(glyphNames) {
+  const outlineAliases = aliases.outline
+    ? Object.entries(aliases.outline)
+        .filter(([, to]) => glyphNames.has(to))
+        .map(([from, to]) => ({ from, to }))
+    : [];
+
+  const filledAliases = aliases.filled
+    ? Object.entries(aliases.filled)
+        .map(([from, to]) => ({ from: `${from}-filled`, to: `${to}-filled` }))
+        .filter(({ to }) => glyphNames.has(to))
+    : [];
+
+  return [...outlineAliases, ...filledAliases];
+}
+
+async function writeCombinedFont(streams, glyphs, mergedAliases) {
+  console.log('Generating combined font for outline + filled');
+
+  const svgFontFileSource = await buildSvgFont(streams);
+  const ttfFile = Buffer.from(svg2ttf(svgFontFileSource).buffer);
+  const woffFile = Buffer.from(ttf2woff(ttfFile).buffer);
+  const woff2File = await wawoff2.compress(ttfFile);
+
+  await mkdir(path.join(distDir, 'fonts'), { recursive: true });
+  await writeFile(path.join(distDir, `fonts/${fontName}.svg`), svgFontFileSource);
+  await writeFile(path.join(distDir, `fonts/${fontName}.ttf`), ttfFile);
+  await writeFile(path.join(distDir, `fonts/${fontName}.woff`), woffFile);
+  await writeFile(path.join(distDir, `fonts/${fontName}.woff2`), woff2File);
+
+  const options = {
+    name: 'Tabler Icons Subset',
+    fileName: fontName,
+    glyphs,
+    v: packageJson.version,
+    aliases: mergedAliases,
+  };
+
+  await writeFile(path.join(distDir, `${fontName}.scss`), buildScss(options));
+  await writeFile(path.join(distDir, `${fontName}.html`), buildHtml(options));
+}
+
+async function buildCss(sourceFile, outputFile, style) {
+  const result = sass.compile(sourceFile, {
+    style,
+    sourceMap: false,
+  });
+
+  await writeFile(outputFile, result.css);
+}
+
+function buildScss({ aliases: mergedAliases, fileName, glyphs, v }) {
+  const glyphVariables = glyphs
+    .map((glyph) => `$ti-icon-${glyph.name}: unicode('${glyph.unicodeHex}');`)
+    .join('');
+  const glyphClasses = glyphs
+    .map((glyph) => `.#{$ti-prefix}-${glyph.name}:before { content: $ti-icon-${glyph.name}; }`)
+    .join('');
+  const aliasClasses = mergedAliases
+    .map((alias) => `.#{$ti-prefix}-${alias.from}:before { content: $ti-icon-${alias.to}; }`)
+    .join('\n');
+
+  return `@charset "UTF-8";
+/*!
+ * Tabler Icons ${v} by tabler - https://tabler.io
+ * License - https://github.com/tabler/tabler-icons/blob/master/LICENSE
+ */
+@use "sass:string";
+
+$ti-font-family: '${fileName}' !default;
+$ti-font-path: './fonts' !default;
+$ti-font-display: null !default;
+$ti-prefix: 'ti' !default;
+
+@font-face {
+  font-family: $ti-font-family;
+  font-style: normal;
+  font-weight: 400;
+  font-display: $ti-font-display;
+  src: url('#{$ti-font-path}/${fileName}.woff2?v${v}') format('woff2'),
+    url('#{$ti-font-path}/${fileName}.woff?') format('woff'),
+    url('#{$ti-font-path}/${fileName}.ttf?v${v}') format('truetype');
+}
+
+.#{$ti-prefix} {
+  font-family: $ti-font-family !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@function unicode($str) {
+  @return string.unquote("\\"") + string.unquote(string.insert($str, "\\\\", 1)) + string.unquote("\\"")
+}
+
+${glyphVariables}
+
+${glyphClasses}
+
+// Aliases
+${aliasClasses}
+`;
+}
+
+function buildHtml({ fileName, glyphs, name, v }) {
+  const items = glyphs
+    .map(
+      (glyph) => `<div class="tabler-icon">
+  <i class="ti ti-${glyph.name}"></i>
+  <strong>${glyph.name}</strong>
+  <div class="tabler-icon-codes"><code>\\${glyph.unicodeHex}</code></div>
+</div>`,
+    )
+    .join('\n');
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${name} - version ${v}</title>
+  <link rel="stylesheet" href="./${fileName}.css">
+  <style>
+    * { margin: 0; border: 0; outline: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #fafbfc;
+      color: #1f2937;
+      padding: 1rem;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .container {
+      max-width: 72rem;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin: 2rem 0;
+    }
+    .box {
+      padding: 1rem;
+      background: #fff;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, .05), 0 1px 1px rgba(0, 0, 0, .1);
+      border-radius: 4px;
+    }
+    .tabler-icons {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+      gap: 1rem;
+    }
+    .tabler-icon {
+      text-align: center;
+      padding: 1rem 0.5rem;
+    }
+    .tabler-icon i {
+      display: block;
+      font-size: 32px;
+      margin-bottom: 0.75rem;
+    }
+    .tabler-icon strong {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.75rem;
+      background: #f3f4f6;
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+    }
+    .text-muted {
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>${name}</h1>
+      <p class="text-muted">version ${v}</p>
+    </header>
+    <div class="box">
+      <div class="tabler-icons">
+${items}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+`;
+}
+```
