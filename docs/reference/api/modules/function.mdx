@@ -4,402 +4,113 @@ sidebar_position: 30
 
 # function
 
-.NET Core 및 함수를 호스팅하고 관리하는 모듈입니다.
+`function`은 XML 함수 계약을 기준으로 C#, Node.js, Python 함수를 실행하는 모듈입니다. 업무 로직이 단순 SQL로 끝나지 않거나 외부 라이브러리, 파일, 계산 로직이 필요한 경우 `transact`에서 `CommandType=F`로 라우팅해 사용합니다.
 
-```json
-{
-    "ModuleID": "function",
-    "Name": "function",
-    "IsBundledWithHost": false,
-    "Version": "1.0.0",
-    "ModuleConfig": {
-        "SystemID": "HANDSTACK",
-        "BusinessServerUrl": "http://localhost:8421/transact/api/transaction/execute",
-        "CircuitBreakResetSecond": 60,
-        "IsLogServer": true,
-        "LogServerUrl": "http://localhost:8421/logger/api/log/insert",
-        "ContractBasePath": [
-            "../contracts/function"
-        ],
-        "ModuleLogFilePath": "../log/function/module.log",
-        "NodeFunctionConfig": {
-            "LocalStoragePath": "../cache/function",
-            "LogMinimumLevel": "trace",
-            "FileLogBasePath": "../log/function/javascript",
-            "TimeoutMS": -1,
-            "IsSingleThread": true,
-            "WatchGracefulShutdown": true,
-            "EnableFileWatching": true,
-            "WatchFileNamePatterns": [ "featureMain.js" ],
-            "NodeAndV8Options": "",
-            "EnvironmentVariables": ""
-        },
-        "CSharpFunctionConfig": {
-            "EnableFileWatching": true,
-            "FileLogBasePath": "../log/function/csharp",
-            "WatchFileNamePatterns": [ "featureMain.cs" ],
-        },
-        "EventAction": [],
-        "SubscribeAction": [],
-        "FunctionSource": [
-            {
-                "ApplicationID": "HDS",
-                "ProjectID": "*",
-                "DataSourceID": "FN01",
-                "DataProvider": "SQLite",
-                "ConnectionString": "URI=file:../sqlite/HDS/dbclient/HDS.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
-                "IsEncryption": "N",
-                "WorkingDirectoryPath": "../tmp/HDS/function/HDS_FN01",
-                "Comment": "SQLite 기본 거래"
-            },
-            {
-                "ApplicationID": "HDS",
-                "ProjectID": "*",
-                "DataSourceID": "FN02",
-                "DataProvider": "SqlServer",
-                "ConnectionString": "Data Source=localhost;Initial Catalog=master;User ID=sa;Password=Strong@Passw0rd;",
-                "IsEncryption": "N",
-                "WorkingDirectoryPath": "../tmp/HDS/function/HDS_FN02",
-                "Comment": "SqlServer 기본 거래"
-            },
-            {
-                "ApplicationID": "HDS",
-                "ProjectID": "*",
-                "DataSourceID": "FN03",
-                "DataProvider": "Oracle",
-                "ConnectionString": "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SID=ORCL)));User Id=system;Password=Strong@Passw0rd;",
-                "IsEncryption": "N",
-                "WorkingDirectoryPath": "../tmp/HDS/function/HDS_FN03",
-                "Comment": "Oracle 기본 거래"
-            },
-            {
-                "ApplicationID": "HDS",
-                "ProjectID": "*",
-                "DataSourceID": "FN04",
-                "DataProvider": "MySQL",
-                "ConnectionString": "Server=localhost;Port=3306;Uid=root;Pwd=Strong@Passw0rd;PersistSecurityInfo=True;SslMode=none;Charset=utf8;Allow User Variables=True;",
-                "IsEncryption": "N",
-                "WorkingDirectoryPath": "../tmp/HDS/function/HDS_FN04",
-                "Comment": "MySQL 기본 거래"
-            },
-            {
-                "ApplicationID": "HDS",
-                "ProjectID": "*",
-                "DataSourceID": "FN05",
-                "DataProvider": "PostgreSQL",
-                "ConnectionString": "Host=localhost;Port=5432;Database=postgres;User ID=postgres;Password=Strong@Passw0rd;",
-                "IsEncryption": "N",
-                "WorkingDirectoryPath": "../tmp/HDS/function/HDS_FN05",
-                "Comment": "PostgreSQL 기본 거래"
-            }
-        ]
-    }
-}
-```
-소스) function 환경설정 예제
+## 책임 범위
 
-## 옵션 설명
+- 함수 계약을 로드하고 `ApplicationID|ProjectID|TransactionID|FunctionID` 기준으로 실행합니다.
+- C#, Node.js, Python 런타임별 실행 환경과 파일 감시 정책을 관리합니다.
+- `FunctionSource`의 데이터 원본과 작업 디렉터리를 함수 실행 컨텍스트에 제공합니다.
+- `BeforeTransaction`, `AfterTransaction`, `FallbackTransaction` 같은 계약 흐름을 처리합니다.
+- 실행 로그를 런타임별 파일 경로와 `logger` 모듈로 분리해 남깁니다.
 
-### ModuleID
+## 주요 API
 
-모듈을 식별하는 고유 ID 입니다. 반드시 입력 되어야 합니다.
+| 메서드 | 경로 | 용도 |
+| --- | --- | --- |
+| `GET` | `/function/api/execution/has` | 함수 계약 존재 여부를 확인합니다. |
+| `GET` | `/function/api/execution/refresh` | 함수 계약 캐시를 갱신합니다. |
+| `GET` | `/function/api/execution/retrieve` | 함수 계약 원문 또는 상세 정보를 조회합니다. |
+| `GET` | `/function/api/execution/meta` | 입력/출력 메타 정보를 반환합니다. |
+| `POST` | `/function/api/execution` | 함수 계약을 실행합니다. |
 
-### Name
+## 핵심 구현
 
-모듈의 정보성 이름을 부여합니다.
+- `Areas/function/Controllers/ExecutionController.cs`: execution API 진입점입니다.
+- `DataClient/FunctionClient.cs`: 런타임 선택, 계약 실행, 결과 변환을 담당합니다.
+- `Builder`: C# 함수 동적 컴파일과 실행을 담당합니다.
+- `Entity/ModuleConfigJson.cs`: Node/C#/Python 런타임 설정과 `FunctionSource` 스키마입니다.
+- `Contracts/function`: 샘플 함수 계약과 `featureMain.*`, `featureMeta.json` 구조를 제공합니다.
 
-### IsBundledWithHost
+## 계약과 식별자
 
-모듈이 호스트 애플리케이션과 함께 번들로 제공되는지 여부를 나타냅니다. 모놀리식 아키텍처로 개발하는 경우 true로 설정하며, 이는 ACK와 참조 프로젝트의 모든 기능이 단일 코드 베이스에서 관리됨을 의미합니다. (기본값: false)
-
-Version
-
-모듈 버전을 주.부.수 숫자로 관리합니다.
-
-### ModuleConfig
-
-#### SystemID
-
-ack 프로그램에서 운영하는 시스템 식별 ID를 입력합니다. (기본값: HANDSTACK)
-
-#### BusinessServerUrl
-
-모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8421/transact/api/transaction/execute)
-
-#### CircuitBreakResetSecond
-
-거래 로그 전송 오류시 재시도 할 때 까지 대기하기 위한 초를 입력합니다. (기본값: 60)
-
-#### IsLogServer
-
-function 모듈의 로그를 logger 모듈을 운영하는 서버로 저장합니다. (기본값: false)
-
-#### LogServerUrl
-
-logger 모듈을 운영하는 서버의 URL 경로입니다. (기본값: http://localhost:8421/logger/api/log/insert)
-
-#### ContractBasePath
-
-function 모듈의 거래 파일들이 있는 기본 디렉토리 경로를 입력합니다. 상대경로는 모듈의 기본 디렉토리를 기준으로 설정됩니다.
-
-#### ModuleLogFilePath
-
-모듈 내에서 작성하는 로그의 파일명을 포함하는 파일 경로입니다.
-
-#### NodeFunctionConfig
-
-##### LocalStoragePath
-
-Node.js function 에서 사용하는 localStorage 캐시가 저장되는 디렉토리 경로입니다.
-
-##### LogMinimumLevel
-
-$logger 에서 기록되는 로그 수준에는 trace, debug, info, warn, error, fatal 이 있습니다. 런타임 시 기록되는 최소 로그 수준을 설정할 수 있습니다. 운영 환경에서 권장되는 로그 수준은 info 입니다. (기본값: trace)
-
-##### FileLogBasePath
-
-$logger 에서 로그가 기록되는 기본 디렉토리 경로입니다.
-
-##### TimeoutMS
-
-호출에 대한 응답을 기다리는 최대 기간 (밀리 초)입니다. 이 값이 음수이면 최대 지속 시간은 무한합니다. (기본값: -1)
-
-##### IsSingleThread
-
-단일 스레드 또는 멀티 스레드 기반 실행되도록 설정합니다. false 이면 현재 머신이 보유한 논리 프로세서의 수 만큼 프로세스가 생성됩니다. (기본값: true)
-
-##### IsWatchGracefulShutdown
-
-새 NodeJS 프로세스로 이동할 때 NodeJS가 정상적으로 종료를 처리하는지 여부를 지정하는 값입니다. (기본값: true)
-
-##### EnableFileWatching
-
-WatchFileNamePatterns 에 등록된 파일이 변경되면 NodeJS를 다시 시작합니다. 운영 환경에서는 false 를 권장합니다. (기본값: true)
-
-##### WatchFileNamePatterns
-
-감시할 파일 이름 패턴입니다. "," 로 구분하여 여러 패턴을 등록할 수 있습니다.
-
-##### NodeAndV8Options
-
-NodeJS 및 V8 옵션입니다. 디버깅을 위해 --inspect 플래그 선언 후 크롬 브라우저에서 chrome://inspect 연결할 수 있습니다. 여기에서 NodeJS 옵션의 전체 목록을 찾을 수 있습니다.
-
-##### EnvironmentVariables
-
-NodeJS 에 적용하는 환경변수 목록입니다. (예: AAA=AAA; BBB=BBB; CCC=CCC;)
-
-#### CSharpFunctionConfig
-
-##### FileLogBasePath
-
-context logger 에서 로그가 기록되는 기본 디렉토리 경로입니다.
-
-##### EnableFileWatching
-
-WatchFileNamePatterns 에 등록된 파일이 변경되면 해당 Function 캐시를 다시 갱신합니다. 운영 환경에서는 false 를 권장합니다. (기본값: true)
-
-##### WatchFileNamePatterns
-
-감시할 파일 이름 패턴입니다. "," 로 구분하여 여러 패턴을 등록할 수 있습니다.
-
-#### EventAction
-
-모듈 간의 Mediator 발신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [대상 모듈 ID].Events.[호출 이벤트 ID]
-
-#### SubscribeAction
-
-모듈 간의 Mediator 수신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [공개 모듈 ID].Events.[수신 이벤트 ID]
-
-#### FunctionSource
-
-function 모듈내 Contract 파일에서 사용하는 (DB01) 데이터 원본 ID 입니다.
-
-함수에서 접근 가능한 데이터베이스 소스를 설정합니다. 함수 설정에서 DataSourceID를 사용하여 연동 할 수 있는 데이터베이스 소스를 지정할 수 있습니다.
-
-- ApplicationID: 어플리케이션의 ID를 설정합니다.
-- ProjectID: 프로젝트의 ID를 설정합니다.
-- DataSourceID: 데이터 소스의 ID를 설정합니다.
-- DataProvider: 데이터 제공자를 설정합니다.
-- ConnectionString: 데이터 소스의 연결 문자열을 설정합니다.
-- IsEncryption: 암호화를 사용할지 여부를 설정합니다.
-- WorkingDirectoryPath: 작업 디렉토리의 경로를 설정합니다.
-- Comment: 주석을 설정합니다.
-
-## 설정 정보 관리 화면
-
-프로그램 실행 후, 자세한 내용은 웹 브라우저에서 다음 URL을 통해 확인할 수 있습니다. 또한, 편집한 환경설정을 가져오기 및 내보내기 기능도 제공합니다.
-
-> http://localhost:8421/function/module-settings.html
-
-![](img/localhost_8000_function_module-settings.html.png)
-
----
-
-## (선택) Python 3 환경 설정 가이드 (Windows, Linux, macOS)
-
-HandStack의 function 모듈은 기본적으로 CSharp, Node.js 코드로 함수를 실행합니다. 이 가이드에서는 HandStack 기반에서 Python 함수 코드를 실행하기 위해 Windows, Linux, macOS에서 모두 동일한 개발 환경을 만들 수 있도록 Anaconda를 사용하는 방법을 안내합니다. Anaconda를 사용하면 Python 버전 관리와 필요한 패키지 설치를 쉽게 할 수 있습니다.
-
-### Anaconda란 무엇인가요?
-
-Anaconda는 데이터 과학 및 머신 러닝을 위한 Python 배포판입니다. 복잡한 Python 환경 설정을 쉽게 만들어주고, 다양한 라이브러리(패키지)를 간편하게 설치하고 관리할 수 있게 해줍니다.
-
-### 왜 가상 환경을 사용하나요?
-
-가상 환경은 프로젝트별로 독립된 Python 환경을 만들어줍니다. 이렇게 하면 프로젝트마다 다른 버전의 라이브러리를 사용할 수 있고, 서로 충돌하는 문제를 방지할 수 있습니다.
-
-### Anaconda 설치하기
-
-#### Ubuntu (Linux)
-
-**Anaconda 설치 스크립트 다운로드 및 실행**: 아래 명령어를 복사해서 터미널에 붙여넣고 실행합니다.
-
-```bash
-wget https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh -O /tmp/anaconda.sh && \
-bash /tmp/anaconda.sh -b -p /opt/anaconda && \
-rm /tmp/anaconda.sh && \
-/opt/anaconda/bin/conda init bash && \
-/opt/anaconda/bin/conda install -y python=3.11
-source ~/.bashrc
-```
-
-#### Windows 11
-
-**Anaconda 다운로드**: [Anaconda 공식 다운로드 페이지](https://www.anaconda.com/products/distribution)에서 Windows용 설치 프로그램을 다운로드하고 설치합니다.
-
-#### macOS
-
-**Anaconda 설치 스크립트 다운로드 및 실행**: 아래 명령어를 복사해서 터미널에 붙여넣고 실행합니다.
-
-> Apple Silicon (M1/M2) 칩을 사용하는 경우: [Anaconda 공식 홈페이지](https://www.anaconda.com/products/distribution)에서 "64-Bit (M1) Graphical Installer"를 다운로드하여 설치하세요. 설치 후, 터미널에서 위와 같이 `conda init zsh` 명령어를 실행하여 초기화해야 합니다.
-
-```bash
-# 터미널에서 설치 스크립트 다운로드 및 설치
-wget https://repo.anaconda.com/archive/Anaconda3-2023.03-MacOSX-x86_64.sh -O ~/anaconda.sh && \
-bash ~/anaconda.sh -b -p ~/anaconda && \
-rm ~/anaconda.sh && \
-~/anaconda/bin/conda init zsh
-source ~/.zshrc
-```
-
-### Anaconda 가상 환경 만들기
-
-Anaconda 설치가 끝났으면, 이제 프로젝트를 위한 가상 환경을 만들 차례입니다.
-
-터미널 또는 명령 프롬프트를 실행하고 **가상 환경 생성**: 아래 명령어를 입력하고 Enter 키를 누릅니다. `myenv`는 가상 환경의 이름입니다. (원하는 이름으로 변경 가능)
-
-```bash
-conda create -n myenv python=3.11 -y
-```
-
-**가상 환경 활성화**: 아래 명령어를 입력하여 가상 환경을 활성화합니다.
-
-```bash
-conda activate myenv
-```
-(myenv 부분을 생성한 가상환경 이름으로 변경)
-
-터미널 또는 프롬프트 왼쪽에 `(myenv)`와 같이 가상 환경 이름이 표시되면 활성화된 것입니다.
-
-### 필요한 패키지 설치하기
-
-이제 HandStack에서 Python 코드를 실행하는 데 필요한 라이브러리(패키지)들을 설치합니다.
-
-**가상 환경이 활성화된 상태**에서, 다음 명령어를 입력하고 Enter 키를 누릅니다.
-
-```bash
-conda install numpy pandas requests httpx PyMySQL pymssql asyncpg oracledb mapper-parser localStoragePy psutil logging4 suid xmltodict
-```
-
-이 명령어는 다음과 같은 여러 패키지를 한 번에 설치합니다. 각 패키지는 HandStack에서 함수 기능을 수행하는 데 필요합니다.
+계약은 기본적으로 다음 위치에 둡니다.
 
 ```txt
-수학 및 통계를 위한 패키지
-
-conda install numpy
-conda install pandas
-
-HTTP 요청을 위한 패키지
-
-conda install requests
-conda install httpx1
-
-SqlServer, MySQL, Posgresql, Oracle 데이터베이스 클라이언트 패키지
-
-conda install PyMySQL
-conda install pymssql
-conda install psycopg2
-conda install oracledb
-
-MyBatis Mapper XML 파일을 처리하는 패키지
-
-conda install mapper-parser
-
-로컬 스토리지 API
-
-conda install localStoragePy
-
-프로세스 및 시스템 정보 유틸리티
-
-conda install psutil
-
-로깅 패키지
-
-conda install logging4
-
-uuid: UUID 생성 패키지
-
-conda install suid
-
-XML을 JSON으로 변환하는 패키지
-
-conda install xmltodict
+contracts/function/{ApplicationID}/{ProjectID}/{TransactionID}.xml
 ```
 
-### HandStack function 모듈 설정 (Python 런타임 설정)
+함수 ID는 다음 형식입니다.
 
-마지막으로, HandStack의 function 모듈의 `module.json` 파일에서 Python 실행 환경을 설정해야 합니다.
+```txt
+ApplicationID|ProjectID|TransactionID|FunctionID
+```
 
-HandStack이 설치된 폴더에서 modules/function 디렉토리의 `module.json` 파일을 찾습니다. 이 파일을 텍스트 편집기로 열고, 다음과 같이 Python 함수 실행 환경을 설정합니다.
+계약에는 `EntryType`, `EntryMethod`, `FunctionSource`, 입력/출력 모델, 전후 처리 거래가 포함됩니다. 실제 함수 코드는 계약이 가리키는 디렉터리의 `featureMain.cs`, `featureMain.js`, `featureMain.py`와 보조 메타 파일로 관리합니다.
 
-* **Ubuntu**:
+## 주요 설정
+
+| 설정 | 설명 |
+| --- | --- |
+| `ContractBasePath` | function XML 계약 루트 목록입니다. |
+| `NodeFunctionConfig` | Node.js localStorage, 로그, timeout, 단일/멀티 프로세스, 파일 감시 설정입니다. |
+| `CSharpFunctionConfig` | C# 함수 로그와 파일 감시 설정입니다. |
+| `PythonFunctionConfig` | Python DLL 사용 여부, DLL 경로, 로그와 파일 감시 설정입니다. |
+| `FunctionSource` | 함수에서 사용할 데이터 원본, 연결 문자열, 작업 디렉터리입니다. |
+| `IsContractFileWatching` | 함수 계약 파일 변경 감시 여부입니다. |
+
+`FunctionSource` 예시는 다음과 같습니다.
 
 ```json
 {
-    "PythonFunctionConfig": {
-    "EnablePythonDLL": true,
-    "PythonDLLFilePath": "/opt/anaconda/envs/myenv/lib/libpython3.so",
-    ...
-    }
+  "ApplicationID": "HDS",
+  "ProjectID": "*",
+  "DataSourceID": "FN01",
+  "DataProvider": "SQLite",
+  "ConnectionString": "URI=file:../sqlite/HDS/dbclient/HDS.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
+  "IsEncryption": "N",
+  "WorkingDirectoryPath": "../tmp/HDS/function/HDS_FN01"
 }
 ```
 
-* **Windows**:
+## transact 연동
+
+`transact` 거래 계약에서는 `CommandType`을 `F`로 둡니다.
 
 ```json
 {
-    "PythonFunctionConfig": {
-    "EnablePythonDLL": true,
-    "PythonDLLFilePath": "C:/Users/사용자명/Anaconda3/envs/myenv/python311.dll",
-    ...
-    }
+  "ServiceID": "FN010",
+  "CommandType": "F",
+  "ReturnType": "Json"
 }
 ```
-    - `C:/Users/사용자명/` 부분은 실제 사용자 이름으로 바꿔주세요.
-    -  `python311.dll`의 경로는 Anaconda Prompt 에서 `where python` 명령어로 확인 가능합니다.
 
-* **macOS**:
+라우팅 예시는 다음과 같습니다.
 
 ```json
 {
-    "PythonFunctionConfig": {
-    "EnablePythonDLL": true,
-    "PythonDLLFilePath": "/Users/사용자명/anaconda/envs/myenv/lib/libpython3.11.dylib",
-    ...
-    }
+  "HDS|*|F|D": "http://localhost:8421/function/api/execution",
+  "HDS|*|F|P": "http://localhost:8421/function/api/execution",
+  "HDS|*|F|T": "http://localhost:8421/function/api/execution"
 }
 ```
-- `/Users/사용자명/` 부분은 실제 사용자 이름으로 바꿔주세요.
 
-5. **ModuleConfig.json 저장**
+## Python 런타임 메모
 
-이제 HandStack에서 Python 함수 코드를 실행할 준비가 완료되었습니다. HandStack을 실행하고 Python 함수를 실행해보세요.
+Python 함수는 `PythonFunctionConfig.EnablePythonDLL=true`일 때 지정된 Python DLL을 로드합니다. Windows에서는 `python311.dll` 또는 설치 버전에 맞는 DLL 경로를, Linux/macOS에서는 `libpython` 경로를 실제 환경에 맞춰 지정합니다.
+
+```json
+{
+  "PythonFunctionConfig": {
+    "EnablePythonDLL": true,
+    "PythonDLLFilePath": "C:/anaconda3/envs/myenv/python311.dll"
+  }
+}
+```
+
+## 운영 주의사항
+
+- 함수 코드는 서버에서 실행되므로 외부 패키지, 파일 접근, 네트워크 접근 권한을 배포 단위로 검토합니다.
+- `EnableFileWatching`은 개발 생산성에는 좋지만 운영 환경에서는 의도치 않은 reload를 막기 위해 신중히 사용합니다.
+- Node.js 단일 스레드 설정과 timeout은 장시간 작업 또는 CPU 작업에서 병목이 될 수 있습니다.
+- 작업 디렉터리에는 임시 파일과 실행 결과가 남을 수 있으므로 정리 정책을 둡니다.

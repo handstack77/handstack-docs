@@ -4,97 +4,71 @@ sidebar_position: 50
 
 # repository
 
-파일 업로드/다운로드 및 파일 메타데이터 관리를 위한 모듈입니다.
+`repository`는 파일 업로드, 다운로드, 삭제, 파일 메타데이터 관리를 담당하는 모듈입니다. 저장소 정의는 JSON 계약으로 관리하고, 메타데이터 저장/조회는 `dbclient` 계약과 연계합니다.
 
-```json
-{
-    "ModuleID": "repository",
-    "Name": "repository",
-    "IsBundledWithHost": false,
-    "Version": "1.0.0",
-    "ModuleConfig": {
-        "SystemID": "HANDSTACK",
-        "FileServerUrl": "http://localhost:8421",
-        "BusinessServerUrl": "http://localhost:8421/transact/api/transaction/execute",
-        "ContractBasePath": [
-            "../contracts/repository"
-        ],
-        "ModuleLogFilePath": "../log/repository/module.log",
-        "DatabaseContractPath": "../contracts/dbclient",
-        "ModuleBasePath": "../modules/repository",
-        "EventAction": [],
-        "SubscribeAction": [ "repository.Events.RepositoryRequest" ],
-        "XFrameOptions": "ALLOW-FROM http://127.0.0.1:8421,http://localhost:8421",
-        "ContentSecurityPolicy": "frame-ancestors 'self' http://127.0.0.1:8421 http://localhost:8421;"
-    }
-}
+## 책임 범위
+
+- 저장소 계약을 읽어 파일 저장 위치와 다운로드 URL 정책을 결정합니다.
+- 단일/다중 파일 업로드, 다운로드, 삭제, 저장소 조회 API를 제공합니다.
+- 파일 메타데이터를 `DatabaseContractPath`의 `dbclient` 계약으로 저장하고 조회합니다.
+- 다른 모듈이 MediatR 이벤트로 파일 저장소 기능을 사용할 수 있도록 `repository.Events.RepositoryRequest`를 제공합니다.
+- 다운로드 응답에 `XFrameOptions`, `ContentSecurityPolicy` 같은 보안 헤더를 적용합니다.
+
+## 주요 API
+
+| 메서드 | 경로 | 용도 |
+| --- | --- | --- |
+| `GET` | `/repository/api/storage/refresh` | 저장소 계약 캐시를 갱신합니다. |
+| `GET` | `/repository/api/storage/action-handler` | 저장소 action 요청을 처리합니다. |
+| `GET` | `/repository/api/storage/get-repository` | 저장소 정의를 조회합니다. |
+| `POST` | `/repository/api/storage/upload-file` | 단일 파일을 업로드합니다. |
+| `POST` | `/repository/api/storage/upload-files` | 여러 파일을 업로드합니다. |
+| `POST` | `/repository/api/storage/download-file` | 파일을 다운로드합니다. |
+| `GET` | `/repository/api/storage/http-download-file` | HTTP 경로 기반 다운로드를 처리합니다. |
+| `GET` | `/repository/api/storage/virtual-download-file` | 가상 경로 다운로드를 처리합니다. |
+| `GET` | `/repository/api/storage/virtual-delete-file` | 가상 경로 파일을 삭제합니다. |
+| `POST` | `/repository/api/storage/remove-item` | 단일 항목을 삭제합니다. |
+| `POST` | `/repository/api/storage/remove-items` | 여러 항목을 삭제합니다. |
+
+## 핵심 구현
+
+- `Areas/repository/Controllers/StorageController.cs`: 저장소 API 진입점입니다.
+- `Extensions`: 저장소 provider, 경로 계산, 모듈 API 호출 보조 기능입니다.
+- `Services/StorageProviderFactory.cs`: 저장소 구현을 선택합니다.
+- `Contracts/repository`: 저장소 선언 JSON 계약입니다.
+- `Contracts/dbclient`, `Contracts/transact`: 파일 메타데이터 조작을 위한 보조 계약입니다.
+
+## 계약과 설정
+
+저장소 선언 계약은 기본적으로 다음 위치에 둡니다.
+
+```txt
+contracts/repository/{ApplicationID}/...
 ```
-소스) repository 환경설정 예제
 
-## 옵션 설명
+주요 설정은 다음과 같습니다.
 
-### ModuleID
+| 설정 | 설명 |
+| --- | --- |
+| `FileServerUrl` | 외부 다운로드 URL의 기준 주소입니다. |
+| `ContractBasePath` | 저장소 JSON 계약 루트입니다. |
+| `DatabaseContractPath` | 파일 메타데이터를 저장/조회할 dbclient 계약 루트입니다. |
+| `ModuleBasePath` | repository 모듈 파일 기준 경로입니다. |
+| `SubscribeAction` | 기본 수신 이벤트는 `repository.Events.RepositoryRequest`입니다. |
+| `XFrameOptions` | 다운로드 응답의 frame 허용 정책입니다. |
+| `ContentSecurityPolicy` | 다운로드 응답의 frame-ancestors 정책입니다. |
 
-모듈을 식별하는 고유 ID 입니다. 반드시 입력 되어야 합니다.
+## 실행 흐름
 
-### Name
+1. 모듈 초기화 시 `ContractBasePath`의 저장소 JSON 계약을 로드합니다.
+2. 업로드 요청이 들어오면 저장소 ID와 업무 키를 기준으로 실제 파일 경로를 계산합니다.
+3. 파일 저장 후 `DatabaseContractPath`의 dbclient 계약으로 메타데이터를 기록합니다.
+4. 다운로드 요청은 저장소 계약과 메타데이터를 확인한 뒤 보안 헤더를 포함해 파일을 반환합니다.
+5. 계약 변경 시 `/repository/api/storage/refresh` 또는 파일 감시로 매핑을 갱신합니다.
 
-모듈의 정보성 이름을 부여합니다.
+## 운영 주의사항
 
-### IsBundledWithHost
-
-모듈이 호스트 애플리케이션과 함께 번들로 제공되는지 여부를 나타냅니다. 모놀리식 아키텍처로 개발하는 경우 true로 설정하며, 이는 ack 프로젝트와 연관된 모든 module 프로젝트가 참조로 연결되어 단일 코드 베이스에서 관리됨을 의미합니다. (기본값: false)
-
-### Version
-
-모듈 버전을 주.부.수 숫자로 관리합니다.
-
-### ModuleConfig
-
-#### SystemID
-
-ack 프로그램에서 운영하는 시스템 식별 ID를 입력합니다. (기본값: HANDSTACK)
-
-#### BusinessServerUrl
-
-모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8421/transact/api/transaction/execute)
-
-#### ContractBasePath
-
-repository 모듈의 거래 파일들이 있는 기본 디렉토리 경로를 입력합니다. 상대경로는 모듈의 기본 디렉토리를 기준으로 설정됩니다.
-
-#### ModuleLogFilePath
-
-모듈 내에서 작성하는 로그의 파일명을 포함하는 파일 경로입니다.
-
-#### DatabaseContractPath
-
-업로드/다운로드 되는 항목을 관리하기 위한 dbclient Contracts 기본 디렉토리입니다. 개발 목적외에 변경하는 것을 권장하지 않습니다. (기본값: ../contracts/dbclient)
-
-#### ModuleBasePath
-
-repository 모듈의 기본 디렉토리입니다. 개발 목적외에 변경하는 것을 권장하지 않습니다. (기본값: ../modules/repository)
-
-#### XFrameOptions
-
-X-Frame-Options는 웹 페이지가 iframe, embed 등에서 렌더링될 수 있는지 여부를 파일 업로드/다운로드시 브라우저에 지시하는 HTTP 응답 헤더입니다.
-
-#### ContentSecurityPolicy
-
-Content Security Policy (CSP)는 파일 업로드/다운로드시 웹 애플리케이션이 로드할 수 있는 리소스의 출처를 제어하는 HTTP 응답 헤더입니다.
-
-#### EventAction
-
-모듈 간의 Mediator 발신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [대상 모듈 ID].Events.[호출 이벤트 ID]
-
-#### SubscribeAction
-
-모듈 간의 Mediator 수신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [공개 모듈 ID].Events.[수신 이벤트 ID]
-
-## 설정 정보 관리 화면
-
-프로그램 실행 후, 자세한 내용은 웹 브라우저에서 다음 URL을 통해 확인할 수 있습니다. 또한, 편집한 환경설정을 가져오기 및 내보내기 기능도 제공합니다.
-
-> http://localhost:8421/repository/module-settings.html
-
-![](img/localhost_8000_repository_module-settings.html.png)
+- 업로드 가능한 경로와 다운로드 URL은 저장소 계약에서 명확히 제한합니다.
+- 파일 메타데이터와 실제 파일 저장소가 불일치하지 않도록 삭제/이관 작업은 repository API를 통해 수행합니다.
+- `XFrameOptions`, `ContentSecurityPolicy`는 화면 내 iframe 다운로드나 미리보기 요구사항과 보안 정책을 함께 고려해 설정합니다.
+- `LoadPassAssemblyPath`에 OS별 SkiaSharp native library가 포함되므로 배포 대상 OS에서 파일이 누락되지 않게 확인합니다.

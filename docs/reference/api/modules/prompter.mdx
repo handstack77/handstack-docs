@@ -4,59 +4,104 @@ sidebar_position: 55
 
 # prompter
 
-`prompter`는 프롬프트 계약을 기반으로 LLM 요청을 실행하는 모듈입니다. OpenAI, Claude, Gemini, Ollama, LM Studio 같은 제공자를 설정으로 선택하고, `transact`에서는 `CommandType`을 `P`로 지정해 라우팅할 수 있습니다.
+`prompter`는 XML 프롬프트 계약을 기준으로 LLM 요청을 실행하는 모듈입니다. OpenAI, Claude, Gemini, Ollama, LM Studio 같은 제공자를 `LLMSource`로 등록하고, `transact`에서는 `CommandType=P`로 라우팅합니다.
 
-## 주요 기능
+## 책임 범위
 
-* XML 계약의 `<prompts>`와 `statement`를 읽어 프롬프트를 실행합니다.
-* 계약별로 LLM 데이터소스를 선택합니다.
-* KernelPlugin, MCP, CLI 도구 호출을 allowlist 기반으로 제한합니다.
-* 코드도움 거래 결과를 프롬프트 본문에 삽입할 수 있습니다.
-* 요청과 응답 로그를 모듈 로그 또는 `logger` 모듈로 남길 수 있습니다.
-
-## 주요 설정
-
-* `LLMSource`: Provider, 모델, endpoint, API Key를 정의합니다.
-* `AllowedKernelPlugins`: 계약에서 사용할 수 있는 커널 플러그인과 함수 목록입니다.
-* `AllowedMcpServers`: 실행 가능한 MCP 서버 allowlist입니다.
-* `AllowedCliTools`: 실행 가능한 CLI 도구 allowlist입니다.
-* `AllowedBodyFileBasePaths`: 프롬프트 body에서 읽을 수 있는 파일 경로 기준입니다.
+- 프롬프트 계약을 읽어 provider, model, 메시지, body, tool 사용 범위를 구성합니다.
+- 요청 파라미터를 프롬프트 본문과 헤더, 인증 정보, body 속성에 바인딩합니다.
+- KernelPlugin, MCP 서버, CLI 도구, body 파일 경로 사용을 allowlist로 제한합니다.
+- LLM 응답을 HandStack 거래 응답 형식으로 변환합니다.
+- 요청/응답 로그와 채팅 이력 출력 여부를 설정으로 제어합니다.
 
 ## 주요 API
 
-* GET: `/prompter/api/query/has`
-* GET: `/prompter/api/query/refresh`
-* GET: `/prompter/api/query/retrieve`
-* GET: `/prompter/api/query/meta`
-* GET: `/prompter/api/query/reports`
-* POST: `/prompter/api/query/execute`
+| 메서드 | 경로 | 용도 |
+| --- | --- | --- |
+| `GET` | `/prompter/api/query/has` | 프롬프트 계약 존재 여부를 확인합니다. |
+| `GET` | `/prompter/api/query/refresh` | 프롬프트 계약 캐시를 갱신합니다. |
+| `GET` | `/prompter/api/query/retrieve` | 계약 원문 또는 상세 정보를 조회합니다. |
+| `GET` | `/prompter/api/query/meta` | 입력/출력 메타 정보를 반환합니다. |
+| `GET` | `/prompter/api/query/reports` | 계약 기반 보고용 정보를 조회합니다. |
+| `POST` | `/prompter/api/query/execute` | 프롬프트 계약을 실행합니다. |
 
-## 계약 위치
+## 핵심 구현
+
+- `Areas/prompter/Controllers/QueryController.cs`: query API 진입점입니다.
+- `DataClient/PromptClient.cs`: 프롬프트 계약 실행과 LLM provider 호출을 담당합니다.
+- `Extensions/PromptMapper.cs`: XML 계약 로드와 refresh를 담당합니다.
+- `Entity/ModuleConfigJson.cs`: LLMSource와 도구 allowlist 설정 스키마입니다.
+- `Events/ManagedRequestHandler.cs`: 관리 기능에서 전달되는 설정 변경 요청을 처리합니다.
+
+## 계약과 식별자
+
+계약은 기본적으로 다음 위치에 둡니다.
 
 ```txt
-%HANDSTACK_HOME%/contracts/prompter/{ApplicationID}/{ProjectID}/{TransactionID}.xml
+contracts/prompter/{ApplicationID}/{ProjectID}/{TransactionID}.xml
 ```
 
-프롬프트 본문은 `${ParameterName}` 형식으로 요청 파라미터를 치환합니다. 인증, 헤더, body 속성은 `@ParameterName` 형식을 사용할 수 있습니다.
+프롬프트 ID는 다음 형식으로 조회됩니다.
 
-## transact 연동
+```txt
+ApplicationID|ProjectID|TransactionID|PromptID
+```
+
+프롬프트 본문은 `${ParameterName}` 형태로 요청 값을 치환합니다. `authorization`, `headers`, `body` 속성처럼 값 전체를 파라미터로 받을 때는 `@ParameterName` 형식을 사용합니다.
+
+## 주요 설정
+
+| 설정 | 설명 |
+| --- | --- |
+| `LLMSource` | provider, model, endpoint, API Key, stream/think 옵션을 정의합니다. |
+| `AllowedKernelPlugins` | 계약에서 호출 가능한 커널 플러그인과 함수 allowlist입니다. |
+| `AllowedMcpServers` | 계약에서 사용할 수 있는 MCP 서버 allowlist입니다. |
+| `AllowedCliTools` | 프롬프트 실행 중 사용할 수 있는 CLI 도구 allowlist입니다. |
+| `AllowedBodyFileBasePaths` | body 파일을 읽을 수 있는 기준 경로입니다. |
+| `IsChatHistoryConsoleShow` | 채팅 이력을 콘솔에 출력할지 결정합니다. |
+| `EventAction` | 기본값은 `prompter.Events.ManagedRequest`입니다. |
+
+`LLMSource` 예시는 다음과 같습니다.
 
 ```json
 {
-  "ServiceID": "GP01",
+  "ApplicationID": "HDS",
+  "ProjectID": "*",
+  "DataSourceID": "LLM1",
+  "LLMProvider": "OpenAI",
+  "ApiKey": "<api-key>",
+  "ModelID": "gpt-5.4-mini",
+  "Endpoint": "",
+  "Think": false,
+  "Stream": false
+}
+```
+
+## transact 연동
+
+`transact` 거래 계약에서는 `CommandType`을 `P`로 둡니다.
+
+```json
+{
+  "ServiceID": "GPT010",
   "CommandType": "P",
   "ReturnType": "Json"
 }
 ```
 
-`RoutingCommandUri`에는 다음과 같은 규칙을 추가합니다.
+라우팅 예시는 다음과 같습니다.
 
 ```json
 {
-  "HDS|*|P|D": "http://localhost:8421/prompter/api/query"
+  "HDS|*|P|D": "http://localhost:8421/prompter/api/query",
+  "HDS|*|P|P": "http://localhost:8421/prompter/api/query",
+  "HDS|*|P|T": "http://localhost:8421/prompter/api/query"
 }
 ```
 
 ## 운영 주의사항
 
-LLM API Key와 외부 endpoint는 코드와 공개 문서에 직접 넣지 않습니다. 도구 호출은 계약 선언과 `module.json` allowlist가 모두 일치할 때만 허용되도록 관리해야 합니다.
+- API Key, endpoint, 로컬 모델 경로는 실제 값으로 계약이나 공개 문서에 남기지 않습니다.
+- 도구 호출은 계약 선언과 `module.json` allowlist가 모두 일치할 때만 허용되도록 관리합니다.
+- MCP, CLI, 파일 body 기능은 외부 시스템이나 파일 시스템에 접근할 수 있으므로 운영 환경에서는 최소 권한 원칙을 적용합니다.
+- LLM 응답은 비결정적일 수 있으므로 업무 거래에서는 후속 검증, 스키마 검사, 실패 시 fallback 전략을 함께 설계합니다.

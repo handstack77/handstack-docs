@@ -4,180 +4,102 @@ sidebar_position: 20
 
 # dbclient
 
-SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite 데이터베이스 연동을 관리하기 위한 거래 기능을 제공하는 모듈입니다.
+`dbclient`는 XML SQL 계약을 기준으로 관계형 데이터베이스 요청을 실행하는 모듈입니다. SQL Server, Oracle, MySQL/MariaDB, PostgreSQL, SQLite 데이터 원본을 설정할 수 있으며, `transact`에서는 `CommandType=D` 거래의 기본 실행 모듈로 사용합니다.
 
-기본적으로 각 데이터베이스 예제 연결문자열을 제공하며, 업무에 맞게 데이터베이스 연결 문자열을 설정해야 합니다.
+## 책임 범위
 
-예제로 제공된 연결문자열에 대한 환경설정은 [docker 기반 개발용 데이터베이스 설치하기](/docs/startup/handsonlab/docker-기반-개발용-데이터베이스-설치하기) 문서를 참고하세요
+- `DataSource` 설정을 읽어 애플리케이션/프로젝트별 데이터베이스 연결을 관리합니다.
+- XML statement 계약을 로드하고 `ApplicationID|ProjectID|TransactionID|StatementID` 기준으로 실행합니다.
+- 요청 파라미터를 DB provider별 native parameter로 변환합니다.
+- `Json`, `Scalar`, `NonQuery`, `Xml`, `SchemeOnly`, `CodeHelp` 같은 반환 형식을 처리합니다.
+- SQL 실행 로그와 프로파일 로그를 설정에 따라 파일 또는 `logger` 모듈로 전송합니다.
+
+## 주요 API
+
+| 메서드 | 경로 | 용도 |
+| --- | --- | --- |
+| `GET` | `/dbclient/api/query/has` | statement 계약 존재 여부를 확인합니다. |
+| `GET` | `/dbclient/api/query/refresh` | 계약 파일을 다시 로드합니다. |
+| `GET` | `/dbclient/api/query/retrieve` | 계약 원문 또는 상세 정보를 조회합니다. |
+| `GET` | `/dbclient/api/query/meta` | 입력/출력 메타 정보를 반환합니다. |
+| `GET` | `/dbclient/api/query/reports` | 계약 기반 보고용 정보를 조회합니다. |
+| `POST` | `/dbclient/api/query/execute` | SQL 계약을 실행합니다. |
+
+## 핵심 구현
+
+- `Areas/dbclient/Controllers/QueryController.cs`: query API 진입점입니다.
+- `DataClient/QueryDataClient.cs`: 계약 해석, 파라미터 바인딩, SQL 실행 핵심 구현입니다.
+- `Extensions/DatabaseMapper.cs`: XML statement와 데이터 원본 매핑을 관리합니다.
+- `Events/DbClientRequestHandler.cs`: 모듈 내부 DB 실행 요청을 처리합니다.
+- `Events/ManagedRequestHandler.cs`: 운영/관리 화면에서 전달되는 데이터 원본 변경 요청을 반영합니다.
+- `Profiler`: provider별 DB command 실행 프로파일을 수집합니다.
+
+## 계약과 식별자
+
+계약은 기본적으로 다음 위치에 둡니다.
+
+```txt
+contracts/dbclient/{ApplicationID}/{ProjectID}/{TransactionID}.xml
+```
+
+쿼리 ID는 다음 형식입니다.
+
+```txt
+ApplicationID|ProjectID|TransactionID|StatementID
+```
+
+statement ID는 보통 `GD01`, `LD01`, `MD01`, `DD01`처럼 조회, 목록, 수정, 삭제 성격이 드러나도록 나눕니다. 계약에는 `DataSourceID`, SQL 본문, 입력 파라미터, 반환 형식을 함께 선언합니다.
+
+## 주요 설정
+
+| 설정 | 설명 |
+| --- | --- |
+| `ContractBasePath` | dbclient XML 계약 루트 목록입니다. |
+| `DataSource` | 애플리케이션/프로젝트별 DB provider와 연결 문자열입니다. |
+| `DefaultCommandTimeout` | statement timeout이 없을 때 적용되는 기본 SQL 제한 시간입니다. |
+| `IsContractFileWatching` | 계약 파일 변경 감시 여부입니다. |
+| `IsTransactionLogging` | 요청/응답 거래 로그 기록 여부입니다. |
+| `IsProfileLogging` | DB provider 호출 프로파일 로그 기록 여부입니다. |
+| `SubscribeAction` | 기본 수신 이벤트는 `dbclient.Events.DbClientRequest`, `dbclient.Events.ManagedRequest`입니다. |
+
+`DataSource` 예시는 다음과 같습니다.
 
 ```json
 {
-    "ModuleID": "dbclient",
-    "Name": "dbclient",
-    "IsBundledWithHost": false,
-    "Version": "1.0.0",
-    "ModuleConfig": {
-        "SystemID": "HANDSTACK",
-        "BusinessServerUrl": "http://localhost:8421/transact/api/transaction/execute",
-        "CircuitBreakResetSecond": 60,
-        "DefaultCommandTimeout": 30,
-        "ContractBasePath": [
-            "../contracts/dbclient"
-        ],
-        "IsTransactionLogging": false,
-        "ModuleLogFilePath": "../log/dbclient/module.log",
-        "IsLogServer": true,
-        "LogServerUrl": "http://localhost:8421/logger/api/log/insert",
-        "IsProfileLogging": false,
-        "ProfileLogFilePath": "../log/dbclient/profile.log",
-        "EventAction": [],
-        "SubscribeAction": [
-            "dbclient.Events.DbClientRequest",
-            "dbclient.Events.ManagedRequest"
-        ],
-        "DataSource": [
-            {
-                "ApplicationID": "HDS",
-                "ProjectID": "*",
-                "DataSourceID": "CHECKUPDB",
-                "DataProvider": "SQLite",
-                "ConnectionString": "URI=file:../sqlite/HDS/dbclient/checkup.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
-                "IsEncryption": "N",
-                "Comment": "SQLite 기본 데이터베이스"
-            },
-            {
-                "ApplicationID": "HDS",
-                "ProjectID": "*",
-                "DataSourceID": "DB01",
-                "DataProvider": "SQLite",
-                "ConnectionString": "URI=file:../sqlite/HDS/dbclient/HDS.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
-                "IsEncryption": "N",
-                "Comment": "SQLite 기본 데이터베이스"
-            },
-            {
-                "ApplicationID": "HDS",
-                "ProjectID": "*",
-                "DataSourceID": "DB02",
-                "DataProvider": "SqlServer",
-                "ConnectionString": "Data Source=localhost;Initial Catalog=master;User ID=sa;Password=Strong@Passw0rd;",
-                "IsEncryption": "N",
-                "Comment": "SqlServer 기본 데이터베이스"
-            },
-            {
-                "ApplicationID": "HDS",
-                "ProjectID": "*",
-                "DataSourceID": "DB03",
-                "DataProvider": "Oracle",
-                "ConnectionString": "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SID=ORCL)));User Id=system;Password=Strong@Passw0rd;",
-                "IsEncryption": "N",
-                "Comment": "Oracle 기본 데이터베이스"
-            },
-            {
-                "ApplicationID": "HDS",
-                "ProjectID": "*",
-                "DataSourceID": "DB04",
-                "DataProvider": "MySQL",
-                "ConnectionString": "Server=localhost;Port=3306;Uid=root;Pwd=Strong@Passw0rd;PersistSecurityInfo=True;SslMode=none;Charset=utf8;Allow User Variables=True;",
-                "IsEncryption": "N",
-                "Comment": "MySQL 기본 데이터베이스"
-            },
-            {
-                "ApplicationID": "HDS",
-                "ProjectID": "*",
-                "DataSourceID": "DB05",
-                "DataProvider": "PostgreSQL",
-                "ConnectionString": "Host=localhost;Port=5432;Database=postgres;User ID=postgres;Password=Strong@Passw0rd;",
-                "IsEncryption": "N",
-                "Comment": "PostgreSQL 기본 데이터베이스"
-            }
-        ]
-    }
+  "ApplicationID": "HDS",
+  "ProjectID": "*",
+  "DataSourceID": "DB01",
+  "DataProvider": "SQLite",
+  "ConnectionString": "URI=file:../sqlite/HDS/dbclient/HDS.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
+  "IsEncryption": "N"
 }
 ```
-소스) dbclient 환경설정 예제
 
-## 옵션 설명
+## transact 연동
 
-### SystemID
+`transact` 거래 계약에서는 `CommandType`을 `D`로 둡니다.
 
-### ModuleID
+```json
+{
+  "ServiceID": "LD01",
+  "CommandType": "D",
+  "ReturnType": "Json"
+}
+```
 
-dbclient 모듈을 식별하는 고유 ID 입니다. 반드시 입력 되어야 합니다.
+라우팅 예시는 다음과 같습니다.
 
-### Name
+```json
+{
+  "HDS|*|D|D": "http://localhost:8421/dbclient/api/query",
+  "HDS|*|D|P": "http://localhost:8421/dbclient/api/query",
+  "HDS|*|D|T": "http://localhost:8421/dbclient/api/query"
+}
+```
 
-dbclient 모듈의 정보성 이름을 부여합니다.
+## 운영 주의사항
 
-### IsBundledWithHost
-
-모듈이 호스트 애플리케이션과 함께 번들로 제공되는지 여부를 나타냅니다. 모놀리식 아키텍처로 개발하는 경우 true로 설정하며, 이는 ack 프로젝트와 연관된 모든 module 프로젝트가 참조로 연결되어 단일 코드 베이스에서 관리됨을 의미합니다. (기본값: false)
-
-### Version
-
-모듈 버전을 주.부.수 숫자로 관리합니다.
-
-### ModuleConfig
-
-#### SystemID
-
-ack 프로그램에서 운영하는 시스템 식별 ID를 입력합니다. (기본값: HANDSTACK)
-
-#### BusinessServerUrl
-
-모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8421/transact/api/transaction/execute)
-
-#### CircuitBreakResetSecond
-
-거래 로그 전송 오류시 재시도 할 때 까지 대기하기 위한 초를 입력합니다. (기본값: 60)
-
-#### DefaultCommandTimeout
-
-데이터베이스에 SQL 명령을 응답 할 때 까지 대기하기 위한 기본 초를 입력합니다. 각 기능의 timeout 속성이 없으면 적용됩니다. (기본값: 30)
-
-#### ContractBasePath
-
-dbclient 모듈의 거래 파일들이 있는 기본 디렉토리 경로를 입력합니다. 상대경로는 모듈의 기본 디렉토리를 기준으로 설정됩니다.
-
-#### IsTransactionLogging
-
-dbclient 모듈의 요청에서 응답 사이의 SQL 거래 로그를 저장합니다. (기본값: false)
-
-#### ModuleLogFilePath
-
-모듈 내에서 작성하는 로그의 파일명을 포함하는 파일 경로입니다.
-
-#### IsLogServer
-
-dbclient 모듈의 로그를 logger 모듈을 운영하는 서버로 저장합니다. (기본값: false)
-
-#### LogServerUrl
-
-logger 모듈을 운영하는 서버의 URL 경로입니다. (기본값: http://localhost:8421/logger/api/log/insert)
-
-#### IsProfileLogging
-
-dbclient 모듈 데이터베이스 서버간의 요청/응답 정보를 파일 로그로 저장합니다. 개발 목적의 용도로 사용해야 하며, 운영 환경에서는 false를 권장합니다. (기본값: false)
-
-#### ProfileLogFilePath
-
-요청/응답 정보를 저장하는 파일 경로입니다. (기본값: ../log/dbclient/profile.log)
-
-#### EventAction
-
-모듈 간의 Mediator 발신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [대상 모듈 ID].Events.[호출 이벤트 ID]
-
-#### SubscribeAction
-
-모듈 간의 Mediator 수신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [공개 모듈 ID].Events.[수신 이벤트 ID]
-
-#### DataSource
-
-dbclient 모듈내 Contract 파일에서 사용하는 (DB01) 데이터 원본 ID 입니다.
-
-## 설정 정보 관리 화면
-
-프로그램 실행 후, 자세한 내용은 웹 브라우저에서 다음 URL을 통해 확인할 수 있습니다. 또한, 편집한 환경설정을 가져오기 및 내보내기 기능도 제공합니다.
-
-> http://localhost:8421/dbclient/module-settings.html
-
-![](img/localhost_8000_dbclient_module-settings.html.png)
+- 연결 문자열과 DB 계정은 환경별 설정으로 분리하고 실제 비밀번호를 공개 저장소에 두지 않습니다.
+- `IsProfileLogging`은 성능 분석에는 유용하지만 SQL과 파라미터가 남을 수 있으므로 운영에서는 목적과 보관 기간을 명확히 합니다.
+- 계약 파일 hot reload를 사용할 때는 변경 배포와 refresh 시점을 운영 절차에 포함합니다.
+- SQL provider별 파라미터 타입과 날짜/숫자 변환 규칙이 다르므로 계약 작성 후 실제 provider에서 검증합니다.

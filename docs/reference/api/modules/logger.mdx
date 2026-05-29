@@ -4,102 +4,66 @@ sidebar_position: 40
 
 # logger
 
-프로그램내에서 발생하는 이벤트 로그를 기록하는 모듈입니다.
+`logger`는 HandStack 모듈들이 전송한 거래 로그와 이벤트 로그를 저장하고 조회하는 모듈입니다. SQLite를 기본으로 사용할 수 있으며, 설정에 따라 애플리케이션별 로그 저장소와 테이블을 분리합니다.
+
+## 책임 범위
+
+- `/logger/api/log/insert` 요청이나 내부 이벤트를 받아 로그를 저장합니다.
+- 애플리케이션별 `DataSource` 설정으로 저장소, 테이블, 보관 기간을 결정합니다.
+- 로그 목록과 상세 조회 API를 제공합니다.
+- `LogDeleteService` 백그라운드 작업으로 보관 기간이 지난 로그를 삭제합니다.
+- 동적 schema 설정이 있으면 컬럼 정의와 역할 매핑으로 DDL과 insert/list/detail 쿼리를 구성합니다.
+
+## 주요 API
+
+| 메서드 | 경로 | 용도 |
+| --- | --- | --- |
+| `GET/POST` | `/logger/api/log/insert` | 로그 이벤트를 저장합니다. |
+| `GET` | `/logger/api/log/list` | 저장된 로그 목록을 조회합니다. |
+| `GET` | `/logger/api/log/detail` | 로그 상세 정보를 조회합니다. |
+
+## 핵심 구현
+
+- `Areas/logger/Controllers/LogController.cs`: 로그 저장/조회 API 진입점입니다.
+- `Events/LoggerRequestHandler.cs`: 모듈 내부 이벤트 기반 로그 저장 요청을 처리합니다.
+- `Services/LogDeleteService.cs`: 보관 기간 기준 삭제 백그라운드 서비스입니다.
+- `SQL`: provider별 기본 DDL과 쿼리 리소스입니다.
+- `Entity/DataSource.cs`: 로그 저장소와 동적 schema 설정 타입입니다.
+
+## 주요 설정
+
+| 설정 | 설명 |
+| --- | --- |
+| `IsSQLiteCreateOnNotSettingRequest` | 설정되지 않은 애플리케이션 로그 요청을 받을 때 SQLite 저장소를 자동 생성할지 결정합니다. |
+| `LogDeleteRepeatSecond` | 로그 삭제 백그라운드 작업 반복 주기입니다. |
+| `DataSource` | 애플리케이션별 저장소, provider, 테이블, 보관 기간 설정입니다. |
+| `DataSource.Schema` | 동적 schema를 사용할 때 컬럼과 역할 매핑을 정의합니다. |
+| `BusinessServerUrl` | 내부 거래 실행 URL입니다. |
+
+`DataSource` 예시는 다음과 같습니다.
 
 ```json
 {
-    "ModuleID": "logger",
-    "Name": "logger",
-    "IsBundledWithHost": false,
-    "Version": "1.0.0",
-    "ModuleConfig": {
-        "SystemID": "HANDSTACK",
-        "IsSQLiteCreateOnNotSettingRequest": true,
-        "LogDeleteRepeatSecond": 43200,
-        "ModuleBasePath": "../modules/logger",
-        "BusinessServerUrl": "http://localhost:8421/transact/api/transaction/execute",
-        "EventAction": [],
-        "SubscribeAction": [],
-        "DataSource": [
-            {
-                "ApplicationID": "HDS",
-                "TableName": "TransactLog",
-                "DataProvider": "SQLite",
-                "RemovePeriod": -30,
-                "ConnectionString": "URI=file:../sqlite/HDS/logger/transact.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
-                "IsEncryption": "N"
-            }
-        ]
-    }
+  "ApplicationID": "HDS",
+  "TableName": "TransactLog",
+  "DataProvider": "SQLite",
+  "RemovePeriod": -30,
+  "ConnectionString": "URI=file:../sqlite/HDS/logger/transact.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;",
+  "IsEncryption": "N"
 }
 ```
-소스) logger 환경설정 예제
 
-## 옵션 설명
+## 실행 흐름
 
-### ModuleID
+1. 호출 모듈이 `LogServerUrl`로 로그를 전송하거나 내부 이벤트로 로그 저장을 요청합니다.
+2. `logger`는 `ApplicationID` 기준으로 `DataSource`를 찾습니다.
+3. 저장소가 없고 `IsSQLiteCreateOnNotSettingRequest=true`이면 기본 SQLite 저장소를 생성합니다.
+4. 로그를 저장하고, 조회 API는 같은 저장소에서 목록/상세 데이터를 반환합니다.
+5. 삭제 서비스는 `RemovePeriod`와 `LogDeleteRepeatSecond`를 기준으로 오래된 로그를 정리합니다.
 
-모듈을 식별하는 고유 ID 입니다. 반드시 입력 되어야 합니다.
+## 운영 주의사항
 
-### Name
-
-모듈의 정보성 이름을 부여합니다.
-
-### IsBundledWithHost
-
-모듈이 호스트 애플리케이션과 함께 번들로 제공되는지 여부를 나타냅니다. 모놀리식 아키텍처로 개발하는 경우 true로 설정하며, 이는 ack 프로젝트와 연관된 모든 module 프로젝트가 참조로 연결되어 단일 코드 베이스에서 관리됨을 의미합니다. (기본값: false)
-
-### Version
-
-모듈 버전을 주.부.수 숫자로 관리합니다.
-
-### ModuleConfig
-
-#### SystemID
-
-ack 프로그램에서 운영하는 시스템 식별 ID를 입력합니다. (기본값: HANDSTACK)
-
-#### BusinessServerUrl
-
-모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8421/transact/api/transaction/execute)
-
-#### LogDeleteRepeatSecond
-
-거래 로그를 삭제하기 위한 반복 이벤트 주기(초)를 입력합니다. (기본값: 43200) == [12시간]
-
-#### ModuleBasePath
-
-logger 모듈의 기본 디렉토리입니다. 개발 목적외에 변경하는 것을 권장하지 않습니다. (기본값: ../modules/logger)
-
-#### IsSQLiteCreateOnNotSettingRequest
-
-거래 로그 입력 요청이 처음일 경우 자동으로 SQLite 데이터베이스 생성 여부를 설정합니다. (기본값: true)
-
-#### EventAction
-
-모듈 간의 Mediator 발신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [대상 모듈 ID].Events.[호출 이벤트 ID]
-
-#### SubscribeAction
-
-모듈 간의 Mediator 수신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [공개 모듈 ID].Events.[수신 이벤트 ID]
-
-#### DataSource
-
-logger 모듈내 Contract 파일에서 사용하는 (DB01) 데이터 원본 ID 입니다.
-
-데이터베이스 연결 정보를 설정합니다. 데이터베이스 연결 정보는 다음과 같은 속성을 가집니다.
-
-- ApplicationID: 거래 로그를 입력할 ApplicationID를 설정합니다.
-- TableName: 거래 로그 테이블명을 설정합니다.
-- DataProvider: 데이터베이스 유형을 설정합니다. SqlServer, Oracle, MySQL, PostgreSQL, SQLite 중 하나를 설정합니다.
-- RemovePeriod: 로그를 삭제할 기간을 설정합니다. 설정된 기간 이전의 로그는 정기적으로 삭제됩니다. -1로 설정하면 로그를 삭제하지 않습니다.
-- ConnectionString: DataProvider에 설정된 데이터베이스의 연결 문자열을 설정합니다.
-- IsEncryption: 업무에 사용 하는 데이터베이스의 연결 문자열을 암호화할지 여부를 설정합니다. 암호화를 사용하지 않을 경우 "N"을 설정합니다.
-
-## 설정 정보 관리 화면
-
-프로그램 실행 후, 자세한 내용은 웹 브라우저에서 다음 URL을 통해 확인할 수 있습니다. 또한, 편집한 환경설정을 가져오기 및 내보내기 기능도 제공합니다.
-
-> http://localhost:8421/logger/module-settings.html
-
-![](img/localhost_8000_logger_module-settings.html.png)
+- 설정되지 않은 애플리케이션 저장소 자동 생성은 개발에는 편리하지만 운영에서는 로그 저장소 난립을 만들 수 있습니다.
+- `RemovePeriod`가 음수이면 보관 기간 기준 삭제가 적용됩니다. 장기 보관이 필요한 로그는 별도 저장소나 백업 정책을 둡니다.
+- 로그에는 요청/응답 전문과 예외 정보가 포함될 수 있으므로 개인정보와 비밀 값 마스킹 정책을 상위 모듈과 함께 설계합니다.
+- 실시간 모니터링은 운영 환경에 맞는 로그 수집 도구와 파일 권한 정책을 사용합니다.

@@ -4,74 +4,60 @@ sidebar_position: 70
 
 # wwwroot
 
-프로그램과 태넌트 앱의 화면 구성에 필요한 리소스를 제공하는 모듈입니다.
+`wwwroot`는 HandStack 화면과 정적 리소스를 제공하는 모듈입니다. 계약 기반 화면 리소스는 `ContractRequestPath` 아래에 노출하고, 실제 정적 자산은 `WWWRootBasePath`에서 서비스합니다.
 
-```json
-{
-    "ModuleID": "wwwroot",
-    "Name": "wwwroot",
-    "IsBundledWithHost": false,
-    "Version": "1.0.0",
-    "ModuleConfig": {
-        "SystemID": "HANDSTACK",
-        "BusinessServerUrl": "http://localhost:8421/transact/api/transaction/execute",
-        "ModuleLogFilePath": "../log/wwwroot/module.log",
-        "ContractRequestPath": "view",
-        "ContractBasePath": "../contracts/wwwroot",
-        "WWWRootBasePath": "../modules/wwwroot/wwwroot"
-    }
-}
-```
-소스) wwwroot 환경설정 예제
+## 책임 범위
 
-## 옵션 설명
+- `contracts/wwwroot`의 애플리케이션별 화면 리소스를 기본 `/view` 경로로 노출합니다.
+- `modules/wwwroot/wwwroot` 아래의 실제 정적 파일을 서비스합니다.
+- 정적 파일 요청에 대해 대소문자 무시 탐색과 캐시 정책을 적용합니다.
+- Basic token 기반 파일 동기화 API를 제공합니다.
+- 계약 파일 업로드 후 대상 모듈의 refresh API를 호출해 런타임 계약 캐시를 갱신합니다.
 
-### ModuleID
+## 주요 API
 
-모듈을 식별하는 고유 ID 입니다. 반드시 입력 되어야 합니다.
+| 메서드 | 경로 | 용도 |
+| --- | --- | --- |
+| `POST` | `/wwwroot/api/sync/upload` | 계약 또는 정적 파일을 업로드 동기화합니다. |
+| `GET` | `/wwwroot/api/sync/refresh` | 대상 모듈 refresh API를 호출합니다. |
+| `GET` | `/wwwroot/api/htmx/*` | HTMX 샘플/보조 API입니다. |
+| `GET` | `/wwwroot/api/index/*` | 화면 보조 API와 거래 직접 호출 래퍼입니다. |
 
-### Name
+## 핵심 구현
 
-모듈의 정보성 이름을 부여합니다.
+- `ModuleInitializer.cs`: 정적 파일 provider, 계약 리소스 경로, CORS/필터 처리를 구성합니다.
+- `Areas/wwwroot/Controllers/SyncController.cs`: 파일 업로드와 refresh 동기화 API입니다.
+- `Areas/wwwroot/Controllers/IndexController.cs`: 화면 보조 API와 `transact` 직접 호출을 제공합니다.
+- `Extensions/ModuleApiClient.cs`: 화면에서 업무 거래를 직접 호출하는 래퍼입니다.
+- `Contracts/wwwroot`: 계약 기반 화면/자산 매핑입니다.
 
-### IsBundledWithHost
+## 주요 설정
 
-모듈이 호스트 애플리케이션과 함께 번들로 제공되는지 여부를 나타냅니다. 모놀리식 아키텍처로 개발하는 경우 true로 설정하며, 이는 ack 프로젝트와 연관된 모든 module 프로젝트가 참조로 연결되어 단일 코드 베이스에서 관리됨을 의미합니다. (기본값: false)
+| 설정 | 설명 |
+| --- | --- |
+| `ContractRequestPath` | 계약 기반 정적 리소스 요청 경로입니다. 기본값은 `view`입니다. |
+| `ContractBasePath` | 계약 기반 화면 리소스 루트입니다. |
+| `WWWRootBasePath` | 실제 정적 파일 루트입니다. |
+| `FileSyncTokens` | `/wwwroot/api/sync/*` 호출을 허용할 Basic token 목록입니다. |
+| `BusinessServerUrl` | 화면 보조 API가 거래를 실행할 transact URL입니다. |
+| `ModuleLogFilePath` | wwwroot 모듈 로그 파일 경로입니다. |
 
-### Version
+## 동기화 대상
 
-모듈 버전을 주.부.수 숫자로 관리합니다.
+`SyncController`는 계약 동기화 시 허용된 모듈만 처리합니다. 현재 소스 기준으로 `dbclient`, `graphclient`, `transact`, `function`, `wwwroot` 계약을 대상으로 합니다.
 
-### ModuleConfig
+파일 업로드 후 refresh가 필요한 경우 대상 모듈의 refresh API가 호출됩니다. 예를 들어 DB 계약을 업로드하면 `dbclient`의 query 계약 캐시를 갱신해야 합니다.
 
-#### SystemID
+## 실행 흐름
 
-ack 프로그램에서 운영하는 시스템 식별 ID를 입력합니다. (기본값: HANDSTACK)
+1. 모듈 초기화 시 `ContractBasePath/{ApplicationID}`를 `ContractRequestPath` 아래 정적 파일 provider로 등록합니다.
+2. `WWWRootBasePath`는 실제 정적 파일 루트로 등록됩니다.
+3. 화면 요청은 계약 경로 또는 실제 정적 경로에서 파일을 찾습니다.
+4. 동기화 API는 Basic token을 검증한 뒤 파일을 저장하고 대상 모듈 refresh를 수행합니다.
 
-#### BusinessServerUrl
+## 운영 주의사항
 
-모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8421/transact/api/transaction/execute)
-
-#### ModuleLogFilePath
-
-모듈 내에서 작성하는 로그의 파일명을 포함하는 파일 경로입니다.
-
-#### ContractRequestPath
-
-UI 화면 요청 기본 경로입니다. 개발 목적이 아닌경우 기본값을 적용 해야합니다. (기본값: view)
-
-#### ContractBasePath
-
-UI 화면의 기본 경로입니다. 개발 목적이 아닌경우 기본값을 적용 해야합니다. (기본값: ../contracts/wwwroot)
-
-#### WWWRootBasePath
-
-모듈의 웹 루트 기본 경로입니다. /assets 디렉토리를 추가 포함되며, 개발 목적이 아닌경우 기본값을 적용 해야합니다. (기본값: ../modules/qramework/wwwroot/qramework)
-
-## 설정 정보 관리 화면
-
-프로그램 실행 후, 자세한 내용은 웹 브라우저에서 다음 URL을 통해 확인할 수 있습니다. 또한, 편집한 환경설정을 가져오기 및 내보내기 기능도 제공합니다.
-
-> http://localhost:8421/module-settings.html
-
-![](img/localhost_8000_module-settings.html.png)
+- `FileSyncTokens`가 비어 있으면 동기화 요청은 거부됩니다.
+- `ContractRequestPath`와 `WWWRootBasePath`는 요청 경로가 충돌하지 않게 분리합니다.
+- 정적 파일 동기화는 운영 화면에 직접 영향을 주므로 배포 권한과 감사 로그를 함께 관리합니다.
+- 화면에서 직접 거래를 호출하는 경우 `BusinessServerUrl`, 인증 토큰, 공개 거래 범위를 `transact` 설정과 함께 점검합니다.

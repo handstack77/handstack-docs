@@ -4,111 +4,60 @@ sidebar_position: 10
 
 # checkup
 
-태넌트 앱을 관리하기 위한 관리 화면과 기능을 제공하는 모듈입니다.
+`checkup`은 HandStack 운영 콘솔과 테넌트 앱 관리 기능을 제공하는 모듈입니다. 모듈 설정 초기화, 관리자 키 재설정, 로그인, 테넌트 앱 자산/설정 관리, 운영 기능 실행을 한곳에서 다룹니다.
 
-```json
-{
-    "ModuleID": "checkup",
-    "Name": "checkup",
-    "IsBundledWithHost": false,
-    "Version": "1.0.0",
-    "ModuleConfig": {
-        "SystemID": "HANDSTACK",
-        "ManagedAccessKey": "6eac215f2f5e495cad4f2abfdcad7644",
-        "EncryptionAES256Key": "1234567890123456",
-        "AdministratorEmailID": "administrator@handstack.kr",
-        "ModuleConfigurationUrl": "http://localhost:8421/checkup/api/managed/initialize-settings",
-        "BusinessServerUrl": "http://localhost:8421/transact/api/transaction/execute",
-        "ModuleLogFilePath": "../log/checkup/module.log",
-        "ModuleBasePath": "../modules/checkup",
-        "WWWRootBasePath": "../modules/checkup/wwwroot/checkup",
-        "EventAction": [
-            "repository.Events.RepositoryRequest"
-        ],
-        "SubscribeAction": [],
-        "ConnectionString": "URI=file:../sqlite/HDS/dbclient/checkup.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;"
-    }
-}
-```
-소스) checkup 환경설정 예제
+## 책임 범위
 
-## 옵션 설명
+- `module.json`과 테넌트 `settings.json`을 읽어 운영 설정과 CORS 기준 정보를 초기화합니다.
+- 관리자 로그인과 운영 콘솔 화면을 제공합니다.
+- 테넌트 앱, 메뉴, 권한, 데이터베이스, 모듈 설정 같은 운영 정보를 조회하고 갱신합니다.
+- repository 이벤트를 통해 로고, 프로필, 업로드 자산 같은 저장소 메타데이터와 연동합니다.
+- 운영 콘솔에서 function 계약 실행을 시험할 수 있는 API를 제공합니다.
 
-### ModuleID
+## 주요 API
 
-checkup 모듈을 식별하는 고유 ID 입니다. 반드시 입력 되어야 합니다.
+| 메서드 | 경로 | 용도 |
+| --- | --- | --- |
+| `GET` | `/checkup/api/managed/initialize-settings` | 모듈과 테넌트 설정을 초기화합니다. |
+| `GET` | `/checkup/api/managed/reset-administrator-key` | 관리자 접근 키를 재설정합니다. |
+| `GET` | `/checkup/api/account/login` | 로그인 화면 또는 로그인 흐름을 시작합니다. |
+| `GET` | `/checkup/api/account/sign-in` | 관리자 로그인 링크를 처리합니다. |
+| `GET/POST` | `/checkup/api/tenant-app/*` | 테넌트 앱, 설정, 메뉴, 자산, DB 보조 기능을 관리합니다. |
+| `POST` | `/checkup/api/function/execute` | 운영 콘솔에서 function 계약을 실행합니다. |
 
-### Name
+## 핵심 구현
 
-checkup 모듈의 정보성 이름을 부여합니다.
+- `Areas/checkup/Controllers/ManagedController.cs`: 초기 설정과 관리자 키 관리 API입니다.
+- `Areas/checkup/Controllers/AccountController.cs`: 관리자 인증과 로그인 흐름을 담당합니다.
+- `Areas/checkup/Controllers/TenantAppController.cs`: 테넌트 앱 운영 기능의 대부분을 처리합니다.
+- `Areas/checkup/Controllers/FunctionController.cs`: 운영 콘솔의 function 실행 API입니다.
+- `Services/JwtManager.cs`, `Services/UserAccountService.cs`: 인증 토큰과 관리자 계정 처리입니다.
+- `Contracts/dbclient`, `Contracts/function`, `Contracts/repository`, `Contracts/transact`: checkup 자체 운영 기능이 사용하는 계약입니다.
 
-### IsBundledWithHost
+## 주요 설정
 
-모듈이 호스트 애플리케이션과 함께 번들로 제공되는지 여부를 나타냅니다. 모놀리식 아키텍처로 개발하는 경우 true로 설정하며, 이는 ACK와 참조 프로젝트의 모든 기능이 단일 코드 베이스에서 관리됨을 의미합니다. (기본값: false)
+| 설정 | 설명 |
+| --- | --- |
+| `ManagedAccessKey` | 관리 API 호출을 보호하는 접근 키입니다. |
+| `EncryptionAES256Key` | 로그인 링크와 내부 보호 데이터에 사용하는 16자리 AES 키입니다. |
+| `AdministratorEmailID` | 기본 관리자 이메일 ID입니다. |
+| `ModuleConfigurationUrl` | 설정 초기화 API URL입니다. |
+| `BusinessServerUrl` | 내부 거래 실행을 위한 transact URL입니다. |
+| `ModuleBasePath` | checkup 모듈 파일 기준 경로입니다. |
+| `WWWRootBasePath` | 운영 콘솔 정적 자산 경로입니다. |
+| `ConnectionString` | checkup 자체 SQLite 저장소 연결 문자열입니다. |
+| `EventAction` | 기본 발신 이벤트는 `repository.Events.RepositoryRequest`입니다. |
 
-### Version
+## 실행 흐름
 
-모듈 버전을 주.부.수 숫자로 관리합니다.
+1. 모듈 초기화 시 `module.json`을 읽고 `ModuleConfiguration`을 구성합니다.
+2. `initialize-settings` 호출로 테넌트 앱 설정을 읽어 Origin/Referer 기준 정보를 캐시합니다.
+3. 관리자는 계정 API를 통해 운영 콘솔에 접근합니다.
+4. 운영 콘솔은 필요에 따라 `transact`, `dbclient`, `repository`, `function` 계약을 호출해 설정과 자산을 관리합니다.
 
-### ModuleConfig
+## 운영 주의사항
 
-#### SystemID
-
-ack 프로그램에서 운영하는 시스템 식별 ID를 입력합니다. (기본값: HANDSTACK)
-
-#### ManagedAccessKey
-
-관리 목적의 모듈 기능 요청 헤더에 필요한 액세스 키를 입력합니다. 이 정보는 내부 시스템간의 요청에 인증을 위한 용도로 사용됩니다.
-
-#### EncryptionAES256Key
-
-모듈 내에서 데이터를 보호하기 위한 AES256 기반 암호화 키 16 자리를 입력합니다.
-
-#### AdministratorEmailID
-
-모듈 내에서 관리 업무를 담당하는 이메일 ID를 입력합니다. (기본값: administrator@handstack.kr)
-
-#### ModuleConfigurationUrl
-
-ack 프로그램이 실행되고 모듈 초기화를 실행하는 Url을 입력합니다. (기본값: http://localhost:8421/checkup/api/managed/initialize-settings)
-
-#### BusinessServerUrl
-
-모듈 내에서 거래를 위한 transact 모듈을 실행하는 업무 서버의 Url을 입력합니다. (기본값: http://localhost:8421/transact/api/transaction/execute)
-
-#### ModuleLogFilePath
-
-모듈 내에서 작성하는 로그의 파일명을 포함하는 파일 경로입니다.
-
-#### ModuleBasePath
-모듈의
-기본 경로입니다. 개발 목적이 아닌경우 기본값을 적용해야합니다. (기본값: ../modules/qramework)
-
-#### WWWRootBasePath
-../modules/checkup/wwwroot/checkup
-모듈의 웹 루트 기본 경로입니다. /assets 디렉토리를 추가 포함되며, 개발 목적이 아닌경우 기본값을 적용해야합니다. (기본값: ../modules/qramework/wwwroot/qramework)
-
-#### EventAction
-
-모듈 간의 Mediator 발신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [대상 모듈 ID].Events.[호출 이벤트 ID]
-
-#### SubscribeAction
-
-모듈 간의 Mediator 수신 이벤트 통신을 위한 식별 ID를 설정합니다. 예) [공개 모듈 ID].Events.[수신 이벤트 ID]
-
-#### ConnectionString
-
-SQLite 데이터베이스의 연결 문자열을 설정합니다.
-
-> URI=file:../sqlite/HDS/dbclient/checkup.db;Journal Mode=Off;BinaryGUID=False;DateTimeFormat=Ticks;Version=3;
-
-데이터베이스 연결문자열 참고자료:
-- [SQLite](https://www.connectionstrings.com/sqlite)
-
-## 설정 정보 관리 화면
-
-프로그램 실행 후, 자세한 내용은 웹 브라우저에서 다음 URL을 통해 확인할 수 있습니다. 또한, 편집한 환경설정을 가져오기 및 내보내기 기능도 제공합니다.
-
-> http://localhost:8421/checkup/module-settings.html
-
-![](img/localhost_8000_checkup_module-settings.html.png)
+- `ManagedAccessKey`, `AuthorizationKey`, `EncryptionAES256Key`는 운영 보안의 핵심 값이므로 환경별로 분리하고 외부에 노출하지 않습니다.
+- `ConnectionString`은 암호화 문자열도 허용하며 런타임에서 복호화해 사용합니다.
+- `TenantAppController`는 파일 시스템과 SQLite를 직접 다루므로 실행 계정의 파일 권한과 경로 격리가 중요합니다.
+- 운영 콘솔은 관리 기능을 제공하므로 네트워크 접근 범위, 관리자 계정, 로그 보관 정책을 함께 점검합니다.
