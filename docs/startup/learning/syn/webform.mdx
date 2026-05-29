@@ -7,6 +7,19 @@ sidebar_position: 10
 ## 개요
 syn.$w는 HandStack 웹 애플리케이션 개발을 위한 핵심 함수들을 제공합니다. 사용자 인터페이스, 데이터 저장, 거래 처리, 다이얼로그 관리 등 웹폼 개발에 필요한 모든 기능을 포함합니다.
 
+## 개발자가 알아야 할 실행 흐름
+
+`syn.$w`는 단순 유틸리티 묶음이 아니라 화면 초기화와 거래 실행의 중심입니다.
+
+1. 브라우저가 `syn.js`를 로드합니다.
+2. `synConfig` 또는 `synConfigName`으로 `syn.Config`가 병합됩니다.
+3. `DOMContentLoaded` 시점에 `syn.$w.contentLoaded()`가 실행됩니다.
+4. 현재 화면의 `moduleScript` 또는 URL 파일명을 기준으로 `syn.$w.pageScript`가 결정됩니다.
+5. 화면 모듈의 `config`, `prop`, `transaction`, `hook`, `event`, `method`가 초기화됩니다.
+6. `hook.pageLoad()`와 컨트롤 이벤트 바인딩이 실행됩니다.
+
+화면 업무 코드는 이 흐름을 전제로 작성해야 합니다.
+
 ## 주요 함수
 
 ### 사용자 인터페이스 관련
@@ -96,8 +109,10 @@ syn.$w.removeStorage('oldPreference', true);
 
 **예제**
 ```javascript
-syn.$w.transactionAction('getUserList');
+syn.$w.transactionAction('LD01');
 ```
+
+`transactionAction`은 현재 화면 모듈의 `transaction` 설정에서 `actionID`를 찾고, 입력 데이터 수집과 출력 바인딩을 처리합니다. 일반 화면 버튼 이벤트에서는 `transactionDirect`보다 `transactionAction`을 우선 사용합니다.
 
 #### syn.$w.transactionDirect(request, callback)
 직접 거래를 수행합니다.
@@ -105,23 +120,25 @@ syn.$w.transactionAction('getUserList');
 **예제**
 ```javascript
 syn.$w.transactionDirect({
-    programID: 'HRM',
-    businessID: 'USER',
-    transactionID: 'getUserInfo',
-    screenID: 'HRM010',
-    startTracker: true,
-    inputs: [
-        {
-            requestID: 'REQ001',
-            items: [{
-                userID: 'admin'
-            }]
-        }
-    ]
-}, function(result) {
-    console.log('거래 결과:', result);
+    programID: 'HDS',
+    moduleID: 'wwwroot',
+    businessID: 'SMP',
+    transactionID: 'SMP010',
+    functionID: 'LD01',
+    inputObjects: {
+        SearchKeyword: 'handstack'
+    }
+}, function(error, result) {
+    if (error) {
+        syn.$l.eventLog('$sample.transactionDirect', error, 'Error');
+        return;
+    }
+
+    console.log(result);
 });
 ```
+
+`transactionDirect`는 화면의 `transaction` 설정을 거치지 않고 거래 객체를 직접 만들어야 할 때 사용합니다. 내부적으로는 `executeTransaction` 흐름을 사용하므로 `syn.Config.Transaction`, `DomainAPIServer`, 인증 헤더, 압축 설정의 영향을 받습니다.
 
 #### syn.$w.getterValue(dataSourceID)
 데이터 소스에서 값을 가져옵니다.
@@ -161,6 +178,34 @@ syn.$w.loadScript('/js/external-library.js', function() {
 **예제**
 ```javascript
 syn.$w.fileDownload('/api/report/download', 'monthly-report.pdf');
+```
+
+#### syn.$w.apiHttp(url)
+HandStack 화면에서 자주 쓰는 API 호출 빌더입니다. `send()` 호출 시 GET/POST/FormData 요청을 처리하고, `syn.Config.IsClientCaching` 설정에 따라 cache busting을 적용합니다.
+
+```javascript
+const list = await syn.$w.apiHttp('/sample/data.json').send();
+
+const saved = await syn.$w.apiHttp('/sample/save').send({
+    userID: 'tester',
+    useYN: 'Y'
+});
+
+const formData = new FormData();
+formData.append('file', fileInput.files[0]);
+const uploaded = await syn.$w.apiHttp('/sample/upload').send(formData);
+```
+
+#### syn.$w.startIntersection(id, placeholder, loadMore, options)
+IntersectionObserver 기반 무한 스크롤을 시작합니다. 목록 하단 placeholder가 보이면 `loadMore(done)` 콜백을 실행합니다.
+
+```javascript
+syn.$w.startIntersection('order-list', 'divLoadMore', async (done) => {
+    await $this.method.loadNextPage();
+    done($this.prop.hasMoreData);
+});
+
+syn.$w.stopIntersection('order-list');
 ```
 
 ### UI 컴포넌트 관리

@@ -322,6 +322,39 @@ console.log('Blob URL:', url);
 syn.$r.revokeBlobUrl(url);
 ```
 
+### HTTP 요청
+
+#### syn.$r.httpFetch(url)
+`fetch` 기반 요청 빌더입니다. `send()`를 호출하면 Promise로 결과를 반환합니다. 단순 JSON API 호출이나 외부 HTTP 호출에는 이 방식을 우선 사용합니다.
+
+```javascript
+const result = await syn.$r.httpFetch('/api/sample').send({
+    keyword: 'handstack'
+});
+
+if (result.error) {
+    syn.$l.eventLog('$sample.search', result.error, 'Error');
+}
+```
+
+#### syn.$r.httpRequest(method, url, data, callback, options)
+`XMLHttpRequest` 기반 요청 함수입니다. `responseType: 'blob'`처럼 XHR 옵션이 필요한 다운로드, PDF, 파일 응답 처리에 사용합니다.
+
+```javascript
+const result = await syn.$r.httpRequest(
+    'POST',
+    '/reportify/api/brief/excel-to-pdf',
+    payload,
+    null,
+    { responseType: 'blob' }
+);
+
+const fileUrl = syn.$r.createBlobUrl(result.response);
+window.open(fileUrl);
+```
+
+`httpFetch`는 Promise 기반 JSON/텍스트 API에, `httpRequest`는 XHR 세부 옵션이 필요한 요청에 사용합니다.
+
 ## 실전 활용 예제
 
 ### 1. 사용자 세션 관리 시스템
