@@ -1,0 +1,74 @@
+---
+sidebar_position: 35
+---
+
+# graphclient
+
+`graphclient`는 XML 계약 기반으로 Cypher를 실행하는 그래프 데이터베이스 모듈입니다. API 외형과 계약 캐시/refresh 패턴은 `dbclient`와 유사하지만, 실행 대상은 Neo4j와 Memgraph입니다.
+
+## 주요 기능
+
+* Neo4j, Memgraph의 Bolt 계열 연결을 지원합니다.
+* XML 계약의 statement를 읽어 Cypher를 실행합니다.
+* `Json`, `Scalar`, `NonQuery`, `SchemeOnly`, `CodeHelp` 반환 형식을 지원합니다.
+* `transact`에서 `CommandType`을 `G`로 지정해 라우팅할 수 있습니다.
+
+## 주요 API
+
+* GET: `/graphclient/api/query/has`
+* GET: `/graphclient/api/query/refresh`
+* GET: `/graphclient/api/query/retrieve`
+* GET: `/graphclient/api/query/meta`
+* GET: `/graphclient/api/query/reports`
+* POST: `/graphclient/api/query/execute`
+
+## 계약 위치
+
+```txt
+%HANDSTACK_HOME%/contracts/graphclient/{ApplicationID}/{ProjectID}/{TransactionID}.xml
+```
+
+`QueryID`는 다음 형식을 사용합니다.
+
+```txt
+ApplicationID|ProjectID|TransactionID|StatementID
+```
+
+## GraphDataSource
+
+`module.json` 또는 테넌트 설정의 `GraphDataSource`에서 그래프 데이터 원본을 관리합니다.
+
+```json
+{
+  "ApplicationID": "HDS",
+  "ProjectID": "*",
+  "DataSourceID": "GRAPH01",
+  "GraphProvider": "Neo4j",
+  "ConnectionString": "bolt://localhost:7687",
+  "UserName": "neo4j",
+  "Password": "<비밀번호>",
+  "Database": "neo4j"
+}
+```
+
+## transact 연동
+
+```json
+{
+  "ServiceID": "G01",
+  "CommandType": "G",
+  "ReturnType": "Json"
+}
+```
+
+`RoutingCommandUri`에는 다음과 같은 규칙을 추가합니다.
+
+```json
+{
+  "HDS|*|G|D": "http://localhost:8421/graphclient/api/query"
+}
+```
+
+## 운영 주의사항
+
+그래프 데이터베이스 연결 정보와 인증 정보는 코드에 직접 넣지 않습니다. 운영 환경에서는 데이터소스 권한, 쿼리 타임아웃, 계약 파일 변경 감시 여부를 함께 검토합니다.

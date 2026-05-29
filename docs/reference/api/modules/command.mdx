@@ -1,0 +1,56 @@
+---
+sidebar_position: 25
+---
+
+# command
+
+`command`는 계약 기반으로 CLI 프로세스와 Web URL 호출을 실행하는 모듈입니다. `transact`에서 `CommandType`을 `C`로 지정하면 `RoutingCommandUri` 설정에 따라 `/command/api/execution`으로 라우팅할 수 있습니다.
+
+## 주요 기능
+
+* XML 계약의 `<commands>` 선언으로 외부 실행 파일과 인자를 제어합니다.
+* XML 계약의 `<requests>` 선언으로 HTTP 요청을 실행합니다.
+* 요청 파라미터를 안전하게 치환하고, 실행 결과를 `DynamicResponse` 형식으로 반환합니다.
+* shell 없이 프로세스를 실행하여 계약에 선언된 명령만 수행하도록 제한합니다.
+
+## 주요 API
+
+* GET: `/command/api/execution/has`
+* GET: `/command/api/execution/refresh`
+* GET: `/command/api/execution/retrieve`
+* GET: `/command/api/execution/meta`
+* POST: `/command/api/execution`
+
+## 계약 위치
+
+```txt
+%HANDSTACK_HOME%/contracts/command/{ApplicationID}/{ProjectID}/{TransactionID}.xml
+```
+
+`id`와 `seq`를 조합한 값이 최종 Command ID가 되며, `QueryID`는 다음 형식을 사용합니다.
+
+```txt
+ApplicationID|ProjectID|TransactionID|CommandID
+```
+
+## transact 연동
+
+```json
+{
+  "ServiceID": "GC01",
+  "CommandType": "C",
+  "ReturnType": "Json"
+}
+```
+
+`RoutingCommandUri`에는 다음과 같은 규칙을 추가합니다.
+
+```json
+{
+  "HDS|*|C|D": "http://localhost:8421/command/api/execution"
+}
+```
+
+## 운영 주의사항
+
+`command`는 서버에서 외부 프로세스와 URL 호출을 실행할 수 있으므로 계약 검토와 실행 권한 관리가 중요합니다. 운영 환경에서는 허용할 실행 파일, 인자, 대상 URL을 제한하고 실행 로그를 남겨야 합니다.

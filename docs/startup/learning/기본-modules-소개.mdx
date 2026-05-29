@@ -50,11 +50,15 @@ HandStack에서는 공식 module로서 다음과 같이 기본 제공됩니다.
 |module명|설명|
 |---|---|
 |checkup|태넌트 앱 개발 및 운영 기능 관리|
+|command|계약 기반으로 CLI 프로세스와 Web URL 호출을 실행|
 |dbclient|SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite SQL을 관리|
+|forwarder|Playwright 기반 세션 유지형 포워드 프록시 제공|
 |function|C# 또는 Node.js 기반 Function 개발 기능 관리|
+|graphclient|Neo4j, Memgraph 등 그래프 데이터베이스의 Cypher 실행 관리|
+|logger|module 요청/응답 구간 주요 이벤트 로그 수집 관리|
+|prompter|LLM 프롬프트 계약 실행 및 도구 호출 관리|
 |repository|단일, 다중, 이미지, 첨부파일 등등 파일 업로드/다운로드 관리|
 |transact|거래 요청 검증 및 접근 제어 관리와 요청 정보를 dbclient, function 등등 module로 라우팅 기능 관리|
-|logger|module 요청/응답 구간 주요 이벤트 로그 수집 관리|
 |wwwroot|웹 공통 static assets 및 화면 단위 소스 호스팅 관리|
 
 > 각 module 디렉토리내에 있는 module.json 설정으로 동작과 기능을 관리 할 수 있습니다. 이에 대한 자세한 사용 정보는 가이드나 참고 문서를 통해 확인 할 수 있습니다. 
@@ -65,8 +69,11 @@ HandStack에서는 공식 module로서 다음과 같이 기본 제공됩니다.
 
 ```txt
 %HANDSTACK_HOME%\contracts
+├─command
 ├─dbclient
 ├─function
+├─graphclient
+├─prompter
 ├─repository
 ├─transact
 └─wwwroot
@@ -100,6 +107,9 @@ module
 
 ```txt
 %HANDSTACK_HOME%\contracts
+├─command
+│  └─HDS
+│      └─TST
 ├─dbclient
 │  └─HDS
 │      └─TST
@@ -112,6 +122,12 @@ module
 │      └─HDS
 │          └─TST
 │              └─TST020
+├─graphclient
+│  └─HDS
+│      └─TST
+├─prompter
+│  └─HDS
+│      └─TST
 ├─repository
 │  └─HDS
 ├─transact
@@ -154,6 +170,11 @@ module
 
 ### Execution
 
+* GET: /command/api/execution/has
+* GET: /command/api/execution/refresh
+* GET: /command/api/execution/retrieve
+* GET: /command/api/execution/meta
+* POST: /command/api/execution
 * GET: /function/api/execution/has
 * GET: /function/api/execution/upsert
 * GET: /function/api/execution/refresh
@@ -162,6 +183,12 @@ module
 * GET: /function/api/execution/retrieve
 * GET: /function/api/execution/meta
 * POST: /function/api/execution
+
+### Forwarder
+
+* GET: /forwarder/api/proxy/get-client-ip
+* ALL: /forwarder/api/proxy/pipe
+* GET: /forwarder/api/forward-proxy-lab/*
 
 # Index
 
@@ -223,6 +250,21 @@ module
 * GET: /dbclient/api/query/meta
 * GET: /dbclient/api/query/reports
 * POST: /dbclient/api/query
+* GET: /graphclient/api/query/has
+* GET: /graphclient/api/query/refresh
+* GET: /graphclient/api/query/retrieve
+* GET: /graphclient/api/query/meta
+* GET: /graphclient/api/query/reports
+* POST: /graphclient/api/query/execute
+
+### Prompter
+
+* GET: /prompter/api/query/has
+* GET: /prompter/api/query/refresh
+* GET: /prompter/api/query/retrieve
+* GET: /prompter/api/query/meta
+* GET: /prompter/api/query/reports
+* POST: /prompter/api/query/execute
 
 ### Storage
 
@@ -259,8 +301,12 @@ module
 
 ## 참고자료
 * [checkup 모듈 참고하기](/docs/reference/api/modules/checkup)
+* [command 모듈 참고하기](/docs/reference/api/modules/command)
 * [dbclient 모듈 참고하기](/docs/reference/api/modules/dbclient)
+* [forwarder 모듈 참고하기](/docs/reference/api/modules/forwarder)
 * [function 모듈 참고하기](/docs/reference/api/modules/function)
+* [graphclient 모듈 참고하기](/docs/reference/api/modules/graphclient)
+* [prompter 모듈 참고하기](/docs/reference/api/modules/prompter)
 * [repository 모듈 참고하기](/docs/reference/api/modules/repository)
 * [transact 모듈 참고하기](/docs/reference/api/modules/transact)
 * [logger 모듈 참고하기](/docs/reference/api/modules/logger)

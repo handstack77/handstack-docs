@@ -1,0 +1,47 @@
+---
+sidebar_position: 45
+---
+
+# forwarder
+
+`forwarder`는 Playwright 기반 세션 유지형 포워드 프록시 모듈입니다. 사용자별 브라우저 컨텍스트를 재사용하여 쿠키, 로컬 스토리지, IndexedDB 상태를 유지한 채 외부 사이트 요청을 대신 수행합니다.
+
+## 주요 기능
+
+* `requestKey` 기반 화이트리스트 프록시를 제공합니다.
+* 브라우저형 요청과 프로그램형 요청을 구분해 세션 유지 전략을 다르게 적용합니다.
+* 사용자별 세션 상태를 SQLite 파일로 저장합니다.
+* HTML 응답에 `<base>` 태그를 주입하여 상대 경로 리소스가 원본 사이트 기준으로 동작하게 합니다.
+* 상위 프록시, HTTPS 예외, 타임아웃, 리다이렉트 정책을 설정으로 관리합니다.
+
+## 주요 API
+
+* GET: `/forwarder/api/proxy/get-client-ip`
+* ALL: `/forwarder/api/proxy/pipe?requestKey=...`
+* GET: `/forwarder/api/forward-proxy-lab/*`
+
+## 주요 설정
+
+* `ForwardUrls`: `requestKey`와 대상 URL의 화이트리스트입니다.
+* `UseProxy`, `ProxyServer`, `ProxyUsername`, `ProxyPassword`, `ProxyBypass`: 상위 프록시 설정입니다.
+* `IgnoreHTTPSErrors`: 테스트 환경의 TLS 예외 허용 여부입니다.
+* `RequestTimeoutMS`, `MaxRedirects`, `BrowserIdleTimeoutSecond`: 요청과 브라우저 리소스 제어값입니다.
+* `SessionStorageBasePath`: 사용자 세션 저장 위치입니다.
+
+## Playwright Chromium
+
+`forwarder`는 Playwright Chromium 실행 파일이 필요합니다. 자동 설치가 실패하는 서버에서는 실제 호스트가 로드하는 `modules/forwarder` 경로에서 다음 명령으로 수동 설치합니다.
+
+```powershell
+pwsh .\playwright.ps1 install chromium
+```
+
+설치 상태는 다음 명령으로 확인합니다.
+
+```powershell
+pwsh .\playwright.ps1 install --list
+```
+
+## 운영 주의사항
+
+`ForwardUrls`에 등록된 키만 프록시해야 합니다. 세션 저장소에는 사용자별 상태 파일이 생성되므로 보관 기간, 디스크 용량, 접근 권한을 함께 관리해야 합니다.

@@ -155,6 +155,21 @@ section.tinytext>blockquote {
 
 ---
 
+## 백엔드 확장 모듈 선택 기준
+
+`function`은 범용 비즈니스 로직을 작성할 때 사용합니다. 하지만 모든 백엔드 확장을 `function`으로 만들 필요는 없습니다.
+
+| 필요 기능 | 권장 모듈 |
+|---|---|
+| C#, Node.js, Python 로직 실행 | `function` |
+| 서버 CLI나 Web URL 호출 | `command` |
+| Neo4j, Memgraph Cypher 실행 | `graphclient` |
+| LLM 프롬프트 실행과 도구 호출 | `prompter` |
+
+> 구현 언어보다 실행 책임을 먼저 보고 모듈을 선택합니다.
+
+---
+
 ## 첫 HandStack Function 만들기 (Node.js)
 
 ### 1. Function 생성하기
@@ -286,6 +301,7 @@ public async Task<object> CreateProduct([FromBody] Product product)
 ## 정리
 
 - `Function`은 재사용 가능한 독립적인 비즈니스 로직 단위입니다.
+- CLI 실행은 `command`, 그래프 쿼리는 `graphclient`, LLM 프롬프트는 `prompter`로 분리할 수 있습니다.
 - `handstack generate function` CLI 명령어로 `Function`을 쉽게 생성할 수 있습니다.
 - API 컨트롤러에서 `context.function.execute`로 `Function`을 호출하여 연동합니다.
 - 이를 통해 API는 '요청/응답 처리'에, `Function`은 '핵심 로직 처리'에 집중하여 코드를 더 깔끔하게 구성할 수 있습니다.
