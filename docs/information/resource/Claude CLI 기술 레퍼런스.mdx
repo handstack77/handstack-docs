@@ -1,0 +1,1029 @@
+---
+sidebar_position: 110
+---
+
+# Claude CLI 기술 레퍼런스
+
+<iframe src="/slides/Claude CLI 기술 레퍼런스.html" width="100%" height="538" style={{ border: '1px solid #ccc', borderRadius: '8px' }} title="Claude CLI 기술 레퍼런스" allow="fullscreen">
+  <a href="/slides/Claude CLI 기술 레퍼런스.html" target="_blank" rel="noopener noreferrer">
+    여기에서 슬라이드를 직접 확인하세요.
+  </a>
+</iframe>
+
+## 핵심 요약
+
+Claude Code는 터미널에서 실행되는 **코딩 에이전트**입니다. 코드베이스를 읽고, 계획을 세우고, 파일을 수정하고, 명령을 실행하고, 결과를 검증하는 일련의 루프를 사람 대신 빠르게 반복합니다.
+
+개발자가 Claude Code를 효과적으로 사용하려면 다음 5가지 핵심 시스템을 먼저 이해해야 합니다.
+
+| 핵심 시스템 | 목적 | 개발자가 얻는 효과 |
+|---|---|---|
+| `settings.json` | 모델, 권한, Hooks, 환경변수 설정 | 세션마다 반복 설정하지 않음 |
+| Permission / Sandbox | 파일·명령·네트워크 실행 범위 통제 | 안전한 자율 실행 가능 |
+| `CLAUDE.md` | 프로젝트별 아키텍처·규칙 제공 | 매번 컨텍스트를 설명하지 않음 |
+| MCP | 외부 도구·문서·API 연결 | GitHub, DB, Sentry, 사내 API 연동 |
+| Hooks / Subagents | 결정론적 실행과 위임 작업 분리 | 포맷팅·검증을 보장하고 비용 절감 |
+
+실무 사용 루프는 다음과 같습니다.
+
+```txt
+요구사항 입력
+→ 관련 파일 지정
+→ Plan Mode로 계획 수립
+→ 패치 생성
+→ 테스트/빌드 실행
+→ diff 검토
+→ 커밋/PR
+```
+
+---
+
+## Claude Code를 어떻게 이해해야 하나?
+
+Claude Code는 하나의 모델이 여러 실행 표면(surface)에서 동작하는 구조로 이해하면 쉽습니다.
+
+| 실행 표면 | 적합한 상황 |
+|---|---|
+| 대화형 REPL (`claude`) | 터미널 중심 개발, 탐색적 작업 |
+| Print Mode (`claude -p`) | 단발성 질의, 파이프 입력, 스크립트 연동 |
+| IDE 확장 (VS Code 등) | 열린 파일·선택 영역 기반 작업 |
+| Remote / Background Agent | 장시간 작업, 비동기 분석 |
+| SDK (`@anthropic-ai/claude-code`) | 사내 도구·슬랙봇 등에 에이전트 내장 |
+
+개발자는 보통 REPL만으로 시작해도 충분하지만, 팀 단위로 확장하려면 다음 순서로 적용하는 것이 좋습니다.
+
+```txt
+REPL 사용
+→ CLAUDE.md 작성
+→ settings.json 표준화
+→ Hooks로 포맷팅/검증 고정
+→ MCP 연결
+→ Subagents로 비용·컨텍스트 분리
+```
+
+---
+
+## 설치 및 인증
+
+### 설치 방법
+
+| 방법 | 명령어 | 특징 |
+|---|---|---|
+| 네이티브 (macOS/Linux) | `curl -fsSL https://claude.ai/install.sh \| bash` | 권장, Node 불필요 |
+| Homebrew | `brew install --cask claude-code` | macOS/Linux 안정화 버전 |
+| Windows PowerShell | `irm https://claude.ai/install.ps1 \| iex` | 네이티브 실행 파일 |
+| winget | `winget install Anthropic.ClaudeCode` | Windows 패키지 관리자 |
+| npm (레거시) | `npm install -g @anthropic-ai/claude-code` | 사용 중단 안내 표시 |
+
+### 업데이트 및 진단
+
+```bash
+claude update      # 수동 업데이트
+claude --version   # 버전 확인
+claude doctor      # 설치 상태 진단
+```
+
+자동 업데이트를 끄려면 환경변수를 설정합니다.
+
+```bash
+export DISABLE_AUTOUPDATER=1
+```
+
+### 인증 옵션
+
+```txt
+1. Claude Console: platform.claude.com 에서 API 청구 기반 인증
+2. Claude Pro/Max 구독: claude.ai 계정으로 정액제 사용
+3. 엔터프라이즈 플랫폼: AWS Bedrock, Google Vertex AI, Microsoft Foundry
+```
+
+```bash
+claude auth login    # 로그인 또는 계정 전환
+claude auth status   # 현재 인증 상태 확인
+claude auth logout   # 저장된 자격증명 제거
+```
+
+엔터프라이즈 플랫폼 사용 시:
+
+```bash
+export CLAUDE_CODE_USE_BEDROCK=1
+export CLAUDE_CODE_USE_VERTEX=1
+export CLAUDE_CODE_USE_FOUNDRY=1
+```
+
+---
+
+## 첫 번째 세션
+
+프로젝트 루트에서 실행합니다.
+
+```bash
+cd ~/projects/my-app
+claude
+```
+
+처음에는 코드 변경보다 **읽기와 요약** 작업으로 시작하는 것이 좋습니다.
+
+```txt
+What does this repo do? Read the key files and summarize.
+변경하지 말고 분석만 해 줘.
+```
+
+이후 작은 작업을 시킵니다.
+
+```txt
+src/api/users.ts의 getUser 함수에서 null 반환 가능성을 방어해 줘.
+변경 후 관련 테스트만 실행해 줘.
+```
+
+작업이 끝나면 비용과 변경 사항을 확인합니다.
+
+```txt
+/cost
+/status
+```
+
+---
+
+## 기본 명령과 슬래시 명령
+
+### CLI 실행 모드
+
+| 모드 | 명령 | 용도 |
+|---|---|---|
+| 대화형 REPL | `claude` | 기본 세션 시작 |
+| 초기 프롬프트 | `claude "explain the authentication"` | 프롬프트와 함께 시작 |
+| Print 모드 | `claude -p "list all TODO comments"` | 비대화형 단발 실행 |
+| 세션 계속 | `claude -c` | 가장 최근 세션 이어가기 |
+| 세션 선택 재개 | `claude --resume` / `claude -r "abc123"` | 세션 목록·ID로 재개 |
+| PR 연결 세션 | `claude --from-pr 123` | GitHub/GitLab/Bitbucket PR과 연결 |
+| 명명 세션 | `claude -n "auth-refactor"` | 이름을 붙여 세션 시작 |
+
+Print 모드는 파이프와 출력 리다이렉트에 적합합니다.
+
+```bash
+cat error.log | claude -p "identify root cause"
+claude -p "generate README" > README.md
+claude -p "count files" --output-format json
+```
+
+종료 코드는 `0`(성공), `1`(오류)입니다.
+
+### 자주 쓰는 슬래시 명령
+
+| 명령 | 용도 |
+|---|---|
+| `/model` | 모델 변경 |
+| `/effort` | 추론 강도(effort) 조정 |
+| `/fast` | Fast Mode 토글 |
+| `/cost` | 토큰 사용량·비용 확인 |
+| `/status` | 세션 상태 확인 |
+| `/plan` | Plan Mode 진입 |
+| `/compact` | 컨텍스트 압축 |
+| `/config` | 설정 변경 |
+| `/undo` / `/rewind N` | 변경 되돌리기 / N턴 되감기 |
+| `/sandbox` | Sandbox 모드 토글 |
+| `/init` | `CLAUDE.md` 초안 생성 |
+| `/security-review` / `/code-review` | 보안/코드 리뷰 |
+| `/resume` / `/rename` | 세션 선택 / 이름 변경 |
+| `/exit` | 세션 종료 |
+
+`Shift+Tab`으로 권한 모드를 `default → acceptEdits → auto → plan` 순서로 전환할 수 있습니다.
+
+---
+
+## 설정 시스템: `settings.json`
+
+### 설정 우선순위
+
+```txt
+1. CLI 플래그
+2. .claude/settings.local.json   (개인용, 현재 프로젝트)
+3. .claude/settings.json         (Git으로 팀 공유)
+4. ~/.claude/settings.json       (사용자 전역)
+5. managed-settings.json         (엔터프라이즈 강제 정책, 사용자가 완화 불가)
+```
+
+`managed-settings.json` 위치:
+
+```txt
+macOS:   /Library/Application Support/ClaudeCode/managed-settings.json
+Windows: C:\Program Files\ClaudeCode\managed-settings.json
+Linux:   /etc/claude-code/managed-settings.json
+```
+
+### 설정 예시
+
+```json
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "model": "claude-sonnet-4-5-20250929",
+  "permissions": {
+    "allow": ["Read", "Glob", "Grep", "Bash(npm run:*)", "Bash(git:*)", "Edit(src/**)"],
+    "deny": ["Read(.env*)", "Read(secrets/**)", "Bash(rm -rf:*)"],
+    "ask": ["WebFetch", "Bash(curl:*)"],
+    "defaultMode": "acceptEdits"
+  },
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "npx prettier --write \"$FILE_PATH\"" }]
+      }
+    ]
+  },
+  "sandbox": {
+    "enabled": false,
+    "autoAllowBashIfSandboxed": true
+  },
+  "cleanupPeriodDays": 30
+}
+```
+
+세션 중 직접 변경할 수도 있습니다.
+
+```txt
+/config key=value
+/config thinking=false
+/config --help
+```
+
+### 자주 쓰는 환경변수
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-...          # API 직접 인증
+ANTHROPIC_MODEL=claude-opus-4-7       # 기본 모델 재정의
+CLAUDE_CODE_SUBAGENT_MODEL=haiku      # Subagent 전용 모델
+MAX_THINKING_TOKENS=10000             # 확장 사고 토큰 예산
+DISABLE_AUTOUPDATER=1                 # 자동 업데이트 비활성화
+DISABLE_TELEMETRY=1                   # 사용 현황 텔레메트리 거부
+BASH_DEFAULT_TIMEOUT_MS=30000         # Bash 명령 기본 타임아웃
+MCP_TOOL_TIMEOUT=30000                # MCP 도구 실행 타임아웃
+HTTPS_PROXY=https://proxy:8080        # 사내 프록시
+```
+
+---
+
+## 모델 선택과 비용 최적화
+
+### 모델 라인업
+
+| Alias | 적합한 용도 |
+|---|---|
+| `haiku` | 빠른 탐색, 단순 작업, Subagent용 |
+| `sonnet` | 균형 잡힌 일상 개발의 주력 모델 |
+| `opus` | 복잡한 추론, 장기 작업, 아키텍처 결정 |
+| `fable` | 최고 난이도 추론이 필요한 경우 (Opus보다 고가) |
+| `opus[1m]` / `sonnet[1m]` | 대규모 코드베이스용 확장 컨텍스트 |
+| `opusplan` | Opus로 계획, Sonnet으로 실행하는 하이브리드 |
+
+```bash
+> /model opus
+> /model sonnet
+> /model haiku
+claude --model opus
+export ANTHROPIC_MODEL=opus
+```
+
+Primary 모델이 과부하 상태면 순서대로 대체합니다.
+
+```json
+{
+  "model": "claude-opus-4-8",
+  "fallbackModel": ["claude-sonnet-4-6", "claude-haiku-4-5"]
+}
+```
+
+### Effort와 Fast Mode
+
+```txt
+/effort            대화형 슬라이더
+/effort xhigh      직접 설정 (low / medium / high / xhigh / max)
+/fast              같은 모델로 더 빠른 출력 (비용 약 6배)
+```
+
+| 작업 | 권장 effort |
+|---|---|
+| 오타, 포맷팅 | low |
+| 단순 버그 수정 | medium |
+| 테스트 실패 분석 | medium ~ high |
+| 아키텍처 변경, 보안 검토 | high ~ xhigh |
+
+### 비용 확인과 절감 전략
+
+```txt
+/cost
+```
+
+```txt
+1. Subagent에는 Haiku 사용 (탐색 작업에 고가 모델 불필요)
+2. Prompt caching은 기본 활성화 상태 확인
+3. claude --max-turns 5 로 폭주 방지
+4. Plan Mode로 우발적 고비용 실행 차단
+5. /compact로 컨텍스트 선제적 정리
+6. 긴급하지 않은 작업은 Batch API로 50% 절감
+```
+
+---
+
+## 권한(Permission) 시스템과 Sandbox
+
+Claude Code 보안 모델은 두 계층으로 나뉩니다.
+
+```txt
+Permission = 어떤 도구·명령을 실행할 수 있는가
+Sandbox    = 파일시스템·네트워크를 OS 수준에서 어디까지 격리할 것인가
+```
+
+### Permission Mode
+
+| 모드 | 동작 | 권장 상황 |
+|---|---|---|
+| `default` | 도구 사용 시마다 승인 요청 | 일반 개발 초기 |
+| `acceptEdits` | 파일 편집 자동 승인, Bash는 승인 요청 | 신뢰할 수 있는 프로젝트 |
+| `auto` | Classifier가 각 작업의 안전성 평가 | 보호장치가 있는 자율 실행 |
+| `plan` | 실행·편집 불가, 읽기 전용 | 분석, 코드 리뷰 |
+| `bypassPermissions` | 모든 승인 생략 | 격리된 CI/CD 환경만 |
+
+```bash
+claude --permission-mode auto
+```
+
+### 권한 규칙 문법
+
+```json
+{
+  "allow": ["Bash(npm run test:*)", "Edit(src/**)", "mcp__github"],
+  "deny": ["Bash(rm -rf:*)", "Bash(sudo:*)", "Read(.env*)", "Edit(.git/**)"],
+  "ask": ["Bash(curl:*)", "WebFetch"]
+}
+```
+
+Bash 패턴은 정규식이 아닌 prefix matching만 지원합니다. 파일 경로는 working directory 기준 상대 경로(`src/**`), 설정 파일 기준 절대 경로(`/build/**`), 실제 절대 경로(`//tmp/**`)를 구분해 사용합니다.
+
+### Auto Mode의 자동 차단 대상
+
+```txt
+- curl | bash
+- 운영 환경 배포/마이그레이션
+- 대량 클라우드 리소스 삭제
+- IAM/권한 변경
+```
+
+한 세션에서 3회 연속 차단되거나 누적 20회 차단되면 수동 프롬프트 모드로 자동 복귀합니다(circuit breaker).
+
+### Sandbox 모드
+
+```json
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "excludedCommands": ["git", "docker"],
+    "network": {
+      "deniedDomains": ["pastebin.com", "transfer.sh"]
+    },
+    "credentials": {
+      "denyRead": [".aws/credentials", ".ssh/*"]
+    }
+  }
+}
+```
+
+Sandbox를 활성화하면 파일시스템 접근이 프로젝트 디렉터리로 제한되고, 자격 증명 파일 읽기가 차단되며, 내부 테스트 기준 승인 프롬프트가 크게 줄어듭니다.
+
+---
+
+## `CLAUDE.md`: 프로젝트 지침 파일
+
+`CLAUDE.md`는 프로젝트 루트에 두는 특수 파일로, Claude가 세션마다 자동으로 읽습니다. 매번 긴 프롬프트로 설명하는 대신, 아키텍처와 팀 규칙을 문서화해 자동 로딩되게 하는 방식입니다.
+
+### 예시
+
+```markdown
+# Project Architecture
+
+## Tech Stack
+- Node.js 18+, TypeScript, React 18, PostgreSQL
+
+## Key Files
+- `/src/auth/` - Authentication logic
+- `/src/api/` - API endpoints
+- `/tests/` - Test suite
+
+## Build & Run
+\`\`\`bash
+npm install
+npm run build
+npm run dev
+\`\`\`
+
+## Coding Standards
+- TypeScript strict mode 사용
+- 모든 public API에 테스트 작성
+
+## Known Issues
+- DB 커넥션 풀 타임아웃 5초
+- 동시 빌드 시 간헐적 실패
+```
+
+초기 파일은 다음 명령으로 생성할 수 있습니다.
+
+```txt
+/init
+```
+
+작성 원칙은 다음과 같습니다.
+
+```txt
+- 아키텍처 개요를 유지한다.
+- 주요 파일 경로를 문서화한다.
+- 빌드/실행 명령을 포함한다.
+- 코딩 표준과 금지 규칙을 명시한다.
+- 알려진 제한사항과 흔한 실수를 기록한다.
+```
+
+---
+
+## Plan Mode와 작업 제어
+
+### Plan Mode
+
+복잡한 작업은 바로 수정하지 말고 `/plan`으로 시작합니다.
+
+```txt
+/plan 인증 시스템의 refresh token 처리 방식을 개선해 줘.
+```
+
+Plan Mode에서는 읽기 전용 도구만 사용할 수 있습니다.
+
+```txt
+Read · Glob · Grep · LS · WebSearch · WebFetch · AskUserQuestion
+```
+
+`Edit`, `Write`, `Bash`, `NotebookEdit`은 모두 차단됩니다. 계획은 `.claude/plans/{session-slug}.md`에 작성되고, 사용자가 검토 후 다음 중 하나를 선택해 승인합니다.
+
+```txt
+1. 컨텍스트를 비우고 계획만으로 새로 시작 (계획 준수도 향상)
+2. 컨텍스트를 유지하며 각 변경을 수동 승인
+3. 컨텍스트를 유지하며 자동 승인
+```
+
+`Shift+Tab`으로 세션 중 `normal → plan → auto-accept` 모드를 전환할 수 있습니다.
+
+### 작업 중 방향 전환과 되돌리기
+
+```txt
+잠깐, 이 방식 말고 기존 인터페이스는 유지하고 내부 구현만 바꿔.
+```
+
+```txt
+/undo          최근 변경 되돌리기
+/rewind 3      3턴 이전으로 되감기
+```
+
+---
+
+## MCP: 외부 도구 연결
+
+MCP(Model Context Protocol)는 Claude Code가 외부 도구나 데이터 소스를 사용할 수 있게 해주는 연결 계층입니다.
+
+```txt
+- GitHub: 저장소 관리, PR 생성·검토
+- Database: SQL 쿼리 실행
+- Sentry: 에러 로깅과 모니터링
+- Slack: 메시지 전송
+```
+
+### 설정
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "github": {
+        "command": "npx",
+        "args": ["@modelcontextprotocol/server-github"],
+        "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_..." }
+      }
+    }
+  }
+}
+```
+
+### MCP 도구 권한 제어
+
+```json
+{
+  "allow": ["mcp__github", "mcp__database__query"],
+  "deny": ["mcp__dangerous_server__*"]
+}
+```
+
+MCP는 “있으면 좋은 도구”가 아니라, 반복적인 수동 조회를 줄일 수 있을 때 도입합니다.
+
+---
+
+## Skills
+
+Skill은 재사용 가능한 AI 전문성을 패키징한 파일입니다. `.claude/skills/` 아래에 둡니다.
+
+```txt
+.claude/skills/
+├── security-review.md
+├── performance-analysis.md
+└── api-design-check.md
+```
+
+### 구조 예시
+
+```markdown
+---
+name: Security Review
+description: Comprehensive security analysis of code
+type: auto  # 또는 user-invocable-only, off
+tags: [security, review]
+---
+
+You are a security expert analyzing code for vulnerabilities.
+
+When reviewing code:
+1. Check for SQL injection patterns
+2. Verify authentication/authorization
+3. Review error handling
+4. Check for hardcoded secrets
+```
+
+| type | 설명 |
+|---|---|
+| `auto` | 관련 컨텍스트에서 자동 적용 |
+| `user-invocable-only` | 명시적으로 호출할 때만 적용 |
+| `off` | 비활성화 |
+
+`settings.json`의 `skillOverrides`로 개별 Skill을 일괄 제어할 수 있습니다.
+
+```json
+{
+  "skillOverrides": {
+    "legacy-skill": "off",
+    "manual-only-skill": "user-invocable-only"
+  }
+}
+```
+
+---
+
+## Subagents
+
+Subagent는 메인 세션 컨텍스트와 분리된 격리 컨텍스트에서 작업하고, 요약만 메인 세션에 반환합니다.
+
+```bash
+/task explore              # 탐색 전용
+/task plan                 # 계획 수립
+/task implement            # 구현
+/task "custom prompt"      # 사용자 정의 작업
+```
+
+### 특성
+
+```txt
+- 깨끗한 컨텍스트로 시작해 메인 세션 컨텍스트를 비대화시키지 않는다.
+- 더 저렴한 모델로 라우팅할 수 있다.
+- 최대 5단계 깊이까지 재귀적으로 생성될 수 있다.
+```
+
+탐색용 Subagent는 보통 Haiku로 충분합니다.
+
+```bash
+export CLAUDE_CODE_SUBAGENT_MODEL=haiku
+```
+
+여러 Subagent를 병렬로 운용할 수도 있습니다(Agent Teams).
+
+```bash
+/agent-team "Review auth module, Review API routes, Review database layer"
+```
+
+---
+
+## Hooks
+
+Hooks는 세션 라이프사이클의 특정 시점에 결정론적으로 스크립트를 실행하는 확장 기능입니다. 프롬프트로 부탁하는 것과 달리 실행을 보장합니다.
+
+### 주요 이벤트
+
+| Event | 시점 | 차단 가능 |
+|---|---|---|
+| `PreToolUse` | 도구 실행 전 | 예 |
+| `PostToolUse` | 도구 완료 후 | 아니오 |
+| `UserPromptSubmit` | 사용자 프롬프트 전송 시 | 예 |
+| `Stop` | 응답 완료 시 | 예 |
+| `SubagentStop` | Subagent 완료 시 | 예 |
+| `SessionStart` / `SessionEnd` | 세션 시작/종료 시 | 아니오 |
+| `PreCompact` / `PostCompact` | 컨텍스트 압축 전/후 | 전: 예 |
+
+### 설정 예시
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "npx prettier --write \"$FILE_PATH\"" }]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": ".claude/hooks/validate-bash.sh" }]
+      }
+    ]
+  }
+}
+```
+
+Hook은 stdin으로 JSON 입력을 받고, exit code `0`(성공), `2`(차단), 그 외(비차단 오류)로 결과를 반환합니다. `command` 외에 `prompt`(모델에게 판단을 위임), `http`(외부 엔드포인트 호출), `agent`(도구 접근이 있는 서브에이전트로 다단계 검증) 타입도 지원합니다.
+
+비동기 Hook은 세션을 차단하지 않습니다.
+
+```json
+{ "type": "command", "command": ".claude/hooks/notify-slack.sh", "async": true }
+```
+
+포맷팅·검증처럼 다음 작업 전에 반드시 끝나야 하는 작업은 동기(`async: false`)로, 알림처럼 결과를 기다릴 필요 없는 작업은 비동기로 둡니다.
+
+---
+
+## 비대화형 모드와 CI/CD
+
+`claude -p`는 REPL 없이 Claude Code를 실행하는 헤드리스 모드입니다.
+
+### 기본 사용
+
+```bash
+claude -p "list all TODO comments"
+cat error.log | claude -p "find root cause"
+```
+
+### 출력 형식
+
+```bash
+claude -p "build" --output-format text          # 기본값
+claude -p "build" --output-format json          # 스크립트 파싱용
+claude -p "build" --output-format stream-json   # 실시간 스트리밍
+```
+
+JSON 출력 예시:
+
+```json
+{
+  "type": "result",
+  "subtype": "success",
+  "total_cost_usd": 0.0034,
+  "is_error": false,
+  "duration_ms": 2847,
+  "num_turns": 4,
+  "result": "Response text...",
+  "session_id": "abc-123-def"
+}
+```
+
+### 자동화 시 안전 옵션
+
+```bash
+claude -p "refactor module" --max-turns 10
+claude -p "fix lint" --allowedTools "Edit,Bash(npm run lint)"
+```
+
+### CI 스크립트 예시
+
+```bash
+result=$(claude -p "security review" --output-format json)
+is_error=$(echo "$result" | jq -r '.is_error')
+
+if [ "$is_error" = "true" ]; then
+  echo "Review failed"
+  exit 1
+fi
+
+echo "$result" | jq -r '.result'
+```
+
+### CI에서 안전하게 쓰는 원칙
+
+```txt
+- main 브랜치에 직접 적용하지 않는다.
+- 별도 브랜치 또는 worktree에서 실행한다.
+- --max-turns 로 폭주를 제한한다.
+- --allowedTools 로 도구 범위를 좁힌다.
+- bypassPermissions는 격리된 환경에서만 사용한다.
+- 결과는 PR diff로 검토한다.
+```
+
+---
+
+## 개발자 실무 레시피
+
+### 새 프로젝트 분석
+
+```txt
+이 저장소를 변경하지 말고 분석만 해 줘.
+
+출력:
+1. 프로젝트 구조
+2. 주요 실행 진입점
+3. 빌드 명령
+4. 테스트 명령
+5. 위험해 보이는 설정
+```
+
+### 기능 개발
+
+```txt
+목표:
+- 사용자 프로필 수정 API에 nickname 검증을 추가한다.
+
+범위:
+- src/users/**
+- tests/users/**
+
+제약:
+- public API route는 변경하지 않는다.
+- 새 패키지는 추가하지 않는다.
+
+완료 조건:
+- 관련 테스트 통과
+- 변경 파일 목록 출력
+- 남은 위험 요소 출력
+```
+
+### 리팩토링
+
+```txt
+/plan
+
+OrderService의 결제 검증 로직을 별도 클래스로 분리하고 싶다.
+
+먼저:
+- 현재 의존성 구조 분석
+- 변경 후보 파일 목록 제안
+- public API 영향 여부 판단
+
+승인 전까지 파일은 수정하지 마.
+```
+
+### 코드 리뷰
+
+```txt
+/code-review
+
+이번 브랜치의 변경 사항을 main 기준으로 리뷰해 줘.
+
+관점:
+- 버그 가능성
+- 예외 처리
+- SQL injection 가능성
+- 테스트 누락
+```
+
+---
+
+## 팀 도입 전략
+
+팀에 Claude Code를 도입할 때는 기능보다 **운영 규칙**을 먼저 정해야 합니다.
+
+### 단계: 개인 사용
+
+```txt
+- CLI 설치
+- 기본 로그인
+- Plan Mode로 분석
+- 작은 버그 수정
+```
+
+### 단계: 저장소 표준화
+
+```txt
+- repo-root/CLAUDE.md 작성
+- .claude/settings.json 추가
+- 빌드/테스트 명령 명문화
+- 금지 작업 명문화
+```
+
+### 단계: 반복 작업 패키징
+
+```txt
+- 자주 쓰는 리뷰 프롬프트를 Skill로 분리
+- 포맷팅/검증을 Hooks로 고정
+- 탐색 작업을 Subagent + Haiku로 위임
+```
+
+### 단계: 외부 도구 연결
+
+```txt
+- GitHub MCP
+- Sentry MCP
+- 내부 문서 검색 MCP
+- 사내 배포/로그 API MCP
+```
+
+### 단계: 엔터프라이즈 배포
+
+```txt
+- managed-settings.json으로 권한/모델 정책 강제
+- AWS Bedrock / Google Vertex AI / Microsoft Foundry 연동
+- Hooks 기반 중앙 감사 로깅
+- Admin API로 조직 사용량 모니터링
+```
+
+---
+
+## 안티패턴
+
+| 안티패턴 | 문제 | 대안 |
+|---|---|---|
+| “알아서 고쳐줘” | 범위가 넓어 토큰 낭비와 오작동 증가 | 파일·목표·완료 조건 명시 |
+| 포맷팅을 프롬프트로 매번 요청 | 일관성 보장 안 됨 | `PostToolUse` Hook으로 고정 |
+| 모든 작업에 Opus/Fable 사용 | 비용 과다 | 탐색은 Haiku, 일상 개발은 Sonnet |
+| 모든 작업에 Extended Thinking 상시 적용 | 비용 증가, 속도 저하 | 어려운 문제에서만 토글 |
+| `--dangerously-skip-permissions` 상시 사용 | 안전장치 전무 | 기본은 `auto` 또는 `acceptEdits` |
+| 8시간 단일 세션 유지 | 컨텍스트 비대화 | `/compact`, Subagent로 분리 |
+| main 브랜치에서 직접 자동화 실행 | 위험한 변경이 섞임 | feature branch/worktree 사용 |
+
+---
+
+## 권장 기본 세팅
+
+개인 개발자 기준:
+
+```json
+{
+  "model": "claude-sonnet-4-5-20250929",
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": ["Bash(npm run:*)", "Bash(git:*)"],
+    "ask": ["Bash(curl:*)", "Bash(docker:*)"]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "npx prettier --write \"$FILE_PATH\"" }]
+      }
+    ]
+  }
+}
+```
+
+처음 보는 저장소:
+
+```bash
+claude --permission-mode plan
+```
+
+일반 개발:
+
+```bash
+claude --permission-mode acceptEdits
+```
+
+CI 자동화:
+
+```bash
+claude -p "지정된 검증 작업을 수행하고 JSON으로 결과를 출력해 줘" \
+  --output-format json \
+  --max-turns 10 \
+  --allowedTools "Edit,Bash(npm run test:*)"
+```
+
+---
+
+## 도입 체크리스트
+
+### 개인 개발자
+
+```txt
+[ ] Claude Code 설치
+[ ] claude auth login
+[ ] 기본 프로젝트에서 Plan Mode로 분석 실행
+[ ] /status, /cost 확인
+[ ] 작은 파일 수정 후 diff 검토
+[ ] CLAUDE.md 작성
+[ ] .claude/settings.json 작성
+```
+
+### 프로젝트
+
+```txt
+[ ] repo-root/CLAUDE.md 작성
+[ ] .claude/settings.json 작성
+[ ] 빌드/테스트/lint 명령 문서화
+[ ] public API 변경 규칙 문서화
+[ ] PostToolUse Hook으로 포맷팅 고정
+[ ] 권한 allow/deny/ask 정의
+```
+
+### 팀
+
+```txt
+[ ] 공통 Skill 후보 선정
+[ ] MCP 도입 후보 선정
+[ ] Subagent 모델 라우팅 정책 정의
+[ ] managed-settings.json으로 조직 정책 강제
+[ ] Admin API로 사용량 모니터링 체계 구축
+[ ] CI 실행 정책(`--max-turns`, `--allowedTools`) 정의
+```
+
+---
+
+## 빠른 참조
+
+```bash
+# 시작
+claude
+
+# 초기 프롬프트와 함께 시작
+claude "이 프로젝트 구조를 요약해 줘"
+
+# 비대화형 실행
+claude -p "테스트 실패 원인을 분석해 줘"
+
+# 권한 모드
+claude --permission-mode plan
+claude --permission-mode acceptEdits
+claude --permission-mode auto
+
+# 모델
+claude --model opus
+claude --model sonnet[1m]
+
+# 세션
+claude -c
+claude --resume
+claude -n "auth-refactor"
+
+# 비용 확인
+/cost
+/status
+```
+
+슬래시 명령:
+
+```txt
+/model        모델 변경
+/effort       추론 강도 조정
+/plan         Plan Mode 진입
+/cost         비용 확인
+/compact      컨텍스트 압축
+/config       설정 변경
+/undo         변경 되돌리기
+/rewind N     N턴 되감기
+/sandbox      Sandbox 모드 토글
+/init         CLAUDE.md 생성
+/security-review  보안 검토
+/code-review      코드 리뷰
+```
+
+---
+
+## 결론
+
+Claude Code를 잘 쓰는 핵심은 “더 강한 권한을 주는 것”이 아니라 **좋은 작업 경계와 검증 루프를 만드는 것**입니다.
+
+개발자 개인은 다음 3가지만 먼저 적용해도 효과를 볼 수 있습니다.
+
+```txt
+1. 프로젝트 루트에서 claude 실행
+2. CLAUDE.md에 아키텍처·빌드·테스트·금지 규칙 작성
+3. 작업마다 파일 범위와 완료 조건을 명확히 지정
+```
+
+팀 단위에서는 다음 순서가 가장 안정적입니다.
+
+```txt
+CLAUDE.md
+→ settings.json
+→ Hooks
+→ Subagents
+→ MCP
+→ 엔터프라이즈 배포(managed-settings.json)
+```
+
+Claude Code는 개발자를 대체하는 도구라기보다, **잘 정의된 개발 루프를 빠르게 반복하는 에이전트 실행 환경**에 가깝습니다. 따라서 좋은 결과는 모델 성능만이 아니라, 프로젝트 규칙, 테스트 체계, 권한 정책, 비용 관리 설계 품질에 의해 결정됩니다.
+
+---
+
+## 참고 자료
+
+- Blake Crosley, `Claude Code: 최종 기술 레퍼런스`: https://blakecrosley.com/ko/guides/claude-code
+- Anthropic Claude Code 공식 문서: https://docs.claude.com/en/docs/claude-code
+- Anthropic Claude Code Settings: https://docs.claude.com/en/docs/claude-code/settings
+- Anthropic Claude Code Permissions: https://docs.claude.com/en/docs/claude-code/iam
+- Anthropic Claude Code Hooks: https://docs.claude.com/en/docs/claude-code/hooks
+- Anthropic Claude Code MCP: https://docs.claude.com/en/docs/claude-code/mcp
+- Anthropic Claude Code SDK: https://docs.claude.com/en/docs/claude-code/sdk
+- Anthropic API Pricing: https://docs.claude.com/en/docs/about-claude/pricing
