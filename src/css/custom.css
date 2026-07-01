@@ -6,7 +6,7 @@
 
 /* You can override the default Infima variables here. */
 :root {
-    --ifm-font-family-base: "Wanted Sans Variable", "Wanted Sans", monospace, monospace;
+    --ifm-font-family-base: 'Noto Sans KR', 'Pretendard', 'Nanum Gothic', 'Malgun Gothic', Gulim, 굴림, sans-serif !important;
     --ifm-font-size-base: 110%;
     --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 }
