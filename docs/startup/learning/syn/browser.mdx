@@ -2,511 +2,339 @@
 sidebar_position: 3
 ---
 
-# syn.$b
+# 브라우저 정보 사용법 (syn.$b)
 
 ## 개요
-syn.$b는 HandStack 웹 애플리케이션에서 브라우저 및 디바이스 정보를 확인하는 기능을 제공합니다. 브라우저 종류 검사, 디바이스 정보 확인, 시스템 폰트 조회, 브라우저 지문 생성 등의 기능을 포함합니다.
+`syn.$b`는 현재 실행 중인 웹 브라우저/디바이스의 환경 정보(브랜드, 플랫폼, 화면 크기, 네트워크 상태 등)를 조회하고, 브라우저 고유값 생성, 공유(Web Share API), 성능 측정 등의 기능을 제공합니다. 브라우저 분기 처리, 반응형 레이아웃 계산, 사용자 식별(fingerprint), 성능 모니터링에 주로 사용됩니다.
 
-## 주요 기능
+## 로드 방법
+`syn.js`가 로드되면 전역에 `syn.$b`(별칭: `$browser`)로 즉시 사용할 수 있습니다.
 
-### 브라우저 정보 속성
-
-#### 기본 브라우저 정보
-브라우저의 기본 정보를 확인할 수 있습니다.
-
-```javascript
-// 브라우저 애플리케이션 이름
-console.log(syn.$b.appName);
-
-// 브라우저 코드 이름
-console.log(syn.$b.appCodeName);
-
-// 브라우저 버전
-console.log(syn.$b.appVersion);
-
-// 쿠키 사용 가능 여부
-console.log(syn.$b.cookieEnabled);
-
-// PDF 뷰어 사용 가능 여부
-console.log(syn.$b.pdfViewerEnabled);
-
-// 플랫폼 정보
-console.log(syn.$b.platform);
-
-// 디바이스 플랫폼 (browser, node, android, ios)
-console.log(syn.$b.devicePlatform);
-
-// 사용자 에이전트 정보
-console.log(syn.$b.userAgent);
-
-// 디바이스 픽셀 비율
-console.log(syn.$b.devicePixelRatio);
-
-// 브라우저 언어
-console.log(syn.$b.language);
-```
-
-#### 화면 정보
-디스플레이 관련 정보를 확인할 수 있습니다.
-
-```javascript
-// 화면이 확장되었는지 여부
-console.log(syn.$b.isExtended);
-
-// 화면 너비
-console.log(syn.$b.screenWidth);
-
-// 화면 높이
-console.log(syn.$b.screenHeight);
-```
-
-#### 브라우저 종류 검사
-현재 실행 중인 브라우저 종류를 확인할 수 있습니다.
-
-```javascript
-// WebKit 기반 브라우저 여부
-console.log(syn.$b.isWebkit);
-
-// Chrome 브라우저 여부
-console.log(syn.$b.isChrome);
-
-// Edge 브라우저 여부
-console.log(syn.$b.isEdge);
-
-// Firefox 브라우저 여부
-console.log(syn.$b.isFF);
-
-// Safari 브라우저 여부
-console.log(syn.$b.isSafari);
-
-// Internet Explorer 여부
-console.log(syn.$b.isIE);
-
-// Opera 브라우저 여부
-console.log(syn.$b.isOpera);
-
-// 모바일 디바이스 여부
-console.log(syn.$b.isMobile);
-```
-
-#### 운영체제 검사
-현재 운영체제를 확인할 수 있습니다.
-
-```javascript
-// Mac 운영체제 여부
-console.log(syn.$b.isMac);
-
-// Linux 운영체제 여부
-console.log(syn.$b.isLinux);
-
-// Windows 운영체제 여부
-console.log(syn.$b.isWindow);
-```
-
-### 메서드
-
-#### getSystemFonts()
-시스템에 설치된 폰트 목록을 가져옵니다.
-
-**구문**
-```javascript
-syn.$b.getSystemFonts(fontListToCheck?)
-```
-
-**매개변수**
-- `fontListToCheck` (Array, 선택사항): 확인할 폰트 목록. 지정하지 않으면 기본 폰트 목록을 검사합니다.
-
-**반환값**
-- `Array`: 사용 가능한 폰트 목록
-
-**예제**
-```javascript
-// 기본 폰트 목록 확인
-var systemFonts = syn.$b.getSystemFonts();
-console.log('사용 가능한 폰트:', systemFonts);
-
-// 특정 폰트만 확인
-var checkFonts = ['Arial', 'Helvetica', '맑은 고딕', 'Noto Sans KR'];
-var availableFonts = syn.$b.getSystemFonts(checkFonts);
-console.log('확인된 폰트:', availableFonts);
-```
-
-#### getCanvas2dRender()
-Canvas 2D 렌더링을 통한 브라우저 지문 데이터를 생성합니다.
-
-**구문**
-```javascript
-syn.$b.getCanvas2dRender()
-```
-
-**반환값**
-- `String`: Canvas 2D 렌더링 결과의 Data URL
-
-**예제**
-```javascript
-var canvas2d = syn.$b.getCanvas2dRender();
-console.log('Canvas 2D 지문:', canvas2d);
-```
-
-#### getWebglRender()
-WebGL 렌더링을 통한 브라우저 지문 데이터를 생성합니다.
-
-**구문**
-```javascript
-syn.$b.getWebglRender()
-```
-
-**반환값**
-- `String`: WebGL 렌더링 결과의 Data URL
-
-**예제**
-```javascript
-var webglRender = syn.$b.getWebglRender();
-console.log('WebGL 지문:', webglRender);
-```
-
-#### getPlugins()
-브라우저에 설치된 플러그인 목록을 가져옵니다.
-
-**구문**
-```javascript
-syn.$b.getPlugins()
-```
-
-**반환값**
-- `Array`: 플러그인 정보 배열
-
-**예제**
-```javascript
-var plugins = syn.$b.getPlugins();
-console.log('설치된 플러그인:', plugins);
-```
-
-#### fingerPrint()
-브라우저 고유 지문을 생성합니다.
-
-**구문**
-```javascript
-syn.$b.fingerPrint()
-```
-
-**반환값**
-- `Promise<String>`: 브라우저 지문 해시 값
-
-**예제**
-```javascript
-async function getBrowserFingerprint() {
-    var fingerprint = await syn.$b.fingerPrint();
-    console.log('브라우저 지문:', fingerprint);
-    
-    // 사용자 식별이나 보안 목적으로 활용
-    localStorage.setItem('browserFingerprint', fingerprint);
+## 빠른 시작
+```js
+if (syn.$b.isMobile()) {
+    console.log('모바일 환경입니다');
 }
 
-getBrowserFingerprint();
+console.log(syn.$b.windowWidth(), syn.$b.windowHeight());
 ```
 
-#### windowWidth()
-현재 브라우저 창의 너비를 가져옵니다.
-
-**구문**
-```javascript
-syn.$b.windowWidth()
-```
-
-**반환값**
-- `Number`: 브라우저 창의 너비 (픽셀)
-
-**예제**
-```javascript
-var width = syn.$b.windowWidth();
-console.log('브라우저 창 너비:', width + 'px');
-```
-
-#### windowHeight()
-현재 브라우저 창의 높이를 가져옵니다.
-
-**구문**
-```javascript
-syn.$b.windowHeight()
-```
-
-**반환값**
-- `Number`: 브라우저 창의 높이 (픽셀)
-
-**예제**
-```javascript
-var height = syn.$b.windowHeight();
-console.log('브라우저 창 높이:', height + 'px');
-```
-
-#### getIpAddress()
-클라이언트의 IP 주소를 가져옵니다.
-
-**구문**
-```javascript
-syn.$b.getIpAddress()
-```
-
-**반환값**
-- `Promise<String>`: IP 주소
-
-**예제**
-```javascript
-async function getClientIP() {
-    try {
-        var ipAddress = await syn.$b.getIpAddress();
-        console.log('클라이언트 IP:', ipAddress);
-    } catch (error) {
-        console.error('IP 주소 조회 실패:', error);
-    }
+## 주요 시나리오
+### 브라우저/플랫폼 분기 처리
+`isChrome`, `isEdge`, `isFF`, `isSafari`, `isIE`, `isMac`, `isWindow`, `isLinux` 등의 속성으로 실행 환경을 판별합니다.
+```js
+if (syn.$b.isIE) {
+    alert('Internet Explorer는 지원하지 않습니다.');
 }
-
-getClientIP();
 ```
 
-#### canShare(data) / share(data)
-Web Share API 지원 여부를 확인하고 브라우저의 공유 UI를 호출합니다. 지원되지 않는 환경에서는 내부적으로 클립보드 복사 같은 대체 흐름을 사용할 수 있습니다.
+### 브라우저 고유 식별값 생성
+`fingerPrint(userID, clientIP)`는 폰트/플러그인/화면 정보 등을 조합해 해시된 고유 ID를 생성합니다.
+```js
+const uniqueID = await syn.$b.fingerPrint('user01', '127.0.0.1');
+```
 
-```javascript
-const shareData = {
-    title: 'HandStack',
-    text: '현재 화면을 공유합니다.',
-    url: location.href
-};
-
+### 콘텐츠 공유
+`canShare(data)`로 Web Share API 지원 여부를 확인한 뒤 `share(data)`를 호출합니다. 미지원 환경에서는 자동으로 클립보드 복사로 대체됩니다.
+```js
+const shareData = { title: 'HandStack', text: '설명', url: 'https://handstack.kr' };
 if (syn.$b.canShare(shareData)) {
     await syn.$b.share(shareData);
 }
 ```
 
-#### getPerformanceEntries(options)
-Performance Timeline API에서 navigation, resource, measure 항목을 조회합니다.
-
-```javascript
-const navigationEntries = syn.$b.getPerformanceEntries({ type: 'navigation' });
-const transactionEntries = syn.$b.getPerformanceEntries({
-    type: 'resource',
-    name: '/transact/api/transaction/execute'
-});
-```
-
-#### markPerformance(markName) / measurePerformance(measureName, startMark, endMark)
-화면의 특정 처리 구간을 측정할 때 사용합니다.
-
-```javascript
-syn.$b.markPerformance('search-start');
-await syn.$w.transactionAction('LD01');
-syn.$b.markPerformance('search-end');
-
-const entries = syn.$b.measurePerformance('search-duration', 'search-start', 'search-end');
-console.log(entries?.[0]?.duration);
-```
-
-## 실전 활용 예제
-
-### 1. 반응형 웹 디자인을 위한 디바이스 감지
-```javascript
-function setupResponsiveLayout() {
-    if (syn.$b.isMobile) {
-        document.body.classList.add('mobile-layout');
-    }
-    
-    var width = syn.$b.windowWidth();
-    if (width < 768) {
-        document.body.classList.add('small-screen');
-    }
-    
-    console.log('디바이스 정보:', {
-        platform: syn.$b.platform,
-        isMobile: syn.$b.isMobile,
-        screenSize: `${syn.$b.screenWidth} x ${syn.$b.screenHeight}`
-    });
-}
-
-setupResponsiveLayout();
-```
-
-### 2. 브라우저별 호환성 처리
-```javascript
-function setupBrowserCompatibility() {
-    if (syn.$b.isIE) {
-        alert('Internet Explorer는 지원되지 않습니다. 다른 브라우저를 사용해주세요.');
-        return false;
-    }
-    
-    if (syn.$b.isChrome) {
-        console.log('Chrome 브라우저 최적화 적용');
-        document.documentElement.classList.add('chrome-browser');
-    } else if (syn.$b.isFF) {
-        console.log('Firefox 브라우저 최적화 적용');
-        document.documentElement.classList.add('firefox-browser');
-    } else if (syn.$b.isSafari) {
-        console.log('Safari 브라우저 최적화 적용');
-        document.documentElement.classList.add('safari-browser');
-    }
-    
-    return true;
-}
-
-if (setupBrowserCompatibility()) {
-    // 애플리케이션 초기화 계속
+### 성능 측정
+`markPerformance`, `measurePerformance`, `getPerformanceEntries`로 특정 구간의 처리 시간을 측정합니다.
+```js
+syn.$b.markPerformance('start-data-processing');
+// ... 데이터 처리 로직 ...
+syn.$b.markPerformance('end-data-processing');
+syn.$b.measurePerformance('data-processing-time', 'start-data-processing', 'end-data-processing');
+const [measureEntry] = syn.$b.getPerformanceEntries({ type: 'measure', name: 'data-processing-time' });
+if (measureEntry) {
+    console.log(`데이터 처리 시간: ${measureEntry.duration.toFixed(2)}ms`);
 }
 ```
 
-### 3. 시스템 정보 수집 및 분석
-```javascript
-async function collectSystemInfo() {
-    var systemInfo = {
-        browser: {
-            name: syn.$b.appName,
-            version: syn.$b.appVersion,
-            userAgent: syn.$b.userAgent
-        },
-        device: {
-            platform: syn.$b.platform,
-            isMobile: syn.$b.isMobile,
-            screenSize: `${syn.$b.screenWidth} x ${syn.$b.screenHeight}`,
-            pixelRatio: syn.$b.devicePixelRatio
-        },
-        features: {
-            cookieEnabled: syn.$b.cookieEnabled,
-            pdfViewerEnabled: syn.$b.pdfViewerEnabled
-        }
-    };
-    
-    // 고급 정보 수집
-    try {
-        systemInfo.fonts = syn.$b.getSystemFonts();
-        systemInfo.plugins = syn.$b.getPlugins();
-        systemInfo.fingerprint = await syn.$b.fingerPrint();
-        systemInfo.ipAddress = await syn.$b.getIpAddress();
-    } catch (error) {
-        console.warn('고급 시스템 정보 수집 실패:', error);
-    }
-    
-    console.log('수집된 시스템 정보:', systemInfo);
-    return systemInfo;
-}
+## 실전 예제 페이지
+`/sample/syn/browser.html` 예제에서 다음 항목을 실습할 수 있습니다.
+- appName, appCodeName, appVersion, cookieEnabled, pdfViewerEnabled, platform, devicePlatform, userAgent, effectiveType, devicePixelRatio, isExtended, screenWidth, screenHeight, language, isWebkit, isMac, isLinux, isWindow, isOpera, isIE, isChrome, isEdge, isFF, isSafari 속성 확인
+- getSystemFonts(), getCanvas2dRender(), getWebglRender(), getPlugins(), fingerPrint(), windowWidth(), windowHeight(), getIpAddress(), canShare(), share(), getPerformanceEntries(), markPerformance(), measurePerformance(), isMobile() 메서드 실습
 
-// 사용 예제
-collectSystemInfo().then(info => {
-    // 분석 서버로 정보 전송
-    fetch('/api/analytics/system-info', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(info)
-    });
-});
-```
+## 주의 사항
+- `getIpAddress()`, `share()`는 외부 서버/브라우저 권한에 의존하므로 네트워크 차단 환경이나 HTTPS가 아닌 환경에서는 실패할 수 있습니다.
+- `getWebglRender()`는 WebGL을 지원하지 않는 브라우저/설정에서는 `null`을 반환합니다.
+- `fingerPrint()`는 내부적으로 `syn.$c.sha256`(cryptography 모듈)과 `syn.$l`(library 모듈)에 의존합니다.
+- `isMobile`은 실제로는 함수(메서드)이므로 `syn.$b.isMobile()`처럼 호출해야 하며, 값 자체를 참조하면 함수 객체가 반환됩니다.
 
-### 4. 브라우저 보안 검사
-```javascript
-async function securityCheck() {
-    var fingerprint = await syn.$b.fingerPrint();
-    var storedFingerprint = localStorage.getItem('trustedFingerprint');
-    
-    if (storedFingerprint && storedFingerprint !== fingerprint) {
-        console.warn('브라우저 환경이 변경되었습니다');
-        // 추가 인증 요구 등의 보안 조치
-        return false;
-    }
-    
-    if (!storedFingerprint) {
-        localStorage.setItem('trustedFingerprint', fingerprint);
-    }
-    
-    return true;
-}
+## 관련 모듈
+- API 상세는 아래 API 참조 섹션을 확인하세요.
 
-// 애플리케이션 시작 시 보안 검사
-securityCheck().then(isSecure => {
-    if (isSecure) {
-        console.log('보안 검사 통과');
-    } else {
-        console.log('보안 검사 실패');
-    }
-});
-```
+## API 참조
 
-## 주의사항
+## 모듈 정보
+| 항목 | 내용 |
+|---|---|
+| 전역 별칭 | `syn.$b` (원본: `context.$browser`) |
+| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 248~571번째 줄) |
+| 예제 페이지 | `/sample/syn/browser.html` |
+| 의존 모듈 | `syn.$c`(cryptography, fingerPrint에서 sha256 사용), `syn.$l`(library, eventLog/copyToClipboard) |
 
-1. **브라우저 감지 정확도**: 사용자 에이전트는 변조될 수 있으므로 절대적인 신뢰는 금물입니다.
-2. **성능 고려**: 시스템 폰트 검사나 브라우저 지문 생성은 시간이 소요될 수 있습니다.
-3. **개인정보 보호**: 브라우저 지문은 사용자를 식별할 수 있는 정보이므로 개인정보 보호 정책을 준수해야 합니다.
-4. **Cross-Origin 제한**: IP 주소 조회는 외부 서비스에 의존하므로 네트워크 환경에 따라 실패할 수 있습니다.
+## 속성
+### `syn.$b.appName`
+- 타입: `string`
+- 설명: `navigator.appName` 값을 반환합니다.
 
-## 데모
+### `syn.$b.appCodeName`
+- 타입: `string`
+- 설명: `navigator.appCodeName` 값을 반환합니다.
 
-<iframe src="/sample/syn/browser.html" className="w:100% h:100vh"></iframe>
+### `syn.$b.appVersion`
+- 타입: `string`
+- 설명: `navigator.appVersion` 값을 반환합니다.
 
-## Javascript 예제
+### `syn.$b.cookieEnabled`
+- 타입: `boolean`
+- 설명: `navigator.cookieEnabled` 값을 반환합니다.
 
-```javascript
-'use strict';
-let $browser = {
-    extends: [
-        'parsehtml'
-    ],
+### `syn.$b.pdfViewerEnabled`
+- 타입: `boolean`
+- 설명: `navigator.pdfViewerEnabled` 값을 반환합니다.
 
-    hook: {
-        pageLoad() {
-            syn.$l.get('txt_appName').value = syn.$b.appName;
-            syn.$l.get('txt_appCodeName').value = syn.$b.appCodeName;
-            syn.$l.get('txt_appVersion').value = syn.$b.appVersion;
-            syn.$l.get('txt_cookieEnabled').value = syn.$b.cookieEnabled;
-            syn.$l.get('txt_pdfViewerEnabled').value = syn.$b.pdfViewerEnabled;
-            syn.$l.get('txt_platform').value = syn.$b.platform;
-            syn.$l.get('txt_devicePlatform').value = syn.$b.devicePlatform;
-            syn.$l.get('txt_userAgent').value = syn.$b.userAgent;
-            syn.$l.get('txt_devicePixelRatio').value = syn.$b.devicePixelRatio;
-            syn.$l.get('txt_isExtended').value = syn.$b.isExtended;
-            syn.$l.get('txt_screenWidth').value = syn.$b.screenWidth;
-            syn.$l.get('txt_screenHeight').value = syn.$b.screenHeight;
-            syn.$l.get('txt_language').value = syn.$b.language;
-            syn.$l.get('txt_isWebkit').value = syn.$b.isWebkit;
-            syn.$l.get('txt_isMac').value = syn.$b.isMac;
-            syn.$l.get('txt_isLinux').value = syn.$b.isLinux;
-            syn.$l.get('txt_isWindow').value = syn.$b.isWindow;
-            syn.$l.get('txt_isOpera').value = syn.$b.isOpera;
-            syn.$l.get('txt_isIE').value = syn.$b.isIE;
-            syn.$l.get('txt_isChrome').value = syn.$b.isChrome;
-            syn.$l.get('txt_isEdge').value = syn.$b.isEdge;
-            syn.$l.get('txt_isFF').value = syn.$b.isFF;
-            syn.$l.get('txt_isSafari').value = syn.$b.isSafari;
-            syn.$l.get('txt_isMobile').value = syn.$b.isMobile;
-        }
-    },
+### `syn.$b.platform`
+- 타입: `string`
+- 설명: `navigator.platform` 값을 반환합니다.
 
-    event: {
-        btn_getSystemFonts_click () {
-            syn.$l.get('txt_getSystemFonts').value = syn.$b.getSystemFonts().split(',').map((item) => {
-                return item.trim();
-            }).join('\n');
-        },
+### `syn.$b.devicePlatform`
+- 타입: `string`
+- 설명: 실행 환경(`browser`, `android`, `ios`, `node`)을 반환합니다.
 
-        btn_getPlugins_click () {
-            syn.$l.get('txt_getPlugins').value = syn.$b.getPlugins().split(',').map((item) => {
-                return item.trim();
-            }).join('\n');
-        },
+### `syn.$b.userAgent`
+- 타입: `string`
+- 설명: `navigator.userAgent` 값을 반환합니다.
 
-        async btn_fingerPrint_click () {
-            syn.$l.get('txt_fingerPrint').value = await syn.$b.fingerPrint();
-        },
+### `syn.$b.effectiveType`
+- 타입: `string | undefined`
+- 설명: `navigator.effectiveType`(네트워크 연결 속도 등급) 값을 반환합니다. 대부분의 브라우저에서는 `navigator.connection.effectiveType`을 사용해야 하므로 `undefined`일 수 있습니다.
 
-        btn_windowWidth_click() {
-            syn.$l.get('txt_windowWidth').value = syn.$b.windowWidth();
-        },
+### `syn.$b.devicePixelRatio`
+- 타입: `number`
+- 설명: `window.devicePixelRatio` 값을 반환합니다.
 
-        btn_windowHeight_click() {
-            syn.$l.get('txt_windowHeight').value = syn.$b.windowHeight();
-        },
+### `syn.$b.isExtended`
+- 타입: `boolean`
+- 설명: `screen.isExtended` 값(외부 모니터 확장 여부)을 반환합니다. 미지원 환경에서는 `false` 입니다.
 
-        async btn_getIpAddress_click() {
-            syn.$l.get('txt_getIpAddress').value = await syn.$b.getIpAddress();
-        }
-    },
-};
-```
-소스) syn.$b Javascript 예제
+### `syn.$b.screenWidth`
+- 타입: `number`
+- 설명: `screen.width` 값을 반환합니다. 미지원 환경에서는 `0` 입니다.
+
+### `syn.$b.screenHeight`
+- 타입: `number`
+- 설명: `screen.height` 값을 반환합니다. 미지원 환경에서는 `0` 입니다.
+
+### `syn.$b.language`
+- 타입: `string`
+- 설명: `navigator.language` 또는 `navigator.browserLanguage`, `navigator.userLanguage` 값을 우선순위대로 반환하며 모두 없으면 `'en'`을 반환합니다.
+
+### `syn.$b.isWebkit`
+- 타입: `boolean`
+- 설명: `navigator.userAgent`에 `AppleWebKit/` 포함 여부입니다.
+
+### `syn.$b.isMac`
+- 타입: `boolean`
+- 설명: `navigator.appVersion`에 `Mac`/`Macintosh` 또는 `userAgent`에 `Macintosh` 포함 여부입니다.
+
+### `syn.$b.isLinux`
+- 타입: `boolean`
+- 설명: `navigator.appVersion`에 `Linux` 또는 `X11` 포함 여부입니다.
+
+### `syn.$b.isWindow`
+- 타입: `boolean`
+- 설명: `navigator.appVersion`에 `Win`/`Windows` 또는 `userAgent`에 `Windows` 포함 여부입니다.
+
+### `syn.$b.isOpera`
+- 타입: `boolean`
+- 설명: `navigator.appName`이 `'Opera'`이거나 `userAgent`에 `OPR/` 포함 여부입니다.
+
+### `syn.$b.isIE`
+- 타입: `boolean`
+- 설명: `document.documentMode` 존재 또는 `userAgent`에 `Trident`/`MSIE` 포함 여부입니다.
+
+### `syn.$b.isChrome`
+- 타입: `boolean`
+- 설명: `window.chrome` 객체가 존재하고 `userAgent`에 `Edg/`가 포함되지 않은 경우 `true` 입니다.
+
+### `syn.$b.isEdge`
+- 타입: `boolean`
+- 설명: `window.chrome` 객체가 존재하고 `userAgent`에 `Edg/`가 포함된 경우 `true` 입니다.
+
+### `syn.$b.isFF`
+- 타입: `boolean`
+- 설명: `window.InstallTrigger` 존재 또는 `userAgent`에 `Firefox` 포함 여부입니다.
+
+### `syn.$b.isSafari`
+- 타입: `boolean`
+- 설명: Safari 전용 객체/속성 존재 여부로 Safari를 판별합니다.
+
+## 메서드
+### `syn.$b.getSystemFonts(fontListToCheck = [])`
+- 설명: 지정한 폰트 목록(생략 시 기본 내장 폰트 목록)이 현재 브라우저에서 실제로 사용 가능한지 canvas 텍스트 폭 비교 방식으로 검사합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | fontListToCheck | `string[]` | N | 검사할 폰트 이름 목록. 생략 시 내장 기본 폰트 목록(한글 폰트 포함)을 사용합니다. |
+- 반환값: `string[]` — 사용 가능한 폰트 이름의 정렬된 목록.
+- 예시
+  ```js
+  const fonts = syn.$b.getSystemFonts();
+  ```
+
+### `syn.$b.getCanvas2dRender()`
+- 설명: canvas 2d 컨텍스트로 텍스트/그라디언트/도형을 그린 뒤 dataURL을 생성합니다. 브라우저별 렌더링 차이를 이용한 핑거프린팅에 사용됩니다.
+- 매개변수: 없음
+- 반환값: `string | null` — canvas dataURL 문자열, `document`가 없으면 `null`.
+- 예시
+  ```js
+  const dataUrl = syn.$b.getCanvas2dRender();
+  ```
+
+### `syn.$b.getWebglRender()`
+- 설명: WebGL 컨텍스트로 삼각형을 렌더링한 뒤 dataURL을 생성합니다. WebGL 미지원 환경에서는 `null`을 반환합니다.
+- 매개변수: 없음
+- 반환값: `string | null` — canvas dataURL 문자열 또는 `null`.
+- 예시
+  ```js
+  const dataUrl = syn.$b.getWebglRender();
+  ```
+
+### `syn.$b.getPlugins()`
+- 설명: `navigator.plugins`에 등록된 플러그인 이름과 파일명을 문자열 배열로 반환합니다.
+- 매개변수: 없음
+- 반환값: `string[]` — `"이름: 파일명"` 형식의 배열.
+- 예시
+  ```js
+  const plugins = syn.$b.getPlugins();
+  ```
+
+### `syn.$b.fingerPrint(userID, clientIP)`
+- 설명: 브라우저 환경 정보(플러그인, 화면 크기, 폰트, userAgent 등)를 조합하여 SHA-256 해시 기반 고유 식별 문자열을 생성합니다. 내부적으로 `syn.$c.sha256`을 사용합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | userID | `string` | N | 식별값 계산에 포함할 사용자 ID. |
+  | clientIP | `string` | N | 식별값 계산에 포함할 클라이언트 IP. |
+- 반환값: `Promise<string>` — `해시|원본JSON|날짜형식` 형태의 문자열.
+- 예시
+  ```js
+  const fingerprint = await syn.$b.fingerPrint('user01', '127.0.0.1');
+  ```
+
+### `syn.$b.windowWidth()`
+- 설명: `window.innerWidth`, `document.documentElement.clientWidth`, `document.body.offsetWidth` 순으로 값을 조회합니다.
+- 매개변수: 없음
+- 반환값: `number`
+- 예시
+  ```js
+  const width = syn.$b.windowWidth();
+  ```
+
+### `syn.$b.windowHeight()`
+- 설명: `window.innerHeight`, `document.documentElement.clientHeight`, `document.body.clientHeight` 순으로 값을 조회합니다.
+- 매개변수: 없음
+- 반환값: `number`
+- 예시
+  ```js
+  const height = syn.$b.windowHeight();
+  ```
+
+### `syn.$b.getIpAddress()`
+- 설명: `https://api.ipify.org`, 이후 `syn.Config.FindClientIPServer`(기본 `/checkip`) 순서로 요청하여 브라우저의 공인 IP를 조회합니다. 모두 실패하면 `'127.0.0.1'`을 반환합니다.
+- 매개변수: 없음
+- 반환값: `Promise<string>` — IP 주소 문자열.
+- 예시
+  ```js
+  const ip = await syn.$b.getIpAddress();
+  ```
+
+### `syn.$b.canShare(data)`
+- 설명: Web Share API(`navigator.share`) 사용 가능 여부와, `data`가 있을 경우 `navigator.canShare(data)` 결과를 함께 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | data | `ShareData` | N | 공유할 데이터(`title`, `text`, `url`, `files` 등). |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const canShare = syn.$b.canShare({ title: 'HandStack' });
+  ```
+
+### `syn.$b.share(data)`
+- 설명: Web Share API로 `data`를 공유합니다. 미지원 환경에서는 `data.url` 또는 `data.text`를 클립보드에 복사한 뒤 예외를 던집니다. 사용자가 공유를 취소한 경우(`AbortError`)에도 예외가 전파됩니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | data | `ShareData` | Y | 공유할 데이터(`title`, `text`, `url`, `files` 등). |
+- 반환값: `Promise<void>`
+- 예시
+  ```js
+  const shareData = {
+      title: 'HandStack',
+      text: 'HandStack의 목표는 개발자가 좋아하고 기업이 신뢰하는 비즈니스 앱 시스템을 제공하는 것입니다.',
+      url: 'https://handstack.kr'
+  };
+  await syn.$b.share(shareData);
+  ```
+
+### `syn.$b.getPerformanceEntries(options = {})`
+- 설명: `window.performance`의 항목을 `type`/`name` 조건으로 조회합니다. Performance Timeline API 미지원 시 빈 배열을 반환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | options.type | `string` | N | `'navigation'`, `'resource'`, `'mark'`, `'measure'` 등 조회할 항목 타입. |
+  | options.name | `string` | N | 조회할 항목 이름. |
+- 반환값: `PerformanceEntry[]`
+- 예시
+  ```js
+  const navigationEntries = syn.$b.getPerformanceEntries({ type: 'navigation' });
+  ```
+
+### `syn.$b.markPerformance(markName)`
+- 설명: `performance.mark(markName)`을 호출하여 성능 측정 지점을 생성합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | markName | `string` | Y | 생성할 mark의 이름. |
+- 반환값: `this` — 메서드 체이닝을 위해 `$browser` 자기 자신을 반환합니다.
+- 예시
+  ```js
+  syn.$b.markPerformance('start-data-processing');
+  ```
+
+### `syn.$b.measurePerformance(measureName, startMark, endMark)`
+- 설명: `startMark`와 `endMark` 사이의 구간을 측정(`performance.measure`)하고, 생성된 measure 항목 중 가장 마지막 항목을 반환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | measureName | `string` | Y | 생성할 measure의 이름. |
+  | startMark | `string` | N | 시작 mark 이름. |
+  | endMark | `string` | N | 종료 mark 이름. |
+- 반환값: `PerformanceMeasure | null` — 측정 실패 시 `null`.
+- 예시
+  ```js
+  syn.$b.markPerformance('start');
+  syn.$b.markPerformance('end');
+  const entry = syn.$b.measurePerformance('duration', 'start', 'end');
+  console.log(entry.duration);
+  ```
+
+### `syn.$b.isMobile()`
+- 설명: `navigator.userAgentData.mobile` 또는 `navigator.userAgent`의 모바일 기기 패턴(Android, iPhone, iPad 등)으로 모바일 여부를 판별합니다.
+- 매개변수: 없음
+- 반환값: `boolean`
+- 예시
+  ```js
+  if (syn.$b.isMobile()) {
+      console.log('모바일 기기입니다');
+  }
+  ```

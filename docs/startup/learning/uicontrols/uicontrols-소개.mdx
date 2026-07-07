@@ -1,0 +1,64 @@
+---
+sidebar_position: 1
+---
+
+# uicontrols 소개
+
+`uicontrols`는 HandStack 화면 개발에서 반복적으로 사용하는 입력, 선택, 데이터 표시, 편집, 네트워크 보조 UI를 `syn.uicontrols` 네임스페이스로 제공하는 클라이언트 컨트롤 모음입니다.
+
+최신 기준은 HandStack 웹 호스트의 `2.Modules/wwwroot/wwwroot/uicontrols` 디렉터리입니다. 각 컨트롤 폴더에는 소스(`*.js`, `*.css`), 예제(`/example`), 사용법(`README.md`), API 참조(`API.md`)가 함께 배치되어 있습니다.
+
+## 기본 사용 방식
+
+대부분의 컨트롤은 HTML 요소에 `syn-options`로 설정을 지정하고, `syn.loader.js` 또는 컨트롤별 스크립트를 로드한 뒤 페이지 로드 시 초기화됩니다.
+
+```html
+<input id="txtName" type="text" syn-options="{editType: 'text'}">
+<script src="/js/syn.loader.js"></script>
+```
+
+값을 읽고 쓸 때는 컨트롤별 모듈 API를 사용합니다.
+
+```js
+var value = syn.uicontrols.$textbox.getValue('txtName');
+syn.uicontrols.$textbox.setValue('txtName', 'HandStack');
+syn.uicontrols.$textbox.clear('txtName');
+```
+
+## 컨트롤 목록
+
+| 전역 별칭 | 문서 | 예제 경로 |
+|---|---|---|
+| `syn.uicontrols.$calendar` | [Calendar](calendar) | `/uicontrols/Calendar/example/` |
+| `syn.uicontrols.$chart` | [Chart](chart) | `/uicontrols/Chart/example/` |
+| `syn.uicontrols.$checkbox` | [CheckBox](check-box) | `/uicontrols/CheckBox/example/` |
+| `syn.uicontrols.$codepicker` | [CodePicker](code-picker) | `/uicontrols/CodePicker/example/` |
+| `syn.uicontrols.$colorpicker` | [ColorPicker](color-picker) | `/uicontrols/ColorPicker/example/` |
+| `syn.uicontrols.$contextmenu` | [ContextMenu](context-menu) | `/uicontrols/ContextMenu/example/` |
+| `syn.uicontrols.$data` | [DataSource](data-source) | `/uicontrols/DataSource/example/` |
+| `syn.uicontrols.$dateperiodpicker` | [DatePeriodPicker](date-period-picker) | `/uicontrols/DatePeriodPicker/example/` |
+| `syn.uicontrols.$datepicker` | [DatePicker](date-picker) | `/uicontrols/DatePicker/example/` |
+| `syn.uicontrols.$multiselect` | [DropDownCheckList](drop-down-check-list) | `/uicontrols/DropDownCheckList/example/` |
+| `syn.uicontrols.$select` | [DropDownList](drop-down-list) | `/uicontrols/DropDownList/example/` |
+| `syn.uicontrols.$element` | [Element](element) | `/uicontrols/Element/example/` |
+| `syn.uicontrols.$fileclient` | [FileClient](file-client) | `/uicontrols/FileClient/example/` |
+| `syn.uicontrols.$list` | [GridList](grid-list) | `/uicontrols/GridList/example/` |
+| `syn.uicontrols.$guide` | [Guide](guide) | `/uicontrols/Guide/example/` |
+| `syn.uicontrols.$htmleditor` | [HtmlEditor](html-editor) | `/uicontrols/HtmlEditor/example/` |
+| `syn.uicontrols.$organization` | [OrganizationView](organization-view) | `/uicontrols/OrganizationView/example/` |
+| `syn.uicontrols.$propertygrid` | [PropertyGrid](property-grid) | `/uicontrols/PropertyGrid/example/` |
+| `syn.uicontrols.$radio` | [RadioButton](radio-button) | `/uicontrols/RadioButton/example/` |
+| `syn.uicontrols.$sourceeditor` | [SourceEditor](source-editor) | `/uicontrols/SourceEditor/example/` |
+| `syn.uicontrols.$textarea` | [TextArea](text-area) | `/uicontrols/TextArea/example/` |
+| `syn.uicontrols.$textbox` | [TextBox](text-box) | `/uicontrols/TextBox/example/` |
+| `syn.uicontrols.$button` | [TextButton](text-button) | `/uicontrols/TextButton/example/` |
+| `syn.uicontrols.$tree` | [TreeView](tree-view) | `/uicontrols/TreeView/example/` |
+| `syn.uicontrols.$grid` | [WebGrid](web-grid) | `/uicontrols/WebGrid/example/` |
+
+## 실무 사용 기준
+
+- 폼 입력은 [TextBox](text-box), [TextArea](text-area), [CheckBox](check-box), [RadioButton](radio-button)을 우선 사용합니다.
+- 코드/목록 선택은 [DropDownList](drop-down-list), [DropDownCheckList](drop-down-check-list), [CodePicker](code-picker)를 사용합니다.
+- 날짜 범위와 단일 날짜는 [DatePicker](date-picker), [DatePeriodPicker](date-period-picker), [Calendar](calendar)를 구분해서 사용합니다.
+- 표/트리/조직도/차트 같은 복합 표시는 [GridList](grid-list), [WebGrid](web-grid), [TreeView](tree-view), [OrganizationView](organization-view), [Chart](chart) 문서를 확인합니다.
+- 공통 값 처리, 리소스 바인딩, 거래 연동은 각 컨트롤의 `getValue`, `setValue`, `clear`, `setLocale`, `addModuleList` API와 `syn.$w` 화면 개발 흐름을 함께 사용합니다.

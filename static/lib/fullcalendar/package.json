@@ -1,33 +1,50 @@
 {
   "name": "fullcalendar",
-  "version": "5.11.5",
+  "version": "6.1.20",
   "title": "FullCalendar Standard Bundle",
-  "description": "An easily consumable combination of standard plugins",
-  "docs": "https://fullcalendar.io/docs/initialize-globals",
-  "devDependencies": {
-    "@fullcalendar/bootstrap": "~5.11.5",
-    "@fullcalendar/bootstrap5": "~5.11.5",
-    "@fullcalendar/core": "~5.11.5",
-    "@fullcalendar/daygrid": "~5.11.5",
-    "@fullcalendar/google-calendar": "~5.11.5",
-    "@fullcalendar/interaction": "~5.11.5",
-    "@fullcalendar/list": "~5.11.5",
-    "@fullcalendar/timegrid": "~5.11.5"
+  "description": "Easily render a full-sized drag & drop calendar with a combination of standard plugins",
+  "homepage": "https://fullcalendar.io/docs/initialize-globals",
+  "dependencies": {
+    "@fullcalendar/core": "~6.1.20",
+    "@fullcalendar/daygrid": "~6.1.20",
+    "@fullcalendar/interaction": "~6.1.20",
+    "@fullcalendar/list": "~6.1.20",
+    "@fullcalendar/multimonth": "~6.1.20",
+    "@fullcalendar/timegrid": "~6.1.20"
   },
-  "main": "main.js",
-  "jsdelivr": "main.min.js",
-  "browserGlobal": "FullCalendar",
-  "homepage": "https://fullcalendar.io/",
+  "type": "module",
+  "keywords": [
+    "calendar",
+    "event",
+    "full-sized",
+    "fullcalendar"
+  ],
   "bugs": "https://fullcalendar.io/reporting-bugs",
   "repository": {
     "type": "git",
     "url": "https://github.com/fullcalendar/fullcalendar.git",
-    "homepage": "https://github.com/fullcalendar/fullcalendar"
+    "directory": "bundle"
   },
   "license": "MIT",
   "author": {
     "name": "Adam Shaw",
     "email": "arshaw@arshaw.com",
     "url": "http://arshaw.com/"
+  },
+  "copyright": "2024 Adam Shaw",
+  "types": "./index.d.ts",
+  "main": "./index.cjs",
+  "module": "./index.js",
+  "unpkg": "./index.global.min.js",
+  "jsdelivr": "./index.global.min.js",
+  "exports": {
+    "./package.json": "./package.json",
+    "./index.cjs": "./index.cjs",
+    "./index.js": "./index.js",
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.cjs",
+      "import": "./index.js"
+    }
   }
 }

@@ -24,8 +24,8 @@
  * Copyright (c) 2011-2024 Jos de Jong, http://jsoneditoronline.org
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
- * @version 10.1.0
- * @date    2024-06-19
+ * @version 10.1.1
+ * @date    2024-11-13
  */
 
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -5544,7 +5544,7 @@ var constants = __webpack_require__(660);
 var ErrorTable = __webpack_require__(115);
 // EXTERNAL MODULE: ./src/js/FocusTracker.js
 var FocusTracker = __webpack_require__(877);
-;// CONCATENATED MODULE: ./src/js/History.js
+;// ./src/js/History.js
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
 function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
@@ -5648,7 +5648,7 @@ var showTransformModal = __webpack_require__(609);
 var textmode = __webpack_require__(948);
 // EXTERNAL MODULE: ./src/js/util.js
 var util = __webpack_require__(237);
-;// CONCATENATED MODULE: ./src/js/previewmode.js
+;// ./src/js/previewmode.js
 
 
 
@@ -6401,7 +6401,7 @@ var selectr = __webpack_require__(772);
 var selectr_default = /*#__PURE__*/__webpack_require__.n(selectr);
 // EXTERNAL MODULE: ./src/js/i18n.js
 var i18n = __webpack_require__(57);
-;// CONCATENATED MODULE: ./src/js/jsonUtils.js
+;// ./src/js/jsonUtils.js
 
 
 /**
@@ -6579,7 +6579,7 @@ function jsonUtils_hasOwnProperty(object, key) {
 var util = __webpack_require__(237);
 // EXTERNAL MODULE: ./src/js/constants.js
 var constants = __webpack_require__(660);
-;// CONCATENATED MODULE: ./src/js/showTransformModal.js
+;// ./src/js/showTransformModal.js
 
 
 
@@ -6830,7 +6830,7 @@ var tryRequireThemeJsonEditor = __webpack_require__(467);
 var json_source_map = __webpack_require__(94);
 // EXTERNAL MODULE: ./src/js/util.js
 var util = __webpack_require__(237);
-;// CONCATENATED MODULE: ./src/js/SchemaTextCompleter.js
+;// ./src/js/SchemaTextCompleter.js
 
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -7020,7 +7020,7 @@ var SchemaTextCompleter = /*#__PURE__*/function () {
         Object.keys(pointers).forEach(function (ptr) {
           (0,util.asyncExec)(function () {
             var _pointers$ptr$key, _pointers$ptr$value, _pointers$ptr$value2, _pointers$ptr$valueEn;
-            var matchPointersToPath = function matchPointersToPath(pointer, currentSuggestions, path) {
+            var _matchPointersToPath = function matchPointersToPath(pointer, currentSuggestions, path) {
               var option = Object.keys(currentSuggestions).reduce(function (last, key) {
                 if (new RegExp("^".concat(path).concat(key)).test(pointer)) {
                   if (!last || last.length < key.length) {
@@ -7036,7 +7036,7 @@ var SchemaTextCompleter = /*#__PURE__*/function () {
                   for (var idx in currentSuggestions[option].refs) {
                     var refName = currentSuggestions[option].refs[idx];
                     if (_this4.suggestionsRefs[refName]) {
-                      var refSuggestion = matchPointersToPath(pointer, _this4.suggestionsRefs[refName], "".concat(path).concat(option));
+                      var refSuggestion = _matchPointersToPath(pointer, _this4.suggestionsRefs[refName], "".concat(path).concat(option));
                       if (refSuggestion !== null && refSuggestion !== void 0 && refSuggestion["enum"]) {
                         mergedSuggestions["enum"] = (0,util.uniqueMergeArrays)(mergedSuggestions["enum"], refSuggestion["enum"]);
                       }
@@ -7071,7 +7071,7 @@ var SchemaTextCompleter = /*#__PURE__*/function () {
               }
             }
             if (selectedPtr) {
-              var chosenCompletions = matchPointersToPath(selectedPtr, _this4.suggestions, '');
+              var chosenCompletions = _matchPointersToPath(selectedPtr, _this4.suggestions, '');
               processCompletionsCallback(chosenCompletions);
             }
           });
@@ -7082,7 +7082,7 @@ var SchemaTextCompleter = /*#__PURE__*/function () {
     }
   }]);
 }();
-;// CONCATENATED MODULE: ./src/js/validationUtils.js
+;// ./src/js/validationUtils.js
 
 
 /**
@@ -7123,7 +7123,7 @@ function validateCustom(json, onValidate) {
     return Promise.reject(err);
   }
 }
-;// CONCATENATED MODULE: ./src/js/textmode.js
+;// ./src/js/textmode.js
 
 
 function textmode_typeof(o) { "@babel/helpers - typeof"; return textmode_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, textmode_typeof(o); }
@@ -8182,7 +8182,7 @@ __webpack_require__.d(__webpack_exports__, {
   treeModeMixins: function() { return /* binding */ treeModeMixins; }
 });
 
-;// CONCATENATED MODULE: ./src/js/autocomplete.js
+;// ./src/js/autocomplete.js
 
 
 var defaultFilterFunction = {
@@ -8564,7 +8564,7 @@ function autocomplete(config) {
 var ContextMenu = __webpack_require__(545);
 // EXTERNAL MODULE: ./src/js/FocusTracker.js
 var FocusTracker = __webpack_require__(877);
-;// CONCATENATED MODULE: ./src/js/Highlighter.js
+;// ./src/js/Highlighter.js
 
 
 /**
@@ -8680,7 +8680,7 @@ var naturalSort_default = /*#__PURE__*/__webpack_require__.n(naturalSort);
 var createAbsoluteAnchor = __webpack_require__(925);
 // EXTERNAL MODULE: ./src/js/util.js
 var util = __webpack_require__(237);
-;// CONCATENATED MODULE: ./src/js/appendNodeFactory.js
+;// ./src/js/appendNodeFactory.js
 
 
 
@@ -8920,7 +8920,7 @@ function appendNodeFactory(Node) {
   };
   return AppendNode;
 }
-;// CONCATENATED MODULE: ./src/js/showMoreNodeFactory.js
+;// ./src/js/showMoreNodeFactory.js
 
 
 
@@ -9067,7 +9067,7 @@ var js_showSortModal = __webpack_require__(915);
 var js_showTransformModal = __webpack_require__(609);
 // EXTERNAL MODULE: ./src/js/constants.js
 var constants = __webpack_require__(660);
-;// CONCATENATED MODULE: ./src/js/Node.js
+;// ./src/js/Node.js
 
 
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
@@ -9081,6 +9081,7 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _readOnlyError(r) { throw new TypeError('"' + r + '" is read-only'); }
 function Node_typeof(o) { "@babel/helpers - typeof"; return Node_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, Node_typeof(o); }
 function Node_classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
 function Node_defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, Node_toPropertyKey(o.key), o); } }
@@ -13778,7 +13779,7 @@ function Node_hasOwnProperty(object, key) {
 //       idea: introduce properties .isAppendNode and .isNode and use that instead of instanceof AppendNode checks
 var AppendNode = appendNodeFactory(Node);
 var ShowMoreNode = showMoreNodeFactory(Node);
-;// CONCATENATED MODULE: ./src/js/NodeHistory.js
+;// ./src/js/NodeHistory.js
 
 
 function NodeHistory_typeof(o) { "@babel/helpers - typeof"; return NodeHistory_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, NodeHistory_typeof(o); }
@@ -14132,7 +14133,7 @@ var NodeHistory = /*#__PURE__*/function () {
     }
   }]);
 }();
-;// CONCATENATED MODULE: ./src/js/SearchBox.js
+;// ./src/js/SearchBox.js
 
 
 function SearchBox_typeof(o) { "@babel/helpers - typeof"; return SearchBox_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, SearchBox_typeof(o); }
@@ -14472,7 +14473,7 @@ var SearchBox = /*#__PURE__*/function () {
     }
   }]);
 }();
-;// CONCATENATED MODULE: ./src/js/TreePath.js
+;// ./src/js/TreePath.js
 
 
 function TreePath_typeof(o) { "@babel/helpers - typeof"; return TreePath_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, TreePath_typeof(o); }
@@ -14625,7 +14626,7 @@ var TreePath = /*#__PURE__*/function () {
 // EXTERNAL MODULE: ./src/js/vanilla-picker/index.js
 var vanilla_picker = __webpack_require__(746);
 var vanilla_picker_default = /*#__PURE__*/__webpack_require__.n(vanilla_picker);
-;// CONCATENATED MODULE: ./src/js/treemode.js
+;// ./src/js/treemode.js
 
 
 
@@ -15468,13 +15469,13 @@ treemode.scrollTo = function (top, animateCallback) {
     var finalScrollTop = Math.min(Math.max(top - height / 4, 0), bottom);
 
     // animate towards the new scroll position
-    var animate = function animate() {
+    var _animate = function animate() {
       var scrollTop = content.scrollTop;
       var diff = finalScrollTop - scrollTop;
       if (Math.abs(diff) > 3) {
         content.scrollTop += diff / 3;
         editor.animateCallback = animateCallback;
-        editor.animateTimeout = setTimeout(animate, 50);
+        editor.animateTimeout = setTimeout(_animate, 50);
       } else {
         // finished
         if (animateCallback) {
@@ -15485,7 +15486,7 @@ treemode.scrollTo = function (top, animateCallback) {
         delete editor.animateCallback;
       }
     };
-    animate();
+    _animate();
   } else {
     if (animateCallback) {
       animateCallback(false);
@@ -17466,6 +17467,9 @@ function get(object, path) {
  * @param {Array} existingPropNames    Array with existing prop names
  */
 function findUniqueName(name, existingPropNames) {
+  if (existingPropNames.indexOf(name) === -1) {
+    return name;
+  }
   var strippedName = name.replace(/ \(copy( \d+)?\)$/, '');
   var validName = strippedName;
   var i = 1;
@@ -17653,36 +17657,18 @@ function contains(array, item) {
  * @param {Array} prevErr previous validation errors
  */
 function isValidationErrorChanged(currErr, prevErr) {
-  if (!prevErr && !currErr) {
+  if (!currErr && !prevErr) {
     return false;
   }
-  if (prevErr && !currErr || !prevErr && currErr) {
+  if (!Array.isArray(currErr) || !Array.isArray(prevErr) || prevErr.length !== currErr.length) {
     return true;
   }
-  if (prevErr.length !== currErr.length) {
-    return true;
-  }
-  var _loop = function _loop(i) {
-      var pErr;
-      if (currErr[i].type === 'error') {
-        pErr = prevErr.find(function (p) {
-          return p.line === currErr[i].line;
-        });
-      } else {
-        pErr = prevErr.find(function (p) {
-          return p.dataPath === currErr[i].dataPath && p.schemaPath === currErr[i].schemaPath;
-        });
-      }
-      if (!pErr) {
-        return {
-          v: true
-        };
-      }
-    },
-    _ret;
-  for (var i = 0; i < currErr.length; ++i) {
-    _ret = _loop(i);
-    if (_ret) return _ret.v;
+  for (var i = 0; i < currErr.length; i++) {
+    var currItem = currErr[i];
+    var prevItem = prevErr[i];
+    if (currItem.type !== prevItem.type || JSON.stringify(currItem.error) !== JSON.stringify(prevItem.error)) {
+      return true;
+    }
   }
   return false;
 }
@@ -17690,7 +17676,7 @@ function isValidationErrorChanged(currErr, prevErr) {
 /**
  * Uniquely merge array of elements
  * @param {Array<string|number>} inputArray1
- * @param {Array<string|number?} inputArray2
+ * @param {Array<string|number>} inputArray2
  * @returns {Array<string|number>} an array with unique merged elements
  */
 function uniqueMergeArrays(inputArray1, inputArray2) {
@@ -20548,15 +20534,15 @@ __webpack_require__.d(__webpack_exports__, {
   m: function() { return /* binding */ jsonrepair; }
 });
 
-;// CONCATENATED MODULE: ./node_modules/jsonrepair/lib/esm/utils/JSONRepairError.js
+;// ./node_modules/jsonrepair/lib/esm/utils/JSONRepairError.js
 class JSONRepairError extends Error {
   constructor(message, position) {
-    super(message + ' at position ' + position);
+    super(`${message} at position ${position}`);
     this.position = position;
   }
 }
 
-;// CONCATENATED MODULE: ./node_modules/jsonrepair/lib/esm/utils/stringUtils.js
+;// ./node_modules/jsonrepair/lib/esm/utils/stringUtils.js
 const codeBackslash = 0x5c; // "\"
 const codeSlash = 0x2f; // "/"
 const codeAsterisk = 0x2a; // "*"
@@ -20614,8 +20600,17 @@ function isDelimiter(char) {
   return regexDelimiter.test(char);
 }
 const regexDelimiter = /^[,:[\]/{}()\n+]$/;
-function isDelimiterExceptSlash(char) {
-  return isDelimiter(char) && char !== '/';
+const regexUnquotedStringDelimiter = /^[,[\]/{}\n+]$/;
+const regexFunctionNameCharStart = /^[a-zA-Z_$]$/;
+const regexFunctionNameChar = /^[a-zA-Z_$0-9]$/;
+
+// matches "https://" and other schemas
+const regexUrlStart = /^(http|https|ftp|mailto|file|data|irc):\/\/$/;
+
+// matches all valid URL characters EXCEPT "[", "]", and ",", since that are important JSON delimiters
+const regexUrlChar = /^[A-Za-z0-9-._~:/?#@!$&'()*+;=]$/;
+function isUnquotedStringDelimiter(char) {
+  return regexUnquotedStringDelimiter.test(char);
 }
 function isStartOfValue(char) {
   return regexStartOfValue.test(char) || char && isQuote(char.charCodeAt(0));
@@ -20714,11 +20709,8 @@ function removeAtIndex(text, start, count) {
 function endsWithCommaOrNewline(text) {
   return /[,\n][ \t\r]*$/.test(text);
 }
-function isFunctionName(text) {
-  return /^\w+$/.test(text);
-}
 
-;// CONCATENATED MODULE: ./node_modules/jsonrepair/lib/esm/regular/jsonrepair.js
+;// ./node_modules/jsonrepair/lib/esm/regular/jsonrepair.js
 
 
 const controlCharacters = {
@@ -20795,7 +20787,7 @@ function jsonrepair(text) {
   throwUnexpectedCharacter();
   function parseValue() {
     parseWhitespaceAndSkipComments();
-    const processed = parseObject() || parseArray() || parseString() || parseNumber() || parseKeywords() || parseUnquotedString();
+    const processed = parseObject() || parseArray() || parseString() || parseNumber() || parseKeywords() || parseUnquotedString(false) || parseRegex();
     parseWhitespaceAndSkipComments();
     return processed;
   }
@@ -20813,6 +20805,7 @@ function jsonrepair(text) {
   function parseWhitespace() {
     let whitespace = '';
     let normal;
+    // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
     while ((normal = isWhitespace(text.charCodeAt(i))) || isSpecialWhitespace(text.charCodeAt(i))) {
       if (normal) {
         whitespace += text[i];
@@ -20912,7 +20905,7 @@ function jsonrepair(text) {
           initial = false;
         }
         skipEllipsis();
-        const processedKey = parseString() || parseUnquotedString();
+        const processedKey = parseString() || parseUnquotedString(true);
         if (!processedKey) {
           if (text.charCodeAt(i) === codeClosingBrace || text.charCodeAt(i) === codeOpeningBrace || text.charCodeAt(i) === codeClosingBracket || text.charCodeAt(i) === codeOpeningBracket || text[i] === undefined) {
             // repair trailing comma
@@ -21026,7 +21019,7 @@ function jsonrepair(text) {
     }
 
     // repair: wrap the output inside array brackets
-    output = "[\n".concat(output, "\n]");
+    output = `[\n${output}\n]`;
   }
 
   /**
@@ -21077,6 +21070,7 @@ function jsonrepair(text) {
           str = insertBeforeLastWhitespace(str, '"');
           output += str;
           return true;
+          // biome-ignore lint/style/noUselessElse: <explanation>
         } else if (isEndQuote(text.charCodeAt(i))) {
           // end quote
           // let us check what is before and after the quote to verify whether this is a legit end quote
@@ -21106,10 +21100,18 @@ function jsonrepair(text) {
           i = iQuote + 1;
 
           // repair unescaped quote
-          str = str.substring(0, oQuote) + '\\' + str.substring(oQuote);
-        } else if (stopAtDelimiter && isDelimiter(text[i])) {
+          str = `${str.substring(0, oQuote)}\\${str.substring(oQuote)}`;
+        } else if (stopAtDelimiter && isUnquotedStringDelimiter(text[i])) {
           // we're in the mode to stop the string at the first delimiter
           // because there is an end quote missing
+
+          // test start of an url like "https://..." (this would be parsed as a comment)
+          if (text.charCodeAt(i - 1) === codeColon && regexUrlStart.test(text.substring(iBefore + 1, i + 2))) {
+            while (i < text.length && regexUrlChar.test(text[i])) {
+              str += text[i];
+              i++;
+            }
+          }
 
           // repair missing quote
           str = insertBeforeLastWhitespace(str, '"');
@@ -21149,7 +21151,7 @@ function jsonrepair(text) {
           const code = text.charCodeAt(i);
           if (code === codeDoubleQuote && text.charCodeAt(i - 1) !== codeBackslash) {
             // repair unescaped double quote
-            str += '\\' + char;
+            str += `\\${char}`;
             i++;
           } else if (isControlCharacter(code)) {
             // unescaped control character
@@ -21263,7 +21265,7 @@ function jsonrepair(text) {
       // repair a number with leading zeros like "00789"
       const num = text.slice(start, i);
       const hasInvalidLeadingZero = /^0\d/.test(num);
-      output += hasInvalidLeadingZero ? "\"".concat(num, "\"") : num;
+      output += hasInvalidLeadingZero ? `"${num}"` : num;
       return true;
     }
     return false;
@@ -21292,18 +21294,22 @@ function jsonrepair(text) {
    * Repair a MongoDB function call like NumberLong("2")
    * Repair a JSONP function call like callback({...});
    */
-  function parseUnquotedString() {
+  function parseUnquotedString(isKey) {
     // note that the symbol can end with whitespaces: we stop at the next delimiter
     // also, note that we allow strings to contain a slash / in order to support repairing regular expressions
     const start = i;
-    while (i < text.length && !isDelimiterExceptSlash(text[i]) && !isQuote(text.charCodeAt(i))) {
-      i++;
-    }
-    if (i > start) {
-      if (text.charCodeAt(i) === codeOpenParenthesis && isFunctionName(text.slice(start, i).trim())) {
+    if (regexFunctionNameCharStart.test(text[i])) {
+      while (i < text.length && regexFunctionNameChar.test(text[i])) {
+        i++;
+      }
+      let j = i;
+      while (isWhitespace(text.charCodeAt(j))) {
+        j++;
+      }
+      if (text[j] === '(') {
         // repair a MongoDB function call like NumberLong("2")
         // repair a JSONP function call like callback({...});
-        i++;
+        i = j + 1;
         parseValue();
         if (text.charCodeAt(i) === codeCloseParenthesis) {
           // repair: skip close bracket of function call
@@ -21314,22 +21320,45 @@ function jsonrepair(text) {
           }
         }
         return true;
-      } else {
-        // repair unquoted string
-        // also, repair undefined into null
-
-        // first, go back to prevent getting trailing whitespaces in the string
-        while (isWhitespace(text.charCodeAt(i - 1)) && i > 0) {
-          i--;
-        }
-        const symbol = text.slice(start, i);
-        output += symbol === 'undefined' ? 'null' : JSON.stringify(symbol);
-        if (text.charCodeAt(i) === codeDoubleQuote) {
-          // we had a missing start quote, but now we encountered the end quote, so we can skip that one
-          i++;
-        }
-        return true;
       }
+    }
+    while (i < text.length && !isUnquotedStringDelimiter(text[i]) && !isQuote(text.charCodeAt(i)) && (!isKey || text.charCodeAt(i) !== codeColon)) {
+      i++;
+    }
+
+    // test start of an url like "https://..." (this would be parsed as a comment)
+    if (text.charCodeAt(i - 1) === codeColon && regexUrlStart.test(text.substring(start, i + 2))) {
+      while (i < text.length && regexUrlChar.test(text[i])) {
+        i++;
+      }
+    }
+    if (i > start) {
+      // repair unquoted string
+      // also, repair undefined into null
+
+      // first, go back to prevent getting trailing whitespaces in the string
+      while (isWhitespace(text.charCodeAt(i - 1)) && i > 0) {
+        i--;
+      }
+      const symbol = text.slice(start, i);
+      output += symbol === 'undefined' ? 'null' : JSON.stringify(symbol);
+      if (text.charCodeAt(i) === codeDoubleQuote) {
+        // we had a missing start quote, but now we encountered the end quote, so we can skip that one
+        i++;
+      }
+      return true;
+    }
+  }
+  function parseRegex() {
+    if (text[i] === '/') {
+      const start = i;
+      i++;
+      while (i < text.length && (text[i] !== '/' || text[i - 1] === '\\')) {
+        i++;
+      }
+      i++;
+      output += `"${text.substring(start, i)}"`;
+      return true;
     }
   }
   function prevNonWhitespaceIndex(start) {
@@ -21346,13 +21375,13 @@ function jsonrepair(text) {
     // repair numbers cut off at the end
     // this will only be called when we end after a '.', '-', or 'e' and does not
     // change the number more than it needs to make it valid JSON
-    output += text.slice(start, i) + '0';
+    output += `${text.slice(start, i)}0`;
   }
   function throwInvalidCharacter(char) {
-    throw new JSONRepairError('Invalid character ' + JSON.stringify(char), i);
+    throw new JSONRepairError(`Invalid character ${JSON.stringify(char)}`, i);
   }
   function throwUnexpectedCharacter() {
-    throw new JSONRepairError('Unexpected character ' + JSON.stringify(text[i]), i);
+    throw new JSONRepairError(`Unexpected character ${JSON.stringify(text[i])}`, i);
   }
   function throwUnexpectedEnd() {
     throw new JSONRepairError('Unexpected end of json string', text.length);
@@ -21365,7 +21394,7 @@ function jsonrepair(text) {
   }
   function throwInvalidUnicodeCharacter() {
     const chars = text.slice(i, i + 6);
-    throw new JSONRepairError("Invalid unicode character \"".concat(chars, "\""), i);
+    throw new JSONRepairError(`Invalid unicode character "${chars}"`, i);
   }
 }
 function atEndOfBlockComment(text, i) {

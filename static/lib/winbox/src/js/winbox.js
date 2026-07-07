@@ -1,12 +1,10 @@
 /**
  * WinBox.js
- * Author and Copyright: Thomas Wilkerling
+ * Copyright 2022 Nextapps GmbH
+ * Author: Thomas Wilkerling
  * Licence: Apache-2.0
- * Hosted by Nextapps GmbH
  * https://github.com/nextapps-de/winbox
  */
-
-// TODO: rename control amd state classes (min, max, modal, focus, ...) #62
 
 import template from "./template.js";
 import { addListener, removeListener, setStyle, setText, getByClass, addClass, removeClass, hasClass, preventEvent } from "./helper.js";
@@ -17,8 +15,7 @@ const use_raf = false;
 const stack_min = [];
 const stack_win = [];
 // use passive for touch and mouse wheel
-const eventOptions = { "capture": true, "passive": false };
-const eventOptionsPassive = { "capture": true, "passive": true };
+const eventOptions = { "capture": true, "passive": true };
 let body;
 let id_counter = 0;
 let index_counter = 10;
@@ -26,7 +23,6 @@ let is_fullscreen;
 let prefix_request;
 let prefix_exit;
 let root_w, root_h;
-let window_clicked;
 
 /**
  * @param {string|Object=} params
@@ -282,22 +278,6 @@ function WinBox(params, _title){
     this.onhide = onhide;
     this.onshow = onshow;
 
-    if(hidden){
-
-        this.hide();
-    }
-    else{
-
-        this.focus();
-    }
-
-    if(index || (index === 0)){
-
-        this.index = index;
-        setStyle(this.dom, "z-index", index);
-        if(index > index_counter) index_counter = index;
-    }
-
     if(max){
 
         this.maximize();
@@ -309,6 +289,22 @@ function WinBox(params, _title){
     else{
 
         this.resize().move();
+    }
+
+    if(hidden){
+      
+        this.hide();
+    }
+    else{
+
+        this.focus();
+
+        if(index || (index === 0)){
+
+            this.index = index;
+            setStyle(this.dom, "z-index", index);
+            if(index > index_counter) index_counter = index;
+        }
     }
 
     register(this);
@@ -341,7 +337,7 @@ function parse(num, base, center){
 
         if(num === "center"){
 
-            num = ((base - center) / 2 + 0.5) | 0;
+            num = ((base - center) / 2) | 0;
         }
         else if(num === "right" || num === "bottom"){
 
@@ -354,7 +350,7 @@ function parse(num, base, center){
 
             if(unit === "%"){
 
-                num = (base / 100 * value + 0.5) | 0;
+                num = (base / 100 * value) | 0;
             }
             else{
 
@@ -387,41 +383,6 @@ function setup(){
 
         init();
         update_min_stack();
-
-        // TODO adjust window sizes #151
-
-        // for(let i = 0; i < stack_win.length; i++){
-        //
-        //     stack_win[i].resize().move();
-        // }
-    });
-
-    addListener(body, "mousedown", function(event){
-
-        window_clicked = false;
-
-    }, true);
-
-    addListener(body, "mousedown", function(event){
-
-        if(!window_clicked){
-
-            const stack_length = stack_win.length;
-
-            if(stack_length){
-
-                for(let i = stack_length - 1; i >= 0; i--){
-
-                    const last_focus = stack_win[i];
-
-                    if(last_focus.focused){
-
-                        last_focus.blur();
-                        break;
-                    }
-                }
-            }
-        }
     });
 
     init();
@@ -451,7 +412,6 @@ function register(self){
 
     addListener(getByClass(self.dom, "wb-max"), "click", function(event){
 
-        preventEvent(event);
         self.max ? self.restore().focus() : self.maximize().focus();
     });
 
@@ -459,8 +419,7 @@ function register(self){
 
         addListener(getByClass(self.dom, "wb-full"), "click", function(event){
 
-            preventEvent(event);
-            self.fullscreen().focus();
+            self.fullscreen();
         });
     }
     else{
@@ -474,19 +433,12 @@ function register(self){
         self.close() || (self = null);
     });
 
-    addListener(self.dom, "mousedown", function(event){
-
-        window_clicked = true;
-
-    }, true);
-
-    addListener(self.body, "mousedown", function(event){
+    addListener(self.dom, "click", function(event){
 
         // stop propagation would disable global listeners used inside window contents
         // use event bubbling for this listener to skip this handler by the other click listeners
         self.focus();
-
-    }, true);
+    });
 }
 
 /**
@@ -511,7 +463,7 @@ function update_min_stack(){
     for(let i = 0, self, key; i < length; i++){
 
         self = stack_min[i];
-        key = self.left + ":" + self.top;
+        key = (self.left || self.right) + ":" + (self.top || self.bottom);
 
         if(splitscreen_length[key]){
 
@@ -527,8 +479,9 @@ function update_min_stack(){
     for(let i = 0, self, key, width; i < length; i++){
 
         self = stack_min[i]
-        key = self.left + ":" + self.top;
+        key = (self.left || self.right) + ":" + (self.top || self.bottom);
         width = Math.min((root_w - self.left - self.right) / splitscreen_length[key], 250);
+        //splitscreen_index[key] || (splitscreen_index[key] = 0);
         self.resize((width + 1) | 0, self.header, true)
             .move((self.left + splitscreen_index[key] * width) | 0, root_h - self.bottom - self.header, true);
         splitscreen_index[key]++;
@@ -549,7 +502,7 @@ function addWindowListener(self, dir){
     let raf_timer, raf_move, raf_resize;
     let dblclick_timer = 0;
 
-    addListener(node, "mousedown", mousedown, eventOptions);
+    addListener(node, "mousedown", mousedown);
     addListener(node, "touchstart", mousedown, eventOptions);
 
     function loop(){
@@ -572,8 +525,7 @@ function addWindowListener(self, dir){
     function mousedown(event){
 
         // prevent the full iteration through the fallback chain of a touch event (touch > mouse > click)
-        preventEvent(event, true);
-        //window_clicked = true;
+        preventEvent(event);
         self.focus();
 
         if(dir === "drag"){
@@ -584,18 +536,15 @@ function addWindowListener(self, dir){
                 return;
             }
 
-            if(!self.hasClass("no-max")){
+            const now = Date.now();
+            const diff = now - dblclick_timer;
 
-                const now = Date.now();
-                const diff = now - dblclick_timer;
+            dblclick_timer = now;
 
-                dblclick_timer = now;
+            if(diff < 300){
 
-                if(diff < 300){
-
-                    self.max ? self.restore() : self.maximize();
-                    return;
-                }
+                self.max ? self.restore() : self.maximize();
+                return;
             }
         }
 
@@ -610,14 +559,14 @@ function addWindowListener(self, dir){
 
                 // TODO: fix when touch events bubbles up to the document body
                 //addListener(self.dom, "touchmove", preventEvent);
-                addListener(window, "touchmove", handler_mousemove, eventOptionsPassive);
-                addListener(window, "touchend", handler_mouseup, eventOptionsPassive);
+                addListener(window, "touchmove", handler_mousemove, eventOptions);
+                addListener(window, "touchend", handler_mouseup, eventOptions);
             }
             else{
 
                 //addListener(this, "mouseleave", handler_mouseup);
-                addListener(window, "mousemove", handler_mousemove, eventOptionsPassive);
-                addListener(window, "mouseup", handler_mouseup, eventOptionsPassive);
+                addListener(window, "mousemove", handler_mousemove);
+                addListener(window, "mouseup", handler_mouseup);
             }
 
             x = event.pageX;
@@ -633,7 +582,7 @@ function addWindowListener(self, dir){
 
     function handler_mousemove(event){
 
-        preventEvent(event);
+        preventEvent(event, !touch);
 
         if(touch){
 
@@ -653,8 +602,6 @@ function addWindowListener(self, dir){
         let resize_w, resize_h, move_x, move_y;
 
         if(dir === "drag"){
-
-            if(self.hasClass("no-move")) return;
 
             self.x += offsetX;
             self.y += offsetY;
@@ -770,14 +717,14 @@ function addWindowListener(self, dir){
         if(touch){
 
             //removeListener(self.dom, "touchmove", preventEvent);
-            removeListener(window, "touchmove", handler_mousemove, eventOptionsPassive);
-            removeListener(window, "touchend", handler_mouseup, eventOptionsPassive);
+            removeListener(window, "touchmove", handler_mousemove, eventOptions);
+            removeListener(window, "touchend", handler_mouseup, eventOptions);
         }
         else{
 
             //removeListener(this, "mouseleave", handler_mouseup);
-            removeListener(window, "mousemove", handler_mousemove, eventOptionsPassive);
-            removeListener(window, "mouseup", handler_mouseup, eventOptionsPassive);
+            removeListener(window, "mousemove", handler_mousemove);
+            removeListener(window, "mouseup", handler_mouseup);
         }
     }
 }
@@ -1031,12 +978,23 @@ WinBox.prototype.minimize = function(state){
         update_min_stack();
         this.dom.title = this.title;
         this.addClass("min");
+        this.blur();
         this.min = true;
 
-        if(this.focused){
+        const stack_length = stack_win.length;
 
-            this.blur();
-            focus_next();
+        if(stack_length > 1){
+
+            for(let i = 1; i <= stack_length; i++){
+
+                const last_focus = stack_win[stack_length - i];
+
+                if(!last_focus.min /*&& last_focus !== this*/){
+
+                    last_focus.focus();
+                    break;
+                }
+            }
         }
 
         this.onminimize && this.onminimize();
@@ -1044,25 +1002,6 @@ WinBox.prototype.minimize = function(state){
 
     return this;
 };
-
-function focus_next(){
-
-    const stack_length = stack_win.length;
-
-    if(stack_length){
-
-        for(let i = stack_length - 1; i >= 0; i--){
-
-            const last_focus = stack_win[i];
-
-            if(!last_focus.min /*&& last_focus !== this*/){
-
-                last_focus.focus();
-                break;
-            }
-        }
-    }
-}
 
 /**
  * @this WinBox
@@ -1224,7 +1163,6 @@ WinBox.prototype.close = function(force) {
     this.dom["winbox"] = null;
     this.body = null;
     this.dom = null;
-    this.focused && focus_next();
 };
 
 /**

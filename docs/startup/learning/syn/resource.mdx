@@ -2,84 +2,210 @@
 sidebar_position: 13
 ---
 
-# syn.$res
+# 다국어(i18n) 리소스 사용법 (syn.$res)
 
 ## 개요
+`syn.$res`(원본: `context.$resource`)는 화면에 표시되는 텍스트를 로케일별 번역 문자열로 치환하는 다국어(i18n) 기능을 제공합니다. HTML 엘리먼트에 `syn-i18n` 속성으로 번역 키를 지정하면, 페이지 로드 시 자동으로 스캔되어 번역 대상 목록(`translateControls`)에 등록되고, `translations` 저장소에 등록된 값으로 화면에 반영할 수 있습니다.
 
-`syn.$res`는 HandStack 화면의 다국어 리소스와 텍스트 치환을 담당하는 리소스 모듈입니다. `syn.js`에서는 `context.$resource = syn.$res = $resource`로 공개되며, 화면 로딩 과정에서 `syn-i18n` 속성을 가진 컨트롤을 수집하고 locale 파일을 읽어 화면 텍스트를 적용합니다.
+## 로드 방법
+`syn.js`가 로드되면 전역에 `syn.$res`(별칭: `$resource`)로 즉시 사용할 수 있습니다. `[syn-i18n]` 속성이 있는 엘리먼트는 페이지 로드가 완료된 시점(`syn.$w.isPageLoad`)에 자동으로 스캔되어 `translateControls`에 등록됩니다.
 
-## 개발자가 알아야 할 구조
-
-| 항목 | 설명 |
-| --- | --- |
-| `localeID` | 현재 적용할 locale ID입니다. 기본값은 `ko-KR`입니다. |
-| `translations` | locale key와 번역 값을 보관하는 객체입니다. |
-| `translateControls` | `syn-i18n` 속성으로 수집된 화면 컨트롤 목록입니다. |
-| `setLocale(localeID)` | locale 파일을 읽고 화면 번역을 다시 적용합니다. |
-| `translatePage()` | 수집된 모든 컨트롤에 번역을 적용합니다. |
-| `translateControl(control, options)` | 특정 컨트롤 하나에 번역을 적용합니다. |
-
-## HTML 작성 방식
-
-화면 요소에 `syn-i18n` 속성을 지정하면 `syn.$res`가 로딩 시 번역 대상으로 수집합니다.
-
+## 빠른 시작
 ```html
-<label id="lblName" syn-i18n="name"></label>
-<button id="btnSave" syn-i18n="save"></button>
-<input id="txtKeyword" syn-i18n="placeholder:searchKeyword" />
+<div id="greetingText" syn-i18n="greeting">Hello</div>
 ```
-
-컨트롤별로 어떤 속성에 번역을 넣을지는 태그와 bind 규칙에 따라 결정됩니다. 일반 텍스트 요소는 텍스트 바인딩으로 처리하고, 입력 요소는 placeholder 같은 속성 바인딩을 사용할 수 있습니다.
-
-## 리소스 등록과 조회
-
-```javascript
-syn.$res.add('save', '저장');
-syn.$res.add('remove', '삭제');
-syn.$res.add('welcome', '#{UserName}님, 환영합니다.');
-
-const text = syn.$res.get('save');
-```
-
-기본 리소스에는 진행 중, 조회, 저장, 삭제, 필수 입력, 오류 메시지 같은 HandStack 화면 공통 문구가 등록되어 있습니다.
-
-## Locale 적용
-
-```javascript
-await syn.$res.setLocale('ko-KR');
+```js
+syn.$res.add('greeting', '안녕하세요!');
 syn.$res.translatePage();
+// greetingText의 textContent가 '안녕하세요!'로 바뀝니다.
 ```
 
-`setLocale`은 `syn.Config.LocaleAssetUrl`이 있으면 그 경로를 우선 사용하고, 없으면 `syn.Config.SharedAssetUrl + 'language/'` 경로를 사용합니다. locale JSON을 읽은 뒤 기존 `translations`와 병합하고 화면을 다시 번역합니다.
-
-## 화면 모듈 연동
-
-화면 모듈에 `hook.pageResource`가 있으면 locale 적용 과정에서 호출됩니다.
-
-```javascript
-let $sample = {
-    hook: {
-        pageResource(localeID) {
-            syn.$res.add('customMessage', localeID === 'ko-KR' ? '사용자 메시지' : 'User message');
-        }
-    }
-};
+## 주요 시나리오
+### syn-i18n 속성으로 번역 대상 지정
+`syn-i18n` 값이 단순 문자열이면 그 값이 번역 키(key)가 되고 bindSource는 기본값 `'content'`(textContent)로 처리됩니다. 객체 리터럴 문자열(`{key: '...', options: {...}}`) 형태로 지정하면 `options.bindSource`로 `text`/`content`/`html`/`url`/`placeholder`/`control`/`value` 중 하나를 지정할 수 있습니다.
+```html
+<div syn-i18n="greeting">Hello</div>
+<input syn-i18n="{key: 'placeholderDemo', options: { bindSource: 'placeholder' }}" />
 ```
 
-`syn.Config.IsLocaleTranslations`가 `true`이고 화면 모듈의 `config.isLocaleTranslations`가 꺼져 있지 않으면 `syn.$res.setLocale` 흐름이 동작합니다.
-
-## 텍스트 보간
-
-리소스 문자열에 `#{Key}` 형태를 사용하면 SSO 정보나 전달한 옵션으로 값을 치환할 수 있습니다.
-
-```javascript
-syn.$res.add('helloUser', '#{UserName}님 안녕하세요.');
-const message = syn.$res.translateText({ key: 'helloUser' }, { UserName: '홍길동' });
+### 번역 데이터 등록/삭제
+`add(id, val)`로 번역 키-값을 `translations` 저장소에 등록하고, `remove(id)`로 제거합니다.
+```js
+syn.$res.add('greeting', '안녕하세요, HandStack!');
+syn.$res.remove('greeting');
 ```
 
-## 주의사항
+### 화면 전체/개별 요소 번역 반영
+`translatePage()`는 등록된 모든 `[syn-i18n]` 요소를 현재 `translations` 값으로 갱신하고, `translateElement(el, options)`는 지정한 엘리먼트 하나만 갱신합니다. 내부적으로 `getControl(el)`로 컨트롤 설명 객체를 찾아 `translateControl(control, options)`을 호출하며, 실제 반영될 텍스트 계산은 `translateText(control, options)`가 담당합니다.
+```js
+syn.$res.translatePage();
+syn.$res.translateElement('greetingText');
+```
 
-- locale 파일 경로는 `syn.Config.LocaleAssetUrl` 또는 `syn.Config.SharedAssetUrl`에 의존합니다.
-- `syn-i18n` key가 중복되거나 누락되면 화면 로딩 로그에 경고가 남을 수 있습니다.
-- UI 컨트롤 모듈이 자체 locale 처리를 지원하면 `controlModule.setLocale`이 호출될 수 있으므로, 커스텀 컨트롤은 이 메서드 규약을 맞춰 구현합니다.
-- 화면별 문구는 화면 모듈의 `hook.pageResource`에서 보강하고, 공통 문구는 locale JSON 또는 기본 리소스에 둡니다.
+### 플레이스홀더 치환
+`interpolate(message, interpolations)`는 `#{key}` 형태의 플레이스홀더가 포함된 문자열에서 `interpolations` 객체의 값으로 치환하는 순수 문자열 함수입니다. 화면 요소와 무관하게 단독으로 사용할 수 있습니다.
+```js
+const text = syn.$res.interpolate('환영합니다, #{name}님!', { name: '홍길동' });
+```
+
+### bindSource와 실제 DOM 속성 매핑
+`getBindSource(control)`은 `control.bindSource`(text/content/html/url/placeholder/control/value) 값을 실제 DOM 속성 이름(innerText/textContent/innerHTML/src/placeholder/controlText/value)으로 변환합니다.
+
+## 실전 예제 페이지
+`/sample/syn/resources.html` 예제에서 다음 항목을 실습할 수 있습니다.
+- `syn-i18n` 속성이 지정된 content 바인딩 요소(`demo_greeting`), placeholder 바인딩 요소(`demo_placeholder`)
+- add(), remove(), interpolate() — 번역 데이터 등록/삭제/치환
+- getControl(), translatePage(), translateElement(), translateControl(), translateText(), getBindSource() — 컨트롤 조회와 화면 반영
+
+## 주의 사항
+- `translateText(control, options)`는 번역 문자열에 `#{key}` 형태의 플레이스홀더가 포함되어 있으면(정규식 매치 시) 무조건 `syn.$w.getSSOInfo()`를 호출합니다. 이 함수는 `syn.domain.js`(별도 모듈)에서 정의되며, `syn.js`만 로드하는 환경(이 샘플 포함)에서는 정의되어 있지 않아 `TypeError`가 발생할 수 있습니다. 플레이스홀더가 포함된 번역을 `translatePage()`/`translateElement()`/`translateControl()` 경로로 반영해야 한다면 `syn.domain.js`가 로드되어 있는지 먼저 확인하십시오. 화면 요소와 무관하게 단순 문자열만 치환하려면 `interpolate()`를 직접 사용하십시오(이 경로는 `getSSOInfo()`를 호출하지 않아 안전합니다).
+- `setLocale(localeID)`(비공개 목록 외 참고 메서드)는 `syn.Config.LocaleAssetUrl` 또는 `SharedAssetUrl + 'language/'` 경로에서 `{localeID}.json` 파일을 실제로 fetch합니다. 이 샘플 트리에는 해당 로케일 파일이 없으므로 실패하지만, 내부적으로 오류를 잡아(catch) `Warning` 로그만 남기고 페이지가 깨지지는 않습니다.
+- `[syn-i18n]` 스캔은 페이지 로드 완료(`syn.$w.isPageLoad`) 이후 비동기로 수행되므로, 페이지 진입 직후 바로 `getControl()`을 호출하면 아직 등록되지 않았을 수 있습니다.
+
+## 관련 모듈
+- API 상세는 아래 API 참조 섹션을 확인하세요.
+
+## API 참조
+
+## 모듈 정보
+| 항목 | 내용 |
+|---|---|
+| 전역 별칭 | `syn.$res` (원본: `context.$resource`) |
+| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 11618~11939번째 줄) |
+| 예제 페이지 | `/sample/syn/resources.html` |
+| 의존 모듈 | `syn.$l`(get, querySelector), `syn.$object`(isString, isNullOrUndefined, isObject, isArray), `syn.$string`(isNullOrEmpty, toBoolean), `syn.$w`(pageScript, argumentsExtend, fetchJson, getSSOInfo — `getSSOInfo`는 `syn.domain.js`에서만 정의됨), `syn.uicontrols`(모듈 컨트롤 번역 시) |
+
+## 속성
+| 이름 | 기본값 | 설명 |
+|---|---|---|
+| `localeID` | `'ko-KR'` | 현재 적용된 로케일 ID. `setLocale()` 호출 시 갱신됩니다. |
+| `fullyQualifiedLocale` | `{ ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN' }` | 축약 언어 코드 → 정식 로케일 문자열 매핑 테이블. |
+| `translations` | `{}` | `add()`/`remove()`로 관리되는 번역 키-값 저장소. |
+| `translateControls` | `[]` | 페이지 로드 시 `[syn-i18n]` 엘리먼트를 스캔하여 등록된 컨트롤 설명 배열. 각 항목은 `{ elID, key, bindSource, tag, module, type, options }` 형태입니다. |
+
+## 메서드
+
+### `syn.$res.add(id, val)`
+- 설명: `translations` 저장소에 번역 키-값을 등록(덮어쓰기)합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | id | `string` | Y | 번역 키. |
+  | val | 문자열, 문자열 배열, Text 속성 객체 | Y | 번역 값. `translateText()`는 문자열, 배열의 첫 요소, Text 속성 객체 형태를 모두 처리합니다. |
+- 반환값: 없음.
+- 예시
+  ```js
+  syn.$res.add('greeting', '안녕하세요, HandStack!');
+  ```
+
+### `syn.$res.remove(id)`
+- 설명: `translations` 저장소에서 지정 키를 삭제합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | id | `string` | Y | 삭제할 번역 키. |
+- 반환값: 없음.
+- 예시
+  ```js
+  syn.$res.remove('greeting');
+  ```
+
+### `syn.$res.interpolate(message, interpolations)`
+- 설명: `message` 문자열 내 `#{key}` 형태의 플레이스홀더를 `interpolations` 객체의 동일 키 값으로 치환합니다. 키별 정규식을 내부 캐시(`interpolationRegexCache`)에 보관하여 재사용합니다. 화면 요소와 무관한 순수 문자열 함수입니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | message | `string` | Y | 플레이스홀더가 포함된 원본 문자열. |
+  | interpolations | `object` | Y | 치환할 키-값 쌍. |
+- 반환값: `string` — 치환된 문자열.
+- 예시
+  ```js
+  const text = syn.$res.interpolate('환영합니다, #{name}님!', { name: '홍길동' });
+  ```
+
+### `syn.$res.getControl(el)`
+- 설명: 엘리먼트(또는 id 문자열)로 `translateControls` 배열에서 대응하는 컨트롤 설명 객체를 찾습니다. `el.id`가 없으면 `tag`+`i18n-key` 조합으로, 있으면 `elID`+`tag`+`i18n-key` 조합으로 조회합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | el | `string \\| HTMLElement` | Y | 대상 엘리먼트 또는 id. |
+- 반환값: `object | null` — 컨트롤 설명 객체(`{ elID, key, bindSource, tag, module, type, options }`) 또는 찾지 못하면 `undefined`/`null`.
+- 예시
+  ```js
+  const control = syn.$res.getControl('demo_greeting');
+  ```
+
+### `syn.$res.translatePage()`
+- 설명: `translateControls`에 등록된 모든 컨트롤에 대해 `translateControl()`을 순회 호출하여 화면 전체를 현재 `translations` 값으로 갱신합니다.
+- 매개변수: 없음.
+- 반환값: 없음.
+- 예시
+  ```js
+  syn.$res.translatePage();
+  ```
+
+### `syn.$res.translateElement(el, options)`
+- 설명: 지정한 엘리먼트 하나에 대해서만 `getControl()` + `translateControl()`을 호출하여 번역을 반영합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | el | `string \\| HTMLElement` | Y | 대상 엘리먼트 또는 id. |
+  | options | `object` | N | `translateText()`의 플레이스홀더 치환에 사용할 추가 값(내부적으로 `getSSOInfo()` 결과와 병합 시도). |
+- 반환값: 없음. 대응하는 컨트롤이 없으면 아무 동작도 하지 않습니다.
+- 예시
+  ```js
+  syn.$res.translateElement('demo_greeting');
+  ```
+
+### `syn.$res.translateControl(control, options)`
+- 설명: 컨트롤 설명 객체를 받아 실제 DOM에 번역을 반영합니다. `control.module`이 없으면 `getBindSource(control)`로 얻은 DOM 속성(textContent 등)에 `translateText()` 결과를 대입하고, `control.module`이 있으면(UI 컨트롤 모듈) `syn.uicontrols['$' + control.module].setLocale(...)`을 호출합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | control | `object` | Y | `getControl()`로 얻은 컨트롤 설명 객체. |
+  | options | `object` | N | 플레이스홀더 치환용 추가 값. |
+- 반환값: 없음.
+- 예시
+  ```js
+  const control = syn.$res.getControl('demo_greeting');
+  syn.$res.translateControl(control);
+  ```
+
+### `syn.$res.translateText(control, options)`
+- 설명: `control.key`에 대응하는 `translations` 값을 조회하여 실제로 표시될 텍스트를 계산합니다(DOM에는 반영하지 않는 순수 계산). 번역 값이 문자열/배열(첫 요소)/`{ Text }` 객체인 경우를 모두 처리합니다. 텍스트에 `#{key}` 패턴이 있으면 `syn.$w.getSSOInfo()`를 호출해 기본 interpolation 값으로 사용하려 시도합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | control | `object` | Y | `getControl()`로 얻은 컨트롤 설명 객체. |
+  | options | `object` | N | `getSSOInfo()` 결과와 병합할 추가 interpolation 값. |
+- 반환값: `string` — 계산된 표시 텍스트.
+- 주의: 텍스트에 `#{key}` 패턴이 포함되어 있으면 `options` 유무와 무관하게 `syn.$w.getSSOInfo()`가 무조건 호출됩니다. `syn.js`만 로드된 환경(`syn.domain.js` 미로드)에서는 이 함수가 정의되어 있지 않아 `TypeError`가 발생할 수 있습니다.
+- 예시
+  ```js
+  const control = syn.$res.getControl('demo_greeting');
+  const text = syn.$res.translateText(control);
+  ```
+
+### `syn.$res.getBindSource(control)`
+- 설명: `control.bindSource` 값을 실제 DOM 속성 이름으로 매핑합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | control | `object` | Y | `bindSource` 속성을 가진 객체(`{ bindSource: 'text' \| 'content' \| 'html' \| 'url' \| 'placeholder' \| 'control' \| 'value' }`). |
+- 반환값: `string | null` — `text`→`innerText`, `content`→`textContent`, `html`→`innerHTML`, `url`→`src`, `placeholder`→`placeholder`, `control`→`controlText`, `value`→`value`. 매칭되지 않으면 `null`.
+- 예시
+  ```js
+  const prop = syn.$res.getBindSource({ bindSource: 'content' }); // 'textContent'
+  ```
+
+### `syn.$res.setLocale(localeID)` (참고)
+- 설명: 지정한 `localeID`의 로케일 JSON 파일(`syn.Config.LocaleAssetUrl` 또는 `SharedAssetUrl + 'language/'` 경로)을 fetch하여 `translations`에 병합한 뒤 `document.documentElement.lang`을 갱신하고 `translatePage()`를 호출하는 비동기 메서드입니다. 요청 대상 파일이 없거나 CORS 등으로 실패해도 내부적으로 예외를 잡아(`Warning` 로그) 페이지 동작에는 영향을 주지 않습니다. 이 문서의 필수 공개 API 목록에는 포함되지 않지만 소스 범위 내 실존하는 메서드로, 참고용으로 기재합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | localeID | `string` | Y | 적용할 로케일 ID(예: `'en-US'`). |
+- 반환값: `Promise<void>`
+- 예시
+  ```js
+  await syn.$res.setLocale('en-US');
+  ```

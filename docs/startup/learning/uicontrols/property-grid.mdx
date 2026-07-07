@@ -1,0 +1,82 @@
+---
+sidebar_position: 20
+---
+
+# PropertyGrid
+
+## 이 컨트롤은 무엇인가요?
+
+`PropertyGrid`는 `uicontrols/PropertyGrid` 폴더에서 제공되는 HandStack UI 컨트롤입니다. `syn.loader.js` 또는 직접 스크립트 로딩 후 `syn.uicontrols` 네임스페이스의 `syn.uicontrols.$propertygrid` 모듈로 초기화하고 값을 읽고 쓸 수 있습니다.
+
+## 빠른 시작
+
+```html
+<div id="property-gridSample" syn-options="{}"></div>
+<script src="/js/syn.loader.js"></script>
+```
+
+```js
+var value = syn.uicontrols.$propertygrid.getValue('property-gridSample');
+syn.uicontrols.$propertygrid.setValue('property-gridSample', value);
+```
+
+## 언제 사용하나요?
+
+- 객체의 속성을 표 형태로 확인하거나 편집해야 할 때 사용합니다.
+- 컨트롤별 `defaultSetting`을 화면에서 비교하거나 런타임 설정 값을 조정하는 관리 도구에 적합합니다.
+- 일반 폼 컨트롤보다 속성 이름, 타입, 도움말, 그룹 정보를 함께 표시해야 할 때 사용합니다.
+
+## 실전 예제 페이지
+
+`/uicontrols/PropertyGrid/example/` 경로의 예제를 아래 iframe에서 바로 확인할 수 있습니다.
+
+### index.html
+
+<iframe
+  src="/uicontrols/PropertyGrid/example/index.html"
+  width="100%"
+  height="640"
+  style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+  title="PropertyGrid index 실전 예제"
+  allow="fullscreen">
+</iframe>
+
+## 소스와 로드 파일
+
+| 항목 | 내용 |
+|---|---|
+| 컨트롤 | `PropertyGrid` |
+| 전역 별칭 | `syn.uicontrols.$propertygrid` |
+| 버전 | `v2026.7.3` |
+| 소스 | `uicontrols/PropertyGrid/PropertyGrid.js` |
+| 스타일 | `uicontrols/PropertyGrid/PropertyGrid.css` |
+
+## API 참조
+
+## 모듈 정보
+| 항목 | 내용 |
+|---|---|
+| 전역 별칭 | `syn.uicontrols.$propertygrid` |
+| 소스 위치 | `uicontrols/PropertyGrid/PropertyGrid.js` |
+| 스타일 | `uicontrols/PropertyGrid/PropertyGrid.css` |
+
+## 주요 옵션
+| 옵션 | 설명 |
+|---|---|
+| `data` / `value` | PropertyGrid가 렌더링할 원본 객체입니다. |
+| `meta` | 속성별 타입, 그룹, 라벨, 도움말 같은 표시 메타데이터입니다. |
+| `customTypes` | 사용자 정의 편집기를 연결하는 타입 매핑입니다. |
+| `sort` | 속성 정렬 여부입니다. |
+| `isCollapsible` | 그룹 접기/펼치기 사용 여부입니다. |
+| `autoMeta` | 원본 값 기준으로 메타데이터를 자동 보완할지 여부입니다. |
+| `callback` | 값 변경 시 호출할 콜백 함수 또는 함수 이름입니다. |
+
+## 주요 메서드
+| 메서드 | 설명 |
+|---|---|
+| `controlLoad(elID, setting)` | 엘리먼트에 설정을 병합하고 PropertyGrid를 렌더링합니다. |
+| `render(elID, value, setting)` | 지정한 객체 값을 PropertyGrid UI로 다시 그립니다. |
+| `getValue(elID)` | 현재 편집된 객체 값을 반환합니다. |
+| `setValue(elID, value)` | 객체 값을 반영하고 화면을 다시 렌더링합니다. |
+| `clear(elID)` | 값을 초기화하고 빈 PropertyGrid 상태로 되돌립니다. |
+| `getControl(elID)` | 내부 컨트롤 런타임 설정을 조회합니다. |

@@ -1,0 +1,91 @@
+---
+sidebar_position: 2
+---
+
+# uicontrols 퀵 가이드
+
+이 문서는 자주 쓰는 HandStack UI 컨트롤 패턴을 빠르게 확인하기 위한 요약입니다. 상세 옵션, 이벤트, 반환값은 각 컨트롤 문서의 `API 참조` 섹션을 확인하세요.
+
+## 입력 컨트롤
+
+```html
+<input id="txtAmount" type="text" syn-options="{editType: 'numeric', minCount: 0, maxCount: 100000}">
+<textarea id="txtMemo" syn-options="{maxlength: 500}"></textarea>
+```
+
+```js
+syn.uicontrols.$textbox.setValue('txtAmount', 12345);
+var amount = syn.uicontrols.$textbox.getValue('txtAmount');
+syn.uicontrols.$textarea.clear('txtMemo');
+```
+
+## 선택 컨트롤
+
+```html
+<select id="ddlStatus" syn-options="{dataSourceID: 'status'}"></select>
+<input id="chkUse" type="checkbox" syn-options="{checkedValue: 'Y', uncheckedValue: 'N'}">
+```
+
+```js
+syn.uicontrols.$dropdownlist.setValue('ddlStatus', 'READY');
+var checked = syn.uicontrols.$checkbox.getValue('chkUse');
+```
+
+## 날짜와 색상
+
+```html
+<input id="dtpStart" syn-options="{format: 'yyyy-MM-dd'}">
+<input id="clrTheme" syn-options="{}">
+```
+
+```js
+syn.uicontrols.$datepicker.setValue('dtpStart', '2026-07-07');
+var color = syn.uicontrols.$colorpicker.getValue('clrTheme');
+```
+
+## 데이터 표시
+
+```html
+<div id="grdList" syn-options="{}"></div>
+<div id="treeMenu" syn-options="{}"></div>
+```
+
+```js
+syn.uicontrols.$gridlist.setValue('grdList', rows);
+syn.uicontrols.$treeview.setValue('treeMenu', treeItems);
+```
+
+## 에디터와 파일
+
+```html
+<div id="htmlBody" syn-options="{}"></div>
+<div id="srcCode" syn-options="{language: 'javascript'}"></div>
+<input id="fileUpload" type="file" syn-options="{}">
+```
+
+```js
+syn.uicontrols.$htmleditor.setValue('htmlBody', '<p>Hello</p>');
+syn.uicontrols.$sourceeditor.setValue('srcCode', 'console.log("Hello");');
+```
+
+## 이벤트 연결
+
+컨트롤 이벤트는 보통 `syn-events` 속성에 이벤트 이름을 지정하고, 페이지 스크립트의 `event` 영역에 `엘리먼트ID_이벤트명` 함수를 정의합니다.
+
+```html
+<input id="txtName" type="text" syn-events="['change']" syn-options="{editType: 'text'}">
+```
+
+```js
+let $sample = {
+    event: {
+        txtName_change(evt) {
+            syn.$l.eventLog('txtName_change', evt.type, 'Information');
+        }
+    }
+};
+```
+
+## 예제 확인
+
+각 컨트롤 문서의 `실전 예제 페이지` 섹션에는 `/uicontrols/<Control>/example/` 아래의 HTML 예제가 정리되어 있습니다. 빠르게 동작을 확인한 뒤 같은 문서의 `API 참조`에서 옵션과 메서드를 맞춰 적용하세요.

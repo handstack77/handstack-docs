@@ -31,20 +31,20 @@ syn.js 라이브러리는 HandStack 화면의 동작과 업무 구현을 위해 
 
 |약어|파일명|설명|
 |---|---|---|
-|[syn.$b](browser)|syn.browser.js|브라우저 정보 확인 기능 제공|
-|[syn.$m](manipulation)|syn.manipulation.js|DOM (Document Object Model) 조작 기능 제공|
-|[syn.$d](dimension)|syn.dimension.js|HTML Element 크기, 위치 제어 기능 제공|
-|[syn.$c](cryptography)|syn.cryptography.js|base64, sha256 및 암호화 기능 제공|
-|[syn.$k](keyboard)|syn.keyboard.js|키보드 단축키 기능 제공|
-|[syn.$v](validation)|syn.validation.js|유효성 검사 기능 제공|
-|[syn.$l](library)|syn.library.js|공통 라이브러리 기능 제공|
-|[syn.$w](webform)|syn.webform.js|화면 개발 및 거래 업무 기능 제공|
-|[syn.$r](request)|syn.request.js|http 요청 및 URL, Cookie 조작 기능 제공|
-|[syn.$n](network)|syn.network.js|iframe 화면 간에 양방향 통신 기능을 제공|
-|[syn.$p](print)|syn.print.js|PDF 문서를 이용한 인쇄 기능을 제공|
-|[$date](date), [$array](array), [$string](string), [$number](number), [$object](object)|syn.extension.js|기본 데이터 타입 확장 기능 제공|
+|[syn.$b](/docs/startup/learning/syn/browser)|syn.browser.js|브라우저 정보 확인 기능 제공|
+|[syn.$m](/docs/startup/learning/syn/manipulation)|syn.manipulation.js|DOM (Document Object Model) 조작 기능 제공|
+|[syn.$d](/docs/startup/learning/syn/dimension)|syn.dimension.js|HTML Element 크기, 위치 제어 기능 제공|
+|[syn.$c](/docs/startup/learning/syn/cryptography)|syn.cryptography.js|base64, sha256 및 암호화 기능 제공|
+|[syn.$k](/docs/startup/learning/syn/keyboard)|syn.keyboard.js|키보드 단축키 기능 제공|
+|[syn.$v](/docs/startup/learning/syn/validation)|syn.validation.js|유효성 검사 기능 제공|
+|[syn.$l](/docs/startup/learning/syn/library)|syn.library.js|공통 라이브러리 기능 제공|
+|[syn.$w](/docs/startup/learning/syn/webform)|syn.webform.js|화면 개발 및 거래 업무 기능 제공|
+|[syn.$r](/docs/startup/learning/syn/request)|syn.request.js|http 요청 및 URL, Cookie 조작 기능 제공|
+|[syn.$n](/docs/startup/learning/syn/network)|syn.network.js|iframe 화면 간에 양방향 통신 기능을 제공|
+|[syn.$p](/docs/startup/learning/syn/print)|syn.print.js|PDF 문서를 이용한 인쇄 기능을 제공|
+|[$date](/docs/startup/learning/syn/date), [$array](/docs/startup/learning/syn/array), [$string](/docs/startup/learning/syn/string), [$number](/docs/startup/learning/syn/number), [$object](/docs/startup/learning/syn/object)|syn.extension.js|기본 데이터 타입 확장 기능 제공|
 
-### [syn.$b](browser)|syn.browser.js 예제 코드
+### [syn.$b](/docs/startup/learning/syn/browser)|syn.browser.js 예제 코드
 
 ```js
 'use strict';
@@ -115,7 +115,7 @@ let $browser = {
 
 ```
 
-### [syn.$m](manipulation)|syn.manipulation.js 예제 코드
+### [syn.$m](/docs/startup/learning/syn/manipulation)|syn.manipulation.js 예제 코드
 ```js
 'use strict';
 let $manipulation = {
@@ -413,7 +413,7 @@ let $manipulation = {
 
 ```
 
-### [syn.$d](dimension)|syn.dimension.js 예제 코드
+### [syn.$d](/docs/startup/learning/syn/dimension)|syn.dimension.js 예제 코드
 ```js
 'use strict';
 let $dimension = {
@@ -478,7 +478,7 @@ let $dimension = {
 
 ```
 
-### [syn.$c](cryptography)|syn.cryptography.js 예제 코드
+### [syn.$c](/docs/startup/learning/syn/cryptography)|syn.cryptography.js 예제 코드
 ```js
 'use strict';
 let $cryptography = {
@@ -606,7 +606,7 @@ let $cryptography = {
 
 ```
 
-### [syn.$k](keyboard)|syn.keyboard.js 예제 코드
+### [syn.$k](/docs/startup/learning/syn/keyboard)|syn.keyboard.js 예제 코드
 ```js
 'use strict';
 let $keyboard = {
@@ -640,7 +640,7 @@ let $keyboard = {
 
 ```
 
-### [syn.$v](validation)|syn.validation.js 예제 코드
+### [syn.$v](/docs/startup/learning/syn/validation)|syn.validation.js 예제 코드
 ```js
 'use strict';
 let $validate = {
@@ -751,7 +751,7 @@ let $validate = {
 
 ```
 
-### [syn.$l](library)|syn.library.js 예제 코드
+### [syn.$l](/docs/startup/learning/syn/library)|syn.library.js 예제 코드
 ```js
 'use strict';
 let $library = {
@@ -1009,7 +1009,7 @@ let $library = {
 
 ```
 
-### [syn.$w](webform)|syn.webform.js 예제 코드
+### [syn.$w](/docs/startup/learning/syn/webform)|syn.webform.js 예제 코드
 ```js
 'use strict';
 let $webforms = {
@@ -1203,7 +1203,7 @@ let $webforms = {
 
 ```
 
-### [syn.$r](request)|syn.request.js 예제 코드
+### [syn.$r](/docs/startup/learning/syn/request)|syn.request.js 예제 코드
 ```js
 'use strict';
 let $requests = {
@@ -1247,7 +1247,7 @@ let $requests = {
 
 ```
 
-### [syn.$n](network)|syn.network.js 예제 코드
+### [syn.$n](/docs/startup/learning/syn/network)|syn.network.js 예제 코드
 ```js
 'use strict';
 let $iframe_main = {
@@ -1341,7 +1341,7 @@ let $iframe_child = {
 
 ```
 
-### [$date](date), [$array](array), [$string](string), [$number](number), [$object](object)|syn.extension.js 예제 코드
+### [$date](/docs/startup/learning/syn/date), [$array](/docs/startup/learning/syn/array), [$string](/docs/startup/learning/syn/string), [$number](/docs/startup/learning/syn/number), [$object](/docs/startup/learning/syn/object)|syn.extension.js 예제 코드
 ```js
 'use strict';
 let $extension_array = {

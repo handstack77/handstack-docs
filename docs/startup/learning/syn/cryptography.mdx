@@ -2,771 +2,456 @@
 sidebar_position: 5
 ---
 
-# syn.$c
+# 암호화(cryptography) 사용법 (syn.$c)
 
 ## 개요
-syn.$c는 HandStack 웹 애플리케이션에서 다양한 암호화, 해시, 인코딩 기능을 제공합니다. Base64 인코딩, SHA-256 해시, AES/RSA 암호화, HMAC 생성, 문자열 압축 등의 보안 관련 기능을 포함합니다.
-
-## 주요 기능
-
-### Base64 인코딩/디코딩
-
-#### base64Encode(val)
-문자열을 Base64로 인코딩합니다.
-
-**구문**
-```javascript
-syn.$c.base64Encode(val)
-```
-
-**매개변수**
-- `val` (String): 인코딩할 문자열
-
-**반환값**
-- `String`: Base64 인코딩된 문자열
-
-**예제**
-```javascript
-var originalText = 'Hello, World! 안녕하세요!';
-var encoded = syn.$c.base64Encode(originalText);
-console.log('인코딩 결과:', encoded);
-
-// 출력: SGVsbG8sIFdvcmxkISDslYjrhZXtlZjshLjsmpQh
-```
-
-#### base64Decode(val)
-Base64 문자열을 디코딩합니다.
-
-**구문**
-```javascript
-syn.$c.base64Decode(val)
-```
-
-**매개변수**
-- `val` (String): Base64 인코딩된 문자열
-
-**반환값**
-- `String`: 디코딩된 원본 문자열
-
-**예제**
-```javascript
-var encodedText = 'SGVsbG8sIFdvcmxkISDslYjrhZXtlZjshLjsmpQh';
-var decoded = syn.$c.base64Decode(encodedText);
-console.log('디코딩 결과:', decoded);
-
-// 출력: Hello, World! 안녕하세요!
-```
-
-### UTF-8 인코딩/디코딩
-
-#### utf8Encode(plainString)
-문자열을 UTF-8 바이트 배열로 인코딩합니다.
-
-**구문**
-```javascript
-syn.$c.utf8Encode(plainString)
-```
-
-**매개변수**
-- `plainString` (String): 인코딩할 문자열
-
-**반환값**
-- `Uint8Array`: UTF-8 바이트 배열
-
-**예제**
-```javascript
-var text = '한글 텍스트';
-var utf8Bytes = syn.$c.utf8Encode(text);
-console.log('UTF-8 바이트:', utf8Bytes);
-```
-
-#### utf8Decode(encodeString)
-UTF-8 바이트 문자열을 디코딩합니다.
-
-**구문**
-```javascript
-syn.$c.utf8Decode(encodeString)
-```
-
-**매개변수**
-- `encodeString` (String): UTF-8 인코딩된 바이트 문자열 (콤마로 구분)
-
-**반환값**
-- `String`: 디코딩된 문자열
-
-### 해시 함수
-
-#### sha256(s)
-문자열의 SHA-256 해시를 계산합니다.
-
-**구문**
-```javascript
-syn.$c.sha256(s)
-```
-
-**매개변수**
-- `s` (String): 해시할 문자열
-
-**반환값**
-- `String`: SHA-256 해시값 (16진수)
-
-**예제**
-```javascript
-var text = 'Hello World';
-var hash = syn.$c.sha256(text);
-console.log('SHA-256 해시:', hash);
-
-// 비밀번호 해싱
-var password = 'user-password';
-var hashedPassword = syn.$c.sha256(password + 'salt-string');
-console.log('해시된 비밀번호:', hashedPassword);
-```
-
-#### sha(message, algorithms)
-다양한 해시 알고리즘을 사용하여 해시를 생성합니다.
-
-**구문**
-```javascript
-syn.$c.sha(message, algorithms?)
-```
-
-**매개변수**
-- `message` (String): 해시할 메시지
-- `algorithms` (String, 선택사항): 해시 알고리즘 (기본값: 'SHA-256')
-  - 'SHA-1', 'SHA-256', 'SHA-384', 'SHA-512' 등
-
-**반환값**
-- `Promise<String>`: 해시값 (16진수)
-
-**예제**
-```javascript
-async function generateHashes() {
-    var message = 'Hello World';
-    
-    var sha1 = await syn.$c.sha(message, 'SHA-1');
-    var sha256 = await syn.$c.sha(message, 'SHA-256');
-    var sha512 = await syn.$c.sha(message, 'SHA-512');
-    
-    console.log('SHA-1:', sha1);
-    console.log('SHA-256:', sha256);
-    console.log('SHA-512:', sha512);
-}
-
-generateHashes();
-```
-
-### Web Crypto API 지원
-
-#### isWebCryptoSupported()
-Web Crypto API 지원 여부를 확인합니다.
-
-**구문**
-```javascript
-syn.$c.isWebCryptoSupported()
-```
-
-**반환값**
-- `Boolean`: Web Crypto API 지원 여부
-
-**예제**
-```javascript
-if (syn.$c.isWebCryptoSupported()) {
-    console.log('Web Crypto API 지원됨');
-    // 고급 암호화 기능 사용 가능
-} else {
-    console.log('Web Crypto API 미지원');
-    // 대체 방법 사용
-}
-```
-
-### HMAC (Hash-based Message Authentication Code)
-
-#### generateHMAC(key, message)
-HMAC-SHA256 서명을 생성합니다.
-
-**구문**
-```javascript
-syn.$c.generateHMAC(key, message)
-```
-
-**매개변수**
-- `key` (String): HMAC 키
-- `message` (String): 서명할 메시지
-
-**반환값**
-- `Promise<String>`: HMAC 서명 (16진수)
-
-**예제**
-```javascript
-async function createHMAC() {
-    var key = 'secret-key';
-    var message = 'important message';
-    
-    var signature = await syn.$c.generateHMAC(key, message);
-    console.log('HMAC 서명:', signature);
-    
-    // API 요청 시 무결성 검증용으로 사용
-    return signature;
-}
-
-createHMAC();
-```
-
-#### verifyHMAC(key, message, signature)
-HMAC 서명을 검증합니다.
-
-**구문**
-```javascript
-syn.$c.verifyHMAC(key, message, signature)
-```
-
-**매개변수**
-- `key` (String): HMAC 키
-- `message` (String): 원본 메시지
-- `signature` (String): 검증할 HMAC 서명
-
-**반환값**
-- `Promise<Boolean>`: 서명 유효성 여부
-
-**예제**
-```javascript
-async function verifyMessage() {
-    var key = 'secret-key';
-    var message = 'important message';
-    var receivedSignature = 'received-hmac-signature';
-    
-    var isValid = await syn.$c.verifyHMAC(key, message, receivedSignature);
-    
-    if (isValid) {
-        console.log('메시지 검증 성공');
-    } else {
-        console.log('메시지 검증 실패 - 무결성 오류');
-    }
-}
-
-verifyMessage();
-```
-
-### RSA 암호화
-
-#### generateRSAKey()
-RSA 키 쌍을 생성합니다.
-
-**구문**
-```javascript
-syn.$c.generateRSAKey()
-```
-
-**반환값**
-- `Promise<CryptoKeyPair>`: RSA 공개키/개인키 쌍
-
-**예제**
-```javascript
-async function setupRSAEncryption() {
-    var keyPair = await syn.$c.generateRSAKey();
-    
-    console.log('RSA 키 쌍 생성 완료');
-    console.log('공개키:', keyPair.publicKey);
-    console.log('개인키:', keyPair.privateKey);
-    
-    return keyPair;
-}
-
-setupRSAEncryption();
-```
-
-#### exportCryptoKey(cryptoKey, isPublic)
-암호화 키를 PEM 형식으로 내보냅니다.
-
-**구문**
-```javascript
-syn.$c.exportCryptoKey(cryptoKey, isPublic)
-```
-
-**매개변수**
-- `cryptoKey` (CryptoKey): 내보낼 키
-- `isPublic` (Boolean): 공개키 여부
-
-**반환값**
-- `Promise<String>`: PEM 형식의 키
-
-**예제**
-```javascript
-async function exportKeys() {
-    var keyPair = await syn.$c.generateRSAKey();
-    
-    var publicKeyPEM = await syn.$c.exportCryptoKey(keyPair.publicKey, true);
-    var privateKeyPEM = await syn.$c.exportCryptoKey(keyPair.privateKey, false);
-    
-    console.log('공개키 PEM:', publicKeyPEM);
-    console.log('개인키 PEM:', privateKeyPEM);
-    
-    // 키를 서버나 로컬 스토리지에 저장
-    localStorage.setItem('publicKey', publicKeyPEM);
-    localStorage.setItem('privateKey', privateKeyPEM);
-}
-
-exportKeys();
-```
-
-#### rsaEncode(text, publicKey) / rsaDecode(encryptedData, privateKey)
-RSA 암호화/복호화를 수행합니다.
-
-**예제**
-```javascript
-async function rsaEncryptionExample() {
-    // 키 생성
-    var keyPair = await syn.$c.generateRSAKey();
-    
-    // 암호화
-    var plainText = '중요한 기밀 정보';
-    var encryptedData = await syn.$c.rsaEncode(plainText, keyPair.publicKey);
-    console.log('암호화된 데이터:', encryptedData);
-    
-    // 복호화
-    var decryptedText = await syn.$c.rsaDecode(encryptedData, keyPair.privateKey);
-    console.log('복호화된 텍스트:', decryptedText);
-    
-    // 원본과 복호화 결과 비교
-    console.log('암호화/복호화 성공:', plainText === decryptedText);
-}
-
-rsaEncryptionExample();
-```
-
-### AES 암호화
-
-#### aesEncode(text, key, algorithm, keyLength)
-AES 암호화를 수행합니다.
-
-**구문**
-```javascript
-syn.$c.aesEncode(text, key, algorithm?, keyLength?)
-```
-
-**매개변수**
-- `text` (String): 암호화할 텍스트
-- `key` (String): 암호화 키
-- `algorithm` (String, 선택사항): 암호화 알고리즘 (기본값: 'AES-CBC')
-- `keyLength` (Number, 선택사항): 키 길이 (기본값: 256)
-
-**반환값**
-- `Promise<Object>`: 암호화 결과
-  - `iv`: 초기화 벡터 (Base64)
-  - `encrypted`: 암호화된 데이터 (Base64)
-
-#### aesDecode(encryptedData, key, algorithm, keyLength)
-AES 복호화를 수행합니다.
-
-**예제**
-```javascript
-async function aesEncryptionExample() {
-    var plainText = '비밀 메시지';
-    var secretKey = 'my-secret-key-123';
-    
-    // AES 암호화
-    var encryptResult = await syn.$c.aesEncode(plainText, secretKey);
-    console.log('암호화 결과:', encryptResult);
-    
-    // AES 복호화
-    var decryptedText = await syn.$c.aesDecode(encryptResult, secretKey);
-    console.log('복호화 결과:', decryptedText);
-    
-    // 검증
-    console.log('암호화/복호화 성공:', plainText === decryptedText);
-}
-
-aesEncryptionExample();
-```
-
-### 단순 암호화 (HandStack 전용)
-
-#### encrypt(value, key) / decrypt(value, key)
-HandStack 전용 단순 암호화/복호화 함수입니다.
-
-**구문**
-```javascript
-syn.$c.encrypt(value, key?)
-syn.$c.decrypt(value, key?)
-```
-
-**매개변수**
-- `value` (String): 암호화/복호화할 값
-- `key` (String, 선택사항): 암호화 키 (기본값: 시스템 기본 키)
-
-**예제**
-```javascript
-var sensitiveData = '사용자 개인정보';
-var customKey = 'myCustomKey';
-
-// 암호화
-var encrypted = syn.$c.encrypt(sensitiveData, customKey);
-console.log('암호화된 데이터:', encrypted);
-
-// 복호화
-var decrypted = syn.$c.decrypt(encrypted, customKey);
-console.log('복호화된 데이터:', decrypted);
-
-// 로컬 스토리지에 암호화된 데이터 저장
-localStorage.setItem('encryptedUserData', encrypted);
-```
-
-### 문자열 압축 (LZString)
-
-#### LZString 압축/압축 해제
-문자열을 압축하여 저장 공간을 절약합니다.
-
-**예제**
-```javascript
-// 큰 데이터 압축
-var largeData = JSON.stringify({
-    users: [
-        { name: '홍길동', age: 30, address: '서울시 강남구' },
-        { name: '김철수', age: 25, address: '부산시 해운대구' },
-        // ... 많은 데이터
-    ]
+`syn.$c`는 base64/UTF-8 인코딩, SHA 해시, HMAC 서명, RSA/AES 암호화, LZString 압축 등 브라우저에서 필요한 암호화·인코딩 기능을 제공합니다. 대부분의 기능은 브라우저 WebCrypto(SubtleCrypto) API를 사용하며, 비동기(Promise) 방식으로 동작합니다. `sha256()`, `encrypt()`, `decrypt()`처럼 WebCrypto 없이 동작하는 동기 방식의 경량 구현도 함께 제공됩니다.
+
+## 로드 방법
+`syn.js`가 로드되면 전역에 `syn.$c`(원본 이름: `syn.$cryptography`)로 즉시 사용할 수 있습니다.
+
+## 빠른 시작
+```js
+// 문자열 해시
+const hash = syn.$c.sha256('hello world');
+
+// base64 인코딩/디코딩
+const encoded = syn.$c.base64Encode('안녕하세요');
+const decoded = syn.$c.base64Decode(encoded);
+
+// HMAC 서명 생성 (비동기)
+syn.$c.generateHMAC('secret-key', 'hello world').then((signature) => {
+    console.log(signature);
 });
-
-// 압축
-var compressed = syn.$c.LZString.compressToBase64(largeData);
-console.log('원본 크기:', largeData.length);
-console.log('압축 크기:', compressed.length);
-console.log('압축률:', ((1 - compressed.length / largeData.length) * 100).toFixed(2) + '%');
-
-// 압축 해제
-var decompressed = syn.$c.LZString.decompressFromBase64(compressed);
-console.log('압축 해제 성공:', largeData === decompressed);
-
-// 로컬 스토리지 최적화
-localStorage.setItem('compressedData', compressed);
 ```
 
-## 실전 활용 예제
+## 주요 시나리오
 
-### 1. 사용자 인증 시스템
-```javascript
-async function userAuthenticationSystem() {
-    // 비밀번호 해싱
-    function hashPassword(password, salt) {
-        return syn.$c.sha256(password + salt);
-    }
-    
-    // 사용자 등록
-    async function registerUser(username, password) {
-        var salt = syn.$l.random(16);
-        var hashedPassword = hashPassword(password, salt);
-        
-        var userData = {
-            username: username,
-            passwordHash: hashedPassword,
-            salt: salt,
-            createdAt: new Date().toISOString()
-        };
-        
-        // 암호화하여 저장
-        var encryptedData = syn.$c.encrypt(JSON.stringify(userData));
-        localStorage.setItem('user_' + username, encryptedData);
-        
-        console.log('사용자 등록 완료:', username);
-        return true;
-    }
-    
-    // 사용자 로그인
-    async function loginUser(username, password) {
-        var encryptedData = localStorage.getItem('user_' + username);
-        if (!encryptedData) {
-            console.log('사용자를 찾을 수 없습니다.');
-            return false;
-        }
-        
-        var decryptedData = syn.$c.decrypt(encryptedData);
-        var userData = JSON.parse(decryptedData);
-        
-        var inputPasswordHash = hashPassword(password, userData.salt);
-        
-        if (inputPasswordHash === userData.passwordHash) {
-            console.log('로그인 성공:', username);
-            
-            // 세션 토큰 생성
-            var sessionToken = await syn.$c.generateHMAC(userData.salt, username + Date.now());
-            sessionStorage.setItem('sessionToken', sessionToken);
-            
-            return true;
-        } else {
-            console.log('비밀번호가 일치하지 않습니다.');
-            return false;
-        }
-    }
-    
-    // 사용 예제
-    await registerUser('testuser', 'mypassword123');
-    await loginUser('testuser', 'mypassword123');
-}
+### 1. 간단한 해시/인코딩
+`sha256()`은 동기 함수라 바로 결과를 받을 수 있고, `sha()`는 WebCrypto digest를 사용해 SHA-1/SHA-256/SHA-384/SHA-512 등 다양한 알고리즘을 비동기로 계산합니다.
+```js
+const hash256 = syn.$c.sha256('hello world');
 
-userAuthenticationSystem();
+syn.$c.sha('hello world', 'SHA-256').then((hash) => {
+    console.log(hash);
+});
 ```
 
-### 2. 안전한 데이터 전송
-```javascript
-async function secureDataTransmission() {
-    // 클라이언트 측 암호화
-    async function sendSecureData(data, serverPublicKeyPEM) {
-        // 서버 공개키 로드
-        var serverPublicKey = await syn.$c.importCryptoKey(serverPublicKeyPEM, true);
-        
-        // 데이터 직렬화
-        var jsonData = JSON.stringify(data);
-        
-        // RSA로 AES 키 암호화 (하이브리드 암호화)
-        var aesKey = syn.$l.random(32);
-        var encryptedAESKey = await syn.$c.rsaEncode(aesKey, serverPublicKey);
-        
-        // AES로 실제 데이터 암호화
-        var encryptedData = await syn.$c.aesEncode(jsonData, aesKey);
-        
-        // HMAC으로 무결성 보장
-        var signature = await syn.$c.generateHMAC(aesKey, jsonData);
-        
-        var payload = {
-            encryptedKey: encryptedAESKey,
-            encryptedData: encryptedData,
-            signature: signature,
-            timestamp: Date.now()
-        };
-        
-        return payload;
-    }
-    
-    // 서버로 전송
-    async function transmitData(payload) {
-        try {
-            var response = await fetch('/api/secure-endpoint', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            if (response.ok) {
-                console.log('안전한 데이터 전송 완료');
-                return await response.json();
-            } else {
-                throw new Error('전송 실패');
-            }
-        } catch (error) {
-            console.error('데이터 전송 오류:', error);
-            throw error;
-        }
-    }
-    
-    // 사용 예제 (실제 서버 공개키 필요)
-    var sensitiveData = {
-        userId: 12345,
-        personalInfo: '민감한 개인정보',
-        financialData: { account: '123-456-789', balance: 1000000 }
-    };
-    
-    // var serverPublicKey = '-----BEGIN PUBLIC KEY-----...';
-    // var securePayload = await sendSecureData(sensitiveData, serverPublicKey);
-    // await transmitData(securePayload);
-}
-
-// secureDataTransmission();
+### 2. HMAC 서명 생성/검증
+서버와 클라이언트가 공유한 키로 메시지 위변조 여부를 검증할 때 사용합니다.
+```js
+syn.$c.generateHMAC('handstack', 'hello world').then((signature) => {
+    return syn.$c.verifyHMAC('handstack', 'hello world', signature);
+}).then((isValid) => {
+    console.log(isValid); // true
+});
 ```
 
-### 3. 클라이언트 측 데이터 보호
-```javascript
-function clientDataProtection() {
-    // 민감한 설정 암호화 저장
-    function saveSecureSetting(key, value) {
-        var deviceFingerprint = syn.$b.fingerPrint();
-        var encryptedValue = syn.$c.encrypt(JSON.stringify(value), deviceFingerprint);
-        localStorage.setItem('secure_' + key, encryptedValue);
-    }
-    
-    // 암호화된 설정 로드
-    function loadSecureSetting(key) {
-        var deviceFingerprint = syn.$b.fingerPrint();
-        var encryptedValue = localStorage.getItem('secure_' + key);
-        
-        if (!encryptedValue) return null;
-        
-        try {
-            var decryptedValue = syn.$c.decrypt(encryptedValue, deviceFingerprint);
-            return JSON.parse(decryptedValue);
-        } catch (error) {
-            console.warn('보안 설정 로드 실패 - 디바이스 변경 감지');
-            return null;
-        }
-    }
-    
-    // 자동 로그아웃 타이머
-    function setupAutoLogout() {
-        var loginTime = Date.now();
-        var sessionDuration = 30 * 60 * 1000; // 30분
-        
-        setInterval(() => {
-            var currentTime = Date.now();
-            if (currentTime - loginTime > sessionDuration) {
-                console.log('세션 만료 - 자동 로그아웃');
-                sessionStorage.clear();
-                localStorage.removeItem('sessionToken');
-                // 로그인 페이지로 리다이렉트
-                window.location.href = '/login';
-            }
-        }, 60000); // 1분마다 확인
-    }
-    
-    // 사용 예제
-    saveSecureSetting('userPreferences', {
-        theme: 'dark',
-        language: 'ko-KR',
-        notifications: true
+### 3. RSA 키 생성과 암/복호화
+공개키로 암호화하고 개인키로 복호화하는 비대칭 암호화 흐름입니다. 키를 PEM 형식으로 내보내고(export) 다시 가져올(import) 수 있습니다.
+```js
+syn.$c.generateRSAKey().then((cryptoKey) => {
+    return syn.$c.rsaEncode('hello world', cryptoKey.publicKey).then((encrypted) => {
+        return syn.$c.rsaDecode(encrypted, cryptoKey.privateKey);
     });
-    
-    var preferences = loadSecureSetting('userPreferences');
-    console.log('로드된 설정:', preferences);
-    
-    setupAutoLogout();
-}
-
-clientDataProtection();
+}).then((decrypted) => {
+    console.log(decrypted); // hello world
+});
 ```
 
-### 4. 파일 무결성 검증
-```javascript
-async function fileIntegrityCheck() {
-    // 파일 해시 계산
-    async function calculateFileHash(file) {
-        return new Promise((resolve, reject) => {
-            var reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    var content = e.target.result;
-                    var hash = await syn.$c.sha(content, 'SHA-256');
-                    resolve(hash);
-                } catch (error) {
-                    reject(error);
-                }
-            };
-            reader.onerror = reject;
-            reader.readAsText(file);
-        });
-    }
-    
-    // 파일 업로드 시 무결성 확인
-    async function uploadWithIntegrity(file, expectedHash) {
-        console.log('파일 무결성 검사 시작...');
-        
-        var calculatedHash = await calculateFileHash(file);
-        
-        if (expectedHash && calculatedHash !== expectedHash) {
-            throw new Error('파일 무결성 검증 실패');
-        }
-        
-        console.log('파일 해시:', calculatedHash);
-        
-        // FormData 생성
-        var formData = new FormData();
-        formData.append('file', file);
-        formData.append('hash', calculatedHash);
-        formData.append('timestamp', Date.now().toString());
-        
-        // HMAC 서명 추가
-        var signature = await syn.$c.generateHMAC('upload-key', calculatedHash);
-        formData.append('signature', signature);
-        
-        return formData;
-    }
-    
-    // 파일 입력 요소에 이벤트 등록
-    var fileInput = syn.$l.get('fileUpload');
-    if (fileInput) {
-        syn.$l.addEvent(fileInput, 'change', async function(e) {
-            var files = e.target.files;
-            
-            for (var file of files) {
-                try {
-                    var formData = await uploadWithIntegrity(file);
-                    console.log('파일 준비 완료:', file.name);
-                    
-                    // 실제 업로드
-                    // await fetch('/api/upload', { method: 'POST', body: formData });
-                    
-                } catch (error) {
-                    console.error('파일 처리 오류:', error);
-                }
-            }
-        });
-    }
-}
-
-fileIntegrityCheck();
+### 4. AES 대칭키 암호화
+`aesEncode()`는 IV(초기화 벡터)와 암호문을 함께 반환하며, 복호화 시 동일한 키와 IV가 필요합니다.
+```js
+syn.$c.aesEncode('hello world', 'my-key').then((result) => {
+    // result = { iv, encrypted }
+    return syn.$c.aesDecode(result, 'my-key');
+}).then((decrypted) => {
+    console.log(decrypted); // hello world
+});
 ```
 
-## 주의사항
-
-1. **키 관리**: 암호화 키는 절대 클라이언트 코드에 하드코딩하지 마세요. 환경변수나 안전한 키 관리 시스템을 사용하세요.
-2. **브라우저 지원**: Web Crypto API는 HTTPS에서만 동작하며, 구형 브라우저에서는 지원되지 않을 수 있습니다.
-3. **성능 고려**: 대용량 데이터의 암호화/복호화는 시간이 오래 걸릴 수 있습니다.
-4. **보안 강도**: 중요한 데이터는 서버 측에서 추가적인 암호화를 적용하는 것이 좋습니다.
-5. **랜덤성**: 암호화에 사용되는 초기화 벡터(IV)나 솔트는 반드시 안전한 랜덤 값을 사용해야 합니다.
-
-## 관련 문서
-- [Web Crypto API MDN 문서](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
-
-## 데모
-
-<iframe src="/sample/syn/cryptography.html" className="w:100% h:100vh"></iframe>
-
-## Javascript 예제
-
-```javascript
-'use strict';
-let $cryptography = {
-    extends: [
-        'parsehtml'
-    ],
-
-    event: {
-        btn_base64Encode_click() {
-            syn.$l.get('txt_base64EncodeResult').value = syn.$c.base64Encode(syn.$l.get('txt_base64Encode').value);
-        },
-
-        btn_base64Decode_click() {
-            syn.$l.get('txt_base64DecodeResult').value = syn.$c.base64Decode(syn.$l.get('txt_base64Decode').value);
-        },
-
-        btn_utf8Encode_click() {
-            syn.$l.get('txt_utf8EncodeResult').value = syn.$c.utf8Encode(syn.$l.get('txt_utf8Encode').value);
-        },
-
-        btn_utf8Decode_click() {
-            syn.$l.get('txt_utf8DecodeResult').value = syn.$c.utf8Decode(syn.$l.get('txt_utf8Decode').value);
-        },
-
-        btn_sha256_click() {
-            syn.$l.get('txt_sha256Result').value = syn.$c.sha256(syn.$l.get('txt_sha256').value);
-        },
-
-        btn_encrypt_click() {
-            syn.$l.get('txt_encryptResult').value = syn.$c.encrypt(syn.$l.get('txt_encrypt').value);
-        },
-
-        btn_decrypt_click() {
-            syn.$l.get('txt_decryptResult').value = syn.$c.decrypt(syn.$l.get('txt_decrypt').value);
-        },
-
-        btn_LZStringEncode_click() {
-            syn.$l.get('txt_LZStringResult').value = syn.$c.LZString.compressToBase64(syn.$l.get('txt_LZString').value);
-        },
-
-        btn_LZStringDecode_click() {
-            syn.$l.get('txt_LZStringResult').value = syn.$c.LZString.decompressFromBase64(syn.$l.get('txt_LZString').value);
-        },
-    }
-};
-
+### 5. 경량 대칭 암호화(encrypt/decrypt)
+WebCrypto 없이도 사용할 수 있는 간단한 문자열 암호화입니다. 세션 스토리지에 저장할 값을 가볍게 가리는 용도로 적합합니다.
+```js
+const encrypted = syn.$c.encrypt('hello world', 'my-key');
+const decrypted = syn.$c.decrypt(encrypted, 'my-key');
 ```
-소스) syn.$c Javascript 예제
+
+### 6. LZString 압축
+긴 문자열을 URL 파라미터나 localStorage에 저장하기 전에 압축할 때 사용합니다. 압축 결과 형식(base64/UTF-16/URI 컴포넌트)에 맞는 해제 함수를 사용해야 합니다.
+```js
+const compressed = syn.$c.LZString.compressToBase64('반복되는 긴 문자열...');
+const original = syn.$c.LZString.decompressFromBase64(compressed);
+```
+
+## 실전 예제 페이지
+`/sample/syn/cryptography.html` 예제에서 다음 항목을 실습할 수 있습니다.
+- isWebCryptoSupported, base64Encode/base64Decode, utf8Encode/utf8Decode
+- padKey, convertToBuffer
+- sha, sha256
+- generateHMAC/verifyHMAC
+- generateRSAKey/exportCryptoKey/importCryptoKey, rsaEncode/rsaDecode
+- generateIV, aesEncode/aesDecode
+- encrypt/decrypt
+- LZString의 compress/compressToBase64/compressToUTF16/compressToEncodedURIComponent 및 대응하는 decompress 계열 함수
+
+## 주의 사항
+- WebCrypto 기반 API(`generateHMAC`, `generateRSAKey`, `exportCryptoKey`, `importCryptoKey`, `rsaEncode`, `rsaDecode`, `aesEncode`, `aesDecode`, `sha`)는 모두 비동기(Promise)이며, HTTPS(또는 localhost)가 아닌 환경에서는 `context.crypto.subtle`이 없어 동작하지 않을 수 있습니다. 사용 전 `isWebCryptoSupported()`로 확인하는 것이 안전합니다.
+- `aesDecode()`는 암호화 시 사용한 것과 동일한 key, algorithm, keyLength를 전달해야 하며, `encryptedData`에 `iv`와 `encrypted` 값이 모두 있어야 합니다.
+- `padKey()`, `convertToBuffer()`, `generateIV()`는 다른 메서드 내부에서 사용되는 저수준 헬퍼이지만 `syn.$c`를 통해 외부에서도 호출할 수 있습니다.
+- 소스에는 `devicePlatform === 'node'`일 때 `Buffer`를 사용하는 Node.js 전용 경로가 `base64Encode`/`base64Decode`에 별도로 구현되어 있습니다. 브라우저 데모 페이지에서는 이 경로가 실행되지 않지만, 서버 사이드(Node) 스크립트에서 동일한 API를 재사용할 수 있다는 점을 참고하세요.
+- `encrypt()`/`decrypt()`는 WebCrypto를 사용하지 않는 간단한 치환 방식이므로, 보안이 중요한 데이터에는 AES/RSA 계열 API를 사용하는 것이 좋습니다.
+
+## 관련 모듈
+- API 상세는 아래 API 참조 섹션을 확인하세요.
+
+## API 참조
+
+## 모듈 정보
+| 항목 | 내용 |
+|---|---|
+| 전역 별칭 | `syn.$c` (원본: `context.$cryptography`) |
+| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 1272~2151번째 줄) |
+| 예제 페이지 | `/sample/syn/cryptography.html` |
+| 의존 모듈 | `syn.$string`(`$string.toBoolean`), `syn.$l`(`eventLog`, `stringToArrayBuffer`), 브라우저 WebCrypto(`crypto.subtle`) |
+
+## 속성
+`$cryptography`는 별도로 노출되는 데이터 속성이 없으며, 모든 기능은 메서드로 제공됩니다. (내부적으로 `LZString`이라는 하위 네임스페이스 객체를 property로 가지고 있으며, 이 객체가 제공하는 압축/해제 함수는 메서드 목록에서 다룹니다.)
+
+## 메서드
+
+### `syn.$c.isWebCryptoSupported()`
+- 설명: 현재 실행 환경에서 `crypto.subtle`(WebCrypto)을 사용할 수 있는지 여부를 반환합니다.
+- 매개변수: 없음
+- 반환값: `boolean` — WebCrypto 지원 여부
+- 예시
+  ```js
+  if (syn.$c.isWebCryptoSupported()) {
+      syn.$c.generateRSAKey().then((cryptoKey) => { /* ... */ });
+  }
+  ```
+
+### `syn.$c.base64Encode(val)`
+- 설명: 문자열을 base64 문자열로 인코딩합니다. `devicePlatform === 'node'`인 경우 Node `Buffer`를 사용합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | string | Y | 인코딩할 원본 문자열 |
+- 반환값: `string` — base64 인코딩 문자열 (실패 시 `null`)
+- 예시
+  ```js
+  const encoded = syn.$c.base64Encode('hello world');
+  ```
+
+### `syn.$c.base64Decode(val)`
+- 설명: base64 문자열을 원본 문자열로 디코딩합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | string | Y | 디코딩할 base64 문자열 |
+- 반환값: `string` — 디코딩된 원본 문자열 (실패 시 `null`)
+- 예시
+  ```js
+  const decoded = syn.$c.base64Decode(encoded);
+  ```
+
+### `syn.$c.utf8Encode(plainString)`
+- 설명: 문자열을 UTF-8 바이트 배열(`Uint8Array`)로 인코딩합니다. 문자열이 아닌 값을 전달하면 `TypeError`를 발생시킵니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | plainString | string | Y | 인코딩할 문자열 |
+- 반환값: `Uint8Array` — UTF-8 바이트 배열 (실패 시 `null`)
+- 예시
+  ```js
+  const bytes = syn.$c.utf8Encode('안녕하세요');
+  ```
+
+### `syn.$c.utf8Decode(encodeString)`
+- 설명: 콤마로 구분된 UTF-8 바이트 코드 문자열(예: `"236,149,136"`)을 원본 문자열로 디코딩합니다. 문자열이 아닌 값을 전달하면 `TypeError`를 발생시킵니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | encodeString | string | Y | 콤마로 구분된 바이트 코드 문자열 |
+- 반환값: `string` — 디코딩된 문자열 (실패 시 `null`)
+- 예시
+  ```js
+  const text = syn.$c.utf8Decode(bytes.join(','));
+  ```
+
+### `syn.$c.convertToBuffer(values)`
+- 설명: 숫자 배열을 `ArrayBuffer`로 변환합니다. 다른 인코딩/디코딩 메서드 내부에서 사용되는 저수준 헬퍼입니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | values | number[] | Y | 0~255 범위의 바이트 값 배열 |
+- 반환값: `ArrayBuffer`
+- 예시
+  ```js
+  const buffer = syn.$c.convertToBuffer([104, 101, 108, 108, 111]);
+  ```
+
+### `syn.$c.padKey(key, length)`
+- 설명: 키 문자열을 지정된 길이(byte)로 잘라내거나 0으로 채워서 고정 길이의 `Uint8Array`로 반환합니다. AES 키/IV 생성에 내부적으로 사용됩니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | key | string | Y | 원본 키 문자열 |
+  | length | number | Y | 결과 바이트 길이 |
+- 반환값: `Uint8Array` — 지정된 길이로 맞춰진 키 (key가 문자열이 아니면 `null`)
+- 예시
+  ```js
+  const paddedKey = syn.$c.padKey('my-key', 16);
+  ```
+
+### `syn.$c.generateHMAC(key, message)`
+- 설명: HMAC-SHA256 알고리즘으로 메시지의 서명을 생성합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | key | string | Y | 서명 생성에 사용할 키 |
+  | message | string | Y | 서명할 메시지 |
+- 반환값: `Promise<string>` — 16진수 문자열 형태의 HMAC 서명
+- 예시
+  ```js
+  syn.$c.generateHMAC('handstack', 'hello world').then((signature) => {
+      console.log(signature);
+  });
+  ```
+
+### `syn.$c.verifyHMAC(key, message, signature)`
+- 설명: 주어진 서명이 key/message로부터 생성한 HMAC 서명과 일치하는지 검증합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | key | string | Y | 서명 생성에 사용한 키 |
+  | message | string | Y | 서명 대상 메시지 |
+  | signature | string | Y | 검증할 HMAC 서명(16진수 문자열) |
+- 반환값: `Promise<boolean>` — 서명 일치 여부
+- 예시
+  ```js
+  syn.$c.verifyHMAC('handstack', 'hello world', signature).then((isValid) => {
+      console.log(isValid);
+  });
+  ```
+
+### `syn.$c.generateRSAKey()`
+- 설명: RSA-OAEP(2048bit, SHA-256) 공개키/개인키 쌍을 생성합니다.
+- 매개변수: 없음
+- 반환값: `Promise<CryptoKeyPair>` — `{ publicKey, privateKey }` 형태의 `CryptoKey` 쌍
+- 예시
+  ```js
+  syn.$c.generateRSAKey().then((cryptoKey) => {
+      console.log(cryptoKey.publicKey, cryptoKey.privateKey);
+  });
+  ```
+
+### `syn.$c.exportCryptoKey(cryptoKey, isPublic)`
+- 설명: `CryptoKey`를 PEM(SPKI/PKCS8) 형식의 문자열로 내보냅니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | cryptoKey | CryptoKey | Y | 내보낼 키 |
+  | isPublic | boolean | Y | true면 공개키(SPKI), false면 개인키(PKCS8) |
+- 반환값: `Promise<string>` — `-----BEGIN PUBLIC/PRIVATE KEY-----` 형식의 PEM 문자열
+- 예시
+  ```js
+  syn.$c.exportCryptoKey(cryptoKey.publicKey, true).then((pem) => console.log(pem));
+  ```
+
+### `syn.$c.importCryptoKey(pem, isPublic)`
+- 설명: PEM 형식 문자열을 다시 `CryptoKey`로 가져옵니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | pem | string | Y | PEM 형식의 키 문자열 |
+  | isPublic | boolean | Y | true면 공개키(SPKI, encrypt 용도), false면 개인키(PKCS8, decrypt 용도) |
+- 반환값: `Promise<CryptoKey>`
+- 예시
+  ```js
+  syn.$c.importCryptoKey(pemString, true).then((publicKey) => { /* ... */ });
+  ```
+
+### `syn.$c.rsaEncode(text, publicKey)`
+- 설명: RSA-OAEP 공개키로 문자열을 암호화하고 base64 문자열로 반환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | text | string | Y | 암호화할 원문 |
+  | publicKey | CryptoKey | Y | RSA 공개키 |
+- 반환값: `Promise<string>` — base64 인코딩된 암호문
+- 예시
+  ```js
+  syn.$c.rsaEncode('hello world', cryptoKey.publicKey).then((encrypted) => { /* ... */ });
+  ```
+
+### `syn.$c.rsaDecode(encryptedData, privateKey)`
+- 설명: `rsaEncode()`로 암호화된 base64 문자열을 RSA-OAEP 개인키로 복호화합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | encryptedData | string | Y | base64 인코딩된 암호문 |
+  | privateKey | CryptoKey | Y | RSA 개인키 |
+- 반환값: `Promise<string>` — 복호화된 원문
+- 예시
+  ```js
+  syn.$c.rsaDecode(encrypted, cryptoKey.privateKey).then((decrypted) => { /* ... */ });
+  ```
+
+### `syn.$c.generateIV(key, ivLength)`
+- 설명: AES 암호화에 사용할 초기화 벡터(IV)를 생성합니다. `key`가 `'$RANDOM$'`(대소문자 무관)이면 난수 IV를 생성하고, 그 외에는 `padKey()`로 고정된 IV를 만듭니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | key | string | N | IV 생성에 사용할 키 또는 `'$RANDOM$'` |
+  | ivLength | number | N | IV 길이(byte), 기본값 16 |
+- 반환값: `Uint8Array` — 생성된 IV
+- 예시
+  ```js
+  const iv = syn.$c.generateIV('$RANDOM$', 12);
+  ```
+
+### `syn.$c.aesEncode(text, key, algorithm, keyLength)`
+- 설명: AES(CBC 또는 GCM) 알고리즘으로 문자열을 암호화합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | text | string | Y | 암호화할 원문 |
+  | key | string | N | 암호화 키, 기본값 빈 문자열 |
+  | algorithm | string | N | `'AES-CBC'`(기본) 또는 `'AES-GCM'` |
+  | keyLength | number | N | 128 또는 256(bit), 기본값 256 |
+- 반환값: `Promise<{ iv: string, encrypted: string }>` — base64로 인코딩된 IV와 암호문
+- 예시
+  ```js
+  syn.$c.aesEncode('hello world', 'my-key').then((result) => { /* { iv, encrypted } */ });
+  ```
+
+### `syn.$c.aesDecode(encryptedData, key, algorithm, keyLength)`
+- 설명: `aesEncode()`로 생성된 결과를 복호화합니다. 암호화 시 사용한 것과 동일한 key/algorithm/keyLength를 전달해야 합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | encryptedData | `iv`, `encrypted` 속성 객체 | Y | `aesEncode()` 결과 객체 |
+  | key | string | N | 암호화 시 사용한 키 |
+  | algorithm | string | N | `'AES-CBC'`(기본) 또는 `'AES-GCM'` |
+  | keyLength | number | N | 128 또는 256(bit), 기본값 256 |
+- 반환값: `Promise<string>` — 복호화된 원문 (encryptedData가 유효하지 않으면 `null`)
+- 예시
+  ```js
+  syn.$c.aesDecode(result, 'my-key').then((decrypted) => { /* ... */ });
+  ```
+
+### `syn.$c.sha(message, algorithms)`
+- 설명: WebCrypto `digest`를 사용해 지정한 알고리즘으로 메시지의 해시 값을 계산합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | message | string | Y | 해시를 계산할 문자열 |
+  | algorithms | string | N | `'SHA-1'`(기본), `'SHA-256'`, `'SHA-384'`, `'SHA-512'` 등 |
+- 반환값: `Promise<string>` — 16진수 문자열 형태의 해시 값
+- 예시
+  ```js
+  syn.$c.sha('hello world', 'SHA-256').then((hash) => console.log(hash));
+  ```
+
+### `syn.$c.sha256(s)`
+- 설명: 순수 자바스크립트로 구현된 SHA-256 해시 함수로, WebCrypto 없이 동기적으로 결과를 반환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | s | string | Y | 해시를 계산할 문자열 |
+- 반환값: `string` — 16진수 문자열 형태의 SHA-256 해시 값
+- 예시
+  ```js
+  const hash = syn.$c.sha256('hello world');
+  ```
+
+### `syn.$c.encrypt(value, key)`
+- 설명: 문자 코드 치환 방식의 경량 대칭 암호화를 수행하고 URI 컴포넌트로 인코딩된 base64 문자열을 반환합니다. WebCrypto가 없어도 사용할 수 있습니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | value | any | Y | 암호화할 값(문자열로 변환되어 처리됨) |
+  | key | string | N | 암호화 키, 생략 시 내부 기본 키 사용 |
+- 반환값: `string` — 암호화된 문자열 (`value`가 `undefined`/`null`이면 `null`)
+- 예시
+  ```js
+  const encrypted = syn.$c.encrypt('hello world', 'my-key');
+  ```
+
+### `syn.$c.decrypt(value, key)`
+- 설명: `encrypt()`로 암호화된 문자열을 원래 값으로 복호화합니다. key가 일치하지 않으면 빈 문자열을 반환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | value | string | Y | `encrypt()`로 암호화된 문자열 |
+  | key | string | N | 암호화 시 사용한 키 |
+- 반환값: `string` — 복호화된 원문 (형식이 올바르지 않으면 `null`)
+- 예시
+  ```js
+  const decrypted = syn.$c.decrypt(encrypted, 'my-key');
+  ```
+
+### `syn.$c.LZString.compress(uncompressed)`
+- 설명: 문자열을 LZString 알고리즘으로 압축하여 임의 문자(16bit) 코드 문자열로 반환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | uncompressed | string | Y | 압축할 원본 문자열 |
+- 반환값: `string` — 압축된 문자열
+- 예시
+  ```js
+  const compressed = syn.$c.LZString.compress('반복되는 긴 문자열...');
+  ```
+
+### `syn.$c.LZString.compressToBase64(input)` / `decompressFromBase64(input)`
+- 설명: 문자열을 압축해 base64 alphabet 기반 문자열로 인코딩하거나, 그 결과를 원래 문자열로 해제합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | input | string | Y | 압축할 원본 문자열 또는 압축 해제할 base64 문자열 |
+- 반환값: `string`
+- 예시
+  ```js
+  const compressed = syn.$c.LZString.compressToBase64('반복되는 긴 문자열...');
+  const original = syn.$c.LZString.decompressFromBase64(compressed);
+  ```
+
+### `syn.$c.LZString.compressToUTF16(input)` / `decompressFromUTF16(compressed)`
+- 설명: 문자열을 압축해 UTF-16 안전 문자열로 인코딩하거나, 그 결과를 원래 문자열로 해제합니다. localStorage처럼 UTF-16 문자열을 저장하는 저장소에 적합합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | input / compressed | string | Y | 압축할 원본 문자열 또는 압축 해제할 UTF-16 문자열 |
+- 반환값: `string`
+- 예시
+  ```js
+  const compressed = syn.$c.LZString.compressToUTF16('반복되는 긴 문자열...');
+  const original = syn.$c.LZString.decompressFromUTF16(compressed);
+  ```
+
+### `syn.$c.LZString.compressToUint8Array(uncompressed)` / `decompressFromUint8Array(compressed)`
+- 설명: 문자열을 압축해 `Uint8Array`로 반환하거나, `Uint8Array`를 원래 문자열로 해제합니다. 바이너리 저장소나 전송에 적합합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | uncompressed / compressed | string \| Uint8Array | Y | 압축할 문자열 또는 압축 해제할 `Uint8Array` |
+- 반환값: `Uint8Array` 또는 `string`
+- 예시
+  ```js
+  const buffer = syn.$c.LZString.compressToUint8Array('반복되는 긴 문자열...');
+  const original = syn.$c.LZString.decompressFromUint8Array(buffer);
+  ```
+
+### `syn.$c.LZString.compressToEncodedURIComponent(input)` / `decompressFromEncodedURIComponent(input)`
+- 설명: 문자열을 압축해 URL 쿼리 파라미터로 바로 사용할 수 있는 URI-safe 문자열로 인코딩하거나, 그 결과를 원래 문자열로 해제합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | input | string | Y | 압축할 원본 문자열 또는 압축 해제할 URI-safe 문자열 |
+- 반환값: `string`
+- 예시
+  ```js
+  const compressed = syn.$c.LZString.compressToEncodedURIComponent('반복되는 긴 문자열...');
+  location.search = `?data=${compressed}`;
+  ```

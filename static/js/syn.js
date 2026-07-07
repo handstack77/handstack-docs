@@ -1,5 +1,5 @@
-/*!
-HandStack Javascript Library v2025.4.7
+﻿/*!
+HandStack Javascript Library v2026.3.11
 https://handshake.kr
 
 Copyright 2025, HandStack
@@ -175,7 +175,7 @@ class Module {
 }
 
 Module.ancestor = Object;
-Module.version = 'v2025.3.12';
+Module.version = 'v2026.3.11';
 
 const syn = { Module };
 syn.Config = {
@@ -198,7 +198,7 @@ syn.Config = {
     IsApiFindServer: false,
     DiscoveryApiServerUrl: '',
     ReportServer: '',
-    FileManagerServer: 'http://localhost:8000',
+    FileManagerServer: 'http://localhost:8421',
     FindClientIPServer: '/checkip',
     FindGlobalIDServer: '',
     FileServerType: 'L',
@@ -210,7 +210,7 @@ syn.Config = {
         ServerType: 'D',
         Protocol: 'http',
         IP: 'localhost',
-        Port: '8000',
+        Port: '8421',
         Path: '/transact/api/transaction/execute',
         ClientIP: 'localhost'
     },
@@ -261,6 +261,7 @@ if (typeof module !== 'undefined' && module.exports) {
         platform: nav.platform,
         devicePlatform: context.devicePlatform,
         userAgent: nav.userAgent,
+        effectiveType: nav.effectiveType,
         devicePixelRatio: context.devicePixelRatio,
         isExtended: screen?.isExtended ?? false,
         screenWidth: screen?.width ?? 0,
@@ -306,14 +307,14 @@ if (typeof module !== 'undefined' && module.exports) {
             const testFontSize = '72px';
 
             const baseWidths = {};
-            const testElement = document.createElement('span');
+            const testElement = doc.createElement('span');
             testElement.style.position = 'absolute';
             testElement.style.visibility = 'hidden';
             testElement.style.top = '-9999px';
             testElement.style.left = '-9999px';
             testElement.style.fontSize = testFontSize;
             testElement.textContent = testString;
-            document.body.appendChild(testElement);
+            doc.body.appendChild(testElement);
 
             baseFonts.forEach(baseFont => {
                 testElement.style.fontFamily = baseFont;
@@ -336,7 +337,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 }
             }
 
-            document.body.removeChild(testElement);
+            doc.body.removeChild(testElement);
 
             const uniqueFonts = [...new Set(availableFonts)];
             uniqueFonts.sort();
@@ -427,7 +428,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 .map(plugin => `${plugin.name}: ${plugin.filename}`);
         },
 
-        async fingerPrint() {
+        fingerPrint(userID, clientIP) {
             const computeComponents = {
                 appName: this.appName,
                 appCodeName: this.appCodeName,
@@ -442,12 +443,12 @@ if (typeof module !== 'undefined' && module.exports) {
                 plugins: this.getPlugins(),
                 dateFormat: new Date(0).toString(),
                 fonts: this.getSystemFonts(),
-                canvas2dRender: this.getCanvas2dRender(),
-                webglRender: this.getWebglRender(),
-                ipAddress: await this.getIpAddress()
+                ipAddress: clientIP,
+                fingerUserID: userID
             };
 
-            return syn.$c.sha256(JSON.stringify(computeComponents));
+            const computeString = JSON.stringify(computeComponents);
+            return `${syn.$c.sha256(computeString)}|${computeString}|${context.$date.toString(new Date(), 'f')}`;
         },
 
         windowWidth() {
@@ -461,25 +462,110 @@ if (typeof module !== 'undefined' && module.exports) {
         async getIpAddress() {
             let ipAddress = '127.0.0.1';
             const urls = [
-                { url: 'https://api.ipify.org?format=json', json: true },
-                { url: syn.Config.FindClientIPServer || '/checkip', json: false }
+                { url: 'https://api.ipify.org' },
+                { url: syn.Config.FindClientIPServer || '/checkip' }
             ];
 
-            for (const { url, json } of urls) {
+            for (const item of urls) {
                 try {
-                    const response = await fetch(url);
+                    const response = await fetch(item.url);
                     if (response.ok) {
-                        const data = json ? await response.json() : await response.text();
-                        ipAddress = json ? data.ip : data.trim();
+                        ipAddress = await response.text();
                         break;
                     }
-
                 } catch (error) {
-                    console.warn(`'${url}' 에서 IP 를 가져오지 못했습니다:`, error);
+                    console.warn(`'${item.url}' 에서 IP 를 가져오지 못했습니다:`, error);
                 }
             }
 
             return ipAddress;
+        },
+
+        canShare(data) {
+            return !!context.navigator?.share && (!data || !context.navigator.canShare || context.navigator.canShare(data));
+        },
+
+        // const shareData = {
+        //     title: 'HandStack',
+        //     text: 'HandStack 의 목표는 개발자가 좋아하고 기업이 신뢰하는 비즈니스 앱 '시스템'을 제공 하는 것입니다.',
+        //     url: 'https://handstack.kr',
+        //     files: Array.from(files) // 지원하는 환경에서만 가능
+        // }
+        // await syn.$b.share(shareData);
+        async share(data) {
+            if (this.canShare(data)) {
+                try {
+                    await context.navigator.share(data);
+                    syn.$l.eventLog('$b.share', '공유 UI가 성공적으로 호출되었습니다.', 'Information');
+                    return;
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        syn.$l.eventLog('$b.share', 'Web Share API 에러:', 'Error', error);
+                    } else {
+                        syn.$l.eventLog('$b.share', '사용자가 공유를 취소했습니다.', 'Information');
+                    }
+                    throw error;
+                }
+            } else {
+                syn.$l.eventLog('$b.share', 'Web Share API가 지원되지 않습니다.', 'Warning');
+                if (data.url || data.text) {
+                    const textToCopy = data.url || data.text;
+                    await syn.$w.copyToClipboard(result);
+                }
+                throw new Error('Web Share API가 지원되지 않습니다.');
+            }
+        },
+
+        // const navigationEntry = syn.$l.getPerformanceEntries({ type: 'navigation' });
+        // const transactionEntry = syn.$l.getPerformanceEntries({ name: resolveUrl('/transact/api/transaction/execute'), type: 'resource' });
+        // https://developer.mozilla.org/en-US/docs/Web/API/Performance_API
+        getPerformanceEntries(options = {}) {
+            if (!context.performance?.getEntries) {
+                syn.$l.eventLog('$b.getPerformanceEntries', 'Performance Timeline API is not supported.', 'Warning');
+                return [];
+            }
+
+            const { type, name } = options;
+
+            if (name && type) {
+                return context.performance.getEntriesByName(name, type);
+            }
+            if (name) {
+                return context.performance.getEntriesByName(name);
+            }
+            if (type) {
+                return context.performance.getEntriesByType(type);
+            }
+            return context.performance.getEntries();
+        },
+
+        markPerformance(markName) {
+            if (context.performance?.mark) {
+                context.performance.mark(markName);
+            }
+            return this;
+        },
+
+        // syn.$b.markPerformance('start-data-processing');
+        // // ... 데이터 처리 로직 ...
+        // syn.$b.markPerformance('end-data-processing');
+        // syn.$b.measurePerformance('data-processing-time', 'start-data-processing', 'end-data-processing');
+        // const [measureEntry] = syn.$b.getPerformanceEntries({ type: 'measure', name: 'data-processing-time' });
+        // if(measureEntry) {
+        //     console.log(`데이터 처리 시간: ${measureEntry.duration.toFixed(2)}ms`);
+        // }
+        measurePerformance(measureName, startMark, endMark) {
+            if (context.performance?.measure) {
+                try {
+                    context.performance.measure(measureName, startMark, endMark);
+                    const entries = this.getPerformanceEntries({ type: 'measure', name: measureName });
+                    return entries.length > 0 ? entries[entries.length - 1] : null;
+                } catch (e) {
+                    syn.$l.eventLog('$b.measurePerformance', `'${measureName}' 측정값을 생성할 수 없습니다.`, 'Error', e);
+                    return null;
+                }
+            }
+            return null;
         }
     });
     context.$browser = syn.$b = $browser;
@@ -489,6 +575,7 @@ if (typeof module !== 'undefined' && module.exports) {
     'use strict';
     const $manipulation = context.$manipulation || new syn.module();
     const doc = context.document;
+    const classRegexCache = Object.create(null);
 
     $manipulation.extend({
         body() {
@@ -569,7 +656,7 @@ if (typeof module !== 'undefined' && module.exports) {
             el = syn.$l.getElement(el);
             if (!el) return null;
             if (value !== undefined) {
-                el.value = $string.toValue(value);
+                el.value = context.$string.toValue(value);
             }
             return el.value;
         },
@@ -578,7 +665,7 @@ if (typeof module !== 'undefined' && module.exports) {
             el = syn.$l.getElement(el);
             if (!el) return null;
             if (value !== undefined) {
-                el.textContent = $string.toValue(value);
+                el.textContent = context.$string.toValue(value);
             }
             return el.textContent;
         },
@@ -587,7 +674,7 @@ if (typeof module !== 'undefined' && module.exports) {
             el = syn.$l.getElement(el);
             if (!el) return null;
             if (value !== undefined) {
-                el.innerText = $string.toValue(value);
+                el.innerText = context.$string.toValue(value);
             }
             return el.innerText;
         },
@@ -596,7 +683,7 @@ if (typeof module !== 'undefined' && module.exports) {
             el = syn.$l.getElement(el);
             if (!el) return null;
             if (value !== undefined) {
-                el.innerHTML = $string.toValue(value);
+                el.innerHTML = context.$string.toValue(value);
             }
             return el.innerHTML;
         },
@@ -658,7 +745,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
         addStyle(el, objects) {
             el = syn.$l.getElement(el);
-            if (el?.style && $object.isObject(objects)) {
+            if (el?.style && context.$object.isObject(objects)) {
                 Object.entries(objects).forEach(([prop, val]) => {
                     el.style[prop] = val;
                 });
@@ -723,6 +810,59 @@ if (typeof module !== 'undefined' && module.exports) {
             return this;
         },
 
+        // syn.$m.addClass(el, 'highlight').fade(el, { duration: 1000, to: 0.5 });
+        fade(el, options = {}) {
+            el = syn.$l.getElement(el);
+            if (el) {
+                const config = {
+                    duration: 1000,
+                    from: parseFloat(context.getComputedStyle(el).opacity) || 1,
+                    to: 0,
+                    fps: 60,
+                    callback: null,
+                    ...options
+                };
+
+                const frameInterval = 1000 / config.fps;
+                const totalFrames = (config.duration / 1000) * config.fps;
+                const opacityChange = config.to - config.from;
+                const opacityIncrement = opacityChange / totalFrames;
+
+                let currentOpacity = config.from;
+                let lastTimestamp;
+
+                const animate = (timestamp) => {
+                    if (!lastTimestamp) {
+                        lastTimestamp = timestamp;
+                    }
+
+                    const elapsed = timestamp - lastTimestamp;
+
+                    if (elapsed < frameInterval) {
+                        requestAnimationFrame(animate);
+                        return;
+                    }
+
+                    lastTimestamp = timestamp;
+                    currentOpacity += opacityIncrement;
+
+                    if ((opacityIncrement > 0 && currentOpacity >= config.to) || (opacityIncrement < 0 && currentOpacity <= config.to)) {
+                        el.style.opacity = config.to;
+                        if (typeof config.callback === 'function') {
+                            config.callback.call(el);
+                        }
+                    } else {
+                        el.style.opacity = currentOpacity;
+                        requestAnimationFrame(animate);
+                    }
+                };
+
+                requestAnimationFrame(animate);
+            }
+
+            return this;
+        },
+
         append(baseEl, tag, elID, options = {}) {
             const baseElement = syn.$l.getElement(baseEl);
             if (!baseElement || !tag || !doc) return null;
@@ -772,6 +912,15 @@ if (typeof module !== 'undefined' && module.exports) {
             return el ? el.hasChildNodes() : false;
         },
 
+        insertBefore(el, targetEL) {
+            el = syn.$l.getElement(el);
+            const targetElement = syn.$l.getElement(targetEL);
+            if (el && targetElement?.parentNode) {
+                targetElement.parentNode.insertBefore(el, targetElement);
+            }
+            return this;
+        },
+
         insertAfter(el, targetEL) {
             el = syn.$l.getElement(el);
             const targetElement = syn.$l.getElement(targetEL);
@@ -784,7 +933,7 @@ if (typeof module !== 'undefined' && module.exports) {
         display(el, isShow) {
             el = syn.$l.getElement(el);
             if (el?.style) {
-                el.style.display = $string.toBoolean(isShow) ? 'block' : 'none';
+                el.style.display = context.$string.toBoolean(isShow) ? 'block' : 'none';
             }
             return this;
         },
@@ -833,7 +982,7 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         each(array, handler) {
-            if ($object.isArray(array) && $object.isFunction(handler)) {
+            if (context.$object.isArray(array) && context.$object.isFunction(handler)) {
                 array.forEach(handler);
             }
         },
@@ -841,7 +990,7 @@ if (typeof module !== 'undefined' && module.exports) {
         setActive(el, value) {
             el = syn.$l.getElement(el);
             if (el?.classList) {
-                el.classList.toggle('active', $string.toBoolean(value));
+                el.classList.toggle('active', context.$string.toBoolean(value));
             }
             return this;
         },
@@ -850,9 +999,9 @@ if (typeof module !== 'undefined' && module.exports) {
             el = syn.$l.getElement(el);
             if (!el) return this;
 
-            const boolValue = $string.toBoolean(value);
+            const boolValue = context.$string.toBoolean(value);
 
-            if (!$string.toBoolean(multiple)) {
+            if (!context.$string.toBoolean(multiple)) {
                 this.siblings(el)?.forEach(siblingEL => {
                     siblingEL.selected = false;
                     siblingEL.removeAttribute('selected');
@@ -872,9 +1021,9 @@ if (typeof module !== 'undefined' && module.exports) {
             el = syn.$l.getElement(el);
             if (!el) return this;
 
-            const boolValue = $string.toBoolean(value);
+            const boolValue = context.$string.toBoolean(value);
 
-            if (!$string.toBoolean(multiple)) {
+            if (!context.$string.toBoolean(multiple)) {
                 this.siblings(el)?.forEach(siblingEL => {
                     if (siblingEL.tagName === el.tagName && siblingEL.type === el.type && siblingEL.name === el.name) {
                         siblingEL.checked = false;
@@ -893,8 +1042,14 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         getClassRegEx(css) {
-            const escapedCss = css.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-            return new RegExp(`(^|\\s)${escapedCss} (\\s | $)`);
+            let regex = classRegexCache[css];
+            if (!regex) {
+                const escapedCss = css.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                regex = new RegExp(`(^|\\s)${escapedCss} (\\s | $)`);
+                classRegexCache[css] = regex;
+            }
+
+            return regex;
         }
     });
     context.$manipulation = syn.$m = $manipulation;
@@ -907,7 +1062,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
     $dimension.extend({
         getDocumentSize(isTopWindow = false) {
-            const currentDoc = $string.toBoolean(isTopWindow) ? top.document : doc;
+            const currentDoc = context.$string.toBoolean(isTopWindow) ? top.document : doc;
             if (!currentDoc?.body || !currentDoc?.documentElement) return { width: 0, height: 0, frameWidth: 0, frameHeight: 0 };
 
             return {
@@ -927,7 +1082,7 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         getWindowSize(isTopWindow = false) {
-            const currentWindow = $string.toBoolean(isTopWindow) ? top.window : context;
+            const currentWindow = context.$string.toBoolean(isTopWindow) ? top.window : context;
             return {
                 width: currentWindow?.innerWidth ?? 0,
                 height: currentWindow?.innerHeight ?? 0
@@ -1081,8 +1236,8 @@ if (typeof module !== 'undefined' && module.exports) {
             if (text === undefined || text === null) return null;
 
             let effectiveMaxWidth = maxWidth;
-            if ($object.isNumber(maxWidth)) {
-                effectiveMaxWidth = `${maxWidth} px`;
+            if (context.$object.isNumber(maxWidth)) {
+                effectiveMaxWidth = `${maxWidth}px`;
             }
 
             let measuredWidth = this.measureWidth(text, fontSize);
@@ -1090,17 +1245,17 @@ if (typeof module !== 'undefined' && module.exports) {
             let numericMaxWidth = Infinity;
 
             if (measuredWidth.endsWith('px')) {
-                numericWidth = $string.toNumber(measuredWidth.slice(0, -2));
+                numericWidth = context.$string.toNumber(measuredWidth.slice(0, -2));
             }
 
             if (effectiveMaxWidth.endsWith('px')) {
-                numericMaxWidth = $string.toNumber(effectiveMaxWidth.slice(0, -2));
+                numericMaxWidth = context.$string.toNumber(effectiveMaxWidth.slice(0, -2));
             } else {
-                numericMaxWidth = $string.toNumber(effectiveMaxWidth);
+                numericMaxWidth = context.$string.toNumber(effectiveMaxWidth);
             }
 
             if (!isNaN(numericMaxWidth) && numericWidth > numericMaxWidth) {
-                measuredWidth = `${numericMaxWidth} px`;
+                measuredWidth = `${numericMaxWidth}px`;
             }
 
             const measuredHeight = this.measureHeight(text, measuredWidth, fontSize);
@@ -1205,11 +1360,9 @@ if (typeof module !== 'undefined' && module.exports) {
 
         // syn.$c.generateHMAC().then((signature) => { debugger; });
         async generateHMAC(key, message) {
-            let result = null;
-
             const keyData = encoder.encode(key);
             const messageData = encoder.encode(message);
-            const cryptoKey = await crypto.subtle.importKey(
+            const cryptoKey = await context.crypto.subtle.importKey(
                 'raw',
                 keyData,
                 { name: 'HMAC', hash: 'SHA-256' },
@@ -1217,20 +1370,18 @@ if (typeof module !== 'undefined' && module.exports) {
                 ['sign']
             );
 
-            const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
-            result = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
-            return result;
+            const signature = await context.crypto.subtle.sign('HMAC', cryptoKey, messageData);
+            return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
         },
 
         // syn.$c.verifyHMAC('handstack', 'hello world', '25a00a2d55bbb313329c8abba5aebc8b282615876544c5be236d75d1418fc612').then((result) => { debugger; });
         async verifyHMAC(key, message, signature) {
-            return await $cryptography.generateHMAC(key, message) === signature;
+            return $cryptography.generateHMAC(key, message).then(value => value === signature);
         },
 
         // syn.$c.generateRSAKey().then((cryptoKey) => { debugger; });
         async generateRSAKey() {
-            let result = null;
-            result = await window.crypto.subtle.generateKey(
+            return await context.crypto.subtle.generateKey(
                 {
                     name: "RSA-OAEP",
                     modulusLength: 2048,
@@ -1240,20 +1391,19 @@ if (typeof module !== 'undefined' && module.exports) {
                 true,
                 ['encrypt', 'decrypt']
             );
-            return result;
         },
 
         // syn.$c.exportCryptoKey(cryptoKey.publicKey, true).then((result) => { debugger; });
         async exportCryptoKey(cryptoKey, isPublic) {
             let result = '';
-            isPublic = $string.toBoolean(isPublic);
-            const exportLabel = isPublic == true ? 'PUBLIC' : 'PRIVATE';
-            const exported = await window.crypto.subtle.exportKey(
-                (isPublic == true ? 'spki' : 'pkcs8'),
+            isPublic = context.$string.toBoolean(isPublic);
+            const exportLabel = isPublic ? 'PUBLIC' : 'PRIVATE';
+            const exported = await context.crypto.subtle.exportKey(
+                (isPublic ? 'spki' : 'pkcs8'),
                 cryptoKey
             );
             const exportedAsString = String.fromCharCode.apply(null, new Uint8Array(exported));
-            const exportedAsBase64 = window.btoa(exportedAsString);
+            const exportedAsBase64 = context.btoa(exportedAsString);
             result = `-----BEGIN ${exportLabel} KEY-----\n${exportedAsBase64}\n-----END ${exportLabel} KEY-----`;
 
             const lines = result.split('\n');
@@ -1265,18 +1415,17 @@ if (typeof module !== 'undefined' && module.exports) {
 
         // syn.$c.importCryptoKey('-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----', true).then((result) => { debugger; });
         async importCryptoKey(pem, isPublic) {
-            let result = null;
-            isPublic = $string.toBoolean(isPublic);
-            const exportLabel = isPublic == true ? 'PUBLIC' : 'PRIVATE';
+            isPublic = context.$string.toBoolean(isPublic);
+            const exportLabel = isPublic ? 'PUBLIC' : 'PRIVATE';
             const pemHeader = `-----BEGIN ${exportLabel} KEY-----`;
             const pemFooter = `-----END ${exportLabel} KEY-----`;
             const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length).replaceAll('\n', '');
-            const binaryDerString = window.atob(pemContents);
+            const binaryDerString = context.atob(pemContents);
             const binaryDer = syn.$l.stringToArrayBuffer(binaryDerString);
-            const importMode = isPublic == true ? ['encrypt'] : ['decrypt'];
+            const importMode = isPublic ? ['encrypt'] : ['decrypt'];
 
-            result = await crypto.subtle.importKey(
-                (isPublic == true ? 'spki' : 'pkcs8'),
+            return await context.crypto.subtle.importKey(
+                (isPublic ? 'spki' : 'pkcs8'),
                 binaryDer,
                 {
                     name: 'RSA-OAEP',
@@ -1285,15 +1434,12 @@ if (typeof module !== 'undefined' && module.exports) {
                 true,
                 importMode
             );
-            return result;
         },
 
         // syn.$c.rsaEncode('hello world', result).then((result) => { debugger; });
         async rsaEncode(text, publicKey) {
-            let result = null;
-
             const data = encoder.encode(text);
-            const encrypted = await crypto.subtle.encrypt(
+            const encrypted = await context.crypto.subtle.encrypt(
                 {
                     name: 'RSA-OAEP'
                 },
@@ -1301,15 +1447,13 @@ if (typeof module !== 'undefined' && module.exports) {
                 data
             );
 
-            result = $cryptography.base64Encode(new Uint8Array(encrypted));
-            return result;
+            return $cryptography.base64Encode(new Uint8Array(encrypted));
         },
 
         // syn.$c.rsaDecode(encryptData, result).then((result) => { debugger; });
         async rsaDecode(encryptedData, privateKey) {
-            let result = null;
             const encrypted = new Uint8Array($cryptography.base64Decode(encryptedData).split(',').map(Number));
-            const decrypted = await crypto.subtle.decrypt(
+            const decrypted = await context.crypto.subtle.decrypt(
                 {
                     name: 'RSA-OAEP'
                 },
@@ -1317,15 +1461,14 @@ if (typeof module !== 'undefined' && module.exports) {
                 encrypted
             );
 
-            result = decoder.decode(decrypted);
-            return result;
+            return decoder.decode(decrypted);
         },
 
         generateIV(key, ivLength) {
             let result;
             ivLength = ivLength || 16;
             if (key && key.toUpperCase() == '$RANDOM$') {
-                result = window.crypto.getRandomValues(new Uint8Array(ivLength));
+                result = context.crypto.getRandomValues(new Uint8Array(ivLength));
             }
             else {
                 key = key || '';
@@ -1336,7 +1479,6 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         async aesEncode(text, key, algorithm, keyLength) {
-            let result = null;
             key = key || '';
             algorithm = algorithm || 'AES-CBC'; // AES-CBC, AES-GCM
             keyLength = keyLength || 256; // 128, 256
@@ -1345,7 +1487,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
             const data = encoder.encode(text);
 
-            const cryptoKey = await window.crypto.subtle.importKey(
+            const cryptoKey = await context.crypto.subtle.importKey(
                 'raw',
                 $cryptography.padKey(key, keyLength / 8),
                 { name: algorithm },
@@ -1353,7 +1495,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 ['encrypt']
             );
 
-            const encrypted = await window.crypto.subtle.encrypt(
+            const encrypted = await context.crypto.subtle.encrypt(
                 {
                     name: algorithm,
                     iv: iv
@@ -1362,12 +1504,10 @@ if (typeof module !== 'undefined' && module.exports) {
                 data
             );
 
-            result = {
+            return {
                 iv: $cryptography.base64Encode(iv),
                 encrypted: $cryptography.base64Encode(new Uint8Array(encrypted))
             };
-
-            return result;
         },
 
         async aesDecode(encryptedData, key, algorithm, keyLength) {
@@ -1378,7 +1518,7 @@ if (typeof module !== 'undefined' && module.exports) {
             if (encryptedData && encryptedData.iv && encryptedData.encrypted) {
                 const iv = new Uint8Array($cryptography.base64Decode(encryptedData.iv).split(',').map(Number));
                 const encrypted = new Uint8Array($cryptography.base64Decode(encryptedData.encrypted).split(',').map(Number));
-                const cryptoKey = await window.crypto.subtle.importKey(
+                const cryptoKey = await context.crypto.subtle.importKey(
                     'raw',
                     $cryptography.padKey(key, keyLength / 8),
                     { name: algorithm },
@@ -1386,7 +1526,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     ['decrypt']
                 );
 
-                const decrypted = await window.crypto.subtle.decrypt(
+                const decrypted = await context.crypto.subtle.decrypt(
                     {
                         name: algorithm,
                         iv: iv
@@ -1402,15 +1542,13 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         async sha(message, algorithms) {
-            let result = '';
             algorithms = algorithms || 'SHA-1'; // SHA-1,SHA-2,SHA-224,SHA-256,SHA-384,SHA-512,SHA3-224,SHA3-256,SHA3-384,SHA3-512,SHAKE128,SHAKE256
 
             const data = encoder.encode(message);
-            const hash = await crypto.subtle.digest(algorithms, data);
-            result = Array.from(new Uint8Array(hash))
+            const hash = await context.crypto.subtle.digest(algorithms, data);
+            return Array.from(new Uint8Array(hash))
                 .map(b => b.toString(16).padStart(2, '0'))
                 .join('');
-            return result;
         },
 
         sha256(s) {
@@ -2015,7 +2153,6 @@ if (typeof module !== 'undefined' && module.exports) {
 (function (context) {
     'use strict';
     const $keyboard = context.$keyboard || new syn.module();
-    const $o = context.$object;
     const $l = context.$library;
 
     $keyboard.extend({
@@ -2038,6 +2175,108 @@ if (typeof module !== 'undefined' && module.exports) {
             'u': 85, 'v': 86, 'w': 87, 'x': 88, 'y': 89, 'z': 90,
             'f1': 112, 'f2': 113, 'f3': 114, 'f4': 115, 'f5': 116, 'f6': 117, 'f7': 118, 'f8': 119,
             'f9': 120, 'f10': 121, 'f11': 122, 'f12': 123
+        }),
+
+        keyNames: Object.freeze({
+            'Backspace': 'backspace',
+            'Tab': 'tab',
+            'Enter': 'enter',
+            'ShiftLeft': 'shift',
+            'ShiftRight': 'shift',
+            'ControlLeft': 'control',
+            'ControlRight': 'control',
+            'AltLeft': 'alt',
+            'AltRight': 'alt',
+            'CapsLock': 'capslock',
+            'Escape': 'escape',
+            'Space': 'space',
+            'PageUp': 'pageup',
+            'PageDown': 'pagedown',
+            'End': 'end',
+            'Home': 'home',
+            'ArrowLeft': 'left',
+            'ArrowUp': 'up',
+            'ArrowRight': 'right',
+            'ArrowDown': 'down',
+            'Delete': 'delete',
+            'Semicolon': 'semicolon',
+            'Equal': 'equal',
+            'Comma': 'comma',
+            'Minus': 'minus',
+            'Period': 'period',
+            'Slash': 'slash',
+            'Backquote': 'backtick',
+            'BracketLeft': 'openingsquarebracket',
+            'Backslash': 'backslash',
+            'BracketRight': 'closingsquarebracket',
+            'Quote': 'singlequote',
+            'Clear': 'clear',
+            'MetaLeft': 'meta',
+            'MetaRight': 'meta',
+            'ContextMenu': 'contextmenu',
+            'Numpad0': 'numpad0',
+            'Numpad1': 'numpad1',
+            'Numpad2': 'numpad2',
+            'Numpad3': 'numpad3',
+            'Numpad4': 'numpad4',
+            'Numpad5': 'numpad5',
+            'Numpad6': 'numpad6',
+            'Numpad7': 'numpad7',
+            'Numpad8': 'numpad8',
+            'Numpad9': 'numpad9',
+            'NumpadMultiply': 'multiply',
+            'NumpadAdd': 'add',
+            'NumpadSubtract': 'subtract',
+            'NumpadDecimal': 'decimal',
+            'NumpadDivide': 'divide',
+            'Digit0': '0',
+            'Digit1': '1',
+            'Digit2': '2',
+            'Digit3': '3',
+            'Digit4': '4',
+            'Digit5': '5',
+            'Digit6': '6',
+            'Digit7': '7',
+            'Digit8': '8',
+            'Digit9': '9',
+            'KeyA': 'a',
+            'KeyB': 'b',
+            'KeyC': 'c',
+            'KeyD': 'd',
+            'KeyE': 'e',
+            'KeyF': 'f',
+            'KeyG': 'g',
+            'KeyH': 'h',
+            'KeyI': 'i',
+            'KeyJ': 'j',
+            'KeyK': 'k',
+            'KeyL': 'l',
+            'KeyM': 'm',
+            'KeyN': 'n',
+            'KeyO': 'o',
+            'KeyP': 'p',
+            'KeyQ': 'q',
+            'KeyR': 'r',
+            'KeyS': 's',
+            'KeyT': 't',
+            'KeyU': 'u',
+            'KeyV': 'v',
+            'KeyW': 'w',
+            'KeyX': 'x',
+            'KeyY': 'y',
+            'KeyZ': 'z',
+            'F1': 'f1',
+            'F2': 'f2',
+            'F3': 'f3',
+            'F4': 'f4',
+            'F5': 'f5',
+            'F6': 'f6',
+            'F7': 'f7',
+            'F8': 'f8',
+            'F9': 'f9',
+            'F10': 'f10',
+            'F11': 'f11',
+            'F12': 'f12'
         }),
 
         targetEL: null,
@@ -2095,6 +2334,15 @@ if (typeof module !== 'undefined' && module.exports) {
                 delete this.elements[this.targetEL.eventID][keyType][keyCode];
             }
             return this;
+        },
+
+        getKeyCode(code) {
+            const keyName = $keyboard.keyNames[code];
+            if (keyName) {
+                return $keyboard.keyCodes[keyName];
+            }
+
+            return null;
         }
     });
     context.$keyboard = syn.$k = $keyboard;
@@ -2103,9 +2351,6 @@ if (typeof module !== 'undefined' && module.exports) {
 (function (context) {
     'use strict';
     const $validation = context.$validation || new syn.module();
-    const $o = context.$object;
-    const $s = context.$string;
-    const $l = context.$library;
     const $this = context.$this;
 
     $validation.extend({
@@ -2113,6 +2358,18 @@ if (typeof module !== 'undefined' && module.exports) {
         messages: [],
         targetEL: null,
         elements: {},
+        roles: Object.freeze({
+            Root: 0,
+            Administrator: 100,
+            Master: 200,
+            Architect: 300,
+            Manager: 400,
+            BusinessOwner: 500,
+            Operator: 600,
+            Developer: 700,
+            Designer: 800,
+            User: 900
+        }),
 
         initializeValidObject(el) {
             if (!this.elements[el.id]) {
@@ -2137,21 +2394,21 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         required(el, isRequired = true, message) {
-            if ($string.isNullOrEmpty(message)) {
+            if (context.$string.isNullOrEmpty(message)) {
                 syn.$l.eventLog('$v.required', 'message 확인 필요', 'Information');
                 return this;
             }
             el = syn.$l.getElement(el);
             if (el) {
                 this.setElement(el);
-                el.required = $string.toBoolean(isRequired);
+                el.required = context.$string.toBoolean(isRequired);
                 el.message = message;
             }
             return this;
         },
 
         pattern(el, validID, options = {}) {
-            if (!options.expr || $string.isNullOrEmpty(options.message)) {
+            if (!options.expr || context.$string.isNullOrEmpty(options.message)) {
                 syn.$l.eventLog('$v.pattern', 'options.expr, options.message 확인 필요', 'Information');
                 return this;
             }
@@ -2164,9 +2421,9 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         range(el, validID, options = {}) {
-            if (!$string.isNumber(options.min) || !$string.isNumber(options.max) ||
-                $string.isNullOrEmpty(options.minOperator) || $string.isNullOrEmpty(options.maxOperator) ||
-                $string.isNullOrEmpty(options.message)) {
+            if (!context.$string.isNumber(options.min) || !context.$string.isNumber(options.max) ||
+                context.$string.isNullOrEmpty(options.minOperator) || context.$string.isNullOrEmpty(options.maxOperator) ||
+                context.$string.isNullOrEmpty(options.message)) {
                 syn.$l.eventLog('$v.range', 'options.min, options.minOperator, options.max, options.maxOperator, options.message 확인 필요', 'Information');
                 return this;
             }
@@ -2179,7 +2436,7 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         custom(el, validID, options = {}) {
-            if (!options.functionName || $string.isNullOrEmpty(options.message)) {
+            if (!options.functionName || context.$string.isNullOrEmpty(options.message)) {
                 syn.$l.eventLog('$v.custom', 'options.functionName, options.message 확인 필요', 'Information');
                 return this;
             }
@@ -2228,14 +2485,14 @@ if (typeof module !== 'undefined' && module.exports) {
             let isValid = true;
             const value = el.value?.trim() ?? '';
 
-            if ($string.toBoolean(el.required) && value.length === 0) {
+            if (context.$string.toBoolean(el.required) && value.length === 0) {
                 isValid = false;
                 this.messages.push(el.message);
                 if (!this.isContinue) return false;
             }
 
             if (!isValid && !this.isContinue) return false;
-            if (!$string.toBoolean(el.required) && value.length === 0) return true;
+            if (!context.$string.toBoolean(el.required) && value.length === 0) return true;
 
             const validObject = this.elements[el.id];
             if (!validObject) return isValid;
@@ -2251,11 +2508,11 @@ if (typeof module !== 'undefined' && module.exports) {
 
             for (const [validID, rangeRule] of Object.entries(validObject.range)) {
                 let rangeResult = false;
-                if ($string.isNumber(value)) {
+                if (context.$string.isNumber(value)) {
                     try {
-                        const numValue = $string.toNumber(value);
-                        const min = $string.toNumber(rangeRule.min);
-                        const max = $string.toNumber(rangeRule.max);
+                        const numValue = context.$string.toNumber(value);
+                        const min = context.$string.toNumber(rangeRule.min);
+                        const max = context.$string.toNumber(rangeRule.max);
 
                         const checkMin = (op, val, limit) => {
                             switch (op) {
@@ -2365,6 +2622,34 @@ if (typeof module !== 'undefined' && module.exports) {
             return messageString;
         },
 
+
+        getRoleValue(roleNames, isHighLow = true) {
+            const namesArray = Array.isArray(roleNames) ? roleNames : [roleNames];
+            const values = namesArray
+                .map(name => this.roles[name])
+                .filter(v => v !== undefined);
+
+            if (values.length === 0) {
+                return -1;
+            }
+
+            return isHighLow ? Math.min(...values) : Math.max(...values);
+        },
+
+        getRoleName(roleValues, isHighLow = true) {
+            const valuesArray = Array.isArray(roleValues) ? roleValues : [roleValues];
+            const numbers = valuesArray
+                .map(v => parseInt(v, 10))
+                .filter(v => !isNaN(v) && Object.values(this.roles).includes(v));
+
+            if (numbers.length === 0) {
+                return null;
+            }
+
+            const roleValue = isHighLow ? Math.min(...numbers) : Math.max(...numbers);
+            return Object.keys(this.roles).find(key => this.roles[key] === roleValue) || null;
+        },
+
         valueType: Object.freeze({
             valid: 0, valueMissing: 1, typeMismatch: 2, patternMismatch: 3, tooLong: 4,
             rangeUnderflow: 5, rangeOverflow: 6, stepMismatch: 7
@@ -2385,7 +2670,7 @@ if (typeof module !== 'undefined' && module.exports) {
             mobilePhone: /^01[016789]\d{7,8}$/,
             seoulPhone: /^02\d{7,8}$/,
             areaPhone: /^0(3[1-3]|4[1-4]|5[1-5]|6[1-4])\d{7,8}$/,
-            onesPhone: /^050([245678])\d{7,8}$/,
+            onesPhone: /^(050([245678])\d{7,8}|080\d{8})$/,
             float: /^\s*-?(\d*\.?\d+|\d+\.?\d*)([eE][-+]?\d+)?\s*$/i,
             isoDate: /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(\.\d+)?([+-][0-2]\d(:[0-5]\d)?|Z)/i
         })
@@ -2400,6 +2685,8 @@ if (typeof module !== 'undefined' && module.exports) {
     const $string = context.$string || new syn.module();
     const $number = context.$number || new syn.module();
     const $object = context.$object || new syn.module();
+    const stringFormatRegexCache = Object.create(null);
+    const validationPatternRegexCache = Object.create(null);
 
     (function () {
         if (!Function.prototype.clone) {
@@ -2471,7 +2758,12 @@ if (typeof module !== 'undefined' && module.exports) {
             String.prototype.format = function () {
                 var val = this;
                 for (var i = 0, len = arguments.length; i < len; i++) {
-                    var exp = new RegExp('\{' + i.toString() + '+?\}', 'g');
+                    var exp = stringFormatRegexCache[i];
+                    if (!exp) {
+                        exp = new RegExp('\{' + i.toString() + '+?\}', 'g');
+                        stringFormatRegexCache[i] = exp;
+                    }
+
                     val = val.replace(exp, arguments[i]);
                 }
 
@@ -2479,9 +2771,7 @@ if (typeof module !== 'undefined' && module.exports) {
             };
         }
 
-        if (globalRoot.devicePlatform === 'node') {
-        }
-        else {
+        if (globalRoot.devicePlatform !== 'node') {
             if (!Element.prototype.matches) {
                 Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
             }
@@ -2519,7 +2809,7 @@ if (typeof module !== 'undefined' && module.exports) {
         clone(date) {
             if (date instanceof Date) {
                 return new Date(date.getTime());
-            } else if ($object.isString(date)) {
+            } else if (context.$object.isString(date)) {
                 try {
                     return new Date(date);
                 } catch {
@@ -2549,11 +2839,11 @@ if (typeof module !== 'undefined' && module.exports) {
 
         toString(date, format, options = {}) {
             let dateObj = date;
-            if ($object.isString(date) && this.isDate(date)) {
+            if (context.$object.isString(date) && this.isDate(date)) {
                 dateObj = new Date(date);
             }
 
-            if (!($object.isDate(dateObj) && !isNaN(dateObj))) {
+            if (!(context.$object.isDate(dateObj) && !isNaN(dateObj))) {
                 return '';
             }
 
@@ -2573,12 +2863,12 @@ if (typeof module !== 'undefined' && module.exports) {
                 case 'd': return `${year}-${pad(month)}-${pad(day)}`;
                 case 't': return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
                 case 'a': return `${year}-${pad(month)}-${pad(day)} ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-                case 'i': return `${year}-${pad(month)}-${pad(day)}T${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${pad(milliseconds, 3)} Z`; // Assuming UTC for ISO
+                case 'i': return `${year}-${pad(month)}-${pad(day)}T${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${pad(milliseconds, 3)} Z`;
                 case 'f': return `${year}${pad(month)}${pad(day)}${pad(hours)}${pad(minutes)}${pad(seconds)}${pad(milliseconds, 3)}`;
                 case 's': return `${pad(hours)}${pad(minutes)}${pad(seconds)}${pad(milliseconds, 3)}`;
-                case 'n': return `${year}년 ${pad(month)}월 ${pad(day)} 일(${dayOfWeek})`;
-                case 'nt': return `${year}년 ${pad(month)}월 ${pad(day)} 일(${dayOfWeek}), ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-                case 'mdn': return `${pad(month)}월 ${pad(day)} 일`;
+                case 'n': return `${year}년 ${pad(month)}월 ${pad(day)}일 (${dayOfWeek})`;
+                case 'nt': return `${year}년 ${pad(month)}월 ${pad(day)}일 (${dayOfWeek}), ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+                case 'mdn': return `${pad(month)}월 ${pad(day)}일`;
                 case 'w':
                     const opts = { weekStartSunday: true, ...options };
                     const yearNum = dateObj.getFullYear();
@@ -2599,10 +2889,97 @@ if (typeof module !== 'undefined' && module.exports) {
                 case 'm': return pad(month);
                 case 'y': return String(year);
                 case 'ym': return `${year}-${pad(month)}`;
-                default: return pad(day);
+                default:
+                    const map = {
+                        yyyy: date.getFullYear(),
+                        MM: ('0' + (date.getMonth() + 1)).slice(-2),
+                        dd: ('0' + date.getDate()).slice(-2),
+                        HH: ('0' + date.getHours()).slice(-2),
+                        mm: ('0' + date.getMinutes()).slice(-2),
+                        ss: ('0' + date.getSeconds()).slice(-2)
+                    };
+                    return format.replace(/yyyy|MM|dd|HH|mm|ss/gi, matched => map[matched] || '');
             }
         },
 
+        getAmPm(time, amText, pmText) {
+            amText = amText || 'AM';
+            pmText = pmText || 'PM';
+
+            if (context.$string.isNullOrEmpty(time) == true) {
+                return amText;
+            }
+
+            let hour;
+            if (time instanceof Date) {
+                hour = time.getHours();
+            }
+            else if (typeof time === 'string') {
+                if (time.length == 5) {
+                    hour = parseInt(time.split(':')[0]);
+                }
+                else if (time.length > 10) {
+                    hour = context.$date.parseDate(time).getHours();
+                }
+                else if (time.length <= 2) {
+                    hour = context.$string.toNumber(time);
+                }
+            }
+            else if (typeof time === 'number') {
+                hour = time;
+            }
+            else {
+                return amText;
+            }
+
+            return hour < 12 ? amText : pmText;
+        },
+
+        get12Time(time, amText, pmText) {
+            amText = amText || 'AM';
+            pmText = pmText || 'PM';
+
+            if (context.$string.isNullOrEmpty(time) == true) {
+                return amText;
+            }
+
+            let hour = 0;
+            let minute = 0;
+            let second = 0;
+            if (time instanceof Date) {
+                hour = time.getHours();
+                minute = time.getMinutes();
+                second = time.getSeconds();
+            }
+            else if (typeof time === 'string') {
+                if (time.length == 5 && time.indexOf(':') > -1) {
+                    hour = parseInt(time.split(':')[0]);
+                    minute = parseInt(time.split(':')[1]);
+                }
+                else if (time.length == 8 && time.indexOf(':') > -1) {
+                    hour = parseInt(time.split(':')[0]);
+                    minute = parseInt(time.split(':')[1]);
+                    second = parseInt(time.split(':')[2]);
+                }
+                else if (time.length > 10) {
+                    const date = context.$date.parseDate(time);
+                    hour = date.getHours();
+                    minute = date.getMinutes();
+                    second = date.getSeconds();
+                }
+                else if (time.length <= 2) {
+                    hour = context.$string.toNumber(time);
+                }
+            }
+            else if (typeof time === 'number') {
+                hour = time;
+            }
+            else {
+                return amText;
+            }
+
+            return `${hour < 12 ? amText : pmText} ${(hour % 12 === 0 ? 12 : hour % 12).toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`;
+        },
 
         addSecond(date, val) {
             if (!(date instanceof Date) || isNaN(val)) return null;
@@ -2680,25 +3057,20 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         isDate(val) {
-            if (val instanceof Date && !isNaN(val)) return true;
-            if (!$object.isString(val)) return false;
-
-            const parsedDate = new Date(val);
-            if (!isNaN(parsedDate)) return true;
-
-            if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
-                const parts = val.split('-');
-                if (parts[1] >= 1 && parts[1] <= 12 && parts[2] >= 1 && parts[2] <= 31) {
-                    const specificDate = new Date(parts[0], parts[1] - 1, parts[2]);
-                    return !isNaN(specificDate);
-                }
+            var result = false;
+            if (context.$object.isString(val) == true) {
+                const timestamp = Date.parse(val);
+                result = !isNaN(timestamp);
+            }
+            else if (val instanceof Date) {
+                result = true;
             }
 
-            return false;
+            return result;
         },
 
         isISOString(val) {
-            return $object.isString(val) && $validation.regexs.isoDate.test(val);
+            return context.$object.isString(val) && $validation.regexs.isoDate.test(val);
         },
 
         weekOfMonth(year, month, weekStartSunday = true) {
@@ -2761,7 +3133,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
         timeAgo(dateInput) {
             let date;
-            if ($object.isString(dateInput) && this.isDate(dateInput)) {
+            if (context.$object.isString(dateInput) == true && this.isDate(dateInput) == true) {
                 date = new Date(dateInput);
             } else if (dateInput instanceof Date) {
                 date = dateInput;
@@ -2789,8 +3161,125 @@ if (typeof module !== 'undefined' && module.exports) {
                 }
             }
             return '방금 전';
-        }
+        },
 
+        parseDate(dateInput) {
+            if (dateInput == null || dateInput == undefined) {
+                return null;
+            }
+
+            if (dateInput instanceof Date) {
+                return dateInput;
+            }
+
+            try {
+                if (context.$object.isNumber(dateInput) == true) {
+                    return new Date(dateInput);
+                }
+
+                if (context.$object.isString(dateInput) == true) {
+                    if (dateInput.includes('T')) {
+                        return new Date(dateInput);
+                    }
+
+                    const date = new Date(dateInput);
+                    if (!isNaN(date.getTime())) {
+                        return date;
+                    }
+                }
+            } catch (error) {
+                syn.$l.eventLog('context.$date.parseDate', error, 'Warning');
+            }
+
+            return null;
+        },
+
+        dateConvert(inputValue, operationType) {
+            const baseChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            function getDefaultEncodedResult() {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayNumber = parseInt(`${year}${month}${day}`);
+                return encodeToBase36(todayNumber);
+            }
+            function encodeToBase36(number) {
+                if (number === 0) return '0';
+
+                let result = '';
+                let temp = number;
+
+                while (temp > 0) {
+                    result = baseChars[temp % 36] + result;
+                    temp = Math.floor(temp / 36);
+                }
+
+                return result;
+            }
+            function decodeFromBase36(encoded) {
+                if (!encoded || encoded === '') {
+                    return null;
+                }
+
+                const upperEncoded = encoded.toUpperCase();
+                let result = 0;
+                let basePower = 1;
+
+                for (let i = upperEncoded.length - 1; i >= 0; i--) {
+                    const digit = baseChars.indexOf(upperEncoded[i]);
+
+                    if (digit < 0) {
+                        return null;
+                    }
+
+                    result += digit * basePower;
+                    basePower *= 36;
+                }
+
+                return result;
+            }
+
+            function dateToNumber(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return parseInt(`${year}${month}${day}`);
+            }
+
+            const defaultEncodedResult = getDefaultEncodedResult();
+            let processedInput = inputValue;
+
+            if (inputValue instanceof Date) {
+                processedInput = dateToNumber(inputValue).toString();
+            }
+
+            if (operationType === 'E') {
+                const numberToEncode = parseInt(processedInput);
+
+                if (isNaN(numberToEncode)) {
+                    return defaultEncodedResult;
+                }
+
+                return encodeToBase36(numberToEncode);
+            }
+            else if (operationType === 'D') {
+                if (!processedInput || processedInput === '') {
+                    return defaultEncodedResult;
+                }
+
+                const decodedNumber = decodeFromBase36(processedInput.toString());
+
+                if (decodedNumber === null) {
+                    return defaultEncodedResult;
+                }
+
+                return decodedNumber.toString();
+            }
+            else {
+                return defaultEncodedResult;
+            }
+        }
     });
     context.$date = $date;
 
@@ -2813,7 +3302,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     const value = item[key];
                     if (value !== undefined && value !== null) {
                         if (Array.isArray(value)) return value.join(', ');
-                        if (value instanceof Date) return $date.toString(value, 'a');
+                        if (value instanceof Date) return context.$date.toString(value, 'a');
                         return String(value);
                     }
                     return defaultValue !== null ? defaultValue : match;
@@ -2830,6 +3319,10 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         isNullOrEmpty(val) {
+            return val === undefined || val === null || String(val) === '';
+        },
+
+        isNullOrWhiteSpace(val) {
             return val === undefined || val === null || String(val).trim() === '';
         },
 
@@ -2847,7 +3340,8 @@ if (typeof module !== 'undefined' && module.exports) {
             try {
                 const el = document.createElement('div');
                 el.innerHTML = val.replace(/<br\s*\/?>/gi, '\n');
-                return el.textContent || el.innerText || '';
+                const text = el.textContent || el.innerText || '';
+                return text.replace(/\s{2,}/g, ' ');
             } catch {
                 return val;
             }
@@ -2912,14 +3406,13 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         toNumber(val) {
-            var result = 0;
             try {
-                result = parseFloat(($object.isNullOrUndefined(val) == true ? 0 : val) === 0 || val === '' ? '0' : val.toString().replace(/,/g, ''));
+                const effectiveValue = context.$object.isNullOrUndefined(val) ? 0 : val;
+                return parseFloat((effectiveValue === 0 || val === '') ? '0' : effectiveValue.toString().replace(/,/g, ''));
             } catch (error) {
-                syn.$l.eventLog('$string.toNumber', error, 'Warning');
+                syn.$l.eventLog('context.$string.toNumber', error, 'Warning');
+                return 0;
             }
-
-            return result;
         },
 
         capitalize(val) {
@@ -2959,21 +3452,300 @@ if (typeof module !== 'undefined' && module.exports) {
             return result;
         },
 
+        toJsv(val, options = {}) {
+            if (typeof val !== 'string') return [];
+
+            const { delimiter = ',', newline = '\n', meta = {} } = options;
+            const lines = val.split(newline);
+            if (lines.length < 1) return [];
+
+            const columns = lines[0].split(delimiter).map(column => column.trim().replace(/^"|"$/g, ''));
+            const columnLength = columns.length;
+            const result = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (!line.trim()) continue;
+
+                const row = line.split(delimiter);
+                const item = [];
+
+                for (let j = 0; j < columnLength; j++) {
+                    const cellValue = row[j]?.trim() ?? '';
+
+                    const parsedValue = meta[j]
+                        ? this.toParseType(cellValue, meta[j])
+                        : this.toDynamic(cellValue);
+
+                    item.push(parsedValue);
+                }
+                result.push(item);
+            }
+            return result;
+        },
+
+        /*
+        const items = context.$string.toJsv(clipboardData, { delimiter: '\t' });
+        const rules = {
+            0: {
+                name: 'System',
+                type: 'string',
+                required: true,
+                minLength: 3,
+                enum: ['ERP', 'MES', 'WMS']
+            },
+            9: {
+                name: 'Progress',
+                type: 'string',
+                required: true,
+                pattern: '^\\d+%$',
+                validator: (value) => {
+                    const num = parseInt(value);
+                    return (num >= 0 && num <= 100) || '진행률은 0~100% 사이여야 합니다.';
+                }
+            },
+            11: {
+                name: 'Flag 1',
+                type: 'string',
+                enum: ['Y', 'N']
+            },
+            12: {
+                name: 'Code 1',
+                type: 'string',
+                required: true,
+                minLength: 2,
+                maxLength: 10
+            },
+            13: {
+                name: 'Code 2',
+                type: 'string',
+                required: true,
+                pattern: '^[A-Z]{3}\\d{3}$'
+            }
+        };
+
+        const validate = context.$string.validateJsv(items, rules);
+        if (validate.result == true) {
+            return items;
+        }
+
+        syn.$l.eventLog('grdGrid1_clipboardPaste', JSON.stringify(validate), 'Warning');
+         */
+        validateJsv(data, rules, options = {}) {
+            const {
+                throwError = false,
+                returnDetails = true,
+                validateAll = false
+            } = options;
+
+            if (!Array.isArray(data) || data.length === 0) {
+                const error = { valid: false, message: '데이터가 비어있습니다.' };
+                if (throwError) throw new Error(error.message);
+                return returnDetails ? error : false;
+            }
+
+            const rulesByIndex = Array.isArray(rules)
+                ? rules.reduce((acc, rule, index) => ({ ...acc, [index]: rule }), {})
+                : rules;
+
+            const errors = [];
+            const rowsToValidate = validateAll ? data : [data[0]];
+
+            for (let rowIndex = 0; rowIndex < rowsToValidate.length; rowIndex++) {
+                const row = rowsToValidate[rowIndex];
+
+                for (const colIndexStr in rulesByIndex) {
+                    const colIndex = parseInt(colIndexStr);
+                    const rule = rulesByIndex[colIndex];
+                    const value = row[colIndex];
+                    const columnName = rule.name || `Column ${colIndex}`;
+
+                    if (colIndex >= row.length) {
+                        errors.push({
+                            row: rowIndex,
+                            column: colIndex,
+                            columnName,
+                            type: 'INDEX_OUT_OF_BOUNDS',
+                            message: `${columnName}(인덱스 ${colIndex})이 데이터 범위를 벗어났습니다. 데이터 길이: ${row.length}`
+                        });
+                        continue;
+                    }
+
+                    if (context.$string.toBoolean(rule.required) == true && (value === null || value === undefined || value === '')) {
+                        errors.push({
+                            row: rowIndex,
+                            column: colIndex,
+                            columnName,
+                            type: 'REQUIRED',
+                            message: `${columnName}(인덱스 ${colIndex})은(는) 필수값입니다.`,
+                            value
+                        });
+                        continue;
+                    }
+
+                    if (context.$string.toBoolean(rule.required) == false && (value === null || value === undefined || value === '')) {
+                        continue;
+                    }
+
+                    if (rule.type) {
+                        const typeValid = this.toParseType(value, rule.type);
+                        if (!typeValid) {
+                            errors.push({
+                                row: rowIndex,
+                                column: colIndex,
+                                columnName,
+                                type: 'TYPE_MISMATCH',
+                                message: `${columnName}(인덱스 ${colIndex})의 타입이 올바르지 않습니다. 예상: ${rule.type}, 실제: ${typeof value}`,
+                                value
+                            });
+                            continue;
+                        }
+                    }
+
+                    if (rule.minLength !== undefined || rule.maxLength !== undefined) {
+                        const strValue = String(value);
+                        if (rule.minLength !== undefined && strValue.length < rule.minLength) {
+                            errors.push({
+                                row: rowIndex,
+                                column: colIndex,
+                                columnName,
+                                type: 'MIN_LENGTH',
+                                message: `${columnName}(인덱스 ${colIndex})의 최소 길이는 ${rule.minLength}입니다. 현재: ${strValue.length}`,
+                                value
+                            });
+                        }
+                        if (rule.maxLength !== undefined && strValue.length > rule.maxLength) {
+                            errors.push({
+                                row: rowIndex,
+                                column: colIndex,
+                                columnName,
+                                type: 'MAX_LENGTH',
+                                message: `${columnName}(인덱스 ${colIndex})의 최대 길이는 ${rule.maxLength}입니다. 현재: ${strValue.length}`,
+                                value
+                            });
+                        }
+                    }
+
+                    if (rule.type === 'number') {
+                        if (rule.min !== undefined && value < rule.min) {
+                            errors.push({
+                                row: rowIndex,
+                                column: colIndex,
+                                columnName,
+                                type: 'MIN_VALUE',
+                                message: `${columnName}(인덱스 ${colIndex})의 최소값은 ${rule.min}입니다. 현재: ${value}`,
+                                value
+                            });
+                        }
+                        if (rule.max !== undefined && value > rule.max) {
+                            errors.push({
+                                row: rowIndex,
+                                column: colIndex,
+                                columnName,
+                                type: 'MAX_VALUE',
+                                message: `${columnName}(인덱스 ${colIndex})의 최대값은 ${rule.max}입니다. 현재: ${value}`,
+                                value
+                            });
+                        }
+                    }
+
+                    if (rule.pattern) {
+                        let regex = null;
+                        if (typeof rule.pattern === 'string') {
+                            regex = validationPatternRegexCache[rule.pattern];
+                            if (!regex) {
+                                regex = new RegExp(rule.pattern);
+                                validationPatternRegexCache[rule.pattern] = regex;
+                            }
+                        }
+                        else {
+                            regex = new RegExp(rule.pattern);
+                        }
+
+                        if (regex.global || regex.sticky) {
+                            regex.lastIndex = 0;
+                        }
+
+                        if (!regex.test(String(value))) {
+                            errors.push({
+                                row: rowIndex,
+                                column: colIndex,
+                                columnName,
+                                type: 'PATTERN_MISMATCH',
+                                message: `${columnName}(인덱스 ${colIndex})이(가) 패턴과 일치하지 않습니다.`,
+                                value,
+                                pattern: rule.pattern
+                            });
+                        }
+                    }
+
+                    if (rule.enum && Array.isArray(rule.enum)) {
+                        if (!rule.enum.includes(value)) {
+                            errors.push({
+                                row: rowIndex,
+                                column: colIndex,
+                                columnName,
+                                type: 'ENUM_MISMATCH',
+                                message: `${columnName}(인덱스 ${colIndex})은(는) 허용된 값이 아닙니다. 허용값: ${rule.enum.join(', ')}`,
+                                value,
+                                allowedValues: rule.enum
+                            });
+                        }
+                    }
+
+                    if (rule.validator && typeof rule.validator === 'function') {
+                        const customResult = rule.validator(value, row, rowIndex);
+                        if (customResult !== true) {
+                            errors.push({
+                                row: rowIndex,
+                                column: colIndex,
+                                columnName,
+                                type: 'CUSTOM_VALIDATION',
+                                message: typeof customResult === 'string'
+                                    ? customResult
+                                    : `${columnName}(인덱스 ${colIndex}) 커스텀 검증 실패`,
+                                value
+                            });
+                        }
+                    }
+                }
+            }
+
+            const result = errors.length === 0;
+
+            if (!result && throwError) {
+                throw new Error(`데이터 검증 실패: ${errors.length}개의 오류 발견`);
+            }
+
+            if (returnDetails) {
+                return {
+                    result,
+                    errorCount: errors.length,
+                    errors: errors,
+                    validatedRows: rowsToValidate.length,
+                    validatedColumns: Object.keys(rulesByIndex).map(Number)
+                };
+            }
+
+            return {
+                result
+            };
+        },
+
         toParameterObject(parameters) {
             return (parameters.match(/([^?:;]+)(:([^;]*))/g) || []).reduce(function (a, v) {
                 return a[v.slice(0, v.indexOf(':')).replace('@', '')] = v.slice(v.indexOf(':') + 1), a;
             }, {});
         },
 
-        toUrlObject(url) {
-            url = url || '';
-            return (url.match(/([^?=&]+)(=([^&]*))/g) || []).reduce(function (a, v) {
-                return a[v.slice(0, v.indexOf('='))] = v.slice(v.indexOf('=') + 1), a;
-            }, {});
-        },
-
         toBoolean(val) {
-            return (val === 'true' || val === 'True' || val === 'TRUE' || val === 'Y' || val == '1');
+            if (context.$object.isNullOrUndefined(val) == true) {
+                return false;
+            }
+
+            const lowerVal = val.toString().toLowerCase();
+            const trueValues = ['true', 'y', '1', 'ok', 'yes', 'on'];
+            return trueValues.includes(lowerVal);
         },
 
         toDynamic(val, emptyIsNull = false) {
@@ -2982,8 +3754,8 @@ if (typeof module !== 'undefined' && module.exports) {
             if (emptyIsNull && strVal === '') return null;
             if (strVal === '') return '';
 
-            if (/^(true|y|1)$/i.test(strVal)) return true;
-            if (/^(false|n|0)$/i.test(strVal)) return false;
+            if (/^(true)$/i.test(strVal)) return true;
+            if (/^(false)$/i.test(strVal)) return false;
 
             const numStr = strVal.replace(/,/g, '');
             if ($validation.regexs.float.test(numStr)) {
@@ -3024,7 +3796,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     if ($validation.regexs.isoDate.test(strVal)) {
                         const date = new Date(strVal);
                         return isNaN(date) ? null : date;
-                    } else if ($date.isDate(strVal)) {
+                    } else if (context.$date.isDate(strVal)) {
                         const date = new Date(strVal);
                         return isNaN(date) ? null : date;
                     }
@@ -3038,20 +3810,52 @@ if (typeof module !== 'undefined' && module.exports) {
             return typeof val === 'string' ? val.trim().replace(/[^\d.-]/g, '') : '';
         },
 
+        toStringCounts(text, locale) {
+            locale = locale || syn.$b?.language || 'ko-KR';
+            if (!context.Intl?.Segmenter) {
+                return {
+                    characters: text.length,
+                    words: (text.match(/\S+/g) || []).length,
+                    sentences: (text.match(/[^.!?]+[.!?]+/g) || []).length
+                };
+            }
+
+            const characters = new Intl.Segmenter(
+                locale,
+                { granularity: 'grapheme' }
+            );
+
+            const words = new Intl.Segmenter(
+                locale,
+                { granularity: 'word' }
+            );
+
+            const sentences = new Intl.Segmenter(
+                locale,
+                { granularity: 'sentence' }
+            );
+
+            return {
+                characters: [...characters.segment(text)].length,
+                words: [...words.segment(text)].length,
+                sentences: [...sentences.segment(text)].length
+            };
+        },
+
         toCurrency(val, localeID, options = {}) {
             const num = this.toNumber(val);
             if (isNaN(num)) return null;
 
             if (localeID && typeof Intl !== 'undefined' && Intl.NumberFormat) {
                 const formatOptions = {
-                    style: 'currency',
+                    style: 'decimal',
                     currency: 'KRW',
                     ...options
                 };
                 try {
                     return new Intl.NumberFormat(localeID, formatOptions).format(num);
                 } catch (e) {
-                    syn.$l.eventLog('$string.toCurrency', `Intl formatting error for locale ${localeID}: ${e}`, 'Warning');
+                    syn.$l.eventLog('context.$string.toCurrency', `Intl formatting error for locale ${localeID}: ${e}`, 'Warning');
                 }
             }
 
@@ -3065,7 +3869,7 @@ if (typeof module !== 'undefined' && module.exports) {
             const strVal = String(val);
             const padLength = Math.max(0, length - strVal.length);
             const padding = String(fix).repeat(padLength);
-            return $string.toBoolean(isLeft) ? padding + strVal : strVal + padding;
+            return context.$string.toBoolean(isLeft) ? padding + strVal : strVal + padding;
         }
 
     });
@@ -3211,7 +4015,7 @@ if (typeof module !== 'undefined' && module.exports) {
         ranks(values, asc = false) {
             if (!Array.isArray(values)) return [];
 
-            const indexedValues = values.map((value, index) => ({ value: $string.toNumber(value), index }));
+            const indexedValues = values.map((value, index) => ({ value: context.$string.toNumber(value), index }));
 
             indexedValues.sort((a, b) => asc ? a.value - b.value : b.value - a.value);
 
@@ -3294,6 +4098,68 @@ if (typeof module !== 'undefined' && module.exports) {
             if (typeof num !== 'number' || typeof total !== 'number' || total === 0) return 0;
             const factor = Math.pow(10, precision);
             return Math.round((num * 100 / total) * factor) / factor;
+        },
+
+        amount(rate, total, precision = 0) {
+            if (typeof total !== 'number' || typeof rate !== 'number' || total === 0) return 0;
+            const factor = Math.pow(10, precision);
+            return Math.round((total * rate / 100) * factor) / factor;
+        },
+
+        aggregate(type, columnValues) {
+            if (typeof columnValues === 'string') {
+                columnValues = columnValues.split(',');
+            }
+
+            if (!Array.isArray(columnValues)) {
+                return 0;
+            }
+
+            const numericValues = [];
+            let validCount = 0;
+
+            for (const value of columnValues) {
+                const numericValue = context.$string.toNumber(value);
+                if (!isNaN(numericValue)) {
+                    numericValues.push(numericValue);
+                    validCount++;
+                }
+            }
+
+            if (validCount === 0 && type !== 'COUNT') {
+                return 0;
+            }
+
+            switch (type.toUpperCase()) {
+                case 'SUM':
+                    return numericValues.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+
+                case 'MIN':
+                    return Math.min(...numericValues);
+
+                case 'MAX':
+                    return Math.max(...numericValues);
+
+                case 'COUNT':
+                    return validCount;
+
+                case 'AVG':
+                    const sumAggregate = numericValues.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+                    return validCount > 0 ? sumAggregate / validCount : 0;
+
+                case 'MEDIAN':
+                    numericValues.sort((a, b) => a - b);
+                    const middle = Math.floor(validCount / 2);
+
+                    if (validCount % 2 === 1) {
+                        return numericValues[middle];
+                    } else {
+                        return (numericValues[middle - 1] + numericValues[middle]) / 2;
+                    }
+
+                default:
+                    return 0;
+            }
         }
     });
     context.$number = $number;
@@ -3354,7 +4220,7 @@ if (typeof module !== 'undefined' && module.exports) {
         toParameterString(jsonObject) {
             if (!jsonObject || typeof jsonObject !== 'object') return '';
             return Object.entries(jsonObject)
-                .map(([key, val]) => `@${key}:${$string.toValue($string.toDynamic(val), '')}`)
+                .map(([key, val]) => `@${key}:${context.$string.toValue(context.$string.toDynamic(val), '')}`)
                 .join(';');
         },
 
@@ -3426,7 +4292,7 @@ if (typeof module !== 'undefined' && module.exports) {
             if (typeof val === 'boolean') return true;
             if (val === undefined || val === null) return false;
             const strVal = String(val).toUpperCase();
-            return ['TRUE', 'FALSE', 'Y', 'N', '1', '0'].includes(strVal);
+            return ['TRUE', 'FALSE', 'T', 'F', 'Y', 'N', '1', '0'].includes(strVal);
         },
 
         isEmpty(val) {
@@ -3487,6 +4353,33 @@ if (typeof module !== 'undefined' && module.exports) {
                 }
             });
             return to;
+        },
+
+        excludeKeys(sourceObject, keysToExclude) {
+            return Object.fromEntries(
+                Object.entries(sourceObject).filter(([key]) => !keysToExclude.includes(key))
+            );
+        },
+
+        parseJsonValue(value, jsonType) {
+            if (context.$object.isNullOrUndefined(value) == true) {
+                return value;
+            }
+
+            switch (jsonType) {
+                case 'integer':
+                    return Number.parseInt(value, 10);
+                case 'number':
+                    return Number(value);
+                case 'boolean':
+                    return value === true || context.$string.toBoolean(value);
+                case 'object':
+                case 'array':
+                    return JSON.parse(value);
+                case 'string':
+                default:
+                    return String(value);
+            }
         }
     });
     context.$object = $object;
@@ -3515,19 +4408,19 @@ if (typeof module !== 'undefined' && module.exports) {
     const eventRegistry = (() => {
         const items = [];
         return Object.freeze({
-            add(el, type, handler, capture = false) {
+            add(el, type, handler, options = {}) {
                 if (!el || !type || typeof handler !== 'function') return false;
-                if (!items.some(item => item.el === el && item.type === type && item.handler === handler && item.capture === capture)) {
-                    items.push({ el, type, handler, capture });
+                if (!items.some(item => item.el === el && item.type === type && item.handler === handler)) {
+                    items.push({ el, type, handler, options });
                     return true;
                 }
                 return false;
             },
-            remove(el, type, handler, capture = false) {
+            remove(el, type, handler) {
                 const initialLength = items.length;
                 for (let i = items.length - 1; i >= 0; i--) {
                     const item = items[i];
-                    if (item.el === el && item.type === type && item.handler === handler && item.capture === capture) {
+                    if (item.el === el && item.type === type && item.handler === handler) {
                         items.splice(i, 1);
                     }
                 }
@@ -3540,30 +4433,68 @@ if (typeof module !== 'undefined' && module.exports) {
                     }
                 }
             },
-            findByArgs(el, type, handler, capture = false) {
+            findByArgs(el, type, handler) {
                 return items.filter(item =>
                     item.el === el &&
                     item.type === type &&
-                    item.handler === handler &&
-                    item.capture === capture
+                    item.handler === handler
                 );
             },
             findAllByArgs(el, type) {
                 return items.filter(item => item.el === el && item.type === type);
             },
+            has(el, type, handler) {
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    if (item.el === el && item.type === type) {
+                        if (typeof handler !== 'function' || item.handler === handler) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            },
             getAll() {
                 return [...items];
             },
             flush() {
-                this.getAll().forEach(({ el, type, handler, capture }) => {
-                    if (el.removeEventListener) {
-                        el.removeEventListener(type, handler, capture);
+                for (let i = items.length - 1; i >= 0; i--) {
+                    const item = items[i];
+                    if (item.el && item.el.removeEventListener) {
+                        item.el.removeEventListener(item.type, item.handler, item.options || {});
                     }
-                });
+                }
                 items.length = 0;
             }
         });
     })();
+
+    const selectNodes = (query, all, logSource) => {
+        if (!context.$object.isString(query)) {
+            return [];
+        }
+
+        try {
+            if (query.startsWith('//') || query.startsWith('.//')) {
+                const xpathResult = doc.evaluate(query, doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                const nodes = [];
+                for (let i = 0; i < xpathResult.snapshotLength; i++) {
+                    nodes.push(xpathResult.snapshotItem(i));
+                }
+                return all ? nodes : (nodes[0] ? [nodes[0]] : []);
+            }
+
+            if (all) {
+                return Array.from(doc.querySelectorAll(query));
+            }
+
+            const element = doc.querySelector(query);
+            return element ? [element] : [];
+        } catch (e) {
+            syn.$l.eventLog(logSource, `잘못된 셀렉터 "${query}": ${e}`, 'Warning');
+            return [];
+        }
+    };
 
     $library.extend({
         prefixs: Object.freeze(['webkit', 'moz', 'ms', 'o', '']),
@@ -3607,7 +4538,33 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         getElement(el) {
-            return $object.isString(el) ? this.get(el) : el;
+            let result = null;
+            if (context.$object.isString(el) == true) {
+                const findEL = this.get(el);
+                if (findEL) {
+                    result = findEL;
+                }
+                else {
+                    result = this.querySelector(el);
+                }
+            }
+            else {
+                if (el && (
+                    el instanceof HTMLElement ||
+                    el instanceof Element ||
+                    (el && el.nodeType === 1) ||
+                    el === window ||
+                    (el && el.constructor && el.constructor.name === 'Window') ||
+                    el === document ||
+                    el instanceof Document ||
+                    el instanceof DocumentFragment ||
+                    el instanceof EventTarget ||
+                    typeof el.addEventListener === 'function'
+                )) {
+                    result = el;
+                }
+            }
+            return result;
         },
 
         stringToArrayBuffer(value) {
@@ -3686,49 +4643,53 @@ if (typeof module !== 'undefined' && module.exports) {
             }
         },
 
-        addEvent(el, type, handler) {
+        addEvent(el, type, handler, options = {}) {
             el = this.getElement(el);
             if (!el || typeof handler !== 'function') return this;
 
-            if (this.events.add(el, type, handler, false)) {
-                if (el.addEventListener) {
-                    el.addEventListener(type, handler, false);
-                }
+            const defaultOptions = {
+                capture: false,
+                once: false,
+                passive: false,
+                ...options
+            };
+            if (this.events.add(el, type, handler, defaultOptions)) {
+                el.addEventListener(type, handler, defaultOptions);
             }
 
-            if ($object.isString(type) && type.toLowerCase() === 'resize') {
+            if (context.$object.isString(type) && type.toLowerCase() === 'resize') {
                 handler();
             }
 
             return this;
         },
 
-        addEvents(query, type, handler) {
+        addEvents(query, type, handler, options = {}) {
             if (typeof handler !== 'function') return this;
 
             let elements = [];
-            if ($object.isString(query)) {
+            if (context.$object.isString(query)) {
                 elements = this.querySelectorAll(query);
             } else if (Array.isArray(query)) {
                 query.forEach(item => {
-                    if ($object.isString(item)) {
-                        elements = elements.concat(this.querySelectorAll(item));
-                    } else if ($object.isObject(item)) {
+                    if (context.$object.isString(item)) {
+                        elements.push(...this.querySelectorAll(item));
+                    } else if (context.$object.isObject(item)) {
                         elements.push(item);
                     }
                 });
                 elements = [...new Set(elements)];
-            } else if ($object.isObject(query)) {
+            } else if (context.$object.isObject(query)) {
                 elements = [query];
             }
 
 
-            elements.forEach(el => this.addEvent(el, type, handler));
+            elements.forEach(el => this.addEvent(el, type, handler, options));
 
             return this;
         },
 
-        addLive(query, type, handler) {
+        addLive(query, type, handler, options = {}) {
             if (globalRoot.devicePlatform === 'node') return this;
 
             this.addEvent(doc, type, (evt) => {
@@ -3738,18 +4699,22 @@ if (typeof module !== 'undefined' && module.exports) {
                     evt.preventDefault();
                     evt.stopPropagation();
                 }
-            });
+            }, options);
             return this;
         },
 
-        removeEvent(el, type, handler) {
+        removeEvent(el, type, handler, options = {}) {
             el = this.getElement(el);
             if (!el || typeof handler !== 'function') return this;
 
-            if (this.events.remove(el, type, handler, false)) {
-                if (el.removeEventListener) {
-                    el.removeEventListener(type, handler, false);
-                }
+            const defaultOptions = {
+                capture: false,
+                once: false,
+                passive: false,
+                ...options
+            };
+            if (this.events.remove(el, type, handler)) {
+                el.removeEventListener(type, handler, defaultOptions);
             }
             return this;
         },
@@ -3758,11 +4723,7 @@ if (typeof module !== 'undefined' && module.exports) {
             el = this.getElement(el);
             if (!el) return false;
 
-            if (typeof handler === 'function') {
-                return this.events.findByArgs(el, type, handler, false).length > 0;
-            } else {
-                return this.events.findAllByArgs(el, type).length > 0;
-            }
+            return this.events.has(el, type, handler);
         },
 
         trigger(el, type, value) {
@@ -3833,7 +4794,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
         get(...ids) {
             if (globalRoot.devicePlatform === 'node' || !doc) return ids.length === 1 ? null : [];
-            const results = ids.map(id => $object.isString(id) ? doc.getElementById(id) : null).filter(el => el !== null);
+            const results = ids.map(id => context.$object.isString(id) ? doc.getElementById(id) : null).filter(el => el !== null);
             return ids.length === 1 ? results[0] || null : results;
         },
 
@@ -3842,20 +4803,9 @@ if (typeof module !== 'undefined' && module.exports) {
 
             const results = [];
             queries.forEach(query => {
-                if ($object.isString(query)) {
-                    try {
-                        if (query.startsWith('//') || query.startsWith('.//')) {
-                            const xpathResult = doc.evaluate(query, doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                            for (let i = 0; i < xpathResult.snapshotLength; i++) {
-                                results.push(xpathResult.snapshotItem(i));
-                            }
-                        } else {
-                            const el = doc.querySelector(query);
-                            if (el) results.push(el);
-                        }
-                    } catch (e) {
-                        syn.$l.eventLog('$l.querySelector', `잘못된 셀렉터 "${query}": ${e}`, 'Warning');
-                    }
+                const nodes = selectNodes(query, false, '$l.querySelector');
+                if (nodes[0]) {
+                    results.push(nodes[0]);
                 }
             });
 
@@ -3867,8 +4817,8 @@ if (typeof module !== 'undefined' && module.exports) {
             if (globalRoot.devicePlatform === 'node' || !doc) return [];
             let results = [];
             tagNames.forEach(tagName => {
-                if ($object.isString(tagName)) {
-                    results = results.concat(Array.from(doc.getElementsByTagName(tagName)));
+                if (context.$object.isString(tagName)) {
+                    results.push(...doc.getElementsByTagName(tagName));
                 }
             });
             return results;
@@ -3878,32 +4828,22 @@ if (typeof module !== 'undefined' && module.exports) {
             if (globalRoot.devicePlatform === 'node' || !doc) return [];
             let results = [];
             queries.forEach(query => {
-                if ($object.isString(query)) {
-                    try {
-                        if (query.startsWith('//') || query.startsWith('.//')) {
-                            const xpathResult = doc.evaluate(query, doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                            for (let i = 0; i < xpathResult.snapshotLength; i++) {
-                                results.push(xpathResult.snapshotItem(i));
-                            }
-                        } else {
-                            results = results.concat(Array.from(doc.querySelectorAll(query)));
-                        }
-                    } catch (e) {
-                        syn.$l.eventLog('$l.querySelectorAll', `잘못된 셀렉터 "${query}": ${e}`, 'Warning');
-                    }
+                const nodes = selectNodes(query, true, '$l.querySelectorAll');
+                if (nodes.length > 0) {
+                    results.push(...nodes);
                 }
             });
             return results;
         },
 
         toEnumValue(enumObject, value) {
-            if (!$object.isObject(enumObject)) return null;
+            if (!context.$object.isObject(enumObject)) return null;
             const entry = Object.entries(enumObject).find(([key, val]) => key === value);
             return entry ? entry[1] : null;
         },
 
         toEnumText(enumObject, value) {
-            if (!$object.isObject(enumObject)) return null;
+            if (!context.$object.isObject(enumObject)) return null;
             const entry = Object.entries(enumObject).find(([key, val]) => val === value);
             return entry ? entry[0] : null;
         },
@@ -3916,13 +4856,13 @@ if (typeof module !== 'undefined' && module.exports) {
                 const options = { delimiter: '｜', newline: '↵' };
 
                 if (parts.length > 1) {
-                    options.meta = $string.toParameterObject(parts[0]);
-                    jsonData = $string.toJson(parts[1], options);
+                    options.meta = context.$string.toParameterObject(parts[0]);
+                    jsonData = context.$string.toJson(parts[1], options);
                 } else {
-                    jsonData = $string.toJson(parts[0], options);
+                    jsonData = context.$string.toJson(parts[0], options);
                 }
 
-                return $string.toBoolean(isFormat) ? JSON.stringify(jsonData, null, 2) : jsonData;
+                return context.$string.toBoolean(isFormat) ? JSON.stringify(jsonData, null, 2) : jsonData;
             } catch (error) {
                 syn.$l.eventLog('$l.prettyTSD', `TSD 파싱 오류: ${error}`, 'Error');
                 return `TSD 파싱 오류: ${error.message}`;
@@ -3968,11 +4908,11 @@ if (typeof module !== 'undefined' && module.exports) {
             var result = [];
 
             if (data) {
-                if ($object.isNullOrUndefined(childrenID) == true) {
+                if (context.$object.isNullOrUndefined(childrenID) == true) {
                     childrenID = 'items';
                 }
 
-                var root = $object.clone(data, false);
+                var root = context.$object.clone(data, false);
                 delete root[childrenID];
                 root[parentItemID] = null;
                 result.push(root);
@@ -3989,7 +4929,7 @@ if (typeof module !== 'undefined' && module.exports) {
         parseNested2Flat(data, newData, itemID, parentItemID, childrenID = 'items') {
             var result = null;
 
-            if ($object.isNullOrUndefined(childrenID) == true) {
+            if (context.$object.isNullOrUndefined(childrenID) == true) {
                 childrenID = 'items';
             }
 
@@ -3998,7 +4938,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 for (var i = 0; i < items.length; i++) {
                     var item = items[i];
 
-                    var cloneItem = $object.clone(item, false);
+                    var cloneItem = context.$object.clone(item, false);
                     delete cloneItem[childrenID];
                     cloneItem[parentItemID] = data[itemID];
 
@@ -4036,7 +4976,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     newData[childrenID] = [];
                 }
                 for (var i = 0; i < child.length; i++) {
-                    newData[childrenID].push($object.clone(child[i]));
+                    newData[childrenID].push(context.$object.clone(child[i]));
                     syn.$l.parseFlat2Nested(data, child[i], newData[childrenID][i], itemID, parentItemID, childrenID);
                 }
             }
@@ -4299,7 +5239,7 @@ if (typeof module !== 'undefined' && module.exports) {
         async blobToFile(blob, fileName, mimeType) {
             if (!(blob instanceof Blob)) return null;
             const effectiveMimeType = mimeType || blob.type || 'application/octet-stream';
-            return new File([blob], fileName || `blob-${$date.toString(new Date(), 'f')}`, { type: effectiveMimeType });
+            return new File([blob], fileName || `blob-${context.$date.toString(new Date(), 'f')}`, { type: effectiveMimeType });
         },
 
         async fileToBase64(file) {
@@ -4364,6 +5304,16 @@ if (typeof module !== 'undefined' && module.exports) {
             return this.base64ToBlob(realData, mimeType);
         },
 
+        async urlToBase64(url) {
+            var result = null;
+            var itemResult = await syn.$r.httpFetch(url).send();
+            if (itemResult && itemResult.error) {
+                return result;
+            }
+            result = await syn.$l.blobToBase64(itemResult, true);
+            return result;
+        },
+
         async resizeImage(blob, maxSize) {
             if (globalRoot.devicePlatform === 'node' || !(blob instanceof Blob) || !blob.type.startsWith('image/')) {
                 const errorMsg = globalRoot.devicePlatform === 'node'
@@ -4425,7 +5375,7 @@ if (typeof module !== 'undefined' && module.exports) {
         eventLogTimer: null,
         eventLogCount: 0,
 
-        eventLog(event, data, logLevelInput = 'Verbose') {
+        eventLog(event, data, logLevelInput = 'Verbose', logStyle = null) {
             const message = data instanceof Error ? data.message : String(data);
             const stack = data instanceof Error ? data.stack : undefined;
 
@@ -4462,18 +5412,23 @@ if (typeof module !== 'undefined' && module.exports) {
                 if (context.console) console.log(finalLogMessage);
 
             } else if (context.console) {
-                switch (logLevelNum) {
-                    case this.logLevel.Error:
-                    case this.logLevel.Fatal:
-                        console.error(finalLogMessage); break;
-                    case this.logLevel.Warning:
-                        console.warn(finalLogMessage); break;
-                    case this.logLevel.Information:
-                        console.info(finalLogMessage); break;
-                    case this.logLevel.Debug:
-                        console.debug(finalLogMessage); break;
-                    default: // Verbose
-                        console.log(finalLogMessage); break;
+                const levelToConsoleMethod = {
+                    [this.logLevel.Fatal]: 'error',
+                    [this.logLevel.Error]: 'error',
+                    [this.logLevel.Warning]: 'warn',
+                    [this.logLevel.Information]: 'info',
+                    [this.logLevel.Debug]: 'debug'
+                };
+
+                const method = levelToConsoleMethod[logLevelNum] || 'log';
+                if (typeof finalLogMessage === 'string' && typeof logStyle === 'string' && logStyle.trim()) {
+                    if (!finalLogMessage.includes('%c')) {
+                        console[method](`%c${finalLogMessage}`, logStyle);
+                    } else {
+                        console[method](finalLogMessage, logStyle);
+                    }
+                } else {
+                    console[method](finalLogMessage);
                 }
 
                 if (syn.Config?.IsDebugMode === true && syn.Config?.Environment === 'Development' && logLevelNum >= this.logLevel.Warning) {
@@ -4483,6 +5438,9 @@ if (typeof module !== 'undefined' && module.exports) {
                 if (doc && !context.console) {
                     const div = doc.createElement('div');
                     div.textContent = finalLogMessage;
+                    if (logStyle) {
+                        div.style.cssText = logStyle;
+                    }
                     const eventlogs = doc.getElementById('eventlogs');
                     if (eventlogs) {
                         eventlogs.appendChild(div);
@@ -4492,19 +5450,6 @@ if (typeof module !== 'undefined' && module.exports) {
                         }, 10);
                     } else {
                         doc.body?.appendChild(div);
-                    }
-                }
-
-                if (context.bound?.browserEvent) {
-                    try {
-                        context.bound.browserEvent('browser', {
-                            ID: 'EventLog',
-                            Data: finalLogMessage
-                        }, (error, json) => {
-                            if (error) console.log(`browserEvent EventLog 콜백 오류: ${error}`);
-                        });
-                    } catch (bridgeError) {
-                        console.log(`bound.browserEvent 호출 오류: ${bridgeError}`);
                     }
                 }
             }
@@ -4538,7 +5483,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
             let logLevel = 0;
             if (logLevelInput) {
-                if ($object.isString(logLevelInput) === true) {
+                if (context.$object.isString(logLevelInput) === true) {
                     logLevel = syn.$l.logLevel[logLevelInput];
                 }
             }
@@ -4550,7 +5495,7 @@ if (typeof module !== 'undefined' && module.exports) {
             }
 
             const logLevelText = syn.$l.toEnumText(syn.$l.logLevel, logLevel);
-            const now = new Date().getTime();
+            const now = Date.now();
             const diff = now - syn.$l.start;
 
             const value =
@@ -4611,12 +5556,23 @@ if (typeof module !== 'undefined' && module.exports) {
 (function (context) {
     'use strict';
     const $request = context.$request || new syn.module();
-    let document = null;
-    if (globalRoot.devicePlatform === 'node') {
-    }
-    else {
-        document = context.document;
-    }
+    const document = globalRoot.devicePlatform === 'node' ? null : context.document;
+    const cookieRegexCache = Object.create(null);
+    const encodedCharacterRegex = /%[0-9A-Fa-f]{2}/;
+
+    const getCookieRegex = (id) => {
+        let regex = cookieRegexCache[id];
+        if (!regex) {
+            regex = new RegExp(
+                '(?:^|; )' +
+                id.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') +
+                '=([^;]*)'
+            );
+            cookieRegexCache[id] = regex;
+        }
+
+        return regex;
+    };
 
     $request.extend({
         params: {},
@@ -4628,11 +5584,11 @@ if (typeof module !== 'undefined' && module.exports) {
             return function (url) {
                 let urlArray = url.split('?');
                 let query = ((urlArray.length == 1) ? urlArray[0] : urlArray[1]).split('&');
-                for (let i = 0; i < query.length; i++) {
+                for (let i = 0, length = query.length; i < length; i++) {
                     let splitIndex = query[i].indexOf('=');
                     const key = query[i].substring(0, splitIndex);
                     const value = query[i].substring(splitIndex + 1);
-                    syn.$r.params[key] = value;
+                    syn.$r.params[key] = encodedCharacterRegex.test(value) == true ? decodeURIComponent(value) : value;
                 }
                 return syn.$r.params;
             }(url)[param];
@@ -4644,13 +5600,13 @@ if (typeof module !== 'undefined' && module.exports) {
 
             param = syn.$r.path + ((syn.$r.path.length > 0 && urlArray.length > 1) ? '&' : '?');
             for (const key in $request.params) {
-                if (typeof (syn.$r.params[key]) == 'string') {
+                if (context.$string.isNullOrEmpty(key) == false && typeof (syn.$r.params[key]) == 'string') {
                     param += key + '=' + syn.$r.params[key] + '&';
                 }
             }
 
-            if (syn.Config && $string.toBoolean(syn.Config.IsClientCaching) == false) {
-                param += '&noCache=' + (new Date()).getTime();
+            if (syn.Config && context.$string.toBoolean(syn.Config.IsClientCaching) == false) {
+                param += '&noCache=' + Date.now();
             }
 
             return encodeURI(param.substring(0, param.length - 1));
@@ -4660,11 +5616,11 @@ if (typeof module !== 'undefined' && module.exports) {
             let result = jsonObject ? Object.entries(jsonObject).reduce((queryString, ref, index) => {
                 const key = ref[0];
                 const val = ref[1];
-                queryString += `&${key}=${$string.toValue(val, '')}`;
+                queryString += `&${key}=${context.$string.toValue(val, '')}`;
                 return queryString;
             }, '') : '';
 
-            if ($string.isNullOrEmpty(result) == false && $string.toBoolean(isQuestion) == true) {
+            if (context.$string.isNullOrEmpty(result) == false && context.$string.toBoolean(isQuestion) == true) {
                 result = '?' + result.substring(1);
             }
 
@@ -4676,6 +5632,62 @@ if (typeof module !== 'undefined' && module.exports) {
             return (url.match(/([^?=&]+)(=([^&]*))/g) || []).reduce(function (a, v) {
                 return a[v.slice(0, v.indexOf('='))] = v.slice(v.indexOf('=') + 1), a;
             }, {});
+        },
+
+        // resolveUrl('/api/v1/users', 'https://example.com'); // https://example.com/api/v1/users
+        // resolveUrl('/api/v1/users', 'https://example.com/api/v2'); // https://example.com/api/v1/users
+        // resolveUrl('../v1/users/', 'https://example.com/api/v2'); // https://example.com/api/v1/users
+        // resolveUrl('users', 'https://example.com/api/v1/groups'); // https://example.com/api/v1/users
+        // const usersApiUrl = resolveUrl('/api/users');
+        resolveUrl(relativePath, baseUrl) {
+            baseUrl = (baseUrl instanceof URL) ? baseUrl.href : (baseUrl || location.href);
+            return new URL(relativePath, baseUrl).href;
+        },
+
+        addQueryParam(param, value, urlStr) {
+            const url = new URL(urlStr || location.href);
+
+            if (context.$object.isObject(param) == true) {
+                Object.entries(param).forEach(([key, val]) => {
+                    url.searchParams.append(key, String(val));
+                });
+            } else if (context.$object.isString(param) && value !== undefined) {
+                url.searchParams.append(param, String(value));
+            } else {
+                syn.$l.eventLog('$r.addQueryParam', '잘못된 파라미터 형식입니다. 문자열 키와 값이거나 객체여야 합니다.', 'Warning');
+            }
+
+            return url.toString();
+        },
+
+        removeQueryParam(paramName, urlStr) {
+            const url = new URL(urlStr || location.href);
+
+            if (context.$object.isArray(paramName) == true) {
+                paramName.forEach(p => url.searchParams.delete(p));
+            } else if (context.$object.isString(paramName)) {
+                url.searchParams.delete(paramName);
+            } else {
+                syn.$l.eventLog('$r.removeQueryParam', '잘못된 파라미터 형식입니다. 문자열 또는 문자열 배열이어야 합니다.', 'Warning');
+            }
+
+            return url.toString();
+        },
+
+        setQueryParam(param, value, urlStr) {
+            const url = new URL(urlStr || location.href);
+
+            if (context.$object.isObject(param) == true) {
+                Object.entries(param).forEach(([key, val]) => {
+                    url.searchParams.set(key, String(val));
+                });
+            } else if (context.$object.isString(param) && value !== undefined) {
+                url.searchParams.set(param, String(value));
+            } else {
+                syn.$l.eventLog('$r.setQueryParam', '잘못된 파라미터 형식입니다. 문자열 키와 값이거나 객체여야 합니다.', 'Warning');
+            }
+
+            return url.toString();
         },
 
         async isCorsEnabled(url) {
@@ -4708,10 +5720,10 @@ if (typeof module !== 'undefined' && module.exports) {
 
                         let response = null;
                         let requestTimeoutID = null;
-                        if ($object.isNullOrUndefined(raw) == false && $object.isString(raw) == false) {
+                        if (context.$object.isNullOrUndefined(raw) == false && context.$object.isString(raw) == false) {
                             options.method = options.method || 'POST';
 
-                            if ($object.isNullOrUndefined(options.headers) == true) {
+                            if (context.$object.isNullOrUndefined(options.headers) == true) {
                                 options.headers = new Headers();
                                 if (raw instanceof FormData) {
                                 }
@@ -4742,7 +5754,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 redirect: 'follow'
                             };
 
-                            if ($object.isNullOrUndefined(options.timeout) == false) {
+                            if (context.$object.isNullOrUndefined(options.timeout) == false) {
                                 const controller = new AbortController();
                                 requestTimeoutID = setTimeout(() => controller.abort(), options.timeout);
                                 data.signal = controller.signal;
@@ -4755,7 +5767,7 @@ if (typeof module !== 'undefined' && module.exports) {
                             }
                         }
                         else {
-                            if ($object.isNullOrUndefined(options.headers) == true) {
+                            if (context.$object.isNullOrUndefined(options.headers) == true) {
                                 options.headers = new Headers();
                                 options.headers.append('Content-Type', options.contentType || 'application/json');
                             }
@@ -4781,7 +5793,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 redirect: 'follow'
                             };
 
-                            if ($object.isNullOrUndefined(options.timeout) == false) {
+                            if (context.$object.isNullOrUndefined(options.timeout) == false) {
                                 const controller = new AbortController();
                                 requestTimeoutID = setTimeout(() => controller.abort(), options.timeout);
                                 data.signal = controller.signal;
@@ -4810,7 +5822,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         }
                         else {
                             result = { error: `status: ${response.status}, text: ${await response.text()}` }
-                            syn.$l.eventLog('$r.httpFetch', `${result.error}`, 'Error');
+                            syn.$l.eventLog('$r.httpFetch', `url: ${url}, ${result.error}`, 'Error');
                         }
 
                         return Promise.resolve(result);
@@ -4826,7 +5838,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 responseType: 'text'
             }, options);
 
-            if ($object.isNullOrUndefined(data) == true) {
+            if (context.$object.isNullOrUndefined(data) == true) {
                 data = {};
             }
 
@@ -4837,7 +5849,7 @@ if (typeof module !== 'undefined' && module.exports) {
             xhr.setRequestHeader('OffsetMinutes', syn.$w.timezoneOffsetMinutes);
 
             let formData = null;
-            if ($object.isNullOrUndefined(data.body) == false) {
+            if (context.$object.isNullOrUndefined(data.body) == false) {
                 const params = data.body;
                 if (method.toUpperCase() == 'GET') {
                     let paramUrl = url + ((url.split('?').length > 1) ? '&' : '?');
@@ -4879,12 +5891,10 @@ if (typeof module !== 'undefined' && module.exports) {
                             return;
                         }
 
-                        if (callback) {
-                            callback({
-                                status: xhr.status,
-                                response: xhr.response
-                            });
-                        }
+                        callback({
+                            status: xhr.status,
+                            response: xhr.response
+                        });
                     }
                 }
 
@@ -4935,7 +5945,7 @@ if (typeof module !== 'undefined' && module.exports) {
             if (document.forms.length == 0) {
                 return false;
             }
-            else if (document.forms.length > 0 && $object.isNullOrUndefined(formID) == true) {
+            else if (document.forms.length > 0 && context.$object.isNullOrUndefined(formID) == true) {
                 formID = document.forms[0].id;
             }
 
@@ -4981,12 +5991,10 @@ if (typeof module !== 'undefined' && module.exports) {
                             return;
                         }
 
-                        if (callback) {
-                            callback({
-                                status: xhr.status,
-                                response: xhr.response
-                            });
-                        }
+                        callback({
+                            status: xhr.status,
+                            response: xhr.response
+                        });
                     }
                 }
                 xhr.send(formData);
@@ -5014,26 +6022,20 @@ if (typeof module !== 'undefined' && module.exports) {
             }
         },
 
-        createBlobUrl: (globalRoot.URL && URL.createObjectURL && URL.createObjectURL.bind(URL)) || (globalRoot.webkitURL && webkitURL.createObjectURL && webkitURL.createObjectURL.bind(webkitURL)) || globalRoot.createObjectURL,
-        revokeBlobUrl: (globalRoot.URL && URL.revokeObjectURL && URL.revokeObjectURL.bind(webkitURL)) || globalRoot.revokeObjectURL,
+        createBlobUrl: (globalRoot.URL && typeof globalRoot.URL.createObjectURL === 'function' && globalRoot.URL.createObjectURL.bind(globalRoot.URL)) || (typeof globalRoot.webkitURL !== 'undefined' && typeof globalRoot.webkitURL.createObjectURL === 'function' && globalRoot.webkitURL.createObjectURL.bind(globalRoot.webkitURL)) || globalRoot.createObjectURL,
+        revokeBlobUrl: (globalRoot.URL && typeof globalRoot.URL.revokeObjectURL === 'function' && globalRoot.URL.revokeObjectURL.bind(globalRoot.URL)) || (typeof globalRoot.webkitURL !== 'undefined' && typeof globalRoot.webkitURL.revokeObjectURL === 'function' && globalRoot.webkitURL.revokeObjectURL.bind(globalRoot.webkitURL)) || globalRoot.revokeObjectURL,
 
         getCookie(id) {
-            const matches = document.cookie.match(
-                new RegExp(
-                    '(?:^|; )' +
-                    id.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') +
-                    '=([^;]*)'
-                )
-            );
+            const matches = document.cookie.match(getCookieRegex(id));
             return matches ? decodeURIComponent(matches[1]) : undefined;
         },
 
         setCookie(id, val, expires, path, domain, secure) {
-            if ($object.isNullOrUndefined(expires) == true) {
-                expires = new Date((new Date()).getTime() + (1000 * 60 * 60 * 24));
+            if (context.$object.isNullOrUndefined(expires) == true) {
+                expires = new Date(Date.now() + (1000 * 60 * 60 * 24));
             }
 
-            if ($object.isNullOrUndefined(path) == true) {
+            if (context.$object.isNullOrUndefined(path) == true) {
                 path = '/';
             }
 
@@ -5058,6 +6060,8 @@ if (typeof module !== 'undefined' && module.exports) {
     $network.extend({
         myChannelID: null,
         connections: [],
+        sseConnections: {},
+        wsConnections: {},
         concreate($network) {
             $network.myChannelID = syn.$r.query('channelID') || syn.$r.query('ChannelID') || syn.$r.query('CHANNELID') || syn.$r.query('channelid') || '';
         },
@@ -5128,7 +6132,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 let parsedMessage;
                 try {
                     if (!evt.data || location.origin != evt.origin) return;
-                    parsedMessage = JSON.parse(evt.data);
+                    parsedMessage = context.$object.isString(evt.data) == true ? JSON.parse(evt.data) : evt.data;
                     if (typeof parsedMessage !== 'object' || parsedMessage === null) {
                         syn.$l.eventLog('$network.onPostMessage', 'postMessage data 확인 필요 (non-object)', 'Verbose');
                         return;
@@ -5338,8 +6342,12 @@ if (typeof module !== 'undefined' && module.exports) {
                                 const transaction = createTransaction(id, origin, data.callbacks || []);
                                 receivedRequests[id] = {};
                                 try {
-                                    const processedParams = params;
+                                    let processedParams = params;
                                     if (Array.isArray(data.callbacks)) {
+                                        if (processedParams === null || processedParams === undefined || typeof processedParams !== 'object') {
+                                            processedParams = {};
+                                        }
+
                                         data.callbacks.forEach(path => {
                                             const pathItems = path.split('/');
                                             let currentParamLevel = processedParams;
@@ -5656,6 +6664,253 @@ if (typeof module !== 'undefined' && module.exports) {
             }
 
             connection.emit(val);
+        },
+
+        // const sseEventHandler = {
+        //     open: () => {
+        //         console.log('SSE 연결 성공!');
+        //     },
+        //     message: (event) => {
+        //         const data = JSON.parse(event.data);
+        //         console.log('일반 메시지:', data);
+        //     },
+        //     heartbeat: (event) => {
+        //         console.log('서버 상태:', event.data, '마지막 이벤트 ID:', event.lastEventId);
+        //     },
+        //     notice: (event) => {
+        //         const notification = JSON.parse(event.data);
+        //         showNotification(notification.title, notification.message);
+        //     }
+        // };
+        // 
+        // syn.$w.startSse('realtime-updates', '/api/events', sseEventHandler);
+        startSse(id, url, eventHandlers, options = {}) {
+            if (typeof id !== 'string' || !id) {
+                syn.$l.eventLog('$n.startSse', '고유한 연결 ID를 제공해야 합니다.', 'Error');
+                return null;
+            }
+            if (this.sseConnections[id]) {
+                syn.$l.eventLog('$n.startSse', `ID '${id}'를 가진 SSE 연결이 이미 존재합니다.`, 'Warning');
+                return this.sseConnections[id];
+            }
+            if (!context.EventSource) {
+                syn.$l.eventLog('$n.startSse', '이 브라우저는 EventSource를 지원하지 않습니다.', 'Error');
+                return null;
+            }
+
+            const config = {
+                withCredentials: false,
+                ...options
+            };
+
+            try {
+                const events = new EventSource(url, { withCredentials: config.withCredentials });
+                const defaultHandlers = {
+                    open: () => {
+                        syn.$l.eventLog('$n.startSse', `SSE 연결이 열렸습니다 (ID: ${id}).`, 'Information');
+                    },
+                    error: (event) => {
+                        if (events.readyState === EventSource.CLOSED) {
+                            syn.$l.eventLog('$n.startSse', `SSE 연결이 닫혔습니다 (ID: ${id}).`, 'Information');
+                        } else {
+                            syn.$l.eventLog('$n.startSse', `SSE 에러 발생 (ID: ${id}).`, 'Error', event);
+                        }
+                    },
+                    message: (event) => {
+                        syn.$l.eventLog('$n.startSse', `기본 메시지 수신 (ID: ${id}): ${event.data}`, 'Verbose');
+                    }
+                };
+
+                const handlers = { ...defaultHandlers, ...eventHandlers };
+
+                Object.entries(handlers).forEach(([eventName, handler]) => {
+                    if (typeof handler === 'function') {
+                        events.addEventListener(eventName, handler);
+                    }
+                });
+
+                this.sseConnections[id] = events;
+                return events;
+
+            } catch (error) {
+                syn.$l.eventLog('$n.startSse', `SSE 연결 생성 실패 (ID: ${id}).`, 'Fatal', error);
+                return null;
+            }
+        },
+
+        // syn.$w.stopSse('realtime-updates');
+        stopSse(id) {
+            const connection = this.sseConnections[id];
+            if (connection) {
+                connection.close();
+                delete this.sseConnections[id];
+                syn.$l.eventLog('$n.stopSse', `SSE 연결을 닫았습니다 (ID: ${id}).`, 'Information');
+                return true;
+            }
+            syn.$l.eventLog('$n.stopSse', `닫을 SSE 연결을 찾을 수 없습니다 (ID: ${id}).`, 'Warning');
+            return false;
+        },
+
+        stopAllSse() {
+            Object.keys(this.sseConnections).forEach(id => {
+                this.stopSse(id);
+            });
+        },
+
+        getSseConnection(id) {
+            return this.sseConnections[id];
+        },
+
+        // const wsEventHandler = {
+        //     open: () => {
+        //         console.log('채팅 서버에 연결되었습니다.');
+        //         syn.$n.sendSocketMessage('chat', { type: 'join', user: 'alex' });
+        //     },
+        //     message: (data) => {
+        //         if (data.type === 'message') {
+        //             appendChatMessage(data.user, data.text);
+        //         } else if (data.type === 'user_list') {
+        //             updateUserList(data.users);
+        //         }
+        //     },
+        //     close: (event) => {
+        //         console.log(`채팅 서버와 연결이 끊어졌습니다. 코드: ${event.code}`);
+        //     },
+        //     error: (err) => {
+        //         console.error('채팅 소켓 에러:', err);
+        //     }
+        // };
+        // 
+        // syn.$n.startSocket('chat', 'wss://example.com/chat', wsEventHandler);
+        startSocket(id, url, eventHandlers = {}, options = {}) {
+            if (typeof id !== 'string' || !id) {
+                syn.$l.eventLog('$n.startSocket', '고유한 연결 ID를 제공해야 합니다.', 'Error');
+                return null;
+            }
+            if (this.wsConnections[id]) {
+                syn.$l.eventLog('$n.startSocket', `ID '${id}'를 가진 WebSocket 연결이 이미 존재합니다.`, 'Warning');
+                return this.wsConnections[id].socket;
+            }
+            if (!context.WebSocket) {
+                syn.$l.eventLog('$n.startSocket', '이 브라우저는 WebSocket을 지원하지 않습니다.', 'Error');
+                return null;
+            }
+
+            const config = {
+                autoReconnect: true,
+                reconnectInterval: 3000,
+                json: true,
+                ...options
+            };
+
+            const connect = () => {
+                try {
+                    const socket = new WebSocket(url);
+
+                    const connection = {
+                        id,
+                        socket,
+                        url,
+                        eventHandlers,
+                        options: config,
+                        reconnectTimer: null,
+                        _isClosedIntentionally: false
+                    };
+
+                    this.wsConnections[id] = connection;
+
+                    socket.addEventListener('open', (event) => {
+                        syn.$l.eventLog('$n.startSocket', `WebSocket 연결이 열렸습니다 (ID: ${id}).`, 'Information');
+                        if (connection.reconnectTimer) {
+                            clearTimeout(connection.reconnectTimer);
+                            connection.reconnectTimer = null;
+                        }
+                        if (eventHandlers.open) eventHandlers.open(event);
+                    });
+
+                    socket.addEventListener('message', (event) => {
+                        let data = event.data;
+                        if (config.json) {
+                            try {
+                                data = JSON.parse(event.data);
+                            } catch (e) {
+                                syn.$l.eventLog('$n.startSocket', `JSON 파싱 오류 (ID: ${id}): ${e.message}`, 'Warning');
+                            }
+                        }
+                        if (eventHandlers.message) eventHandlers.message(data, event);
+                    });
+
+                    socket.addEventListener('error', (event) => {
+                        syn.$l.eventLog('$n.startSocket', `WebSocket 에러 발생 (ID: ${id}).`, 'Error', event);
+                        if (eventHandlers.error) eventHandlers.error(event);
+                    });
+
+                    socket.addEventListener('close', (event) => {
+                        syn.$l.eventLog('$n.startSocket', `WebSocket 연결이 닫혔습니다 (ID: ${id}). Code: ${event.code}`, 'Information');
+                        if (eventHandlers.close) eventHandlers.close(event);
+
+                        if (config.autoReconnect && !connection._isClosedIntentionally) {
+                            syn.$l.eventLog('$n.startSocket', `${config.reconnectInterval}ms 후 재연결 시도... (ID: ${id})`, 'Information');
+                            connection.reconnectTimer = setTimeout(() => {
+                                delete this.wsConnections[id];
+                                this.startSocket(id, url, eventHandlers, options);
+                            }, config.reconnectInterval);
+                        }
+                    });
+
+                } catch (error) {
+                    syn.$l.eventLog('$n.startSocket', `WebSocket 연결 생성 실패 (ID: ${id}).`, 'Fatal', error);
+                    if (config.autoReconnect) {
+                        setTimeout(() => this.startSocket(id, url, eventHandlers, options), config.reconnectInterval);
+                    }
+                }
+            };
+
+            connect();
+            return this.wsConnections[id]?.socket || null;
+        },
+
+        // syn.$n.sendSocketMessage('chat', { type: 'message',text: input.value });
+        sendSocketMessage(id, message) {
+            const connection = this.wsConnections[id];
+            if (connection && connection.socket.readyState === WebSocket.OPEN) {
+                try {
+                    const dataToSend = (connection.options.json && typeof message === 'object')
+                        ? JSON.stringify(message)
+                        : message;
+                    connection.socket.send(dataToSend);
+                    return true;
+                } catch (error) {
+                    syn.$l.eventLog('$n.sendSocketMessage', `메시지 전송 실패 (ID: ${id}).`, 'Error', error);
+                    return false;
+                }
+            }
+            syn.$l.eventLog('$n.sendSocketMessage', `메시지를 보낼 수 없습니다. 연결이 준비되지 않았습니다 (ID: ${id}).`, 'Warning');
+            return false;
+        },
+
+        // syn.$n.stopSocket('chat');
+        stopSocket(id) {
+            const connection = this.wsConnections[id];
+            if (connection) {
+                connection._isClosedIntentionally = true;
+                if (connection.reconnectTimer) {
+                    clearTimeout(connection.reconnectTimer);
+                }
+                connection.socket.close();
+                delete this.wsConnections[id];
+                syn.$l.eventLog('$n.stopSocket', `WebSocket 연결을 닫았습니다 (ID: ${id}).`, 'Information');
+            } else {
+                syn.$l.eventLog('$n.stopSocket', `닫을 WebSocket 연결을 찾을 수 없습니다 (ID: ${id}).`, 'Warning');
+            }
+        },
+
+        stopAllSockets() {
+            Object.keys(this.wsConnections).forEach(id => this.stopSocket(id));
+        },
+
+        getSocket(id) {
+            return this.wsConnections[id]?.socket;
         }
     });
 
@@ -5687,6 +6942,8 @@ if (typeof module !== 'undefined' && module.exports) {
         moduleReadyIntervalID: null,
         remainingReadyIntervalID: null,
         remainingReadyCount: 0,
+        intersectionObservers: {},
+        proxyBasePath: '',
 
         defaultControlOptions: {
             value: '',
@@ -5706,12 +6963,11 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         setStorage(prop, val, isLocal = false, ttl) {
-            const storageKey = prop;
             const storageValue = JSON.stringify(val);
 
             if (globalRoot.devicePlatform === 'node') {
                 if (isLocal) {
-                    localStorage.setItem(storageKey, storageValue);
+                    localStorage.setItem(prop, storageValue);
                 } else {
                     const effectiveTTL = ttl ?? 1200000;
                     const now = Date.now();
@@ -5720,25 +6976,23 @@ if (typeof module !== 'undefined' && module.exports) {
                         expiry: now + effectiveTTL,
                         ttl: effectiveTTL
                     };
-                    localStorage.setItem(storageKey, JSON.stringify(item));
+                    localStorage.setItem(prop, JSON.stringify(item));
                 }
             } else {
                 const storage = isLocal ? localStorage : sessionStorage;
-                storage.setItem(storageKey, storageValue);
+                storage.setItem(prop, storageValue);
             }
 
             return this;
         },
 
         getStorage(prop, isLocal = false) {
-            const storageKey = prop;
-
             if (globalRoot.devicePlatform === 'node') {
                 if (isLocal) {
-                    const val = localStorage.getItem(storageKey);
+                    const val = localStorage.getItem(prop);
                     return val ? JSON.parse(val) : null;
                 } else {
-                    const itemStr = localStorage.getItem(storageKey);
+                    const itemStr = localStorage.getItem(prop);
                     if (!itemStr) return null;
 
                     try {
@@ -5746,7 +7000,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         const now = Date.now();
 
                         if (now > item.expiry) {
-                            localStorage.removeItem(storageKey);
+                            localStorage.removeItem(prop);
                             return null;
                         }
 
@@ -5754,26 +7008,38 @@ if (typeof module !== 'undefined' && module.exports) {
                             ...item,
                             expiry: now + item.ttl,
                         };
-                        localStorage.setItem(storageKey, JSON.stringify(refreshedItem));
+                        localStorage.setItem(prop, JSON.stringify(refreshedItem));
                         return item.value;
 
                     } catch (e) {
-                        syn.$l.eventLog('$w.getStorage (Node)', `키 "${storageKey}"에 대한 스토리지 항목 파싱 오류: ${e}`, 'Error');
-                        localStorage.removeItem(storageKey);
-                        return null;
+                        syn.$l.eventLog('$w.getStorage (Node)', `키 "${prop}"에 대한 스토리지 항목 파싱 오류: ${e}`, 'Error');
+                        localStorage.removeItem(prop);
                     }
                 }
             } else {
                 const storage = isLocal ? localStorage : sessionStorage;
-                const val = storage.getItem(storageKey);
-                try {
-                    return val ? JSON.parse(val) : null;
-                } catch (e) {
-                    syn.$l.eventLog('$w.getStorage (Browser)', `키 "${storageKey}"에 대한 스토리지 항목 파싱 오류: ${e}`, 'Error');
-                    storage.removeItem(storageKey);
-                    return null;
+                if (context.$object.isString(prop) == true) {
+                    const val = storage.getItem(prop);
+                    try {
+                        return val ? JSON.parse(val) : null;
+                    } catch (e) {
+                        syn.$l.eventLog('$w.getStorage (Browser)', `키 "${prop}"에 대한 스토리지 항목 파싱 오류: ${e}`, 'Error');
+                        storage.removeItem(prop);
+                    }
+                }
+                else if (context.$object.isArray(prop) == true) {
+                    let results = {};
+                    for (let i = 0; i < storage.length; i++) {
+                        const key = storage.key(i);
+                        if (prop.includes(key) == true) {
+                            results[key] = storage.getItem(key);
+                        }
+                    }
+                    return results;
                 }
             }
+
+            return null;
         },
 
         removeStorage(prop, isLocal = false) {
@@ -5785,6 +7051,16 @@ if (typeof module !== 'undefined' && module.exports) {
                 storage.removeItem(storageKey);
             }
             return this;
+        },
+
+        getStorageKeys(isLocal = false) {
+            const keys = [];
+            const storage = isLocal ? localStorage : sessionStorage;
+
+            for (let i = 0; i < storage.length; i++) {
+                keys.push(storage.key(i));
+            }
+            return keys;
         },
 
         activeControl(evt) {
@@ -5847,7 +7123,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                     evt: e
                                 });
 
-                                if ($object.isNullOrUndefined(result) == true || $string.toBoolean(result) == false) {
+                                if (context.$object.isNullOrUndefined(result) == true || context.$string.toBoolean(result) == false) {
                                     result = false;
                                 }
                             }
@@ -5917,7 +7193,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     syn.$l.addEvent(matchMedia('(min-width: 1400px)'), 'change', matchMedia_change);
                 }
 
-                if ($object.isNullOrUndefined(syn.$w.User) == true) {
+                if (context.$object.isNullOrUndefined(syn.$w.User) == true) {
                     var sso = {
                         TokenID: '',
                         UserNo: 0,
@@ -5925,7 +7201,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         UserName: '',
                         BusinessPhoneNo: '',
                         BusinessEmail: '',
-                        DepartmentID: '',
+                        DepartmentNo: '',
                         DepartmentName: '',
                         PositionID: '',
                         PositionName: '',
@@ -5943,15 +7219,15 @@ if (typeof module !== 'undefined' && module.exports) {
                     }
                 }
 
-                if ($object.isNullOrUndefined(syn.$w.User) == false) {
+                if (context.$object.isNullOrUndefined(syn.$w.User) == false) {
                     syn.$l.deepFreeze(syn.$w.User);
                 }
 
-                if ($object.isNullOrUndefined(syn.$w.Variable) == false) {
+                if (context.$object.isNullOrUndefined(syn.$w.Variable) == false) {
                     syn.$l.deepFreeze(syn.$w.Variable);
                 }
 
-                if (mod && mod.context.synControls && ($object.isNullOrUndefined(mod.context.tabOrderControls) == true || mod.context.tabOrderControls.length == 0)) {
+                if (mod && mod.context.synControls && (context.$object.isNullOrUndefined(mod.context.tabOrderControls) == true || mod.context.tabOrderControls.length == 0)) {
                     var synTagNames = [];
                     var syn_tags = document.body.outerHTML.match(/<(syn_).+?>/gi);
                     if (syn_tags) {
@@ -5963,14 +7239,14 @@ if (typeof module !== 'undefined' && module.exports) {
                         }
                     }
 
-                    synTagNames = $array.distinct(synTagNames);
+                    synTagNames = context.$array.distinct(synTagNames);
                     var findElements = document.querySelectorAll('input,select,textarea,button' + (synTagNames.length > 0 ? ',' + synTagNames.join(',') : ''));
                     var els = [];
                     var length = findElements.length;
                     for (var idx = 0; idx < length; idx++) {
                         var el = findElements[idx];
                         if (el && el.style && el.style.display == 'none' || el.type == 'hidden') {
-                            if (el.id && el.tagName.toUpperCase() == 'SELECT' && $string.isNullOrEmpty(el.getAttribute('syn-datafield')) == false) {
+                            if (el.id && el.tagName.toUpperCase() == 'SELECT' && context.$string.isNullOrEmpty(el.getAttribute('syn-datafield')) == false) {
                                 els.push(el);
                             }
                             else {
@@ -5981,7 +7257,7 @@ if (typeof module !== 'undefined' && module.exports) {
                             if (el.id && el.id.includes('btn_syneditor_') == false && el.id.includes('chk_syngrid_') == false && el.id.includes('_hidden') == false) {
                                 els.push(el);
                             }
-                            else if (el.id && el.tagName.toUpperCase() == 'SELECT' && $string.isNullOrEmpty(el.getAttribute('syn-datafield')) == false) {
+                            else if (el.id && el.tagName.toUpperCase() == 'SELECT' && context.$string.isNullOrEmpty(el.getAttribute('syn-datafield')) == false) {
                                 els.push(el);
                             }
                             else if (el.id && el.tagName.includes('SYN_') == true) {
@@ -6023,7 +7299,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 });
                             }
                         }
-                        else if (el.id && el.tagName.toUpperCase() == 'SELECT' && $string.isNullOrEmpty(el.getAttribute('syn-datafield')) == false) {
+                        else if (el.id && el.tagName.toUpperCase() == 'SELECT' && context.$string.isNullOrEmpty(el.getAttribute('syn-datafield')) == false) {
                             var offset = null;
                             if (el.getAttribute('multiple') === false) {
                                 var control = syn.uicontrols.$select.getControl(el.id);
@@ -6092,7 +7368,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     if (mod.context.tabOrderControls.length > 0) {
                         if (mod.config) {
                             // html (html defined), tdlr (top > down > left > right), lrtd (left > right > top > down)
-                            if ($string.isNullOrEmpty(mod.context.tapOrderFlow) == true) {
+                            if (context.$string.isNullOrEmpty(mod.context.tapOrderFlow) == true) {
                                 mod.context.tapOrderFlow = 'html';
                             }
 
@@ -6151,7 +7427,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
             var pageFormInit = async () => {
                 var mod = context[syn.$w.pageScript];
-                if (mod.config && $string.isNullOrEmpty(mod.config.layoutPage) == false) {
+                if (mod.config && context.$string.isNullOrEmpty(mod.config.layoutPage) == false) {
                     var masterLayout = await syn.$w.fetchText(mod.config.layoutPage);
                     if (masterLayout) {
                         var parser = new DOMParser();
@@ -6177,7 +7453,7 @@ if (typeof module !== 'undefined' && module.exports) {
                             for (var i = 0, length = bodys.length; i < length; i++) {
                                 var body = bodys[i];
                                 var position = body.getAttribute('position');
-                                if ($string.isNullOrEmpty(position) == false && ['beforebegin', 'afterbegin', 'beforeend', 'afterend'].indexOf(position) > -1) {
+                                if (context.$string.isNullOrEmpty(position) == false && ['beforebegin', 'afterbegin', 'beforeend', 'afterend'].indexOf(position) > -1) {
                                     masterPage.body.insertAdjacentHTML(position, body.innerHTML);
                                 }
                             }
@@ -6192,8 +7468,8 @@ if (typeof module !== 'undefined' && module.exports) {
                 }
 
                 if (context.domainLibraryLoad) {
-                    var isContinue = domainLibraryLoad();
-                    if ($object.isNullOrUndefined(isContinue) == false && isContinue === false) {
+                    var isContinue = await domainLibraryLoad();
+                    if (context.$object.isNullOrUndefined(isContinue) == false && isContinue === false) {
                         return false;
                     }
                 }
@@ -6390,11 +7666,11 @@ if (typeof module !== 'undefined' && module.exports) {
                             options = eval('(' + synOptions + ')');
                         }
                     } catch (error) {
-                         syn.$l.eventLog('$w.contentLoaded', 'elID: "{0}" syn-options 확인 필요: '.format(synControl.id) + error.message, 'Warning');
+                        syn.$l.eventLog('$w.contentLoaded', 'elID: "{0}" syn-options 확인 필요: '.format(synControl.id) + error.message, 'Warning');
                     }
 
                     if (options && options.transactConfig && options.transactConfig.triggerEvent) {
-                        if ($object.isString(options.transactConfig.triggerEvent) == true) {
+                        if (context.$object.isString(options.transactConfig.triggerEvent) == true) {
                             syn.$l.addEvent(elID, options.transactConfig.triggerEvent, function (evt) {
                                 var el = syn.$w.activeControl(evt);
                                 var synOptions = el.getAttribute('syn-options') || null;
@@ -6412,7 +7688,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 }
                             });
                         }
-                        else if ($object.isArray(options.transactConfig.triggerEvent) == true) {
+                        else if (context.$object.isArray(options.transactConfig.triggerEvent) == true) {
                             var triggerFunction = function (evt) {
                                 var el = syn.$w.activeControl(evt);
                                 var synOptions = el.getAttribute('syn-options') || null;
@@ -6438,7 +7714,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     }
 
                     if (options && options.triggerConfig && options.triggerConfig.triggerEvent) {
-                        if ($object.isString(options.triggerConfig.triggerEvent) == true) {
+                        if (context.$object.isString(options.triggerConfig.triggerEvent) == true) {
                             syn.$l.addEvent(elID, options.triggerConfig.triggerEvent, function (evt) {
                                 var triggerConfig = null;
                                 var el = syn.$w.activeControl(evt);
@@ -6462,7 +7738,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 }
                             });
                         }
-                        else if ($object.isArray(options.triggerConfig.triggerEvent) == true) {
+                        else if (context.$object.isArray(options.triggerConfig.triggerEvent) == true) {
                             var triggerFunction = function (evt) {
                                 var triggerConfig = null;
                                 var el = syn.$w.activeControl(evt);
@@ -6508,7 +7784,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 }
 
                 syn.$w.remainingReadyIntervalID = setInterval(function () {
-                    if ($object.isNullOrUndefined(syn.$w.remainingReadyIntervalID) == false && syn.$w.remainingReadyCount == 0) {
+                    if (context.$object.isNullOrUndefined(syn.$w.remainingReadyIntervalID) == false && syn.$w.remainingReadyCount == 0) {
                         clearInterval(syn.$w.remainingReadyIntervalID);
                         syn.$w.remainingReadyIntervalID = null;
 
@@ -6518,7 +7794,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 }, 25);
 
                 setTimeout(function () {
-                    if ($object.isNullOrUndefined(syn.$w.remainingReadyIntervalID) == false) {
+                    if (context.$object.isNullOrUndefined(syn.$w.remainingReadyIntervalID) == false) {
                         clearInterval(syn.$w.remainingReadyIntervalID);
                         syn.$w.remainingReadyIntervalID = null;
                         syn.$l.eventLog('pageLoad', '화면 초기화 오류, remainingReadyCount: {0} 확인 필요'.format(syn.$w.remainingReadyCount), 'Fatal');
@@ -6526,20 +7802,22 @@ if (typeof module !== 'undefined' && module.exports) {
                 }, syn.$w.pageReadyTimeout);
             };
 
+            syn.$w.mappingModule = syn.$w.getLoaderQueryString('mappingModule') == null ? true : context.$string.toBoolean(syn.$w.getLoaderQueryString('mappingModule'));
             if (syn.$w.mappingModule == true) {
                 var module = {};
                 if (syn.$l.get('moduleScript')) {
                     syn.$w.extend({ pageScript: syn.$l.get('moduleScript').value });
                 }
 
-                if ($string.toBoolean(window.noPageScript) == false) {
+                context.noPageScript = context.noPageScript || (syn.$w.getLoaderQueryString('noPageScript') == null ? false : context.$string.toBoolean(syn.$w.getLoaderQueryString('noPageScript')));
+                if (context.$string.toBoolean(context.noPageScript) == false) {
                     module = await syn.$w.fetchScript(syn.$w.pageScript.replace('$', ''));
                 }
 
-                var mod = context[syn.$w.pageScript] || new syn.module();
+                var mod = new syn.module();
                 mod.config = {
                     programID: syn.Config.ApplicationID,
-                    moduleID: (globalRoot.devicePlatform == 'browser' ? location.pathname.split('/').filter(Boolean)[0] : undefined) || syn.Config.ModuleID,
+                    moduleID: syn.Config.ModuleID || (globalRoot.devicePlatform == 'browser' ? location.pathname.split('/').filter(Boolean)[0] : undefined),
                     businessID: syn.$w.pageProject || syn.Config.ProjectID,
                     systemID: syn.Config.SystemID,
                     transactionID: syn.$w.pageScript.replace('$', ''),
@@ -6561,7 +7839,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 context[syn.$w.pageScript] = mod;
                 context.$this = mod;
 
-                if (window.synLoader) {
+                if (context.synLoader) {
                     syn.$l.addEvent(document, 'pageReady', pageFormInit);
                     context.pageFormReady = true;
                     setTimeout(function () {
@@ -6582,6 +7860,15 @@ if (typeof module !== 'undefined' && module.exports) {
                 pageLoad();
                 syn.$w.isPageLoad = true;
             }
+        },
+
+        getLoaderQueryString(name) {
+            var currentScript = document.currentScript || document.querySelector('script[src*="syn.loader.js"]') || document.querySelector('script[src*="module.js"]');
+            if (currentScript && currentScript.src) {
+                const params = new URLSearchParams(new URL(currentScript.src).search);
+                return params.get(name);
+            }
+            return null;
         },
 
         addReadyCount() {
@@ -6751,12 +8038,12 @@ if (typeof module !== 'undefined' && module.exports) {
 
         tryAddFunction(transactConfig) {
             if (transactConfig && $this && $this.config) {
-                if ($object.isNullOrUndefined(transactConfig.noProgress) == true) {
+                if (context.$object.isNullOrUndefined(transactConfig.noProgress) == true) {
                     transactConfig.noProgress = false;
                 }
 
                 try {
-                    if ($object.isNullOrUndefined($this.config.transactions) == true) {
+                    if (context.$object.isNullOrUndefined($this.config.transactions) == true) {
                         $this.config.transactions = [];
                     }
 
@@ -6771,7 +8058,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     const synControlList = $this.context.synControls;
                     const transactionObject = {};
                     transactionObject.functionID = transactConfig.functionID;
-                    transactionObject.transactionResult = $object.isNullOrUndefined(transactConfig.transactionResult) == true ? true : transactConfig.transactionResult === true;
+                    transactionObject.transactionResult = context.$object.isNullOrUndefined(transactConfig.transactionResult) == true ? true : transactConfig.transactionResult === true;
                     transactionObject.inputs = [];
                     transactionObject.outputs = [];
 
@@ -6810,16 +8097,16 @@ if (typeof module !== 'undefined' && module.exports) {
                                             synOptions = eval('(' + options + ')');
                                         }
 
-                                        if (synOptions == null || $string.isNullOrEmpty(synControlConfig.field) == true) {
+                                        if (synOptions == null || context.$string.isNullOrEmpty(synControlConfig.field) == true) {
                                             continue;
                                         }
 
                                         let isBelong = false;
                                         if (synOptions.belongID) {
-                                            if ($object.isString(synOptions.belongID) == true) {
+                                            if (context.$object.isString(synOptions.belongID) == true) {
                                                 isBelong = transactConfig.functionID == synOptions.belongID;
                                             }
-                                            else if ($object.isArray(synOptions.belongID) == true) {
+                                            else if (context.$object.isArray(synOptions.belongID) == true) {
                                                 isBelong = synOptions.belongID.indexOf(transactConfig.functionID) > -1;
                                             }
                                         }
@@ -6837,8 +8124,8 @@ if (typeof module !== 'undefined' && module.exports) {
                                         return item.field == input.dataFieldID && (item.type.indexOf('grid') > -1 || item.type.indexOf('chart') > -1) == true;
                                     });
 
-                                    const controlModule = $object.isNullOrUndefined(synControlConfig) == true ? null : syn.$w.getControlModule(synControlConfig.module);
-                                    if ($object.isNullOrUndefined(controlModule) == false && controlModule.setTransactionBelongID) {
+                                    const controlModule = context.$object.isNullOrUndefined(synControlConfig) == true ? null : syn.$w.getControlModule(synControlConfig.module);
+                                    if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.setTransactionBelongID) {
                                         controlModule.setTransactionBelongID(synControlConfig.id, input, transactConfig);
                                     }
                                     else {
@@ -6849,10 +8136,10 @@ if (typeof module !== 'undefined' && module.exports) {
                                                     for (let l = 0; l < store.columns.length; l++) {
                                                         const column = store.columns[l];
                                                         let isBelong = false;
-                                                        if ($object.isString(column.belongID) == true) {
+                                                        if (context.$object.isString(column.belongID) == true) {
                                                             isBelong = transactConfig.functionID == column.belongID;
                                                         }
-                                                        else if ($object.isArray(column.belongID) == true) {
+                                                        else if (context.$object.isArray(column.belongID) == true) {
                                                             isBelong = column.belongID.indexOf(transactConfig.functionID) > -1;
                                                         }
 
@@ -6876,8 +8163,8 @@ if (typeof module !== 'undefined' && module.exports) {
                                     return item.field == input.dataFieldID && (item.type.indexOf('grid') > -1 || item.type.indexOf('chart') > -1) == true;
                                 });
 
-                                const controlModule = $object.isNullOrUndefined(synControlConfig) == true ? null : syn.$w.getControlModule(synControlConfig.module);
-                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.setTransactionBelongID) {
+                                const controlModule = context.$object.isNullOrUndefined(synControlConfig) == true ? null : syn.$w.getControlModule(synControlConfig.module);
+                                if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.setTransactionBelongID) {
                                     controlModule.setTransactionBelongID(synControlConfig.id, input, transactConfig);
                                 }
                                 else {
@@ -6888,10 +8175,10 @@ if (typeof module !== 'undefined' && module.exports) {
                                                 for (let l = 0; l < store.columns.length; l++) {
                                                     const column = store.columns[l];
                                                     let isBelong = false;
-                                                    if ($object.isString(column.belongID) == true) {
+                                                    if (context.$object.isString(column.belongID) == true) {
                                                         isBelong = transactConfig.functionID == column.belongID;
                                                     }
-                                                    else if ($object.isArray(column.belongID) == true) {
+                                                    else if (context.$object.isArray(column.belongID) == true) {
                                                         isBelong = column.belongID.indexOf(transactConfig.functionID) > -1;
                                                     }
 
@@ -6950,7 +8237,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                             synOptions = eval('(' + options + ')');
                                         }
 
-                                        if (synOptions == null || $string.isNullOrEmpty(synControlConfig.field) == true) {
+                                        if (synOptions == null || context.$string.isNullOrEmpty(synControlConfig.field) == true) {
                                             continue;
                                         }
 
@@ -6959,18 +8246,18 @@ if (typeof module !== 'undefined' && module.exports) {
                                             dataType: synOptions.dataType
                                         };
 
-                                        if (outputConfig.clear == true) {
+                                        if (context.$object.isNullOrUndefined(outputConfig.clear) == true || outputConfig.clear == true) {
                                             if (synControls && synControls.length > 0) {
                                                 const controlInfo = synControls.find(function (item) {
                                                     return item.field == outputConfig.dataFieldID;
                                                 });
 
-                                                if ($string.isNullOrEmpty(controlInfo.module) == true) {
+                                                if (context.$string.isNullOrEmpty(controlInfo.module) == true) {
                                                     continue;
                                                 }
 
                                                 const controlModule = syn.$w.getControlModule(controlInfo.module);
-                                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.clear) {
+                                                if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.clear) {
                                                     controlModule.clear(controlInfo.id);
                                                 }
                                             }
@@ -6991,7 +8278,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                                     };
                                                 }
 
-                                                if (outputConfig.clear == true) {
+                                                if (context.$object.isNullOrUndefined(outputConfig.clear) == true || outputConfig.clear == true) {
                                                     const dataStore = $this.store[store.dataSourceID];
                                                     if (dataStore) {
                                                         dataStore.length = 0;
@@ -7009,18 +8296,18 @@ if (typeof module !== 'undefined' && module.exports) {
                                     return item.field == output.dataFieldID && (item.type.indexOf('grid') > -1 || item.type.indexOf('chart') > -1) == true;
                                 });
 
-                                const controlModule = $object.isNullOrUndefined(synControlConfig) == true ? null : syn.$w.getControlModule(synControlConfig.module);
-                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.setTransactionBelongID) {
+                                const controlModule = context.$object.isNullOrUndefined(synControlConfig) == true ? null : syn.$w.getControlModule(synControlConfig.module);
+                                if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.setTransactionBelongID) {
                                     controlModule.setTransactionBelongID(synControlConfig.id, output);
 
-                                    if (outputConfig.clear == true) {
+                                    if (context.$object.isNullOrUndefined(outputConfig.clear) == true || outputConfig.clear == true) {
                                         if (synControls && synControls.length > 0) {
                                             const controlInfo = synControls.find(function (item) {
                                                 return item.field == output.dataFieldID;
                                             });
 
                                             const controlModule = syn.$w.getControlModule(controlInfo.module);
-                                            if ($object.isNullOrUndefined(controlModule) == false && controlModule.clear) {
+                                            if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.clear) {
                                                 controlModule.clear(controlInfo.id);
                                             }
                                         }
@@ -7049,18 +8336,18 @@ if (typeof module !== 'undefined' && module.exports) {
                                             };
                                         }
 
-                                        if (outputConfig.clear == true) {
+                                        if (context.$object.isNullOrUndefined(outputConfig.clear) == true || outputConfig.clear == true) {
                                             if (synControls && synControls.length > 0) {
                                                 const controlInfo = synControls.find(function (item) {
                                                     return item.field == outputConfig.dataFieldID;
                                                 });
 
-                                                if ($string.isNullOrEmpty(controlInfo.module) == true) {
+                                                if (context.$string.isNullOrEmpty(controlInfo.module) == true) {
                                                     continue;
                                                 }
 
                                                 const controlModule = syn.$w.getControlModule(controlInfo.module);
-                                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.clear) {
+                                                if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.clear) {
                                                     controlModule.clear(controlInfo.id);
                                                 }
                                             }
@@ -7080,7 +8367,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                                         };
                                                     }
 
-                                                    if (outputConfig.clear == true) {
+                                                    if (context.$object.isNullOrUndefined(outputConfig.clear) == true || outputConfig.clear == true) {
                                                         const dataStore = $this.store[store.dataSourceID];
                                                         if (dataStore) {
                                                             dataStore.length = 0;
@@ -7136,8 +8423,14 @@ if (typeof module !== 'undefined' && module.exports) {
 
                 if (isContinue ?? true) {
                     const mergedOptions = syn.$w.argumentsExtend({
-                        message: '', dynamic: 'Y', authorize: 'N', commandType: 'D',
-                        returnType: 'Json', transactionScope: 'N', transactionLog: 'Y'
+                        message: '',
+                        dynamic: 'Y',
+                        authorize: 'N',
+                        commandType: 'D',
+                        returnType: 'Json',
+                        transactionScope: 'N',
+                        transactionLog: 'Y',
+                        endpoint: 'transaction'
                     }, options);
 
                     transactConfig.noProgress = transactConfig.noProgress ?? false;
@@ -7195,50 +8488,68 @@ if (typeof module !== 'undefined' && module.exports) {
         transactionDirect(directObject, callback, options) {
             if (!directObject) {
                 syn.$l.eventLog('$w.transactionDirect', 'directObject 파라미터가 필요합니다.', 'Error');
-                return;
+                return Promise.reject(new Error('directObject 파라미터가 필요합니다.'));
             }
 
-            if (syn.$w.progressMessage && !(directObject.noProgress === true)) {
-                syn.$w.progressMessage();
-            }
-
-            const transactionObj = syn.$w.transactionObject(directObject.functionID, 'Json');
-
-            transactionObj.programID = directObject.programID || syn.Config.ApplicationID;
-            transactionObj.moduleID = directObject.moduleID || (globalRoot.devicePlatform === 'browser' ? location.pathname.split('/').filter(Boolean)[0] : undefined) || syn.Config.ModuleID;
-            transactionObj.businessID = directObject.businessID || syn.Config.ProjectID;
-            transactionObj.systemID = directObject.systemID || globalRoot.$this?.config?.systemID || syn.Config.SystemID;
-            transactionObj.transactionID = directObject.transactionID;
-            transactionObj.dataMapInterface = directObject.dataMapInterface || 'Row|Form';
-            transactionObj.transactionResult = directObject.transactionResult ?? true;
-            transactionObj.screenID = globalRoot.devicePlatform === 'node'
-                ? (directObject.screenID || directObject.transactionID)
-                : (syn.$w.pageScript?.replace('$', '') ?? '');
-            transactionObj.startTraceID = directObject.startTraceID || options?.startTraceID || '';
-
-            const mergedOptions = syn.$w.argumentsExtend({
-                message: '', dynamic: 'Y', authorize: 'N', commandType: 'D',
-                returnType: 'Json', transactionScope: 'N', transactionLog: 'Y'
-            }, options);
-            transactionObj.options = mergedOptions;
-
-
-            if (directObject.inputLists?.length > 0) {
-                transactionObj.inputs.push(...directObject.inputLists);
-                transactionObj.inputsItemCount.push(directObject.inputLists.length);
-            } else if (directObject.inputObjects) {
-                transactionObj.inputs.push(directObject.inputObjects);
-                transactionObj.inputsItemCount.push(1);
-            }
-
-            syn.$w.executeTransaction(directObject, transactionObj, (responseData, additionalData) => {
-                if (callback) {
-                    try {
-                        callback(responseData, additionalData);
-                    } catch (e) {
-                        syn.$l.eventLog('$w.transactionDirect.callback', `콜백 오류: ${e}`, 'Error');
-                    }
+            return new Promise((resolve, reject) => {
+                if (syn.$w.progressMessage && !(directObject.noProgress === true)) {
+                    syn.$w.progressMessage();
                 }
+
+                const transactionObj = syn.$w.transactionObject(directObject.functionID, 'Json');
+
+                transactionObj.programID = directObject.programID || syn.Config.ApplicationID;
+                transactionObj.moduleID = directObject.moduleID || (globalRoot.devicePlatform === 'browser' ? location.pathname.split('/').filter(Boolean)[0] : undefined) || syn.Config.ModuleID;
+                transactionObj.businessID = directObject.businessID || syn.Config.ProjectID;
+                transactionObj.systemID = directObject.systemID || globalRoot.$this?.config?.systemID || syn.Config.SystemID;
+                transactionObj.transactionID = directObject.transactionID;
+                transactionObj.transactionToken = directObject.transactionToken;
+                transactionObj.dataMapInterface = directObject.dataMapInterface || 'Row|Form';
+                transactionObj.transactionResult = directObject.transactionResult ?? true;
+                transactionObj.screenID = globalRoot.devicePlatform === 'node'
+                    ? (directObject.screenID || directObject.transactionID)
+                    : (syn.$w.pageScript?.replace('$', '') ?? '');
+                transactionObj.startTraceID = directObject.startTraceID || options?.startTraceID || '';
+                transactionObj.inputObjects = directObject.inputObjects || [];
+
+                const mergedOptions = syn.$w.argumentsExtend({
+                    message: '',
+                    dynamic: 'Y',
+                    authorize: 'N',
+                    commandType: 'D',
+                    returnType: 'Json',
+                    transactionScope: 'N',
+                    transactionLog: 'Y',
+                    endpoint: 'transaction'
+                }, options);
+                transactionObj.options = mergedOptions;
+
+                if (directObject.inputLists?.length > 0) {
+                    transactionObj.inputs.push(...directObject.inputLists);
+                    transactionObj.inputsItemCount.push(directObject.inputLists.length);
+                } else if (directObject.inputObjects) {
+                    transactionObj.inputs.push(directObject.inputObjects);
+                    transactionObj.inputsItemCount.push(1);
+                }
+
+                syn.$w.executeTransaction(directObject, transactionObj, (responseData, additionalData) => {
+                    if (callback) {
+                        try {
+                            callback(responseData, additionalData);
+                        } catch (e) {
+                            const error = new Error(`콜백 오류: ${e}`);
+                            syn.$l.eventLog('$w.transactionDirect.callback', error.message, 'Error');
+                            reject(error);
+                            return;
+                        }
+                    }
+
+                    if (responseData && responseData.errorText) {
+                        reject(new Error(responseData.errorText));
+                    } else {
+                        resolve({ responseData, additionalData });
+                    }
+                });
             });
         },
 
@@ -7256,7 +8567,8 @@ if (typeof module !== 'undefined' && module.exports) {
                     commandType: 'D',
                     returnType: 'Json',
                     transactionScope: 'N',
-                    transactionLog: 'Y'
+                    transactionLog: 'Y',
+                    endpoint: 'transaction'
                 }, options);
 
                 if (options) {
@@ -7341,7 +8653,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                                     }
                                                 }
 
-                                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
+                                                if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
                                                     inputObjects = controlModule.getValue(controlInfo.id.replace('_hidden', ''), 'Row', inputMapping.items)[0];
                                                 }
                                             }
@@ -7353,7 +8665,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                     else {
                                         for (const key in inputMapping.items) {
                                             const meta = inputMapping.items[key];
-                                            const dataFieldID = key; // syn-datafield
+                                            const dataFieldID = key;
                                             const fieldID = meta.fieldID; // DbColumnID
                                             const dataType = meta.dataType;
                                             const serviceObject = { prop: fieldID, val: '' };
@@ -7366,7 +8678,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
                                                 if (bindingControlInfos.length == 1) {
                                                     const controlInfo = bindingControlInfos[0];
-                                                    if ($object.isNullOrUndefined(controlInfo.module) == true) {
+                                                    if (context.$object.isNullOrUndefined(controlInfo.module) == true) {
                                                         controlValue = syn.$l.get(controlInfo.id).value;
                                                     }
                                                     else {
@@ -7391,11 +8703,11 @@ if (typeof module !== 'undefined' && module.exports) {
                                                             }
                                                         }
 
-                                                        if ($object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
+                                                        if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
                                                             controlValue = controlModule.getValue(controlInfo.id.replace('_hidden', ''), meta);
                                                         }
 
-                                                        if ($object.isNullOrUndefined(controlValue) == true && (dataType == 'number' || dataType == 'numeric')) {
+                                                        if (context.$object.isNullOrUndefined(controlValue) == true && (dataType == 'number' || dataType == 'numeric')) {
                                                             controlValue = 0;
                                                         }
                                                     }
@@ -7416,7 +8728,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                         for (const key in inputMapping.items) {
                                             let isMapping = false;
                                             const meta = inputMapping.items[key];
-                                            const dataFieldID = key; // syn-datafield
+                                            const dataFieldID = key;
                                             const fieldID = meta.fieldID; // DbColumnID
                                             const dataType = meta.dataType;
                                             const serviceObject = { prop: fieldID, val: '' };
@@ -7434,11 +8746,11 @@ if (typeof module !== 'undefined' && module.exports) {
                                                         const controlInfo = bindingControlInfos[0];
                                                         controlValue = $this.store[store.dataSourceID][controlInfo.data];
 
-                                                        if ($object.isNullOrUndefined(controlValue) == true && (dataType == 'number' || dataType == 'numeric')) {
+                                                        if (context.$object.isNullOrUndefined(controlValue) == true && (dataType == 'number' || dataType == 'numeric')) {
                                                             controlValue = 0;
                                                         }
 
-                                                        if ($object.isNullOrUndefined(controlValue) == true) {
+                                                        if (context.$object.isNullOrUndefined(controlValue) == true) {
                                                             controlValue = '';
                                                         }
                                                     }
@@ -7461,13 +8773,12 @@ if (typeof module !== 'undefined' && module.exports) {
                                     }
                                 }
 
-                                transactionObject.inputs.push(inputObjects); // transactionObject.inputs.push($object.clone(inputObjects));
+                                transactionObject.inputs.push(inputObjects);
                                 transactionObject.inputsItemCount.push(1);
                             }
                             else if (inputMapping.requestType == 'List') {
-                                const dataFieldID = inputMapping.dataFieldID; // syn-datafield
+                                const dataFieldID = inputMapping.dataFieldID;
 
-                                let controlValue = '';
                                 if (synControls && synControls.length > 0) {
                                     let bindingControlInfos = synControls.filter(function (item) {
                                         return item.field == dataFieldID;
@@ -7500,7 +8811,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                             }
                                         }
 
-                                        if ($object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
+                                        if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
                                             inputObjects = controlModule.getValue(controlInfo.id.replace('_hidden', ''), 'List', inputMapping.items);
                                         }
                                     }
@@ -7547,6 +8858,10 @@ if (typeof module !== 'undefined' && module.exports) {
                                     }
                                 }
 
+                                if (inputObjects && inputObjects.length == 0) {
+                                    inputObjects = [[{ prop: 'DefaultEmpty', val: '' }]];
+                                };
+
                                 for (const key in inputObjects) {
                                     transactionObject.inputs.push(inputObjects[key]);
                                 }
@@ -7572,10 +8887,7 @@ if (typeof module !== 'undefined' && module.exports) {
                             }
                             else {
                                 if (responseData.length == transaction.outputs.length) {
-                                    // synControls 컨트롤 목록
                                     const synControls = $this.context.synControls;
-
-                                    // Output Mapping을 설정
                                     const outputLength = transaction.outputs.length;
                                     for (let outputIndex = 0; outputIndex < outputLength; outputIndex++) {
                                         const outputMapping = transaction.outputs[outputIndex];
@@ -7588,7 +8900,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                         }
 
                                         if (outputMapping.responseType == 'Form') {
-                                            if ($object.isNullOrUndefined(outputData) == true || $object.isObjectEmpty(outputData) == true) {
+                                            if (context.$object.isNullOrUndefined(outputData) == true || context.$object.isObjectEmpty(outputData) == true) {
                                                 result.outputStat.push({
                                                     fieldID: responseFieldID,
                                                     Count: 0
@@ -7602,11 +8914,11 @@ if (typeof module !== 'undefined' && module.exports) {
 
                                                 for (const key in outputMapping.items) {
                                                     const meta = outputMapping.items[key];
-                                                    const dataFieldID = key; // syn-datafield
-                                                    const fieldID = meta.fieldID; // DbColumnID
+                                                    const dataFieldID = key;
+                                                    const fieldID = meta.fieldID;
 
                                                     const controlValue = outputData[fieldID];
-                                                    if (controlValue != undefined && synControls && synControls.length > 0) {
+                                                    if (controlValue !== undefined && synControls && synControls.length > 0) {
                                                         let bindingControlInfos = synControls.filter(function (item) {
                                                             return item.field == dataFieldID && item.formDataFieldID == outputMapping.dataFieldID;
                                                         });
@@ -7614,7 +8926,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                                         if (bindingControlInfos.length == 1) {
                                                             const controlInfo = bindingControlInfos[0];
                                                             const controlModule = syn.$w.getControlModule(controlInfo.module);
-                                                            if ($object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
+                                                            if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
                                                                 controlModule.setValue(controlInfo.id.replace('_hidden', ''), controlValue, meta);
                                                             }
                                                         }
@@ -7623,7 +8935,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                                             if (syn.uicontrols.$data && syn.uicontrols.$data.storeList.length > 0) {
                                                                 for (let k = 0; k < syn.uicontrols.$data.storeList.length; k++) {
                                                                     const store = syn.uicontrols.$data.storeList[k];
-                                                                    if ($object.isNullOrUndefined($this.store[store.dataSourceID]) == true) {
+                                                                    if (context.$object.isNullOrUndefined($this.store[store.dataSourceID]) == true) {
                                                                         $this.store[store.dataSourceID] = {};
                                                                     }
 
@@ -7657,7 +8969,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                                 fieldID: responseFieldID,
                                                 Count: outputData.length
                                             });
-                                            const dataFieldID = outputMapping.dataFieldID; // syn-datafield
+                                            const dataFieldID = outputMapping.dataFieldID;
                                             if (synControls && synControls.length > 0) {
                                                 let bindingControlInfos = synControls.filter(function (item) {
                                                     return item.field == dataFieldID;
@@ -7666,7 +8978,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                                 if (bindingControlInfos.length == 1) {
                                                     const controlInfo = bindingControlInfos[0];
                                                     const controlModule = syn.$w.getControlModule(controlInfo.module);
-                                                    if ($object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
+                                                    if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
                                                         controlModule.setValue(controlInfo.id.replace('_hidden', ''), outputData, outputMapping.items);
                                                     }
                                                 }
@@ -7675,7 +8987,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                                     if (syn.uicontrols.$data && syn.uicontrols.$data.storeList.length > 0) {
                                                         for (let k = 0; k < syn.uicontrols.$data.storeList.length; k++) {
                                                             const store = syn.uicontrols.$data.storeList[k];
-                                                            if ($object.isNullOrUndefined($this.store[store.dataSourceID]) == true) {
+                                                            if (context.$object.isNullOrUndefined($this.store[store.dataSourceID]) == true) {
                                                                 $this.store[store.dataSourceID] = [];
                                                             }
 
@@ -7717,7 +9029,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                                 fieldID: responseFieldID,
                                                 Count: outputData.length
                                             });
-                                            const dataFieldID = outputMapping.dataFieldID; // syn-datafield
+                                            const dataFieldID = outputMapping.dataFieldID;
 
                                             if (synControls && synControls.length > 0) {
                                                 let bindingControlInfos = synControls.filter(function (item) {
@@ -7727,7 +9039,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                                 if (bindingControlInfos.length == 1) {
                                                     const controlInfo = bindingControlInfos[0];
                                                     const controlModule = syn.$w.getControlModule(controlInfo.module);
-                                                    if ($object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
+                                                    if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
                                                         controlModule.setValue(controlInfo.id.replace('_hidden', ''), outputData, outputMapping.items);
                                                     }
                                                 }
@@ -7795,12 +9107,12 @@ if (typeof module !== 'undefined' && module.exports) {
         getterValue(functionID) {
             try {
                 const transactConfig = $this.transaction[functionID];
-                if ($object.isNullOrUndefined(transactConfig) == true) {
+                if (context.$object.isNullOrUndefined(transactConfig) == true) {
                     syn.$l.eventLog('$w.getterValue', 'functionID "{0}" 확인 필요'.format(functionID), 'Warning');
                     return;
                 }
 
-                if ($string.isNullOrEmpty(transactConfig.functionID) == true) {
+                if (context.$string.isNullOrEmpty(transactConfig.functionID) == true) {
                     transactConfig.functionID = functionID;
                 }
 
@@ -7847,7 +9159,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                             if (bindingControlInfos.length == 1) {
                                                 const controlInfo = bindingControlInfos[0];
                                                 const controlModule = syn.$w.getControlModule(controlInfo.module);
-                                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
+                                                if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
                                                     inputObjects = controlModule.getValue(controlInfo.id.replace('_hidden', ''), 'Row', inputMapping.items)[0];
                                                 }
                                             }
@@ -7873,11 +9185,11 @@ if (typeof module !== 'undefined' && module.exports) {
                                                 if (bindingControlInfos.length == 1) {
                                                     const controlInfo = bindingControlInfos[0];
                                                     const controlModule = syn.$w.getControlModule(controlInfo.module);
-                                                    if ($object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
+                                                    if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
                                                         controlValue = controlModule.getValue(controlInfo.id.replace('_hidden', ''), meta);
                                                     }
 
-                                                    if ($object.isNullOrUndefined(controlValue) == true && (dataType == 'number' || dataType == 'numeric')) {
+                                                    if (context.$object.isNullOrUndefined(controlValue) == true && (dataType == 'number' || dataType == 'numeric')) {
                                                         controlValue = 0;
                                                     }
                                                 }
@@ -7915,11 +9227,11 @@ if (typeof module !== 'undefined' && module.exports) {
                                                         const controlInfo = bindingControlInfos[0];
                                                         controlValue = $this.store[store.dataSourceID][controlInfo.data];
 
-                                                        if ($object.isNullOrUndefined(controlValue) == true && (dataType == 'number' || dataType == 'numeric')) {
+                                                        if (context.$object.isNullOrUndefined(controlValue) == true && (dataType == 'number' || dataType == 'numeric')) {
                                                             controlValue = 0;
                                                         }
 
-                                                        if ($object.isNullOrUndefined(controlValue) == true) {
+                                                        if (context.$object.isNullOrUndefined(controlValue) == true) {
                                                             controlValue = '';
                                                         }
                                                     }
@@ -7952,7 +9264,6 @@ if (typeof module !== 'undefined' && module.exports) {
                             else if (inputMapping.requestType == 'List') {
                                 const dataFieldID = inputMapping.dataFieldID;
 
-                                let controlValue = '';
                                 if (synControls && synControls.length > 0) {
                                     let bindingControlInfos = synControls.filter(function (item) {
                                         return item.field == dataFieldID;
@@ -7961,7 +9272,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                     if (bindingControlInfos.length == 1) {
                                         const controlInfo = bindingControlInfos[0];
                                         const controlModule = syn.$w.getControlModule(controlInfo.module);
-                                        if ($object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
+                                        if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.getValue) {
                                             inputObjects = controlModule.getValue(controlInfo.id.replace('_hidden', ''), 'List', inputMapping.items);
                                         }
                                     }
@@ -8008,6 +9319,11 @@ if (typeof module !== 'undefined' && module.exports) {
                                     }
                                 }
 
+
+                                if (inputObjects && inputObjects.length == 0) {
+                                    inputObjects = [[{ prop: 'DefaultEmpty', val: '' }]];
+                                };
+
                                 for (const key in inputObjects) {
                                     const input = {};
                                     const inputList = inputObjects[key];
@@ -8048,12 +9364,12 @@ if (typeof module !== 'undefined' && module.exports) {
         setterValue(functionID, responseData) {
             try {
                 const transactConfig = $this.transaction[functionID];
-                if ($object.isNullOrUndefined(transactConfig) == true) {
+                if (context.$object.isNullOrUndefined(transactConfig) == true) {
                     syn.$l.eventLog('$w.setterValue', 'functionID "{0}" 확인 필요'.format(functionID), 'Warning');
                     return;
                 }
 
-                if ($string.isNullOrEmpty(transactConfig.functionID) == true) {
+                if (context.$string.isNullOrEmpty(transactConfig.functionID) == true) {
                     transactConfig.functionID = functionID;
                 }
 
@@ -8080,7 +9396,7 @@ if (typeof module !== 'undefined' && module.exports) {
                             const outputData = responseData[outputIndex];
 
                             if (outputMapping.responseType == 'Form') {
-                                if ($object.isNullOrUndefined(outputData) == true || $object.isObjectEmpty(outputData) == true) {
+                                if (context.$object.isNullOrUndefined(outputData) == true || context.$object.isObjectEmpty(outputData) == true) {
                                     result.outputs.push({
                                         fieldID: responseFieldID,
                                         Count: 0
@@ -8098,7 +9414,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                         const fieldID = meta.fieldID;
 
                                         const controlValue = outputData[fieldID];
-                                        if (controlValue != undefined && synControls && synControls.length > 0) {
+                                        if (controlValue !== undefined && synControls && synControls.length > 0) {
                                             let bindingControlInfos = synControls.filter(function (item) {
                                                 return item.field == dataFieldID && item.formDataFieldID == outputMapping.dataFieldID;
                                             });
@@ -8106,7 +9422,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                             if (bindingControlInfos.length == 1) {
                                                 const controlInfo = bindingControlInfos[0];
                                                 const controlModule = syn.$w.getControlModule(controlInfo.module);
-                                                if ($object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
+                                                if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
                                                     controlModule.setValue(controlInfo.id.replace('_hidden', ''), controlValue, meta);
                                                 }
                                             }
@@ -8115,7 +9431,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                                 if (syn.uicontrols.$data && syn.uicontrols.$data.storeList.length > 0) {
                                                     for (let k = 0; k < syn.uicontrols.$data.storeList.length; k++) {
                                                         const store = syn.uicontrols.$data.storeList[k];
-                                                        if ($object.isNullOrUndefined($this.store[store.dataSourceID]) == true) {
+                                                        if (context.$object.isNullOrUndefined($this.store[store.dataSourceID]) == true) {
                                                             $this.store[store.dataSourceID] = {};
                                                         }
 
@@ -8159,7 +9475,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                         if (bindingControlInfos.length == 1) {
                                             const controlInfo = bindingControlInfos[0];
                                             const controlModule = syn.$w.getControlModule(controlInfo.module);
-                                            if ($object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
+                                            if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
                                                 controlModule.setValue(controlInfo.id.replace('_hidden', ''), outputData, outputMapping.items);
                                             }
                                         }
@@ -8168,7 +9484,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                             if (syn.uicontrols.$data && syn.uicontrols.$data.storeList.length > 0) {
                                                 for (let k = 0; k < syn.uicontrols.$data.storeList.length; k++) {
                                                     const store = syn.uicontrols.$data.storeList[k];
-                                                    if ($object.isNullOrUndefined($this.store[store.dataSourceID]) == true) {
+                                                    if (context.$object.isNullOrUndefined($this.store[store.dataSourceID]) == true) {
                                                         $this.store[store.dataSourceID] = [];
                                                     }
 
@@ -8228,7 +9544,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                         if (bindingControlInfos.length == 1) {
                                             const controlInfo = bindingControlInfos[0];
                                             const controlModule = syn.$w.getControlModule(controlInfo.module);
-                                            if ($object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
+                                            if (context.$object.isNullOrUndefined(controlModule) == false && controlModule.setValue) {
                                                 controlModule.setValue(controlInfo.id.replace('_hidden', ''), outputData, outputMapping.items);
                                             }
                                         }
@@ -8282,6 +9598,46 @@ if (typeof module !== 'undefined' && module.exports) {
                     context.scrollTo(0, scrollTop - scrollTop / 8);
                 }
             };
+            context.requestAnimationFrame(scrollStep);
+        },
+
+        scrollToElement(el, offset) {
+            const doc = document;
+            const context = window;
+
+            if (!doc?.documentElement || !context.requestAnimationFrame || !context.scrollTo) {
+                return;
+            }
+
+            el = syn.$l.getElement(el);
+            if (!el) {
+                return;
+            }
+
+            offset = offset || 0;
+            const targetScrollTop = el.getBoundingClientRect().top + context.scrollY - offset;;
+            const startScrollTop = context.scrollY || doc.documentElement.scrollTop || doc.body.scrollTop;
+            const distance = targetScrollTop - startScrollTop;
+            const startTime = performance.now();
+            const duration = 200;
+            const scrollStep = (currentTime) => {
+                const elapsed = currentTime - startTime;
+
+                const progress = Math.min(1, elapsed / duration);
+
+                const easeProgress = progress < 0.5
+                    ? 4 * progress * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+                const currentScroll = startScrollTop + (distance * easeProgress);
+
+                context.scrollTo(0, currentScroll);
+
+                if (progress < 1) {
+                    context.requestAnimationFrame(scrollStep);
+                }
+            };
+
             context.requestAnimationFrame(scrollStep);
         },
 
@@ -8390,7 +9746,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         }, options);
 
                         var requestTimeoutID = null;
-                        if ($object.isNullOrUndefined(raw) == false && $object.isString(raw) == false) {
+                        if (context.$object.isNullOrUndefined(raw) == false && context.$object.isString(raw) == false) {
                             if (options.method == 'GET' || options.method == 'HEAD') {
                                 options.method = 'POST';
                             }
@@ -8398,7 +9754,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 options.method = options.method || 'POST';
                             }
 
-                            if ($object.isNullOrUndefined(options.headers) == true) {
+                            if (context.$object.isNullOrUndefined(options.headers) == true) {
                                 options.headers = new Headers();
                                 if (raw instanceof FormData) {
                                 }
@@ -8429,7 +9785,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 redirect: 'follow'
                             };
 
-                            if ($object.isNullOrUndefined(options.timeout) == false) {
+                            if (context.$object.isNullOrUndefined(options.timeout) == false) {
                                 var controller = new AbortController();
                                 requestTimeoutID = setTimeout(() => controller.abort(), options.timeout);
                                 data.signal = controller.signal;
@@ -8442,7 +9798,7 @@ if (typeof module !== 'undefined' && module.exports) {
                             }
                         }
                         else {
-                            if ($object.isNullOrUndefined(options.headers) == true) {
+                            if (context.$object.isNullOrUndefined(options.headers) == true) {
                                 options.headers = new Headers();
                                 options.headers.append('Content-Type', options.contentType || 'application/json');
                             }
@@ -8468,7 +9824,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 redirect: 'follow'
                             };
 
-                            if ($object.isNullOrUndefined(options.timeout) == false) {
+                            if (context.$object.isNullOrUndefined(options.timeout) == false) {
                                 var controller = new AbortController();
                                 requestTimeoutID = setTimeout(() => controller.abort(), options.timeout);
                                 data.signal = controller.signal;
@@ -8512,8 +9868,9 @@ if (typeof module !== 'undefined' && module.exports) {
         loadScript(url, scriptID, callback) {
             var head;
             var resourceID;
-            if (document.getElementsByTagName('head')) {
-                head = document.getElementsByTagName('head')[0];
+            var heads = document.getElementsByTagName('head');
+            if (heads) {
+                head = heads[0];
             }
             else {
                 document.documentElement.insertBefore(document.createElement('head'), document.documentElement.firstChild);
@@ -8529,11 +9886,11 @@ if (typeof module !== 'undefined' && module.exports) {
                 var el = document.createElement('script');
                 el.setAttribute('type', 'text/javascript');
                 el.setAttribute('id', resourceID);
-                if (syn.Config && $string.toBoolean(syn.Config.IsClientCaching) == true) {
+                if (syn.Config && context.$string.toBoolean(syn.Config.IsClientCaching) == true) {
                     el.setAttribute('src', url);
                 }
                 else {
-                    el.setAttribute('src', url + (url.indexOf('?') > -1 ? '&' : '?') + 'noCache=' + (new Date()).getTime());
+                    el.setAttribute('src', url + (url.indexOf('?') > -1 ? '&' : '?') + 'noCache=' + Date.now());
                 }
 
                 if (callback && typeof callback === 'function') {
@@ -8551,8 +9908,9 @@ if (typeof module !== 'undefined' && module.exports) {
         loadStyle(url, styleID, callback) {
             var head;
             var resourceID;
-            if (document.getElementsByTagName('head')) {
-                head = document.getElementsByTagName('head')[0];
+            var heads = document.getElementsByTagName('head');
+            if (heads) {
+                head = heads[0];
             }
             else {
                 document.documentElement.insertBefore(document.createElement('head'), document.documentElement.firstChild);
@@ -8571,11 +9929,11 @@ if (typeof module !== 'undefined' && module.exports) {
                 el.setAttribute('rel', 'stylesheet');
                 el.setAttribute('type', 'text/css');
                 el.setAttribute('id', resourceID);
-                if (syn.Config && $string.toBoolean(syn.Config.IsClientCaching) == true) {
+                if (syn.Config && context.$string.toBoolean(syn.Config.IsClientCaching) == true) {
                     el.setAttribute('href', url);
                 }
                 else {
-                    el.setAttribute('href', url + (url.indexOf('?') > -1 ? '&' : '?') + 'noCache=' + (new Date()).getTime());
+                    el.setAttribute('href', url + (url.indexOf('?') > -1 ? '&' : '?') + 'noCache=' + Date.now());
                 }
 
                 head.appendChild(el);
@@ -8586,6 +9944,101 @@ if (typeof module !== 'undefined' && module.exports) {
             }
 
             return $webform;
+        },
+
+        getDynamicStyle(styleID) {
+            if (context.$object.isNullOrUndefined(styleID) == true) {
+                const sheets = doc.styleSheets;
+                if (sheets.length > 0) {
+                    return sheets[sheets.length - 1];
+                }
+                return null;
+            }
+
+            let styleEl = doc.getElementById(styleID);
+            if (!styleEl) {
+                styleEl = doc.createElement('style');
+                styleEl.id = styleID;
+                doc.head.appendChild(styleEl);
+            }
+            return styleEl.sheet;
+        },
+
+        // syn.$l.addCssRule('.highlight { background-color: yellow; font-weight: bold; }', 'page-style');
+        // syn.$l.addCssRule('div { border: 1px solid red; }', 'page-styles');
+        // syn.$l.addCssRule('span { border: 1px solid blue; }', 'page-styles');
+        addCssRule(rules, styleID) {
+            const sheet = this.getDynamicStyle(styleID);
+            if (!sheet) {
+                syn.$l.eventLog('$w.addCssRule', 'StyleSheet를 가져올 수 없습니다.', 'Error');
+                return [];
+            }
+
+            const addedIndexes = [];
+            const rulesArray = Array.isArray(rules) ? rules : [rules];
+
+            rulesArray.forEach(rule => {
+                try {
+                    const index = sheet.insertRule(rule, sheet.cssRules.length);
+                    addedIndexes.push(index);
+                } catch (error) {
+                    syn.$l.eventLog('$w.addCssRule', `잘못된 CSS 규칙: "${rule}"`, 'Error', error);
+                }
+            });
+
+            return addedIndexes;
+        },
+
+        // syn.$l.removeCssRule('.highlight', 'page-styles');
+        removeCssRule(identifier, styleID) {
+            const sheet = this.getDynamicStyle(styleID);
+            if (!sheet) return false;
+
+            if (typeof identifier === 'number') {
+                if (identifier >= 0 && identifier < sheet.cssRules.length) {
+                    sheet.deleteRule(identifier);
+                    return true;
+                }
+                return false;
+            }
+
+            if (typeof identifier === 'string') {
+                const selector = identifier.toLowerCase();
+                for (let i = sheet.cssRules.length - 1; i >= 0; i--) {
+                    const rule = sheet.cssRules[i];
+                    if (rule.selectorText && rule.selectorText.toLowerCase().split(',').map(s => s.trim()).includes(selector)) {
+                        sheet.deleteRule(i);
+                        return true;
+                    }
+                }
+            }
+
+            syn.$l.eventLog('$w.removeCssRule', `삭제할 규칙을 찾을 수 없습니다: ${identifier}`, 'Warning');
+            return false;
+        },
+
+        // const loadedImage = await syn.$w.fetchImage('path/to/image.jpg', 'path/to/fallback.png');
+        fetchImage(url, fallbackUrl) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                let isFallbackAttempted = false;
+
+                image.addEventListener('load', () => {
+                    resolve(image);
+                });
+
+                image.addEventListener('error', error => {
+                    if (!fallbackUrl || isFallbackAttempted) {
+                        reject(error);
+                    } else {
+                        isFallbackAttempted = true;
+                        syn.$l.eventLog('$w.fetchImage', `이미지 로딩 실패. Fallback 시도: ${fallbackUrl}`, 'Information');
+                        image.src = fallbackUrl;
+                    }
+                });
+
+                image.src = url;
+            });
         },
 
         async fetchScript(moduleUrl) {
@@ -8602,7 +10055,7 @@ if (typeof module !== 'undefined' && module.exports) {
             moduleName = moduleName.replaceAll('-', '_');
 
             var moduleScript;
-            if ($string.isNullOrEmpty(moduleName) == false) {
+            if (context.$string.isNullOrEmpty(moduleName) == false) {
                 try {
                     var module;
                     if (eval('typeof $' + moduleName) == 'object') {
@@ -8614,7 +10067,7 @@ if (typeof module !== 'undefined' && module.exports) {
                             moduleScript = await syn.$w.fetchText(moduleUrl + '.js');
                         }
                         else {
-                            moduleScript = await syn.$w.fetchText(moduleUrl + '.js?tick=' + new Date().getTime());
+                            moduleScript = await syn.$w.fetchText(moduleUrl + '.js?tick=' + Date.now());
                         }
 
                         var isBase64 = function (str) {
@@ -8635,6 +10088,9 @@ if (typeof module !== 'undefined' && module.exports) {
                                 decodeScript = syn.$c.LZString.decompressFromBase64(moduleScript);
                                 if (decodeScript == null) {
                                     decodeError = 'LZString decompress 오류';
+                                }
+                                else {
+                                    decodeScript = decodeScript.replaceAll('\x00', ' ');
                                 }
                             } catch {
                                 decodeError = 'LZString decompress 오류';
@@ -8666,7 +10122,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         }
                     }
 
-                    if (module.extends && $object.isArray(module.extends) == true) {
+                    if (module.extends && context.$object.isArray(module.extends) == true) {
                         for (var i = 0; i < module.extends.length; i++) {
                             var name = module.extends[i];
                             var result = await syn.$w.fetchText(name + '.js');
@@ -8777,6 +10233,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 businessID: '',
                 systemID: '',
                 transactionID: '',
+                transactionToken: '',
                 dataMapInterface: null,
                 transactionResult: true,
                 functionID: functionID,
@@ -8799,479 +10256,410 @@ if (typeof module !== 'undefined' && module.exports) {
         }),
 
         async executeTransaction(config, transactionObject, callback, async, token) {
-            if ($object.isNullOrUndefined(config) == true || $object.isNullOrUndefined(transactionObject) == true) {
+            const fallback = transactionObject?.fallback || function () { };
+            if (context.$object.isNullOrUndefined(config) == true || context.$object.isNullOrUndefined(transactionObject) == true) {
                 if (globalRoot.devicePlatform === 'browser') {
                     alert('서비스 호출에 필요한 거래 정보가 구성되지 않았습니다');
                 }
                 syn.$l.eventLog('$w.executeTransaction', '서비스 호출에 필요한 거래 정보 확인 필요', 'Error');
-                return;
+                fallback(config, transactionObject);
+                throw new Error('서비스 호출에 필요한 거래 정보 확인 필요');
             }
 
-            const serviceID = syn.Config.SystemID + syn.Config.Environment.substring(0, 1) + ($string.isNullOrEmpty(syn.Config.LoadModuleID) == true ? '' : syn.Config.LoadModuleID);
-            let apiService = null;
-            let apiServices = syn.$w.getStorage('apiServices', false);
-            if (globalRoot.devicePlatform === 'node') {
-                if (apiServices) {
-                    apiService = apiServices[serviceID];
-                    if (apiService) {
-                        if ($object.isNullOrUndefined(apiServices.BearerToken) == true && globalRoot.bearerToken) {
-                            apiServices.BearerToken = globalRoot.bearerToken;
-                            syn.$w.setStorage('apiServices', apiServices, false);
-                        }
-                    }
-                    else if (syn.Config.DomainAPIServer != null) {
-                        apiService = syn.Config.DomainAPIServer;
-                        apiServices = apiServices || {};
-                        if (token || globalRoot.bearerToken) {
-                            apiServices.BearerToken = token || globalRoot.bearerToken;
-                        }
-                        apiServices[serviceID] = apiService;
-                        syn.$w.setStorage('apiServices', apiServices, false);
-                    }
-                    else {
-                        syn.$l.eventLog('$w.executeTransaction', '서비스 호출에 필요한 DomainAPIServer 정보 확인 필요', 'Error');
-                    }
-                }
-                else {
-                    if (syn.Config.DomainAPIServer != null) {
-                        apiService = syn.Config.DomainAPIServer;
-                        apiServices = apiServices || {};
-                        if (token || globalRoot.bearerToken) {
-                            apiServices.BearerToken = token || globalRoot.bearerToken;
-                        }
-                        apiServices[serviceID] = apiService;
-                        syn.$w.setStorage('apiServices', apiServices, false);
-                    }
-                    else {
-                        syn.$l.eventLog('$w.executeTransaction', '서비스 호출에 필요한 DomainAPIServer 정보 확인 필요', 'Error');
-                    }
-                }
+            let apiService = syn.Config.DomainAPIServer;
+            if (context.$object.isNullOrUndefined(apiService) == true) {
+                syn.$l.eventLog('$w.executeTransaction', '서비스 호출에 필요한 DomainAPIServer 정보 확인 필요', 'Error');
+                fallback(config, transactionObject);
+                throw new Error('서비스 호출에 필요한 DomainAPIServer 정보 확인 필요');
+            }
+
+            let ipAddress = syn.$w.getStorage('ipAddress', false);
+            if (context.$object.isNullOrUndefined(ipAddress) == true && globalRoot.devicePlatform === 'node') {
+                ipAddress = apiService.ClientIP;
+            }
+
+            if (context.$object.isNullOrUndefined(ipAddress) == true) {
+                ipAddress = await syn.$b.getIpAddress();
+            }
+
+            if (context.$object.isNullOrUndefined(ipAddress) == true) {
+                ipAddress = 'localhost';
+            }
+
+            syn.$w.setStorage('ipAddress', ipAddress, false);
+
+            let url = '';
+            if (apiService.Port && apiService.Port != '') {
+                url = '{0}://{1}:{2}{3}'.format(apiService.Protocol, apiService.IP, apiService.Port, apiService.Path);
             }
             else {
-                if (apiServices) {
-                    apiService = apiServices[serviceID];
-                    if (apiService) {
-                        if ((apiServices.BearerToken == null || apiServices.BearerToken == undefined) && window.bearerToken) {
-                            apiServices.BearerToken = window.bearerToken;
-                            syn.$w.setStorage('apiServices', apiServices, false);
-                        }
-                    }
-                    else if (syn.Config.DomainAPIServer != null) {
-                        apiService = syn.Config.DomainAPIServer;
-                        apiServices = apiServices || {};
-                        if (window.bearerToken) {
-                            apiServices.BearerToken = window.bearerToken;
-                        }
-                        apiServices[serviceID] = apiService;
-                        syn.$w.setStorage('apiServices', apiServices, false);
-                    }
-                    else {
-                        syn.$l.eventLog('$w.executeTransaction', '서비스 호출에 필요한 DomainAPIServer 정보 확인 필요', 'Error');
-                    }
-                }
-                else {
-                    if (syn.Config.DomainAPIServer != null) {
-                        apiService = syn.Config.DomainAPIServer;
-                        apiServices = apiServices || {};
-                        if (window.bearerToken) {
-                            apiServices.BearerToken = window.bearerToken;
-                        }
-                        apiServices[serviceID] = apiService;
-                        syn.$w.setStorage('apiServices', apiServices, false);
-                    }
-                    else {
-                        syn.$l.eventLog('$w.executeTransaction', '서비스 호출에 필요한 DomainAPIServer 정보 확인 필요', 'Error');
-                    }
-                }
+                url = '{0}://{1}{2}'.format(apiService.Protocol, apiService.IP, apiService.Path);
             }
 
-            apiServices = syn.$w.getStorage('apiServices', false);
-            if (apiServices) {
-                apiService = apiServices[serviceID];
+            const endpoint = transactionObject.options ? (transactionObject.options.endpoint || 'transaction') : 'transaction';
+            if (endpoint != 'transaction') {
+                url = url.replace('/transaction/', `/${endpoint}/`);
             }
 
-            if (apiService == null) {
-                syn.$l.eventLog('$w.executeTransaction', 'apiService 확인 필요', 'Fatal');
-            }
-            else {
-                if (apiService.exceptionText) {
-                    syn.$l.eventLog('$w.executeTransaction', 'apiService 확인 필요 SystemID: {0}, ServerType: {1}, Message: {2}'.format(config.systemID, syn.Config.Environment.substring(0, 1), apiService.exceptionText), 'Fatal');
-                    return;
-                }
+            const installType = syn.$w.Variable && syn.$w.Variable.InstallType ? syn.$w.Variable.InstallType : 'L';
+            const environment = syn.Config && syn.Config.Environment ? syn.Config.Environment.substring(0, 1) : 'D';
+            const machineTypeID = syn.Config && syn.Config.Transaction ? syn.Config.Transaction.MachineTypeID.substring(0, 1) : 'W';
+            const programID = (syn.$w.Variable && syn.$w.Variable.ProgramID ? syn.$w.Variable.ProgramID : config.programID).padStart(8, '0');
+            const businessID = config.businessID.padStart(3, '0').substring(0, 3);
+            const transactionID = transactionObject.transactionID.padStart(6, '0').substring(0, 6);
+            const functionID = transactionObject.functionID.padStart(4, '0').substring(0, 4);
+            const tokenID = (syn.$w.User && syn.$w.User.TokenID ? syn.$w.User.TokenID : syn.$l.random(6)).padStart(6, '0').substring(0, 6);
+            const requestTime = context.$date.toString(new Date(), 's').substring(0, 6);
+            // -- 36바이트 = 설치구분 1자리(L: Local, C: Cloud, O: Onpremise) + 환경 ID 1자리 + 애플리케이션 ID 8자리 + 프로젝트 ID 3자리 + 거래 ID 6자리 + 기능 ID 4자리 + 시스템 구분 1자리 (W: WEB, P: Program, S: SVR, E: EXT) + ClientTokenID 6자리 + Timestamp (HHmmss) 6자리
+            const requestID = `${installType}${environment}${programID}${businessID}${transactionID}${functionID}${machineTypeID}${tokenID}${requestTime}`.toUpperCase();
+            let globalID = '';
 
-                let ipAddress = syn.$w.getStorage('ipAddress', false);
-                if ($object.isNullOrUndefined(ipAddress) == true && $string.isNullOrEmpty(syn.Config.FindClientIPServer) == false) {
-                    ipAddress = await syn.$r.httpFetch(syn.Config.FindClientIPServer || '/checkip').send(null, {
-                        method: 'GET',
-                        redirect: 'follow',
-                        timeout: 1000
-                    });
-                }
+            if (context.$string.isNullOrEmpty(syn.Config.FindGlobalIDServer) == false) {
+                const result = await syn.$r.httpFetch(syn.Config.FindGlobalIDServer).send({
+                    applicationID: programID,
+                    projectID: businessID,
+                    transactionID: transactionID,
+                    serviceID: functionID,
+                    screenID: transactionObject.screenID,
+                    tokenID: tokenID
+                }, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    timeout: 30000
+                });
 
-                if ($object.isNullOrUndefined(ipAddress) == true) {
-                    ipAddress = 'localhost';
-                }
-
-                syn.$w.setStorage('ipAddress', ipAddress, false);
-
-                let url = '';
-                if (apiService.Port && apiService.Port != '') {
-                    url = '{0}://{1}:{2}{3}'.format(apiService.Protocol, apiService.IP, apiService.Port, apiService.Path);
-                }
-                else {
-                    url = '{0}://{1}{2}'.format(apiService.Protocol, apiService.IP, apiService.Path);
-                }
-
-                const installType = syn.$w.Variable && syn.$w.Variable.InstallType ? syn.$w.Variable.InstallType : 'L';
-                const environment = syn.Config && syn.Config.Environment ? syn.Config.Environment.substring(0, 1) : 'D';
-                const machineTypeID = syn.Config && syn.Config.Transaction ? syn.Config.Transaction.MachineTypeID.substring(0, 1) : 'W';
-                const programID = (syn.$w.Variable && syn.$w.Variable.ProgramID ? syn.$w.Variable.ProgramID : config.programID).padStart(8, '0');
-                const businessID = config.businessID.padStart(3, '0').substring(0, 3);
-                const transactionID = transactionObject.transactionID.padStart(6, '0').substring(0, 6);
-                const functionID = transactionObject.functionID.padStart(4, '0').substring(0, 4);
-                const tokenID = (syn.$w.User && syn.$w.User.TokenID ? syn.$w.User.TokenID : syn.$l.random(6)).padStart(6, '0').substring(0, 6);
-                const requestTime = $date.toString(new Date(), 's').substring(0, 6);
-                // -- 36바이트 = 설치구분 1자리(L: Local, C: Cloud, O: Onpremise) + 환경 ID 1자리 + 애플리케이션 ID 8자리 + 프로젝트 ID 3자리 + 거래 ID 6자리 + 기능 ID 4자리 + 시스템 구분 1자리 (W: WEB, P: Program, S: SVR, E: EXT) + ClientTokenID 6자리 + Timestamp (HHmmss) 6자리
-                const requestID = `${installType}${environment}${programID}${businessID}${transactionID}${functionID}${machineTypeID}${tokenID}${requestTime}`.toUpperCase();
-                let globalID = '';
-
-                if ($string.isNullOrEmpty(syn.Config.FindGlobalIDServer) == false) {
-                    apiService.GlobalID = await syn.$r.httpFetch(syn.Config.FindGlobalIDServer).send({
+                if (result && !result.error) {
+                    apiService.GlobalID = result;
+                } else {
+                    syn.$l.eventLog('$w.executeTransaction', `GlobalID 조회 실패: url: ${syn.Config.FindGlobalIDServer}, request: ${JSON.stringify({
                         applicationID: programID,
                         projectID: businessID,
                         transactionID: transactionID,
                         serviceID: functionID,
                         screenID: transactionObject.screenID,
                         tokenID: tokenID
-                    }, {
-                        method: 'POST',
-                        redirect: 'follow',
-                        timeout: 1000
-                    });
+                    })}, error: ${result?.error}`, 'Error');
                 }
+            }
 
-                if ($string.isNullOrEmpty(apiService.GlobalID) == false) {
-                    globalID = apiService.GlobalID;
-                }
-                else {
-                    globalID = requestID;
-                }
+            if (context.$string.isNullOrEmpty(apiService.GlobalID) == false) {
+                globalID = apiService.GlobalID;
+            }
+            else {
+                globalID = requestID;
+            }
 
-                const transactionRequest = {
-                    accessToken: token || globalRoot.bearerToken || apiServices.BearerToken,
-                    action: 'SYN', // "SYN: Request/Response, PSH: Execute/None, ACK: Subscribe",
-                    kind: 'BIZ', // "DBG: Debug, BIZ: Business, URG: Urgent, FIN: Finish",
-                    clientTag: syn.Config.SystemID.concat('|', syn.Config.HostName, '|', syn.Config.Program.ProgramName, '|', syn.Config.Environment.substring(0, 1)),
-                    loadOptions: {
-                        encryptionType: syn.Config.Transaction.EncryptionType, // "P:Plain, F:Full, H:Header, B:Body",
-                        encryptionKey: syn.Config.Transaction.EncryptionKey, // "P:프로그램, K:KMS 서버, G:GlobalID 키",
-                        platform: globalRoot.devicePlatform == 'browser' ? syn.$b.platform : globalRoot.devicePlatform
-                    },
-                    requestID: requestID,
-                    version: syn.Config.Transaction.ProtocolVersion,
-                    environment: syn.Config.Environment.substring(0, 1),
-                    system: {
-                        programID: config.programID,
-                        moduleID: transactionObject.moduleID || (globalRoot.devicePlatform == 'browser' ? globalRoot[syn.$w.pageScript].config.moduleID : undefined) || (globalRoot.devicePlatform == 'browser' ? location.pathname.split('/').filter(Boolean)[0] : undefined) || syn.Config.ModuleID,
-                        version: syn.Config.SystemVersion,
-                        routes: [
-                            {
-                                systemID: config.systemID,
-                                requestTick: (new Date()).getTime()
-                            }
-                        ],
-                        localeID: syn.Config.Program.LocaleID,
-                        hostName: globalRoot.devicePlatform == 'browser' ? location.host : syn.Config.HostName,
-                        pathName: globalRoot.devicePlatform == 'browser' ? location.pathname : ''
-                    },
-                    interface: {
-                        devicePlatform: globalRoot.devicePlatform,
-                        interfaceID: syn.Config.Transaction.MachineTypeID,
-                        sourceIP: ipAddress,
-                        sourcePort: 0,
-                        sourceMAC: '',
-                        connectionType: globalRoot.devicePlatform == 'node' ? 'unknown' : navigator.connection.effectiveType,
-                        timeout: syn.Config.TransactionTimeout
-                    },
-                    transaction: {
-                        globalID: globalID,
-                        businessID: config.businessID,
-                        transactionID: transactionObject.transactionID,
-                        functionID: transactionObject.functionID,
-                        commandType: transactionObject.options ? (transactionObject.options.commandType || 'D') : 'D',
-                        simulationType: syn.Config.Transaction.SimulationType, // "D:더미 P:운영 T:테스트",
-                        terminalGroupID: globalRoot.devicePlatform == 'browser' ? (syn.$w.User ? '{0}|{1}'.format(syn.$w.User.CompanyID, syn.$w.User.DepartmentID) : '') : syn.Config.Program.BranchCode,
-                        operatorID: globalRoot.devicePlatform == 'browser' ? (syn.$w.User ? syn.$w.User.UserID : '') : syn.Config.Program.ProgramName,
-                        screenID: transactionObject.screenID,
-                        startTraceID: transactionObject.startTraceID,
-                        dataFormat: syn.Config.Transaction.DataFormat,
-                        compressionYN: syn.Config.Transaction.CompressionYN
-                    },
-                    payLoad: {
-                        property: {},
-                        dataMapInterface: '',
-                        dataMapCount: [],
-                        dataMapSet: []
-                    }
-                };
+            const clientTag = syn.Config.SystemID.concat('|', syn.Config.HostName, '|', syn.Config.Program.ProgramName, '|', syn.Config.Environment.substring(0, 1));
+            const userID = globalRoot.devicePlatform == 'browser' ? (syn.$w.User ? syn.$w.User.UserID : '') : syn.Config.Program.ProgramName;
+            const fingerPrint = globalRoot.devicePlatform == 'browser' ? syn.$b.fingerPrint(userID, ipAddress) : `${syn.$c.sha256(clientTag)}|${clientTag}|${context.$date.toString(new Date(), 'f')}`;
+            const deviceID = fingerPrint.substring(0, 64);
 
-                if (syn.$w.transactionLoadOptions) {
-                    syn.$w.transactionLoadOptions(transactionRequest.loadOptions);
-                }
-
-                if ($object.isNullOrUndefined(transactionObject.options) == false) {
-                    for (const key in transactionObject.options) {
-                        const item = transactionObject.options[key];
-
-                        if (key == 'encryptionType' || key == 'encryptionKey' || key == 'platform') {
-                            throw new Error('{0} 옵션 사용 불가'.format(key));
+            const transactionRequest = {
+                accessToken: token || globalRoot.bearerToken,
+                action: 'SYN', // "SYN: Request/Response, PSH: Execute/None, ACK: Subscribe",
+                kind: 'BIZ', // "DBG: Debug, BIZ: Business, URG: Urgent, FIN: Finish",
+                clientTag: clientTag,
+                loadOptions: {
+                    encryptionType: syn.Config.Transaction.EncryptionType, // "P:Plain, F:Full, H:Header, B:Body",
+                    encryptionKey: syn.Config.Transaction.EncryptionKey, // "P:프로그램, K:KMS 서버, G:GlobalID 키",
+                    platform: globalRoot.devicePlatform == 'browser' ? syn.$b.platform : globalRoot.devicePlatform,
+                    programID: syn.$w.Variable?.ProgramID || ''
+                },
+                requestID: requestID,
+                version: syn.Config.Transaction.ProtocolVersion,
+                environment: syn.Config.Environment.substring(0, 1),
+                system: {
+                    programID: config.programID,
+                    moduleID: transactionObject.moduleID || (globalRoot.devicePlatform == 'browser' ? globalRoot[syn.$w.pageScript].config.moduleID : undefined) || (globalRoot.devicePlatform == 'browser' ? location.pathname.split('/').filter(Boolean)[0] : undefined) || syn.Config.ModuleID,
+                    version: syn.Config.SystemVersion,
+                    routes: [
+                        {
+                            systemID: config.systemID,
+                            requestTick: Date.now()
                         }
-                        else {
-                            transactionRequest.loadOptions[key] = item;
-                        }
-                    }
-
-                    const dynamic = transactionRequest.loadOptions['dynamic'];
-                    if ($string.isNullOrEmpty(dynamic) == false && $string.toBoolean(dynamic) == false) {
-                        delete transactionRequest.loadOptions['dynamic'];
-                        delete transactionRequest.loadOptions['authorize'];
-                        delete transactionRequest.loadOptions['commandType'];
-                        delete transactionRequest.loadOptions['returnType'];
-                        delete transactionRequest.loadOptions['transactionScope'];
-                        delete transactionRequest.loadOptions['transactionLog'];
-                    }
-
-                    const action = transactionRequest.loadOptions['action'];
-                    if ($string.isNullOrEmpty(action) == false) {
-                        transactionRequest.action = action;
-                        delete transactionRequest.loadOptions['action'];
-                    }
-
-                    const kind = transactionRequest.loadOptions['kind'];
-                    if ($string.isNullOrEmpty(kind) == false) {
-                        transactionRequest.kind = kind;
-                        delete transactionRequest.loadOptions['kind'];
-                    }
-
-                    delete transactionRequest.loadOptions['message'];
+                    ],
+                    localeID: syn.Config.Program.LocaleID,
+                    hostName: globalRoot.devicePlatform == 'browser' ? location.host : syn.Config.HostName,
+                    pathName: globalRoot.devicePlatform == 'browser' ? location.pathname : '',
+                    deviceID: syn.$w.Variable?.DeviceID || deviceID || config.programID,
+                },
+                interface: {
+                    devicePlatform: globalRoot.devicePlatform,
+                    interfaceID: syn.Config.Transaction.MachineTypeID,
+                    sourceIP: ipAddress,
+                    sourcePort: 0,
+                    sourceMAC: '',
+                    connectionType: globalRoot.devicePlatform == 'node' ? 'unknown' : navigator.connection?.effectiveType,
+                    timeout: syn.Config.TransactionTimeout
+                },
+                transaction: {
+                    globalID: globalID,
+                    businessID: config.businessID,
+                    transactionID: transactionObject.transactionID,
+                    functionID: transactionObject.functionID,
+                    commandType: transactionObject.options ? (transactionObject.options.commandType || 'D') : 'D',
+                    simulationType: syn.Config.Transaction.SimulationType, // "D:더미 P:운영 T:테스트",
+                    terminalGroupID: globalRoot.devicePlatform == 'browser' ? (syn.$w.User ? '{0}|{1}'.format(syn.$w.User.CompanyNo, syn.$w.User.DepartmentNo) : '') : syn.Config.Program.BranchCode,
+                    operatorID: userID,
+                    screenID: transactionObject.screenID,
+                    startTraceID: transactionObject.startTraceID,
+                    dataFormat: syn.Config.Transaction.DataFormat,
+                    compressionYN: syn.Config.Transaction.CompressionYN,
+                    transactionToken: transactionObject.transactionToken
+                },
+                payLoad: {
+                    property: {},
+                    dataMapInterface: '',
+                    dataMapCount: [],
+                    dataMapSet: []
                 }
+            };
 
-                const mod = context[syn.$w.pageScript];
-                if (mod && mod.hook.payLoadProperty) {
-                    let property = {};
-                    property = mod.hook.payLoadProperty(transactionObject.transactionID, transactionObject.functionID);
-                    if ($object.isNullOrUndefined(property) == true) {
-                        property = {};
-                    }
+            if (syn.$w.transactionLoadOptions) {
+                syn.$w.transactionLoadOptions(transactionRequest.loadOptions, transactionObject);
+            }
 
-                    transactionRequest.payLoad.property = property;
-                }
+            if (context.$object.isNullOrUndefined(transactionObject.options) == false) {
+                for (const key in transactionObject.options) {
+                    const item = transactionObject.options[key];
 
-                if (config.transactions) {
-                    const transactions = config.transactions.filter(function (item) {
-                        return item.functionID == transactionObject.functionID;
-                    });
-
-                    if (transactions.length == 1) {
-                        const transaction = transactions[0];
-
-                        const inputs = transaction.inputs.map(function (item) { return item.requestType; }).join(',');
-                        const outputs = transaction.outputs.map(function (item) { return item.responseType; }).join(',');
-                        transactionRequest.payLoad.dataMapInterface = '{0}|{1}'.format(inputs, outputs);
-                    }
-                }
-                else if (transactionObject.dataMapInterface) {
-                    transactionRequest.payLoad.dataMapInterface = transactionObject.dataMapInterface;
-                }
-
-                if (transactionRequest.transaction.dataFormat == 'J' || transactionRequest.transaction.dataFormat == 'T') {
-                }
-                else {
-                    throw new Error('transaction.dataFormat 확인 필요: {0}'.format(transactionRequest.transaction.dataFormat));
-                }
-
-                transactionRequest.payLoad.dataMapCount = transactionObject.inputsItemCount;
-                transactionRequest.payLoad.dataMapSet = [];
-                transactionRequest.payLoad.dataMapSetRaw = [];
-                const length = transactionObject.inputs.length;
-
-                for (let i = 0; i < length; i++) {
-                    const inputs = transactionObject.inputs[i];
-
-                    const reqInputs = [];
-                    for (let j = 0; j < inputs.length; j++) {
-                        const item = inputs[j];
-
-                        reqInputs.push({
-                            id: item.prop,
-                            value: item.val
-                        });
-                    }
-
-                    if (syn.Config.Transaction.CompressionYN == 'Y') {
-                        if (transactionRequest.transaction.dataFormat == 'J') {
-                            transactionRequest.payLoad.dataMapSetRaw.push(syn.$c.LZString.compressToBase64(JSON.stringify(reqInputs)));
-                        }
-                        else {
-                            transactionRequest.payLoad.dataMapSetRaw.push(syn.$c.LZString.compressToBase64($object.toCSV(reqInputs, { delimeter: '｜', newline: '↵' })));
-                        }
+                    if (key == 'encryptionType' || key == 'encryptionKey' || key == 'platform') {
+                        fallback(config, transactionObject);
+                        throw new Error('{0} 옵션 사용 불가'.format(key));
                     }
                     else {
-                        if (transactionRequest.transaction.dataFormat == 'J') {
-                            transactionRequest.payLoad.dataMapSet.push(reqInputs);
-                        }
-                        else {
-                            transactionRequest.payLoad.dataMapSetRaw.push($object.toCSV(reqInputs, { delimeter: '｜', newline: '↵' }));
-                        }
+                        transactionRequest.loadOptions[key] = item;
                     }
                 }
 
-                if (globalThis.devicePlatform != 'node' && transactionRequest.action == 'PSH') {
-                    const blob = new Blob([JSON.stringify(transactionRequest)], { type: 'application/json; charset=UTF-8' });
-                    navigator.sendBeacon(url, blob);
+                const dynamic = transactionRequest.loadOptions['dynamic'];
+                if (context.$string.isNullOrEmpty(dynamic) == false && context.$string.toBoolean(dynamic) == false) {
+                    delete transactionRequest.loadOptions['dynamic'];
+                    delete transactionRequest.loadOptions['authorize'];
+                    delete transactionRequest.loadOptions['commandType'];
+                    delete transactionRequest.loadOptions['returnType'];
+                    delete transactionRequest.loadOptions['transactionScope'];
+                    delete transactionRequest.loadOptions['transactionLog'];
+                }
 
-                    if (syn.$w.domainTransactionLoaderEnd) {
-                        syn.$w.domainTransactionLoaderEnd();
+                const action = transactionRequest.loadOptions['action'];
+                if (context.$string.isNullOrEmpty(action) == false) {
+                    transactionRequest.action = action;
+                    delete transactionRequest.loadOptions['action'];
+                }
+
+                const kind = transactionRequest.loadOptions['kind'];
+                if (context.$string.isNullOrEmpty(kind) == false) {
+                    transactionRequest.kind = kind;
+                    delete transactionRequest.loadOptions['kind'];
+                }
+
+                delete transactionRequest.loadOptions['message'];
+            }
+
+            const mod = context[syn.$w.pageScript];
+            if (mod && mod.hook.payLoadProperty) {
+                let property = {};
+                property = mod.hook.payLoadProperty(transactionObject.transactionID, transactionObject.functionID);
+                if (context.$object.isNullOrUndefined(property) == true) {
+                    property = {};
+                }
+
+                transactionRequest.payLoad.property = property;
+            }
+
+            if (config.transactions) {
+                const transactions = config.transactions.filter(function (item) {
+                    return item.functionID == transactionObject.functionID;
+                });
+
+                if (transactions.length == 1) {
+                    const transaction = transactions[0];
+
+                    const inputs = transaction.inputs.map(function (item) { return item.requestType; }).join(',');
+                    const outputs = transaction.outputs.map(function (item) { return item.responseType; }).join(',');
+                    transactionRequest.payLoad.dataMapInterface = '{0}|{1}'.format(inputs, outputs);
+                }
+            }
+            else if (transactionObject.dataMapInterface) {
+                transactionRequest.payLoad.dataMapInterface = transactionObject.dataMapInterface;
+            }
+
+            if (transactionRequest.transaction.dataFormat == 'J' || transactionRequest.transaction.dataFormat == 'T') {
+            }
+            else {
+                fallback(config, transactionObject);
+                throw new Error('transaction.dataFormat 확인 필요: {0}'.format(transactionRequest.transaction.dataFormat));
+            }
+
+            transactionRequest.payLoad.dataMapCount = transactionObject.inputsItemCount;
+            transactionRequest.payLoad.dataMapSet = [];
+            transactionRequest.payLoad.dataMapSetRaw = [];
+            const length = transactionObject.inputs.length;
+
+            for (let i = 0; i < length; i++) {
+                const inputs = transactionObject.inputs[i];
+
+                const reqInputs = [];
+                for (let j = 0; j < inputs.length; j++) {
+                    const item = inputs[j];
+
+                    reqInputs.push({
+                        id: item.prop,
+                        value: item.val
+                    });
+                }
+
+                if (syn.Config.Transaction.CompressionYN == 'Y') {
+                    if (transactionRequest.transaction.dataFormat == 'J') {
+                        transactionRequest.payLoad.dataMapSetRaw.push(syn.$c.LZString.compressToBase64(JSON.stringify(reqInputs)));
                     }
-
-                    if (syn.$w.closeProgressMessage) {
-                        syn.$w.closeProgressMessage();
+                    else {
+                        transactionRequest.payLoad.dataMapSetRaw.push(syn.$c.LZString.compressToBase64(context.$object.toCSV(reqInputs, { delimeter: '｜', newline: '↵' })));
                     }
                 }
                 else {
-                    const xhr = syn.$w.xmlHttp();
-                    xhr.open(syn.$w.method, url, true);
-                    xhr.setRequestHeader('Accept-Language', syn.$w.localeID);
-                    xhr.setRequestHeader('Server-SystemID', config.systemID || syn.Config.SystemID);
-                    xhr.setRequestHeader('Server-BusinessID', config.businessID);
+                    if (transactionRequest.transaction.dataFormat == 'J') {
+                        transactionRequest.payLoad.dataMapSet.push(reqInputs);
+                    }
+                    else {
+                        transactionRequest.payLoad.dataMapSetRaw.push(context.$object.toCSV(reqInputs, { delimeter: '｜', newline: '↵' }));
+                    }
+                }
+            }
 
-                    if (syn.Environment) {
-                        const environment = syn.Environment;
-                        if (environment.Header) {
-                            for (const item in environment.Header) {
-                                xhr.setRequestHeader(item, environment.Header[item]);
-                            }
+            if (globalThis.devicePlatform != 'node' && transactionRequest.action == 'PSH') {
+                const blob = new Blob([JSON.stringify(transactionRequest)], { type: 'application/json; charset=UTF-8' });
+                navigator.sendBeacon(url, blob);
+
+                if (syn.$w.domainTransactionLoaderEnd) {
+                    syn.$w.domainTransactionLoaderEnd();
+                }
+
+                if (syn.$w.closeProgressMessage) {
+                    syn.$w.closeProgressMessage();
+                }
+            }
+            else {
+                const xhr = syn.$w.xmlHttp();
+                xhr.open(syn.$w.method, url, true);
+                xhr.setRequestHeader('Accept-Language', syn.$w.localeID);
+                xhr.setRequestHeader('Server-SystemID', config.systemID || syn.Config.SystemID);
+                xhr.setRequestHeader('Server-BusinessID', config.businessID);
+
+                if (syn.Environment) {
+                    const environment = syn.Environment;
+                    if (environment.Header) {
+                        for (const item in environment.Header) {
+                            xhr.setRequestHeader(item, environment.Header[item]);
                         }
                     }
+                }
 
-                    if (syn.$w.setServiceClientHeader) {
-                        if (syn.$w.setServiceClientHeader(xhr) == false) {
+                if (syn.$w.setServiceClientHeader) {
+                    if (syn.$w.setServiceClientHeader(xhr) == false) {
+                        syn.$l.eventLog('$w.executeTransaction', 'setServiceClientHeader 전송 안함', 'Warning');
+                        fallback(config, transactionObject);
+                        return;
+                    }
+                }
+
+                if (async !== undefined && xhr.async == true) {
+                    xhr.async = async;
+
+                    if (xhr.async == false) {
+                        xhr.setRequestHeader('X-Requested-With', 'HandStack ServiceClient');
+                        xhr.setRequestHeader('Content-Type', 'application/json');
+                        xhr.send(transactionRequest);
+
+                        return xhr;
+                    }
+                }
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status !== 200) {
+                            if (xhr.status == 0) {
+                                syn.$l.eventLog('$w.executeTransaction', 'X-Requested 전송 오류', 'Fatal');
+                            }
+                            else {
+                                syn.$l.eventLog('$w.executeTransaction', '응답 상태 - {0}: '.format(xhr.statusText) + xhr.responseText, 'Error');
+                            }
+
+                            if (syn.$w.domainTransactionLoaderEnd) {
+                                syn.$w.domainTransactionLoaderEnd();
+                            }
+                            fallback(config, transactionObject);
                             return;
                         }
-                    }
 
-                    if (async !== undefined && xhr.async == true) {
-                        xhr.async = async;
-
-                        if (xhr.async == false) {
-                            xhr.setRequestHeader('X-Requested-With', 'HandStack ServiceClient');
-                            xhr.setRequestHeader('Content-Type', 'application/json');
-                            xhr.send(transactionRequest);
-
-                            return xhr;
-                        }
-                    }
-
-                    xhr.onreadystatechange = function () {
-                        if (xhr.readyState === 4) {
-                            if (xhr.status !== 200) {
-                                if (xhr.status == 0) {
-                                    syn.$l.eventLog('$w.executeTransaction', 'X-Requested 전송 오류', 'Fatal');
-                                }
-                                else {
-                                    syn.$l.eventLog('$w.executeTransaction', '응답 상태 - {0}: '.format(xhr.statusText) + xhr.responseText, 'Error');
-                                }
-
-                                if (syn.$w.domainTransactionLoaderEnd) {
-                                    syn.$w.domainTransactionLoaderEnd();
-                                }
+                        if (syn.$w.clientTag && syn.$w.serviceClientInterceptor) {
+                            if (syn.$w.serviceClientInterceptor(syn.$w.clientTag, xhr) === false) {
+                                syn.$l.eventLog('$w.executeTransaction', 'serviceClientInterceptor 전송 안함', 'Warning');
+                                fallback(config, transactionObject);
                                 return;
                             }
+                        }
 
-                            if (syn.$w.clientTag && syn.$w.serviceClientInterceptor) {
-                                if (syn.$w.serviceClientInterceptor(syn.$w.clientTag, xhr) === false) {
-                                    return;
-                                }
-                            }
+                        try {
+                            const transactionResponse = JSON.parse(xhr.responseText);
+                            if (transactionObject.transactionResult == true) {
+                                if (transactionResponse.acknowledge == 1) {
+                                    const jsonResult = [];
+                                    const message = transactionResponse.message;
+                                    if (transactionResponse.result.dataSet != null && transactionResponse.result.dataSet.length > 0) {
+                                        const dataMapItem = transactionResponse.result.dataSet;
+                                        message.additions.push({ code: 'dataSetMeta', text: transactionResponse.result.dataSetMeta });
+                                        message.additions.push({ code: 'dataMapCount', text: transactionResponse.result.dataMapCount });
+                                        const length = dataMapItem.length;
+                                        for (let i = 0; i < length; i++) {
+                                            const item = dataMapItem[i];
+                                            const dataSetMeta = transactionResponse.result.dataSetMeta[i];
 
-                            try {
-                                const transactionResponse = JSON.parse(xhr.responseText);
-                                if (transactionObject.transactionResult == true) {
-                                    if (transactionResponse.acknowledge == 1) {
-                                        const jsonResult = [];
-                                        const message = transactionResponse.message;
-                                        if (transactionResponse.result.dataSet != null && transactionResponse.result.dataSet.length > 0) {
-                                            const dataMapItem = transactionResponse.result.dataSet;
-                                            const length = dataMapItem.length;
-                                            for (let i = 0; i < length; i++) {
-                                                const item = dataMapItem[i];
+                                            if (transactionResponse.transaction.simulationType == syn.$w.dynamicType.CodeHelp) {
+                                                jsonResult.push({
+                                                    id: item.id,
+                                                    value: item.value
+                                                });
+                                                continue;
+                                            }
 
-                                                if (transactionResponse.transaction.simulationType == syn.$w.dynamicType.CodeHelp) {
+                                            if (transactionResponse.transaction.dataFormat == 'J') {
+                                                if (transactionResponse.transaction.compressionYN == 'Y') {
+                                                    jsonResult.push({
+                                                        id: item.id,
+                                                        value: JSON.parse(syn.$c.LZString.decompressFromBase64(item.value))
+                                                    });
+                                                }
+                                                else {
                                                     jsonResult.push({
                                                         id: item.id,
                                                         value: item.value
                                                     });
-                                                    continue;
                                                 }
+                                            }
+                                            else {
+                                                if (config.transactions) {
+                                                    const transaction = config.transactions.find(function (item) {
+                                                        return item.functionID == transactionObject.functionID;
+                                                    });
 
-                                                if (transactionResponse.transaction.dataFormat == 'J') {
-                                                    if (transactionResponse.transaction.compressionYN == 'Y') {
-                                                        jsonResult.push({
-                                                            id: item.id,
-                                                            value: JSON.parse(syn.$c.LZString.decompressFromBase64(item.value))
-                                                        });
-                                                    }
-                                                    else {
-                                                        jsonResult.push({
-                                                            id: item.id,
-                                                            value: item.value
-                                                        });
-                                                    }
-                                                }
-                                                else {
-                                                    if (config.transactions) {
-                                                        const transaction = config.transactions.find(function (item) {
-                                                            return item.functionID == transactionObject.functionID;
-                                                        });
+                                                    if (transaction) {
+                                                        let value = null;
+                                                        if (context.$object.isEmpty(item.value) == false) {
+                                                            value = transactionResponse.transaction.compressionYN == 'Y' ? syn.$c.LZString.decompressFromBase64(item.value) : item.value;
+                                                            const meta = context.$string.toParameterObject(dataSetMeta);
+                                                            value = context.$string.toJson(value, { delimeter: '｜', newline: '↵', meta: meta });
 
-                                                        if (transaction) {
-                                                            let value = null;
-                                                            if ($object.isEmpty(item.value) == false) {
-                                                                value = transactionResponse.transaction.compressionYN == 'Y' ? syn.$c.LZString.decompressFromBase64(item.value).split('＾') : item.value.split('＾');
-                                                                const meta = $string.toParameterObject(value[0]);
-                                                                value = $string.toJson(value[1], { delimeter: '｜', newline: '↵', meta: meta });
-
-                                                                const outputMapping = transaction.outputs[i];
-                                                                if (outputMapping.responseType == 'Form') {
-                                                                    value = value[0];
-                                                                    if ($object.isNullOrUndefined(value) == true) {
-                                                                        value = {};
-                                                                    }
+                                                            const outputMapping = transaction.outputs[i];
+                                                            if (outputMapping.responseType == 'Form') {
+                                                                value = dataSetMeta;
+                                                                if (context.$object.isNullOrUndefined(value) == true) {
+                                                                    value = {};
                                                                 }
-                                                                else {
-                                                                    if ($object.isNullOrUndefined(value) == true) {
-                                                                        value = [];
-                                                                    }
-                                                                }
-                                                            }
-
-                                                            jsonResult.push({
-                                                                id: item.id,
-                                                                value: value
-                                                            });
-                                                        }
-                                                    }
-                                                    else {
-                                                        let value = transactionResponse.transaction.compressionYN == 'Y' ? syn.$c.LZString.decompressFromBase64(item.value).split('＾') : item.value.split('＾');
-                                                        const meta = $string.toParameterObject(value[0]);
-                                                        value = $string.toJson(value[1], { delimeter: '｜', newline: '↵', meta: meta });
-                                                        if (item.id.startsWith('Form') == true) {
-                                                            value = value[0];
-                                                            if ($object.isNullOrUndefined(value) == true) {
-                                                                value = {};
                                                             }
                                                             else {
-                                                                if ($object.isNullOrUndefined(value) == true) {
+                                                                if (context.$object.isNullOrUndefined(value) == true) {
                                                                     value = [];
                                                                 }
                                                             }
@@ -9283,140 +10671,162 @@ if (typeof module !== 'undefined' && module.exports) {
                                                         });
                                                     }
                                                 }
+                                                else {
+                                                    let value = transactionResponse.transaction.compressionYN == 'Y' ? syn.$c.LZString.decompressFromBase64(item.value) : item.value;
+                                                    const meta = context.$string.toParameterObject(dataSetMeta);
+                                                    value = context.$string.toJson(value, { delimeter: '｜', newline: '↵', meta: meta });
+                                                    if (item.id.startsWith('Form') == true) {
+                                                        value = dataSetMeta;
+                                                        if (context.$object.isNullOrUndefined(value) == true) {
+                                                            value = {};
+                                                        }
+                                                        else {
+                                                            if (context.$object.isNullOrUndefined(value) == true) {
+                                                                value = [];
+                                                            }
+                                                        }
+                                                    }
+
+                                                    jsonResult.push({
+                                                        id: item.id,
+                                                        value: value
+                                                    });
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (callback) {
+                                        const addtionalData = {};
+                                        if (message.additions && message.additions.length > 0) {
+                                            for (let i = 0; i < message.additions.length; i++) {
+                                                const addition = message.additions[i];
+
+                                                if (context.$string.isNullOrEmpty(addition.code) == false && context.$object.isNullOrUndefined(addtionalData[addition.code]) == true) {
+                                                    addtionalData[addition.code] = addition.text;
+                                                }
                                             }
                                         }
 
+                                        try {
+                                            callback(jsonResult, addtionalData, transactionResponse.correlationID);
+                                        } catch (error) {
+                                            syn.$l.eventLog('$w.executeTransaction callback', `executeTransaction 콜백 오류: ${error}`, 'Error');
+                                            fallback(config, transactionObject);
+                                        }
+                                    }
+                                }
+                                else {
+                                    const errorText = transactionResponse.exceptionText;
+                                    const errorMessage = '거래: {0}, 기능: {1} 수행 중 예외 정보 확인이 필요합니다\nGlobalID: {2}'.format(transactionRequest.transaction.transactionID, transactionRequest.transaction.functionID, transactionRequest.transaction.globalID);
+                                    if (syn.$w.serviceClientException) {
+                                        syn.$w.serviceClientException('요청 정보 확인', errorMessage, errorText);
+                                    }
+                                    syn.$l.eventLog('$w.executeTransaction', `거래 실행 오류: ${errorText}`, 'Warning');
+                                    fallback(config, transactionObject);
+
+                                    if (globalRoot.devicePlatform === 'browser') {
+                                        if ($this && $this.hook && $this.hook.frameEvent) {
+                                            $this.hook.frameEvent('transactionException', {
+                                                transactionID: transactionRequest.transaction.transactionID,
+                                                functionID: transactionRequest.transaction.functionID,
+                                                errorText: errorText,
+                                                errorMessage: errorMessage
+                                            });
+                                        }
+                                    }
+                                    else {
                                         if (callback) {
-                                            const addtionalData = {};
-                                            if (message.additions && message.additions.length > 0) {
-                                                for (let i = 0; i < message.additions.length; i++) {
-                                                    const addition = message.additions[i];
-
-                                                    if (addition.code == 'F' && $object.isNullOrUndefined(addtionalData[addition.code]) == true) {
-                                                        addtionalData[addition.code] = addition.text;
-                                                    }
-                                                    else if (addition.code == 'P') {
-
-                                                    }
-                                                    else if (addition.code == 'S') {
-
-                                                    }
-                                                }
-                                            }
-
                                             try {
-                                                callback(jsonResult, addtionalData, transactionResponse.correlationID);
+                                                callback([], null, transactionResponse.correlationID); // Pass correlationID even on error
                                             } catch (error) {
                                                 syn.$l.eventLog('$w.executeTransaction callback', `executeTransaction 콜백 오류: ${error}`, 'Error');
                                             }
                                         }
                                     }
-                                    else {
-                                        const errorText = transactionResponse.exceptionText;
-                                        const errorMessage = '거래: {0}, 기능: {1} 수행중 오류가 발생하였습니다\nGlobalID: {2}'.format(transactionRequest.transaction.transactionID, transactionRequest.transaction.functionID, transactionRequest.transaction.globalID);
-                                        if (syn.$w.serviceClientException) {
-                                            syn.$w.serviceClientException('요청오류', errorMessage, errorText);
-                                        }
-                                        syn.$l.eventLog('$w.executeTransaction', `거래 실행 오류: ${errorText}`, 'Warning');
-
-                                        if (globalRoot.devicePlatform === 'browser') {
-                                            if ($this && $this.hook && $this.hook.frameEvent) {
-                                                $this.hook.frameEvent('transactionException', {
-                                                    transactionID: transactionRequest.transaction.transactionID,
-                                                    functionID: transactionRequest.transaction.functionID,
-                                                    errorText: errorText,
-                                                    errorMessage: errorMessage
-                                                });
-                                            }
-                                        }
-                                        else {
-                                            if (callback) {
-                                                try {
-                                                    callback([], null, transactionResponse.correlationID); // Pass correlationID even on error
-                                                } catch (error) {
-                                                    syn.$l.eventLog('$w.executeTransaction callback', `executeTransaction 콜백 오류: ${error}`, 'Error');
-                                                }
-                                            }
-                                        }
-                                    }
                                 }
-                                else {
-                                    if (callback) {
-                                        if (transactionResponse && transactionResponse.acknowledge && transactionResponse.acknowledge == 1) {
-                                            try {
-                                                if (transactionResponse.result.dataSet != null && transactionResponse.result.dataSet.length > 0) {
-                                                    const dataMapItem = transactionResponse.result.dataSet;
-                                                    const length = dataMapItem.length;
-                                                    for (let i = 0; i < length; i++) {
-                                                        const item = dataMapItem[i];
-                                                        if (transactionResponse.transaction.dataFormat == 'J') {
-                                                            if (transactionResponse.transaction.compressionYN == 'Y') {
-                                                                item.value = JSON.parse(syn.$c.LZString.decompressFromBase64(item.value));
-                                                            }
-                                                        }
-                                                        else {
-                                                            item.value = transactionResponse.transaction.compressionYN == 'Y' ? syn.$c.LZString.decompressFromBase64(item.value) : item.value;
+                            }
+                            else {
+                                if (callback) {
+                                    if (transactionResponse && transactionResponse.acknowledge && transactionResponse.acknowledge == 1) {
+                                        try {
+                                            if (transactionResponse.result.dataSet != null && transactionResponse.result.dataSet.length > 0) {
+                                                const dataMapItem = transactionResponse.result.dataSet;
+                                                const length = dataMapItem.length;
+                                                for (let i = 0; i < length; i++) {
+                                                    const item = dataMapItem[i];
+                                                    if (transactionResponse.transaction.dataFormat == 'J') {
+                                                        if (transactionResponse.transaction.compressionYN == 'Y') {
+                                                            item.value = JSON.parse(syn.$c.LZString.decompressFromBase64(item.value));
                                                         }
                                                     }
+                                                    else {
+                                                        item.value = transactionResponse.transaction.compressionYN == 'Y' ? syn.$c.LZString.decompressFromBase64(item.value) : item.value;
+                                                    }
                                                 }
-                                            } catch (error) {
-                                                syn.$l.eventLog('$w.executeTransaction', `executeTransaction 오류: ${error}`, 'Error');
                                             }
-                                        }
-
-                                        try {
-                                            callback(transactionResponse, null, transactionResponse.correlationID);
                                         } catch (error) {
-                                            syn.$l.eventLog('$w.executeTransaction callback', `executeTransaction 콜백 오류: ${error}`, 'Error');
+                                            syn.$l.eventLog('$w.executeTransaction', `executeTransaction 오류: ${error}`, 'Error');
+                                            fallback(config, transactionObject);
                                         }
                                     }
-                                }
-                            }
-                            catch (error) {
-                                const errorMessage = '거래: {0}, 기능: {1} 수행중 오류가 발생하였습니다\nGlobalID: {2}'.format(transactionRequest.transaction.transactionID, transactionRequest.transaction.functionID, transactionRequest.transaction.globalID);
-                                if (syn.$w.serviceClientException) {
-                                    syn.$w.serviceClientException('요청오류', errorMessage, error.stack);
-                                }
-                                syn.$l.eventLog('$w.executeTransaction', `executeTransaction 오류: ${error}`, 'Error');
 
-                                if (globalRoot.devicePlatform === 'browser') {
-                                    if ($this && $this.hook && $this.hook.frameEvent) {
-                                        $this.hook.frameEvent('transactionError', {
-                                            transactionID: transactionRequest.transaction.transactionID,
-                                            functionID: transactionRequest.transaction.functionID,
-                                            errorText: error.message,
-                                            errorMessage: errorMessage
-                                        });
+                                    try {
+                                        callback(transactionResponse, null, transactionResponse.correlationID);
+                                    } catch (error) {
+                                        syn.$l.eventLog('$w.executeTransaction callback', `executeTransaction 콜백 오류: ${error}`, 'Error');
+                                        fallback(config, transactionObject);
                                     }
                                 }
-                                else {
-                                    if (callback) {
-                                        try {
-                                            callback([], null);
-                                        } catch (error) {
-                                            syn.$l.eventLog('$w.executeTransaction callback', `executeTransaction 콜백 오류: ${error}`, 'Error');
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (syn.$w.domainTransactionLoaderEnd) {
-                                syn.$w.domainTransactionLoaderEnd();
                             }
                         }
-                    }
-                    syn.$l.eventLog('$w.executeTransaction', `거래 GlobalID: ${transactionRequest.transaction.globalID}`, 'Verbose');
+                        catch (error) {
+                            const errorMessage = '거래: {0}, 기능: {1} 수행 중 예외 정보 확인이 필요합니다\nGlobalID: {2}'.format(transactionRequest.transaction.transactionID, transactionRequest.transaction.functionID, transactionRequest.transaction.globalID);
+                            if (syn.$w.serviceClientException) {
+                                syn.$w.serviceClientException('요청 정보 확인', errorMessage, error.stack);
+                            }
+                            syn.$l.eventLog('$w.executeTransaction', `executeTransaction 오류: ${error}`, 'Error');
+                            fallback(config, transactionObject);
 
-                    xhr.setRequestHeader('X-Requested-With', 'HandStack ServiceClient');
-                    xhr.setRequestHeader('Content-Type', 'application/json');
-                    xhr.timeout = syn.Config.TransactionTimeout;
-                    xhr.send(JSON.stringify(transactionRequest));
+                            if (globalRoot.devicePlatform === 'browser') {
+                                if ($this && $this.hook && $this.hook.frameEvent) {
+                                    $this.hook.frameEvent('transactionError', {
+                                        transactionID: transactionRequest.transaction.transactionID,
+                                        functionID: transactionRequest.transaction.functionID,
+                                        errorText: error.message,
+                                        errorMessage: errorMessage
+                                    });
+                                }
+                            }
+                            else {
+                                if (callback) {
+                                    try {
+                                        callback([], null);
+                                    } catch (error) {
+                                        syn.$l.eventLog('$w.executeTransaction callback', `executeTransaction 콜백 오류: ${error}`, 'Error');
+                                        fallback(config, transactionObject);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (syn.$w.domainTransactionLoaderEnd) {
+                            syn.$w.domainTransactionLoaderEnd();
+                        }
+                    }
                 }
+                syn.$l.eventLog('$w.executeTransaction', `거래 GlobalID: ${transactionRequest.transaction.globalID}`, 'Verbose');
+
+                xhr.setRequestHeader('X-Requested-With', 'HandStack ServiceClient');
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.timeout = syn.Config.TransactionTimeout;
+                xhr.send(JSON.stringify(transactionRequest));
             }
         },
 
         pseudoStyle(elID, selector, cssText) {
-            var head = document.head || (document.getElementsByTagName('head').length == 0 ? null : document.getElementsByTagName('head')[0]);
+            var heads = document.getElementsByTagName('head');
+            var head = document.head || (heads.length == 0 ? null : heads[0]);
             if (head) {
                 var sheet = document.getElementById(elID) || document.createElement('style');
                 if (sheet.id == '') {
@@ -9429,8 +10839,9 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         pseudoStyles(elID, styles) {
-            var head = document.head || (document.getElementsByTagName('head').length == 0 ? null : document.getElementsByTagName('head')[0]);
-            if (head && $object.isArray(styles) == true && styles.length > 0) {
+            var heads = document.getElementsByTagName('head');
+            var head = document.head || (heads.length == 0 ? null : heads[0]);
+            if (head && context.$object.isArray(styles) == true && styles.length > 0) {
                 var sheet = document.getElementById(elID) || document.createElement('style');
                 if (sheet.id == '') {
                     sheet.id = elID;
@@ -9446,6 +10857,129 @@ if (typeof module !== 'undefined' && module.exports) {
                 sheet.innerHTML = styleTexts.join('\n');
                 head.appendChild(sheet);
             }
+        },
+
+        async copyToClipboard(text) {
+            if (!text) return Promise.reject('');
+
+            if (context.navigator?.clipboard?.writeText) {
+                try {
+                    await context.navigator.clipboard.writeText(text);
+                    return Promise.resolve();
+                } catch (error) {
+                    syn.$l.eventLog('$w.copyToClipboard', `Clipboard API 실패: ${error.message}`, 'Warning');
+                    return Promise.reject(error);
+                }
+            }
+
+            const textArea = doc.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.top = "-9999px";
+            textArea.style.left = "-9999px";
+            doc.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = doc.execCommand('copy');
+                doc.body.removeChild(textArea);
+                if (successful) {
+                    return Promise.resolve();
+                }
+                return Promise.reject(new Error('execCommand copy 실패'));
+            } catch (error) {
+                doc.body.removeChild(textArea);
+                syn.$l.eventLog('$w.copyToClipboard', `execCommand 실패: ${error.message}`, 'Error');
+                return Promise.reject(error);
+            }
+        },
+
+        // function loadMoreContent(done) {
+        // 	   done(true);
+        // }
+        // 
+        // syn.$w.startIntersection(
+        //     'my-list-scroll', 
+        //     '#loading-placeholder', 
+        //     loadMoreContent,
+        //     {
+        //         rootMargin: '100px' // placeholder가 화면 상하좌우 100px 안으로 들어오면 미리 로드 시작
+        //     }
+        // );
+        startIntersection(id, placeholder, loadMore, options = {}) {
+            const targetElement = syn.$l.getElement(placeholder);
+
+            if (typeof id !== 'string' || !id) {
+                syn.$l.eventLog('$w.startIntersection', '고유한 ID를 제공해야 합니다.', 'Error');
+                return null;
+            }
+            if (this.intersectionObservers[id]) {
+                syn.$l.eventLog('$w.startIntersection', `ID '${id}'를 가진 Observer가 이미 존재합니다.`, 'Warning');
+                return this.intersectionObservers[id].observer;
+            }
+            if (!targetElement) {
+                syn.$l.eventLog('$w.startIntersection', '감시할 placeholder 엘리먼트를 찾을 수 없습니다.', 'Warning');
+                return null;
+            }
+            if (!context.IntersectionObserver) {
+                syn.$l.eventLog('$w.startIntersection', '이 브라우저는 IntersectionObserver를 지원하지 않습니다.', 'Error');
+                return null;
+            }
+
+            let isLoading = false;
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.01,
+                ...options
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                const entry = entries[0];
+                if (entry.isIntersecting && !isLoading) {
+                    isLoading = true;
+
+                    const done = (isFinished = false) => {
+                        isLoading = false;
+                        if (isFinished === true) {
+                            this.stopIntersection(id);
+                        }
+                    };
+
+                    loadMore(done);
+                }
+            }, observerOptions);
+
+            observer.observe(targetElement);
+
+            this.intersectionObservers[id] = {
+                observer: observer,
+                element: targetElement,
+                isLoading: isLoading
+            };
+
+            syn.$l.eventLog('$w.startIntersection', `무한 스크롤 시작 (ID: ${id})`, 'Information');
+            return observer;
+        },
+
+        // syn.$w.stopIntersection('my-list-scroll');
+        stopIntersection(id) {
+            const observerInfo = this.intersectionObservers[id];
+            if (observerInfo) {
+                observerInfo.observer.unobserve(observerInfo.element);
+                observerInfo.observer.disconnect();
+                delete this.intersectionObservers[id];
+                syn.$l.eventLog('$w.stopIntersection', `무한 스크롤 중지 (ID: ${id})`, 'Information');
+            }
+        },
+
+        // syn.$l.addEvent(context, 'beforeunload', () => {
+        //     syn.$w.stopAllInfiniteScrolls();
+        // });
+        stopAllIntersections() {
+            Object.keys(this.intersectionObservers).forEach(id => this.stopIntersection(id));
         }
     });
 
@@ -9462,10 +10996,12 @@ if (typeof module !== 'undefined' && module.exports) {
             syn.Config = JSON.parse(process.env.SYN_CONFIG);
         }
         else {
-            var filePath = path.join(process.cwd(), 'node.config.json');
+            var filePath = path.join(process.cwd(), '..', 'modules', 'function', 'node.config.json');
             if (fs.existsSync(filePath) == true) {
+                console.info('Node.js 환경설정 로드. 파일 경로: {0}'.format(filePath));
                 var data = fs.readFileSync(filePath, 'utf8');
                 syn.Config = JSON.parse(data);
+                syn.Config.LoadFilePath = filePath;
 
                 process.env.SYN_LogMinimumLevel = syn.Config.LogMinimumLevel || 'trace';
                 process.env.SYN_FileLogBasePath = syn.Config.FileLogBasePath || path.join(process.cwd(), '..', 'log', 'function', 'javascript');
@@ -9476,8 +11012,12 @@ if (typeof module !== 'undefined' && module.exports) {
             }
         }
 
-        if (syn.Config && $string.isNullOrEmpty(syn.Config.DataSourceFilePath) == true) {
+        if (syn.Config && context.$string.isNullOrEmpty(syn.Config.DataSourceFilePath) == true) {
             syn.Config.DataSourceFilePath = path.join(process.cwd(), '..', 'modules', 'dbclient', 'module.json');
+        }
+
+        if (syn.Config && context.$string.isNullOrEmpty(syn.Config.ProxyPathName) == false) {
+            $webform.proxyBasePath = (syn.Config.IsProxyServe == true && syn.Config.ProxyPathName.length > 0) ? `/${syn.Config.ProxyPathName}` : '';
         }
 
         const browserOnlyMethods = [
@@ -9489,6 +11029,14 @@ if (typeof module !== 'undefined' && module.exports) {
         browserOnlyMethods.forEach(method => { delete $webform[method]; });
     }
     else {
+        const preferColorScheme = context.matchMedia('(prefers-color-scheme: dark)');
+        if (preferColorScheme) {
+            context.$webform.isDarkMode = preferColorScheme.matches;
+            preferColorScheme.addEventListener('change', (event) => {
+                context.$webform.isDarkMode = event.matches;
+            });
+        }
+
         const pathname = location.pathname;
         const pathSegments = pathname.split('/').filter(Boolean);
         if (pathSegments.length > 0) {
@@ -9503,13 +11051,24 @@ if (typeof module !== 'undefined' && module.exports) {
             mod?.hook?.windowLoad?.();
         });
 
-        var urlArgs = syn.$r.getCookie('syn.iscache') == 'true' ? '' : '?tick=' + new Date().getTime();
+        var urlArgs = syn.$r.getCookie('syn.iscache') == 'true' ? '' : '?tick=' + Date.now();
         var isAsyncLoad = syn.$b.isIE == false;
 
         globalRoot.isLoadConfig = false;
         if (context.synConfig) {
-            syn.Config = syn.$w.argumentsExtend(synConfig, syn.Config);
+            syn.Config = syn.$w.argumentsExtend(syn.Config, synConfig);
+            const server = syn.Config?.DomainAPIServer;
+            if (context.$string.isNullOrWhiteSpace(syn.Config.DomainBaseUrl) == true && server) {
+                const protocol = server.Protocol || 'http';
+                const host = server.IP || 'localhost';
+                const port = server.Port ? `:${server.Port}` : '';
+                syn.Config.DomainBaseUrl = `${protocol}://${host}${port}`;
+            }
+
             context.synConfig = undefined;
+            if (syn.Config && context.$string.isNullOrEmpty(syn.Config.ProxyPathName) == false) {
+                $webform.proxyBasePath = (syn.Config.IsProxyServe == true && syn.Config.ProxyPathName.length > 0) ? `/${syn.Config.ProxyPathName}` : '';
+            }
 
             globalRoot.isLoadConfig = true;
             setTimeout(async function () {
@@ -9517,14 +11076,33 @@ if (typeof module !== 'undefined' && module.exports) {
             });
         }
         else {
-            $webform.loadJson('/' + (context.synConfigName || 'syn.config.json') + urlArgs, null, function (setting, json) {
-                syn.Config = syn.$w.argumentsExtend(json, syn.Config);
+            if (context.synConfigName) {
+                $webform.loadJson('/' + context.synConfigName + urlArgs, null, function (setting, json) {
+                    syn.Config = syn.$w.argumentsExtend(syn.Config, json);
+                    if (syn.Config && context.$string.isNullOrEmpty(syn.Config.ProxyPathName) == false) {
+                        $webform.proxyBasePath = (syn.Config.IsProxyServe == true && syn.Config.ProxyPathName.length > 0) ? `/${syn.Config.ProxyPathName}` : '';
+                    }
 
-                globalRoot.isLoadConfig = true;
-                setTimeout(async function () {
-                    await $webform.contentLoaded();
-                });
-            }, null, isAsyncLoad);
+                    if (context.$string.isNullOrWhiteSpace(syn.Config.DomainBaseUrl) == true && server) {
+                        const protocol = server.Protocol || 'http';
+                        const host = server.IP || 'localhost';
+                        const port = server.Port ? `:${server.Port}` : '';
+                        syn.Config.DomainBaseUrl = `${protocol}://${host}${port}`;
+                    }
+
+                    globalRoot.isLoadConfig = true;
+                    setTimeout(async function () {
+                        await $webform.contentLoaded();
+                    });
+                }, null, isAsyncLoad);
+            }
+            else {
+                if (context.document.readyState === 'loading') {
+                    context.document.addEventListener('DOMContentLoaded', $webform.contentLoaded, { once: true });
+                } else {
+                    $webform.contentLoaded();
+                }
+            }
         }
 
         if (context.Configuration) {
@@ -9538,7 +11116,7 @@ if (typeof module !== 'undefined' && module.exports) {
             if (environment.Cookie) {
                 for (var item in environment.Cookie) {
                     var value = syn.$r.getCookie(item);
-                    if ($object.isNullOrUndefined(value) == true) {
+                    if (context.$object.isNullOrUndefined(value) == true) {
                         syn.$r.setCookie(item, environment.Cookie[item]);
                     }
                 }
@@ -9558,7 +11136,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
     $print.extend({
         base64ExcelFile: null,
-        reportName: `report-${$date.toString(new Date(), 'd')}.pdf`,
+        reportName: `report-${context.$date.toString(new Date(), 'd')}.pdf`,
         datetimeFormat: 'yyyy-MM-dd',
         boolTrue: '○',
         boolFalse: '×',
@@ -9566,23 +11144,34 @@ if (typeof module !== 'undefined' && module.exports) {
         workActions: [],
         workData: null,
         reportifyServer: '',
-        reportifyPath: '/reportify/api/brief',
-        reportifyTemplateUrl: '/reportify/api/index/download-template?reportFileID=',
+        reportifyPath: `${syn.$w.proxyBasePath}/reportify/api/brief`,
+        reportifyTemplateUrl: `${syn.$w.proxyBasePath}/reportify/api/index/download-template?reportFileID=`,
         pageExportScheme: 'export-scheme',
         pageExcelToPdf: 'excel-to-pdf',
+        overwriteFontName: null,
 
         concreate() {
             if (globalRoot.devicePlatform == 'browser') {
-                if (!window.PDFObject) {
-                    syn.$w.loadScript('/lib/pdfobject/pdfobject.min.js');
+                if (context.$string.toBoolean(syn.Config.IsReportifyModule) == true && !context.PDFObject) {
+                    if (syn.Config && context.$string.isNullOrEmpty(syn.Config.ProxyPathName) == false) {
+                        syn.$w.loadScript(`${syn.$w.proxyBasePath}/lib/pdfobject/pdfobject.min.js`);
+                    }
+                    else {
+                        syn.$w.loadScript('/lib/pdfobject/pdfobject.min.js');
+                    }
                 }
 
-                if (!window.printJS) {
-                    syn.$w.loadScript('/lib/print-js/print.min.js');
+                if (context.$string.toBoolean(syn.Config.IsReportifyModule) == true && !context.printJS) {
+                    if (syn.Config && context.$string.isNullOrEmpty(syn.Config.ProxyPathName) == false) {
+                        syn.$w.loadScript(`${syn.$w.proxyBasePath}/lib/print-js/print.min.js`);
+                    }
+                    else {
+                        syn.$w.loadScript('/lib/print-js/print.min.js');
+                    }
                 }
             }
             else if (globalRoot.devicePlatform == 'node') {
-                $print.reportifyServer = 'http://localhost:8000';
+                $print.reportifyServer = 'http://localhost:8421';
             }
         },
 
@@ -9594,42 +11183,6 @@ if (typeof module !== 'undefined' && module.exports) {
             return `${$print.reportifyServer}${$print.reportifyTemplateUrl}${reportFileID}`;
         },
 
-        formatDate(date, format) {
-            const map = {
-                yyyy: date.getFullYear(),
-                MM: ('0' + (date.getMonth() + 1)).slice(-2),
-                dd: ('0' + date.getDate()).slice(-2),
-                HH: ('0' + date.getHours()).slice(-2),
-                mm: ('0' + date.getMinutes()).slice(-2),
-                ss: ('0' + date.getSeconds()).slice(-2)
-            };
-            return format.replace(/yyyy|MM|dd|HH|mm|ss/gi, matched => map[matched]);
-        },
-
-        updateOptions(options) {
-            if (options) {
-                if ($string.isNullOrEmpty(options.base64ExcelFile) == false) {
-                    $print.base64ExcelFile = options.base64ExcelFile;
-                }
-
-                if ($string.isNullOrEmpty(options.reportName) == false) {
-                    $print.reportName = options.reportName;
-                }
-
-                if ($string.isNullOrEmpty(options.datetimeFormat) == false) {
-                    $print.datetimeFormat = options.datetimeFormat;
-                }
-
-                if ($string.isNullOrEmpty(options.boolTrue) == false) {
-                    $print.boolTrue = options.boolTrue;
-                }
-
-                if ($string.isNullOrEmpty(options.boolFalse) == false) {
-                    $print.boolFalse = options.boolFalse;
-                }
-            }
-        },
-
         async generate(templateID, excelUrl) {
             var result = {
                 templateID: templateID,
@@ -9638,30 +11191,31 @@ if (typeof module !== 'undefined' && module.exports) {
                 boolTrue: $print.boolTrue,
                 boolFalse: $print.boolFalse,
                 workItems: $print.workItems,
-                workActions: $print.workActions
+                workActions: $print.workActions,
+                overwriteFontName: $print.overwriteFontName
             };
 
-            if ($string.isNullOrEmpty(excelUrl) == false) {
+            if (context.$string.isNullOrEmpty(excelUrl) == false) {
                 if ((excelUrl.startsWith('http:') == true || excelUrl.startsWith('https:') == true) == false) {
                     excelUrl = `${$print.reportifyServer}${excelUrl}`
                 }
-                $print.base64ExcelFile = await $print.getUrlToBase64(excelUrl);
+                $print.base64ExcelFile = await syn.$l.urlToBase64(excelUrl);
             }
 
-            if ($string.isNullOrEmpty($print.base64ExcelFile) == false) {
+            if (context.$string.isNullOrEmpty($print.base64ExcelFile) == false) {
                 result.base64ExcelFile = $print.base64ExcelFile;
             }
 
             for (var i = 0, length = result.workItems.length; i < length; i++) {
                 var workitem = result.workItems[i];
-                if (workitem.options && $object.isObject(workitem.options) == true) {
+                if (workitem.options && context.$object.isObject(workitem.options) == true) {
                     workitem.options = JSON.stringify(workitem.options);
                 }
             }
 
             for (var i = 0, length = result.workActions.length; i < length; i++) {
                 var workAction = result.workActions[i];
-                if (workAction.options && $object.isObject(workAction.options) == true) {
+                if (workAction.options && context.$object.isObject(workAction.options) == true) {
                     workAction.options = JSON.stringify(workAction.options);
                 }
             }
@@ -9669,28 +11223,29 @@ if (typeof module !== 'undefined' && module.exports) {
             return result;
         },
 
-        addWorkItem(sourceName = 'workItems', document, worksheet, bind, row, col, type, data, overtake, step) {
-            if ($object.isNumber(document) == true) {
+        addWorkItem(workItems, document, worksheet, datafield, bind, row, col, type, data, overtake, step) {
+            if (context.$object.isNumber(document) == true) {
                 if (document || worksheet || bind || row || col) {
-                    syn.$l.eventLog('addWorkItem', 'document, worksheet, bind, row, col 필수 항목 필요', 'Warning');
+                    syn.$l.eventLog('addWorkItem', 'document, worksheet, datafield, bind, row, col 필수 항목 필요', 'Warning');
                 }
                 else {
-                    var workItem = { document, worksheet, bind, row, col, type, data, step };
+                    var workItem = { document, worksheet, datafield, bind, row, col, type, data, step };
                     if (overtake) {
                         workItem.overtake = overtake;
                     }
-                    $print[sourceName].push(workItem);
+                    workItems.push(workItem);
                 }
             }
-            else if ($object.isObject(document) == true) {
+            else if (context.$object.isObject(document) == true) {
                 var workObject = document;
                 if (!workObject.document || !workObject.worksheet || !workObject.bind || !workObject.row || !workObject.col) {
-                    syn.$l.eventLog('addWorkItem', 'document, worksheet, bind, row, col 필수 항목 필요', 'Warning');
+                    syn.$l.eventLog('addWorkItem', 'document, worksheet, datafield, bind, row, col 필수 항목 필요', 'Warning');
                 }
                 else {
                     var workItem = {
                         document: workObject.document,
                         worksheet: workObject.worksheet,
+                        datafield: workObject.datafield,
                         bind: workObject.bind,
                         row: workObject.row,
                         col: workObject.col,
@@ -9701,15 +11256,15 @@ if (typeof module !== 'undefined' && module.exports) {
                     if (workObject.overtake) {
                         workItem.overtake = workObject.overtake;
                     }
-                    $print[sourceName].push(workItem);
+                    workItems.push(workItem);
                 }
             }
         },
 
-        addAtWorkItem(sourceName = 'workItems', document, worksheet, datafield, target, nextDirection) {
-            nextDirection = nextDirection || true;
+        addAtWorkItem(workItems, document, worksheet, datafield, target, nextDirection) {
+            nextDirection = nextDirection === undefined ? true : nextDirection;
 
-            var index = $print[sourceName].findIndex(item =>
+            var index = workItems.findIndex(item =>
                 item.document === document &&
                 item.worksheet === worksheet &&
                 item.datafield === datafield
@@ -9720,10 +11275,10 @@ if (typeof module !== 'undefined' && module.exports) {
                 return;
             }
 
-            index = $print[sourceName].findIndex(item =>
+            index = workItems.findIndex(item =>
                 item.document === target.document &&
                 item.worksheet === target.worksheet &&
-                ($string.isNullOrEmpty(target.datafield) == false && item.datafield === target.datafield)
+                (context.$string.isNullOrEmpty(target.datafield) == false && item.datafield === target.datafield)
             );
 
             if (index === -1) {
@@ -9746,30 +11301,30 @@ if (typeof module !== 'undefined' && module.exports) {
                 newItem.overtake = target.overtake;
             }
 
-            if ($string.toBoolean(nextDirection) == true) {
-                $print[sourceName].splice(index + 1, 0, newItem);
+            if (context.$string.toBoolean(nextDirection) == true) {
+                workItems.splice(index + 1, 0, newItem);
             } else {
-                $print[sourceName].splice(index, 0, newItem);
+                workItems.splice(index, 0, newItem);
             }
         },
 
-        removeWorkItem(sourceName = 'workItems', document, worksheet, datafield) {
-            var index = $print[sourceName].findIndex(item =>
+        removeWorkItem(workItems, document, worksheet, datafield) {
+            var index = workItems.findIndex(item =>
                 item.document === document &&
                 item.worksheet === worksheet &&
                 item.datafield === datafield
             );
 
             if (index > -1) {
-                $print[sourceName].splice(index, 1);
+                workItems.splice(index, 1);
             }
             else {
                 syn.$l.eventLog('removeWorkItem', `document: ${document}, worksheet: ${worksheet}, datafield: ${datafield} 항목 확인 필요`, 'Warning');
             }
         },
 
-        updateWorkItem(sourceName = 'workItems', document, worksheet, datafield, updates) {
-            var item = $print[sourceName].find(item =>
+        updateWorkItem(workItems, document, worksheet, datafield, updates) {
+            var item = workItems.find(item =>
                 item.document === document &&
                 item.worksheet === worksheet &&
                 item.datafield === datafield
@@ -9783,14 +11338,28 @@ if (typeof module !== 'undefined' && module.exports) {
             }
         },
 
-        bindingWorkItems(sourceName = 'workItems', workItems, dataSource) {
+        calculateOffsets(totalCount, step) {
+            const offsets = [];
+            let i = 0;
+            for (i = 0; i < totalCount; i += step) {
+                offsets.push(i);
+            }
+            return offsets;
+        },
+
+        bindingWorkItems(workItems, dataSource, documentOffset) {
             var reportWorkItems = JSON.parse(JSON.stringify(workItems));
             for (var key in dataSource) {
                 var dataItem = dataSource[key];
                 if (dataItem) {
                     for (var i = 0, length = reportWorkItems.length; i < length; i++) {
                         var item = reportWorkItems[i];
-                        if ($object.isNullOrUndefined(item.bind) == true) {
+
+                        if (documentOffset && context.$object.isNumber(documentOffset) == true && documentOffset > -1) {
+                            item.document = documentOffset;
+                        }
+
+                        if (context.$object.isNullOrUndefined(item.bind) == true) {
                             item.bind = 'cell';
                         }
 
@@ -9813,61 +11382,90 @@ if (typeof module !== 'undefined' && module.exports) {
                     }
                 }
             }
-            $print[sourceName] = reportWorkItems;
+
             return reportWorkItems;
         },
 
-        addItem(document, worksheet, bind, row, col, type, data, overtake, step) {
-            $print.addWorkItem('workItems', document, worksheet, bind, row, col, type, data, overtake, step);
-        },
-
-        addAtItem(document, worksheet, datafield, target, nextDirection) {
-            $print.addAtWorkItem('workItems', document, worksheet, datafield, target, nextDirection);
-        },
-
-        removeItem(document, worksheet, datafield) {
-            $print.removeWorkItem('workItems', document, worksheet, datafield);
-        },
-
-        updateItem(document, worksheet, datafield, updates) {
-            $print.updateWorkItem('workItems', document, worksheet, datafield, updates);
-        },
-
-        bindingItems(workItems, dataSource) {
-            $print.bindingWorkItems('workItems', workItems, dataSource);
-        },
-
-        addAction(document, worksheet, bind, row, col, type, data, overtake, step) {
-            $print.addWorkItem('workActions', document, worksheet, bind, row, col, type, data, overtake, step);
-        },
-
-        addAtAction(document, worksheet, datafield, target, nextDirection) {
-            $print.addAtWorkItem('workActions', document, worksheet, datafield, target, nextDirection);
-        },
-
-        removeAction(document, worksheet, datafield) {
-            $print.removeWorkItem('workActions', document, worksheet, datafield);
-        },
-
-        updateAction(document, worksheet, datafield, updates) {
-            $print.updateWorkItem('workActions', document, worksheet, datafield, updates);
-        },
-
-        bindingActions(workActions, dataSource) {
-            $print.bindingWorkItems('workActions', workActions, dataSource);
-        },
-
-        // var workData = syn.$p.transformWorkData(data, ['DETAIL_CONTENTS', 'RESULTS']);
+        // let workData = syn.$p.transformWorkData(data, ['DETAIL_CONTENTS', 'RESULTS']);
         transformWorkData(jsonData, keys) {
             return jsonData.map(item => {
                 return keys.map(key => item[key]);
             });
         },
 
-        // var chunkDatas = splitDataChunks(dataList, 2, 3);
+        // let formData = syn.$p.transformFormData(data, 1);
+        transformFormData(jsonData, offset, padding, defaultKeys) {
+            const result = {};
+            offset = offset || 1;
+            padding = padding || 0;
+
+            let keys = [];
+            const defaultValues = {};
+
+            if (typeof defaultKeys === 'string') {
+                keys = defaultKeys.split(',').map(key => {
+                    const trimmedKey = key.trim();
+                    if (trimmedKey.includes(':')) {
+                        const [keyName, defaultValue] = trimmedKey.split(':').map(part => part.trim());
+                        defaultValues[keyName] = defaultValue;
+                        return keyName;
+                    } else {
+                        defaultValues[trimmedKey] = '';
+                        return trimmedKey;
+                    }
+                });
+            } else if (Array.isArray(defaultKeys)) {
+                keys = defaultKeys.map(key => {
+                    if (typeof key === 'string' && key.includes(':')) {
+                        const [keyName, defaultValue] = key.split(':').map(part => part.trim());
+                        defaultValues[keyName] = defaultValue;
+                        return keyName;
+                    } else {
+                        const keyName = typeof key === 'string' ? key : String(key);
+                        defaultValues[keyName] = '';
+                        return keyName;
+                    }
+                });
+            }
+
+            if (jsonData.length > 0) {
+                const dataKeys = Object.keys(jsonData[0]);
+                dataKeys.forEach(key => {
+                    if (!defaultValues.hasOwnProperty(key)) {
+                        defaultValues[key] = '';
+                    }
+                });
+                keys = [...new Set([...keys, ...dataKeys])];
+            }
+
+            jsonData.forEach((item, index) => {
+                const suffix = offset + index;
+                keys.forEach(key => {
+                    if (item.hasOwnProperty(key)) {
+                        result[key + suffix] = item[key];
+                    } else {
+                        result[key + suffix] = defaultValues[key] || '';
+                    }
+                });
+            });
+
+            if (padding > jsonData.length) {
+                for (let i = jsonData.length; i < padding; i++) {
+                    const suffix = offset + i;
+
+                    keys.forEach(key => {
+                        result[key + suffix] = defaultValues[key] || '';
+                    });
+                }
+            }
+
+            return result;
+        },
+
+        // let chunkDatas = syn.$p.splitDataChunks(dataList, 2, 3);
         splitDataChunks(dataList, firstLength, chunkSize) {
             var result = [];
-
+            chunkSize = chunkSize || firstLength;
             if (firstLength > 0 && firstLength <= dataList.length) {
                 result.push(dataList.slice(0, firstLength));
             }
@@ -9961,33 +11559,23 @@ if (typeof module !== 'undefined' && module.exports) {
             }
         },
 
-        async getUrlToBase64(url) {
-            var result = null;
-            var excelResult = await syn.$r.httpFetch(url).send();
-            if (excelResult && excelResult.error) {
-                return result;
-            }
-            result = await syn.$l.blobToBase64(excelResult, true);
-            return result;
-        },
-
         async getSchemeText(excelUrl, formatted, indent) {
             var result = '';
-            var base64ExcelFile = await $print.getUrlToBase64(excelUrl);
+            var base64ExcelFile = await syn.$l.urlToBase64(excelUrl);
             if (base64ExcelFile) {
                 var reportifyUrl = $print.getReportifyUrl($print.pageExportScheme);
                 var data = {
                     body: {
                         base64ExcelFile: base64ExcelFile,
-                        indent: $string.toBoolean(indent),
-                        formatted: $string.toBoolean(formatted)
+                        indent: context.$string.toBoolean(indent),
+                        formatted: context.$string.toBoolean(formatted)
                     }
                 };
 
                 var httpResult = await syn.$r.httpRequest('POST', reportifyUrl, data);
                 if (httpResult && httpResult.status == 200) {
                     result = httpResult.response;
-                    if (window.ClipboardJS) {
+                    if (context.ClipboardJS) {
                         var tempButton = syn.$l.get('btn-clipboard-text') || document.createElement('button');
                         if (tempButton.id == '') {
                             tempButton.id = 'btn-clipboard-text';
@@ -9997,22 +11585,15 @@ if (typeof module !== 'undefined' && module.exports) {
                         document.body.appendChild(tempButton);
 
                         var clipboard = new ClipboardJS(tempButton);
-
-                        return new Promise((resolve, reject) => {
-                            clipboard.on('success', (e) => {
-                                clipboard.destroy();
-                                document.body.removeChild(tempButton);
-                                resolve(true);
-                            });
-
-                            clipboard.on('error', (e) => {
-                                clipboard.destroy();
-                                document.body.removeChild(tempButton);
-                                reject(false);
-                            });
-
-                            tempButton.click();
+                        clipboard.on('success', (error) => {
+                            clipboard.destroy();
+                            document.body.removeChild(tempButton);
                         });
+
+                        tempButton.click();
+                    }
+                    else {
+                        await syn.$w.copyToClipboard(result);
                     }
                 }
                 else {
@@ -10020,52 +11601,6 @@ if (typeof module !== 'undefined' && module.exports) {
                 }
             }
             return result;
-        },
-
-        requestReportValue(moduleID, pdfOptions, transactionOptions, callback) {
-            var defaultPdfOptions = {
-                REPORT_ID: '',
-                COMPANY_NO: '',
-                DOCUMENT_FORM_ID: '',
-                DOCUMENT_NO: '',
-                EMPLOYEE_NO: '',
-                PRINT_TYPE: '',
-                ENV: 'D'
-            };
-
-            if (syn.Config && syn.Config.Environment) {
-                defaultPdfOptions.ENV = syn.Config.Environment.substring(0, 1);
-            }
-
-            pdfOptions = syn.$w.argumentsExtend(defaultPdfOptions, pdfOptions);
-
-            const directObject = {
-                programID: syn.Config.ApplicationID,
-                businessID: transactionOptions.businessID || syn.Config.ProjectID || 'RPT',
-                transactionID: transactionOptions.transactionID || pdfOptions.REPORT_ID,
-                functionID: transactionOptions.functionID || 'PD01',
-                dataMapInterface: transactionOptions.dataMapInterface || 'Row|Form',
-                inputObjects: Object.entries(pdfOptions).map(([key, val]) => ({ prop: key, val }))
-            };
-
-            try {
-                syn.$w.transactionDirect(directObject, function (response) {
-                    var result = {};
-                    if (response && response.length > 0) {
-                        for (var i = 0; i < response.length; i++) {
-                            var item = response[i];
-                            result[item.id] = item.value;
-                        }
-                    }
-                    else {
-                        syn.$l.moduleEventLog(moduleID, 'requestReportValue', '보고서 요청 오류, directObject: {0}'.format(JSON.stringify(directObject)), 'Error');
-                    }
-
-                    callback(null, result);
-                });
-            } catch (error) {
-                callback(error, null);
-            }
         }
     });
 
@@ -10082,6 +11617,7 @@ if (typeof module !== 'undefined' && module.exports) {
     'use strict';
     var $resource = context.$resource || new syn.module();
     var document = context.document;
+    var interpolationRegexCache = Object.create(null);
 
     $resource.extend({
         localeID: 'ko-KR',
@@ -10102,7 +11638,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     $resource.remainingReadyIntervalID = null;
 
                     var els = document.querySelectorAll('[syn-i18n]');
-                    for (var i = 0; i < els.length; i++) {
+                    for (var i = 0, length = els.length; i < length; i++) {
                         var el = els[i];
 
                         var tagName = el.tagName.toUpperCase();
@@ -10222,11 +11758,11 @@ if (typeof module !== 'undefined' && module.exports) {
                         mod.hook.pageResource($resource.localeID);
                     }
 
-                    if (syn.Config && $string.toBoolean(syn.Config.IsLocaleTranslations) == true && syn.$w.pageResource) {
+                    if (syn.Config && context.$string.toBoolean(syn.Config.IsLocaleTranslations) == true && syn.$w.pageResource) {
                         syn.$w.pageResource($resource.localeID);
                     }
 
-                    if (syn.Config && $string.toBoolean(syn.Config.IsLocaleTranslations) == true && mod.config && ($string.isNullOrEmpty(mod.config.isLocaleTranslations) == true || $string.toBoolean(mod.config.isLocaleTranslations) == true)) {
+                    if (syn.Config && context.$string.toBoolean(syn.Config.IsLocaleTranslations) == true && mod.config && (context.$string.isNullOrEmpty(mod.config.isLocaleTranslations) == true || context.$string.toBoolean(mod.config.isLocaleTranslations) == true)) {
                         $resource.setLocale($resource.localeID);
                     }
                 }
@@ -10243,58 +11779,59 @@ if (typeof module !== 'undefined' && module.exports) {
 
         interpolate(message, interpolations) {
             return Object.keys(interpolations).reduce(function (interpolated, key) {
-                return interpolated.replace(new RegExp('#{s*' + key + 's*}', 'g'), interpolations[key]);
+                var regex = interpolationRegexCache[key];
+                if (!regex) {
+                    regex = new RegExp('#{s*' + key + 's*}', 'g');
+                    interpolationRegexCache[key] = regex;
+                }
+
+                return interpolated.replace(regex, interpolations[key]);
             }, message);
         },
 
         getControl(el) {
-            var result = null;
-            if ($object.isString(el) == true) {
+            if (context.$object.isString(el) == true) {
                 el = syn.$l.get(el);
             }
 
-            if ($object.isNullOrUndefined(el) == false) {
-                var elID = el.id;
-                var tag = el.tagName;
-                var key = el.getAttribute('i18n-key');
-
-                if ($string.isNullOrEmpty(elID) == true) {
-                    result = $resource.translateControls.find(function (item) { return item.tag == tag && item.key == key; });
-                }
-                else {
-                    result = $resource.translateControls.find(function (item) { return item.elID == elID && item.tag == tag && item.key == key; });
-                }
+            if (context.$object.isNullOrUndefined(el) == true) {
+                return null;
             }
 
-            return result;
+            var elID = el.id;
+            var tag = el.tagName;
+            var key = el.getAttribute('i18n-key');
+            if (context.$string.isNullOrEmpty(elID) == true) {
+                return $resource.translateControls.find(function (item) { return item.tag == tag && item.key == key; });
+            }
+
+            return $resource.translateControls.find(function (item) { return item.elID == elID && item.tag == tag && item.key == key; });
         },
 
         translatePage() {
-            $resource.translateControls.forEach(function (control) {
-                $resource.translateControl(control);
-            });
+            $resource.translateControls.forEach(control => $resource.translateControl(control));
         },
 
         translateElement(el, options) {
             var control = $resource.getControl(el);
-            if ($object.isNullOrUndefined(control) == false) {
+            if (context.$object.isNullOrUndefined(control) == false) {
                 $resource.translateControl(control, options);
             }
         },
 
         translateControl(control, options) {
-            if ($object.isNullOrUndefined(control) == false) {
+            if (context.$object.isNullOrUndefined(control) == false) {
                 var el = null;
-                if ($string.isNullOrEmpty(control.elID) == false) {
+                if (context.$string.isNullOrEmpty(control.elID) == false) {
                     el = syn.$l.get(control.elID);
                 }
                 else {
                     el = syn.$l.querySelector('{0}[i18n-key="{1}"]'.format(control.tag, control.key));
                 }
 
-                if ($object.isNullOrUndefined(control.module) == true) {
+                if (context.$object.isNullOrUndefined(control.module) == true) {
                     var bind = $resource.getBindSource(control);
-                    if ($string.isNullOrEmpty(bind) == false) {
+                    if (context.$string.isNullOrEmpty(bind) == false) {
                         el[bind] = $resource.translateText(control, options);
                     }
                 }
@@ -10316,13 +11853,13 @@ if (typeof module !== 'undefined' && module.exports) {
                 var translation = $resource.translations[key];
 
                 var text = null;
-                if ($object.isString(translation) == true) {
+                if (context.$object.isString(translation) == true) {
                     text = translation;
                 }
-                else if ($object.isArray(translation) == true) {
+                else if (context.$object.isArray(translation) == true) {
                     text = translation[0];
                 }
-                else if ($object.isObject(translation) == true) {
+                else if (context.$object.isObject(translation) == true) {
                     text = translation.Text;
                 }
 
@@ -10461,4 +11998,4 @@ if (typeof module !== 'undefined' && module.exports) {
     $resource.add('saveExcelComplete', '엑셀 파일을 다운로드 했습니다.');
     $resource.add('saveExcelFail', '엑셀 파일 다운로드를 실패 했습니다');
     $resource.add('notSupportContent', '지원 하지 않는 컨텐츠 타입입니다.');
-})(globalRoot, $resource);
+})(globalRoot, globalRoot.$resource);

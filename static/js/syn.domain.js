@@ -151,6 +151,23 @@
 
         notifications: [],
 
+        dialogSettings: {
+            id: null,
+            width: '320px',
+            height: '240px',
+            maxWidth: '80vw',
+            maxHeight: '80vh',
+            autoSize: true,
+            className: '',
+            closeOnEscape: true,
+            closeOnBackdrop: false,
+            showCloseButton: true,
+            buttonType: '1', // 1:OK, 2:OK/Cancel, 3:Yes/No, 4:Yes/No/Cancel
+            destroyOnClose: true,
+            onOpen: null,
+            onClose: null
+        },
+
         dialogOptions:
         {
             opacity: 0,
@@ -659,10 +676,10 @@
             var tabID = null;
             if (parent.$main) {
                 if (projectID && fileID) {
-                    tabID = parent.$main.method.getActiveTabID(projectID, fileID);
+                    tabID = parent.$main.method.getActiveTabID ? parent.$main.method.getActiveTabID(projectID, fileID) : null;
                 }
                 else {
-                    tabID = syn.$r.query('tabID');
+                    tabID = parent.$main.method.getActiveTab ? parent.$main.method.getActiveTab()?.getAttribute('data-tab-id') : null;
                 }
 
                 if (tabID) {
@@ -713,7 +730,7 @@
                     tabID = parent.$main.method.getActiveTabID(projectID, fileID);
                 }
                 else {
-                    tabID = syn.$r.query('tabID');
+                    tabID = parent.$main.method.getActiveTab()?.getAttribute('data-tab-id');
                 }
             }
             else {
@@ -743,7 +760,7 @@
                     var pageWindow = parent.$main.method.getActiveTabContent(tabID);
                     if (pageWindow && pageWindow.syn) {
                         var pageScript = pageWindow[pageWindow.syn.$w.pageScript];
-                        var targetFunction = pageScript[func];
+                        var targetFunction = pageScript.method?.[func];
 
                         if (targetFunction) {
                             targetFunction(val);
@@ -776,7 +793,7 @@
                                     var remainingTriggerIntervalID = setInterval(function () {
                                         clearInterval(remainingTriggerIntervalID);
                                         if (pageWebform.isPageLoad == true) {
-                                            var targetFunction = pageScript[func];
+                                            var targetFunction = pageScript.method?.[func];
 
                                             if (targetFunction) {
                                                 targetFunction(val);
@@ -936,13 +953,29 @@
                 }
             }
             else {
-                if (window.parent && window.top !== window.parent) {
+                if (window.parent && window.top !== window) {
                     window.parent.syn.$w.statusMessage(val);
                 }
             }
         },
 
-        notify(type, message, title, timeout) {
+        notify(type, message, title, options) {
+            let config = {
+                autoHideTimeout: 3000,
+                classList: [],
+                payload: {},
+                clickNotify: null
+            };
+
+            if (typeof options === 'number') {
+                config.autoHideTimeout = options;
+            } else if (typeof options === 'object' && options !== null) {
+                config.autoHideTimeout = typeof options.autoHideTimeout === 'number' ? options.autoHideTimeout : 3000;
+                config.classList = options.classList || [];
+                config.payload = options.payload || {};
+                config.clickNotify = typeof options.clickNotify === 'function' ? options.clickNotify : null;
+            }
+
             if (window == top || syn.$w.pageScript == '$main') {
                 if (notifier && $string.isNullOrEmpty(message) == false) {
                     type = type || '';
@@ -952,39 +985,35 @@
                     var iconDataUri = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb24tdGFibGVyLWV4Y2xhbWF0aW9uLW1hcmsiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZT0iY3VycmVudENvbG9yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIHN0cm9rZT0ibm9uZSIgZD0iTTAgMGgyNHYyNEgweiIgZmlsbD0ibm9uZSI+PC9wYXRoPjxwYXRoIGQ9Ik0xMiAxOXYuMDEiPjwvcGF0aD48cGF0aCBkPSJNMTIgMTV2LTEwIj48L3BhdGg+PC9zdmc+';
                     switch (type) {
                         case 'debug':
-                            timeout = timeout || 3000;
                             notifyType = 'success';
                             iconDataUri = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb24tdGFibGVyLWJ1ZyIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggc3Ryb2tlPSJub25lIiBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIj48L3BhdGg+PHBhdGggZD0iTTkgOXYtMWEzIDMgMCAwIDEgNiAwdjEiPjwvcGF0aD48cGF0aCBkPSJNOCA5aDhhNiA2IDAgMCAxIDEgM3YzYTUgNSAwIDAgMSAtMTAgMHYtM2E2IDYgMCAwIDEgMSAtMyI+PC9wYXRoPjxwYXRoIGQ9Ik0zIDEzbDQgMCI+PC9wYXRoPjxwYXRoIGQ9Ik0xNyAxM2w0IDAiPjwvcGF0aD48cGF0aCBkPSJNMTIgMjBsMCAtNiI+PC9wYXRoPjxwYXRoIGQ9Ik00IDE5bDMuMzUgLTIiPjwvcGF0aD48cGF0aCBkPSJNMjAgMTlsLTMuMzUgLTIiPjwvcGF0aD48cGF0aCBkPSJNNCA3bDMuNzUgMi40Ij48L3BhdGg+PHBhdGggZD0iTTIwIDdsLTMuNzUgMi40Ij48L3BhdGg+PC9zdmc+';
                             break;
                         case 'information':
-                            timeout = timeout || 3000;
                             notifyType = 'info';
                             iconDataUri = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb24tdGFibGVyLWluZm8tY2lyY2xlIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBzdHJva2U9Im5vbmUiIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiPjwvcGF0aD48cGF0aCBkPSJNMyAxMmE5IDkgMCAxIDAgMTggMGE5IDkgMCAwIDAgLTE4IDAiPjwvcGF0aD48cGF0aCBkPSJNMTIgOWguMDEiPjwvcGF0aD48cGF0aCBkPSJNMTEgMTJoMXY0aDEiPjwvcGF0aD48L3N2Zz4=';
                             break;
                         case 'success':
-                            timeout = timeout || 3000;
                             notifyType = 'info';
                             iconDataUri = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb24tdGFibGVyLWNpcmNsZS1jaGVjayIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggc3Ryb2tlPSJub25lIiBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIj48L3BhdGg+PHBhdGggZD0iTTEyIDEybS05IDBhOSA5IDAgMSAwIDE4IDBhOSA5IDAgMSAwIC0xOCAwIj48L3BhdGg+PHBhdGggZD0iTTkgMTJsMiAybDQgLTQiPjwvcGF0aD48L3N2Zz4=';
                             break;
                         case 'warning':
-                            timeout = timeout || 6000;
                             notifyType = 'warning';
                             iconDataUri = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb24tdGFibGVyLWFsZXJ0LWNpcmNsZSIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggc3Ryb2tlPSJub25lIiBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIj48L3BhdGg+PHBhdGggZD0iTTMgMTJhOSA5IDAgMSAwIDE4IDBhOSA5IDAgMCAwIC0xOCAwIj48L3BhdGg+PHBhdGggZD0iTTEyIDh2NCI+PC9wYXRoPjxwYXRoIGQ9Ik0xMiAxNmguMDEiPjwvcGF0aD48L3N2Zz4=';
                             break;
                         case 'error':
-                            timeout = timeout || 6000;
+                            config.autoHideTimeout = 6000;
                             notifyType = 'danger';
                             iconDataUri = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb24tdGFibGVyLWJlbGwteCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggc3Ryb2tlPSJub25lIiBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIj48L3BhdGg+PHBhdGggZD0iTTEzIDE3aC05YTQgNCAwIDAgMCAyIC0zdi0zYTcgNyAwIDAgMSA0IC02YTIgMiAwIDEgMSA0IDBhNyA3IDAgMCAxIDQgNnYyIj48L3BhdGg+PHBhdGggZD0iTTkgMTd2MWEzIDMgMCAwIDAgNC4xOTQgMi43NTMiPjwvcGF0aD48cGF0aCBkPSJNMjIgMjJsLTUgLTUiPjwvcGF0aD48cGF0aCBkPSJNMTcgMjJsNSAtNSI+PC9wYXRoPjwvc3ZnPg==';
                             break;
                         case 'fatal':
-                            timeout = timeout || 6000;
+                            config.autoHideTimeout = 6000;
                             notifyType = 'danger';
                             iconDataUri = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb24tdGFibGVyLWJlbGwtcmluZ2luZyIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggc3Ryb2tlPSJub25lIiBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIj48L3BhdGg+PHBhdGggZD0iTTEwIDVhMiAyIDAgMCAxIDQgMGE3IDcgMCAwIDEgNCA2djNhNCA0IDAgMCAwIDIgM2gtMTZhNCA0IDAgMCAwIDIgLTN2LTNhNyA3IDAgMCAxIDQgLTYiPjwvcGF0aD48cGF0aCBkPSJNOSAxN3YxYTMgMyAwIDAgMCA2IDB2LTEiPjwvcGF0aD48cGF0aCBkPSJNMjEgNi43MjdhMTEuMDUgMTEuMDUgMCAwIDAgLTIuNzk0IC0zLjcyNyI+PC9wYXRoPjxwYXRoIGQ9Ik0zIDYuNzI3YTExLjA1IDExLjA1IDAgMCAxIDIuNzkyIC0zLjcyNyI+PC9wYXRoPjwvc3ZnPg==';
                             break;
                         default:
                             return;
                     }
-                    var notifierID = notifier.show(title, message, notifyType, iconDataUri, timeout);
+                    var notifierID = notifier.show(title, message, notifyType, iconDataUri, config);
                     syn.$w.notifications.push(notifierID);
                     if (syn.$w.notifications.length > 7) {
                         var firstNotifierID = syn.$w.notifications[0];
@@ -994,8 +1023,8 @@
                 }
             }
             else {
-                if (window.parent && window.top !== window.parent) {
-                    window.parent.syn.$w.notify(type, message, title, timeout);
+                if (window.parent && window.top !== window) {
+                    window.parent.syn.$w.notify(type, message, title, config);
                 }
             }
         },
@@ -1181,8 +1210,8 @@
 
             if (options && options.stack) {
                 var elStack = syn.$m.append(el, 'div');
-                var textHeight = options.textHeight ? options.textHeight + 'px' : '100%';
-                syn.$m.addCssText(elStack, 'margin: 15px; height: {0}; overflow: auto; color: #000; background-color: #eee;'.format(textHeight));
+                var textHeight = options.textHeight ? options.textHeight + 'px' : 'auto';
+                syn.$m.addCssText(elStack, 'margin: 15px; padding: 0.5rem; height: {0}; overflow: auto; color: #000; background-color: #eee;'.format(textHeight));
                 elStack.innerHTML = options.stack.replace(/(\n|\r\n)/gm, '<br />');
             }
 
@@ -1195,9 +1224,22 @@
             syn.$m.setStyle(el, 'display', 'none');
 
             elText.innerHTML = text.replace(/(\n|\r\n)/gm, '<br />');
-            syn.$m.addClass(elCaption, 'strong');
-            syn.$m.addClass(elCaption, 'f:18');
-            elCaption.innerText = caption ? caption : '';
+
+            let focusEL = null;
+            if ($string.isNullOrEmpty(caption) == false) {
+                if (caption instanceof HTMLElement) {
+                    focusEL = caption;
+                }
+                else if (syn.$l.get(caption) == null) {
+                    syn.$m.addClass(elCaption, 'strong');
+                    syn.$m.addClass(elCaption, 'f:18');
+                    elCaption.innerText = caption;
+                }
+                else {
+                    focusEL = syn.$l.get(caption);
+                }
+            }
+
             if (options) {
                 options.close = false;
             }
@@ -1289,6 +1331,10 @@
                 var buttonCallback = function (evt) {
                     var el = evt.target || evt;
                     syn.$w.closeAlertDialog(el.data);
+
+                    if (focusEL) {
+                        setTimeout(() => { focusEL.focus(); }, 100);
+                    }
                 };
 
                 syn.$m.addClass(button1, 'btn');
@@ -1327,7 +1373,188 @@
             }
         },
 
+        dialog(text, caption, options, callback) {
+            var settings = syn.$w.argumentsExtend(syn.$w.dialogSettings, options || {});
+
+            if (!callback && settings.onCallback) {
+                callback = settings.onCallback;
+            }
+
+            var dialogEl = document.createElement('dialog');
+            if (settings.id) dialogEl.id = settings.id;
+
+            var cssWidth = settings.width;
+            var cssHeight = settings.height;
+            var cssMinWidth = '';
+            var cssMinHeight = '';
+
+            if (options && options.autoSize === true) {
+                cssWidth = 'fit-content';
+                cssHeight = 'fit-content';
+
+                cssMinWidth = settings.width;
+                cssMinHeight = settings.height;
+            }
+
+            syn.$m.addCssText(dialogEl, `
+                padding: 0;
+                border: 0;
+                border-radius: 4px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                width: ${cssWidth};
+                height: ${cssHeight};
+                min-width: ${cssMinWidth};
+                min-height: ${cssMinHeight};
+                max-width: ${settings.maxWidth};
+                max-height: ${settings.maxHeight};
+            `);
+
+            if (settings.className) {
+                syn.$m.addClass(dialogEl, settings.className);
+            }
+
+            var container = syn.$m.append(dialogEl, 'div');
+            syn.$m.addClass(container, 'dialog-container');
+            syn.$m.setStyle(container, 'display', 'flex');
+            syn.$m.setStyle(container, 'flex-direction', 'column');
+
+            if (!(options && options.autoSize === true)) {
+                syn.$m.setStyle(container, 'height', '100%');
+            }
+
+            if (caption || settings.showCloseButton) {
+                var header = syn.$m.append(container, 'div');
+                syn.$m.addCssText(header, 'display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #eee;');
+
+                var titleEl = syn.$m.append(header, 'h3');
+                syn.$m.addCssText(titleEl, 'margin: 0; font-size: 1.125rem; font-weight: 600;');
+                titleEl.textContent = caption || '';
+
+                if (settings.showCloseButton) {
+                    var closeButton = syn.$m.append(header, 'div');
+                    syn.$m.addClass(closeButton, 'ti ti-x cursor-pointer fg-black');
+                    syn.$m.setStyle(closeButton, 'font-size', '22px');
+                    syn.$m.setStyle(closeButton, 'cursor', 'pointer');
+
+                    syn.$l.addEvent(closeButton, 'click', function () {
+                        dialogEl.close('Close');
+                    });
+                }
+            }
+
+            var body = syn.$m.append(container, 'div');
+            syn.$m.addClass(body, 'dialog-body');
+            syn.$m.addCssText(body, 'padding: 1rem; overflow-y: auto; flex: 1;');
+
+            if (typeof text === 'string') {
+                body.innerHTML = text;
+            } else if (text instanceof HTMLElement) {
+                syn.$m.appendChild(body, text);
+                syn.$m.setStyle(text, 'display', 'block');
+            }
+
+            if (settings.buttonType && settings.buttonType != '0') {
+                var footer = syn.$m.append(container, 'div');
+                syn.$m.addClass(footer, 'dialog-footer btn-area');
+                syn.$m.addCssText(footer, 'padding: 1rem; border-top: 1px solid #eee; text-align: right; gap: 0.5rem; display: flex; justify-content: flex-end;');
+
+                var createButton = function (text, value, className) {
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = text;
+                    btn.value = value;
+                    syn.$m.addClass(btn, 'btn ' + className);
+                    syn.$l.addEvent(btn, 'click', function () {
+                        dialogEl.close(value);
+                    });
+                    return btn;
+                };
+
+                var lblConfirm = (typeof $resource !== 'undefined' && $resource.labels.Confirm) ? $resource.labels.Confirm : '확인';
+                var lblCancel = (typeof $resource !== 'undefined' && $resource.labels.Cancel) ? $resource.labels.Cancel : '취소';
+                var lblYes = (typeof $resource !== 'undefined' && $resource.labels.Yes) ? $resource.labels.Yes : '예';
+                var lblNo = (typeof $resource !== 'undefined' && $resource.labels.No) ? $resource.labels.No : '아니오';
+
+                switch (settings.buttonType.toString()) {
+                    case '1': // OK
+                        syn.$m.appendChild(footer, createButton(lblConfirm, 'OK', 'btn-primary'));
+                        break;
+                    case '2': // OK / Cancel
+                        syn.$m.appendChild(footer, createButton(lblConfirm, 'OK', 'btn-primary'));
+                        syn.$m.appendChild(footer, createButton(lblCancel, 'Cancel', 'btn-default'));
+                        break;
+                    case '3': // Yes / No
+                        syn.$m.appendChild(footer, createButton(lblYes, 'Yes', 'btn-primary'));
+                        syn.$m.appendChild(footer, createButton(lblNo, 'No', 'btn-default'));
+                        break;
+                    case '4': // Yes / No / Cancel
+                        syn.$m.appendChild(footer, createButton(lblYes, 'Yes', 'btn-primary'));
+                        syn.$m.appendChild(footer, createButton(lblNo, 'No', 'btn-default'));
+                        syn.$m.appendChild(footer, createButton(lblCancel, 'Cancel', 'btn-default'));
+                        break;
+                }
+            }
+
+            if (settings.closeOnBackdrop) {
+                syn.$l.addEvent(dialogEl, 'click', function (event) {
+                    var rect = dialogEl.getBoundingClientRect();
+                    var isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height &&
+                        rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
+
+                    if (!isInDialog) {
+                        dialogEl.close('Backdrop');
+                    }
+                });
+            }
+
+            syn.$l.addEvent(dialogEl, 'close', function () {
+                var returnValue = dialogEl.returnValue;
+
+                if (settings.onClose) {
+                    settings.onClose(returnValue);
+                }
+
+                if (callback) {
+                    callback(returnValue);
+                }
+
+                if (syn.$w.isShowDialog && parent.$main) {
+                    syn.$w.isShowDialog = false;
+                    parent.$main.prop.buttonAction = true;
+                }
+
+                if (settings.destroyOnClose) {
+                    syn.$m.remove(dialogEl);
+                }
+            });
+
+            if (!settings.closeOnEscape) {
+                syn.$l.addEvent(dialogEl, 'cancel', function (e) {
+                    e.preventDefault();
+                });
+            }
+
+            syn.$m.appendChild(document.body, dialogEl);
+
+            if (typeof dialogEl.showModal === "function") {
+                dialogEl.showModal();
+
+                if (parent.$main) {
+                    syn.$w.isShowDialog = true;
+                    parent.$main.prop.buttonAction = false;
+                }
+
+                if (settings.onOpen) {
+                    settings.onOpen(dialogEl);
+                }
+            } else {
+                syn.$w.alert("이 브라우저는 <dialog> 태그를 지원하지 않습니다.");
+                syn.$m.remove(dialogEl);
+            }
+        },
+
         showDialog(el, options, callback) {
+            el = syn.$l.getElement(el);
             var dialogOptions = $object.clone(syn.$w.dialogOptions);
             options = syn.$w.argumentsExtend(dialogOptions, options);
 
@@ -1403,7 +1630,7 @@
                 iframe.setAttribute('src', src);
             }
 
-            if (options.scrolling) {
+            if ($string.toBoolean(options.scrolling) == true) {
                 iframe.scrolling = 'yes';
             }
             else {
@@ -1527,11 +1754,6 @@
                     return;
                 }
 
-                if (popupOptions.notifyActions.length == 0) {
-                    syn.$l.eventLog('syn.domain.windowOpen', 'notifyActions 속성 확인 필요', 'Warning');
-                    return;
-                }
-
                 var channelID = popupOptions.channelID ? popupOptions.channelID : null;
                 popupOptions.title = $object.isNullOrUndefined(popupOptions.title) == false ? popupOptions.title : elID;
 
@@ -1620,7 +1842,7 @@
                 }
             }
             else {
-                if (window.parent && window.top !== window.parent) {
+                if (window.parent && window.top !== window) {
                     setTimeout(function () {
                         window.parent.syn.$w.windowOpen(elID, options, callback);
                     });
@@ -1671,7 +1893,7 @@
                 }
             }
             else {
-                if (window.parent && window.top !== window.parent) {
+                if (window.parent && window.top !== window) {
                     window.parent.syn.$w.windowClose(elID);
                 }
             }
@@ -2060,6 +2282,121 @@
             };
             xhr.open('GET', url, true);
             xhr.send();
+        },
+
+        simulateHtmxResponse(sourceElement, targetElement, renderedHtml, options = {}) {
+            if (!targetElement && !(sourceElement?.getAttribute('hx-swap') === 'delete')) {
+                syn.$l.eventLog('$w.simulateHtmxResponse', `삭제되지 않은 스왑에 대한 대상 요소를 찾을 수 없습니다.`, 'Error');
+                return;
+            }
+
+            const swapStyle = sourceElement?.getAttribute('hx-swap') || 'innerHTML';
+            let effectiveTargetElement = targetElement;
+            let elementToProcess = null;
+
+            try {
+                switch (swapStyle) {
+                    case 'outerHTML':
+                        if (targetElement) {
+                            const tempContainer = document.createElement('div');
+                            tempContainer.innerHTML = renderedHtml;
+                            const newElement = tempContainer.firstElementChild;
+
+                            if (newElement) {
+                                targetElement.replaceWith(newElement);
+                                effectiveTargetElement = newElement;
+                                elementToProcess = effectiveTargetElement;
+                            } else {
+                                targetElement.remove();
+                                effectiveTargetElement = null;
+                                elementToProcess = null;
+                            }
+                        } else {
+                            syn.$l.eventLog('$w.simulateHtmxResponse', `outerHTML 스왑에는 유효한 대상 요소가 필요합니다.`, 'Error');
+                        }
+                        break;
+
+                    case 'beforebegin':
+                        targetElement.insertAdjacentHTML('beforebegin', renderedHtml);
+                        effectiveTargetElement = targetElement.previousElementSibling;
+                        elementToProcess = effectiveTargetElement;
+                        break;
+
+                    case 'afterbegin':
+                        targetElement.insertAdjacentHTML('afterbegin', renderedHtml);
+                        effectiveTargetElement = targetElement.firstElementChild;
+                        elementToProcess = effectiveTargetElement;
+                        break;
+
+                    case 'beforeend':
+                        targetElement.insertAdjacentHTML('beforeend', renderedHtml);
+                        effectiveTargetElement = targetElement.lastElementChild;
+                        elementToProcess = effectiveTargetElement;
+                        break;
+
+                    case 'afterend':
+                        targetElement.insertAdjacentHTML('afterend', renderedHtml);
+                        effectiveTargetElement = targetElement.nextElementSibling;
+                        elementToProcess = effectiveTargetElement;
+                        break;
+
+                    case 'delete':
+                        if (targetElement) {
+                            targetElement.remove();
+                        }
+                        effectiveTargetElement = null;
+                        elementToProcess = null;
+                        break;
+
+                    case 'none':
+                        effectiveTargetElement = targetElement;
+                        elementToProcess = null;
+                        break;
+
+                    case 'innerHTML':
+                    default:
+                        targetElement.innerHTML = renderedHtml;
+                        effectiveTargetElement = targetElement;
+                        elementToProcess = effectiveTargetElement;
+                        break;
+                }
+
+                if (elementToProcess) {
+                    htmx.process(elementToProcess);
+                }
+
+                const state = {};
+                const title = '';
+                if (options.pushUrl) {
+                    syn.$l.eventLog('$w.simulateHtmxResponse', `Simulating HX-Push-Url: ${options.pushUrl}`, 'Debug');
+                    if (window.location.pathname + window.location.search + window.location.hash !== options.pushUrl) {
+                        history.pushState(state, title, options.pushUrl);
+                        htmx.trigger(window, "htmx:pushedIntoHistory", { path: options.pushUrl });
+                    }
+                } else if (options.replaceUrl) {
+                    syn.$l.eventLog('$w.simulateHtmxResponse', `Simulating HX-Replace-Url: ${options.replaceUrl}`, 'Debug');
+                    history.replaceState(state, title, options.replaceUrl);
+                    htmx.trigger(window, "htmx:replacedInHistory", { path: options.replaceUrl });
+                }
+
+                if (options.triggerEvents) {
+                    if (effectiveTargetElement) {
+                        for (const eventName in options.triggerEvents) {
+                            if (Object.hasOwnProperty.call(options.triggerEvents, eventName)) {
+                                const eventDetail = options.triggerEvents[eventName];
+                                syn.$l.eventLog('$w.simulateHtmxResponse', `Simulating HX-Trigger: "${eventName}" on`, 'Debug');
+                                htmx.trigger(effectiveTargetElement, eventName, eventDetail);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                syn.$l.eventLog('$w.simulateHtmxResponse', `HTMX 응답 시뮬레이션 중 오류: ${error}`, 'Error');
+                const errorTarget = effectiveTargetElement || targetElement || document.body;
+                htmx.trigger(errorTarget, 'htmx:responseError', {
+                    error: error
+                });
+            }
         }
     });
 })(syn.$w);
@@ -2108,30 +2445,30 @@
                         return valiationFunc(message);
                     }
 
-                    if (options.validators.indexOf('numeric') > -1) {
+                    if (value && options.validators.indexOf('numeric') > -1) {
                         if (isNaN(value) == true) {
                             var message = '{0} 항목은 숫자값만 입력 할 수 있습니다'.format(controlText);
                             return valiationFunc(message);
                         }
                     }
 
-                    if (options.validators.indexOf('ipaddress') > -1) {
-                        if (regexs.ipaddress.test(value) == false) {
+                    if (value && options.validators.indexOf('ipaddress') > -1) {
+                        if (syn.$v.regexs.ipaddress.test(value) == false) {
                             var message = '{0} 항목은 IP 주소만 입력 할 수 있습니다'.format(controlText);
                             return valiationFunc(message);
                         }
                     }
 
-                    if (options.validators.indexOf('email') > -1) {
-                        if (regexs.email.test(value) == false) {
+                    if (value && options.validators.indexOf('email') > -1) {
+                        if (syn.$v.regexs.email.test(value) == false) {
                             var message = '{0} 항목은 이메일 주소만 입력 할 수 있습니다'.format(controlText);
                             return valiationFunc(message);
                         }
                     }
 
-                    if (options.validators.indexOf('date') > -1) {
+                    if (value && options.validators.indexOf('date') > -1) {
                         var isDateCheck = true;
-                        if (regexs.date.test(value) == false) {
+                        if (syn.$v.regexs.date.test(value) == false) {
                             isDateCheck = false;
                         };
 
@@ -2149,8 +2486,8 @@
                         }
                     }
 
-                    if (options.validators.indexOf('url') > -1) {
-                        if (regexs.url.test(value) == false) {
+                    if (value && options.validators.indexOf('url') > -1) {
+                        if (syn.$v.regexs.url.test(value) == false) {
                             var message = '{0} 항목은 웹 URL 주소만 입력 할 수 있습니다'.format(controlText);
                             return valiationFunc(message);
                         }
@@ -2180,30 +2517,30 @@
                         }
                     }
 
-                    if (options.validators.indexOf('numeric') > -1) {
+                    if (value && options.validators.indexOf('numeric') > -1) {
                         if (isNaN(value) == true) {
                             var message = '{0} 그리드의 {1} 컬럼은 숫자값만 입력 할 수 있습니다'.format(controlText, columnName);
                             return valiationFunc(message);
                         }
                     }
 
-                    if (options.validators.indexOf('ipaddress') > -1) {
-                        if (regexs.ipaddress.test(value) == false) {
+                    if (value && options.validators.indexOf('ipaddress') > -1) {
+                        if (syn.$v.regexs.ipaddress.test(value) == false) {
                             var message = '{0} 그리드의 {1} 컬럼은 IP 주소만 입력 할 수 있습니다'.format(controlText, columnName);
                             return valiationFunc(message);
                         }
                     }
 
-                    if (options.validators.indexOf('email') > -1) {
-                        if (regexs.email.test(value) == false) {
+                    if (value && options.validators.indexOf('email') > -1) {
+                        if (syn.$v.regexs.email.test(value) == false) {
                             var message = '{0} 그리드의 {1} 컬럼은 이메일 주소만 입력 할 수 있습니다'.format(controlText, columnName);
                             return valiationFunc(message);
                         }
                     }
 
-                    if (options.validators.indexOf('date') > -1) {
+                    if (value && options.validators.indexOf('date') > -1) {
                         var isDateCheck = true;
-                        if (regexs.date.test(value) == false) {
+                        if (syn.$v.regexs.date.test(value) == false) {
                             isDateCheck = false;
                         };
 
@@ -2221,8 +2558,8 @@
                         }
                     }
 
-                    if (options.validators.indexOf('url') > -1) {
-                        if (regexs.url.test(value) == false) {
+                    if (value && options.validators.indexOf('url') > -1) {
+                        if (syn.$v.regexs.url.test(value) == false) {
                             var message = '{0} 그리드의 {1} 컬럼은 웹 URL 주소만 입력 할 수 있습니다'.format(controlText, columnName);
                             return valiationFunc(message);
                         }
@@ -2243,49 +2580,49 @@
                 var vaildateData = [];
                 var length = flagData.length;
                 for (var i = 0; i < length; i++) {
-                    if (flagData[i] != 'D') {
+                    if (flagData[i] != 'D' && $string.isNullOrEmpty(rowData[i]) == false) {
                         vaildateData.push(rowData[i]);
                     }
                 }
 
                 if (options.validators.indexOf('require') > -1) {
-                    if (vaildateData.filter(function (row) { return (row === '' || row == null) }).length > 0) {
+                    if (rowData.filter(function (row) { return (row === '' || row == null) }).length > 0) {
                         var message = '{0} 그리드의 {1} 컬럼은 반드시 입력 해야합니다'.format(controlText, columnName);
                         return valiationFunc(message);
                     }
                 }
 
-                if (options.validators.indexOf('unique') > -1) {
+                if (vaildateData.length > 0 && options.validators.indexOf('unique') > -1) {
                     if (vaildateData.filter(function (row, index) { return (vaildateData.indexOf(row) !== index) }).length > 0) {
                         var message = '{0} 그리드의 {1} 컬럼은 중복값을 입력할 수 없습니다'.format(controlText, columnName);
                         return valiationFunc(message);
                     }
                 }
 
-                if (options.validators.indexOf('numeric') > -1) {
+                if (vaildateData.length > 0 && options.validators.indexOf('numeric') > -1) {
                     if (vaildateData.filter(function (row) { return isNaN(row) }).length > 0) {
                         var message = '{0} 그리드의 {1} 컬럼은 숫자값만 입력 할 수 있습니다'.format(controlText, columnName);
                         return valiationFunc(message);
                     }
                 }
 
-                if (options.validators.indexOf('ipaddress') > -1) {
-                    if (vaildateData.filter(function (row) { return !regexs.ipaddress.test(row) }).length > 0) {
+                if (vaildateData.length > 0 && options.validators.indexOf('ipaddress') > -1) {
+                    if (vaildateData.filter(function (row) { return !syn.$v.regexs.ipaddress.test(row) }).length > 0) {
                         var message = '{0} 그리드의 {1} 컬럼은 IP 주소만 입력 할 수 있습니다'.format(controlText, columnName);
                         return valiationFunc(message);
                     }
                 }
 
-                if (options.validators.indexOf('email') > -1) {
-                    if (vaildateData.filter(function (row) { return !regexs.email.test(row) }).length > 0) {
+                if (vaildateData.length > 0 && options.validators.indexOf('email') > -1) {
+                    if (vaildateData.filter(function (row) { return !syn.$v.regexs.email.test(row) }).length > 0) {
                         var message = '{0} 그리드의 {1} 컬럼은 이메일 주소만 입력 할 수 있습니다'.format(controlText, columnName);
                         return valiationFunc(message);
                     }
                 }
 
-                if (options.validators.indexOf('date') > -1) {
+                if (vaildateData.length > 0 && options.validators.indexOf('date') > -1) {
                     if (vaildateData.filter(function (row) {
-                        if (regexs.date.test(row) == false) {
+                        if (syn.$v.regexs.date.test(row) == false) {
                             return true;
                         };
 
@@ -2302,8 +2639,8 @@
                     }
                 }
 
-                if (options.validators.indexOf('url') > -1) {
-                    if (vaildateData.filter(function (row) { return !regexs.url.test(row) }).length > 0) {
+                if (vaildateData.length > 0 && options.validators.indexOf('url') > -1) {
+                    if (vaildateData.filter(function (row) { return !syn.$v.regexs.url.test(row) }).length > 0) {
                         var message = '{0} 그리드의 {1} 컬럼은 웹 URL 주소만 입력 할 수 있습니다'.format(controlText, columnName);
                         return valiationFunc(message);
                     }
@@ -2315,7 +2652,7 @@
     });
     window.$validation = syn.$v || window.$validation || $validation;
 })(window);
-function domainLibraryLoad() {
+async function domainLibraryLoad() {
     syn.$l.addEvent(window, 'error', (evt) => {
         var stack = evt.error ? evt.error.stack : '';
         console.log(`unhandle error - source(${evt.lineno}, ${evt.colno}): ${evt.filename}, message: ${evt.message}, stack: ${stack}`);
@@ -2407,7 +2744,7 @@ function domainLibraryLoad() {
 
     var mod = window[syn.$w.pageScript];
     if (mod && mod.hook.pageInit) {
-        var isContinue = mod.hook.pageInit();
+        var isContinue = await mod.hook.pageInit();
         if ($object.isNullOrUndefined(isContinue) == false && isContinue === false) {
             return false;
         }
@@ -2502,6 +2839,44 @@ function domainPageLoad() {
                     brightness: 100,
                     contrast: 100,
                     sepia: 0
+                });
+            }
+
+            if (window.htmx) {
+                document.body.addEventListener('htmx:configRequest', function (evt) {
+                    const path = evt.detail.path;
+                    const sourceElement = evt.detail.elt;
+                    const targetElement = htmx.find(evt.detail.target);
+
+                    var mod = context[syn.$w.pageScript];
+                    if (path.startsWith('csr:') == true && mod && mod.hook.htmxRender) {
+                        /*
+                        <div id="content">
+                            <button hx-get="csr:/user-detail?id=456" hx-target="#content" hx-swap="innerHTML">CSR 스왑</button>
+                        </div>
+                        */
+                        evt.preventDefault();
+
+                        const templatePath = path.substring(4);
+                        const parameters = evt.detail.parameters;
+                        /*
+                        htmxRender: (templatePath, sourceElement, targetElement, parameters) => {
+                            const data = JSON.parse(parameters);
+                            const renderedHtml = Mustache.render(template, data);
+
+                            return {
+                                html: renderedHtml,
+                                options: {
+                                    ...
+                                }
+                            };
+                        }
+                        */
+                        const renderdResult = mod.hook.htmxRender(templatePath, sourceElement, targetElement, parameters);
+                        if ($object.isNullOrUndefined(renderdResult) == true && $string.isNullOrEmpty(renderdResult.html) == false) {
+                            syn.$w.simulateHtmxResponse(sourceElement, targetElement, renderdResult.html, renderdResult.options);
+                        }
+                    }
                 });
             }
         }

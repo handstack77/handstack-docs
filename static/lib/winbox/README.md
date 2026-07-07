@@ -13,34 +13,18 @@
 
 <a href="https://nextapps-de.github.io/winbox/">https://nextapps-de.github.io/winbox/ </a>
 
-## Support this Project
+### Support this Project
 
-Hello my name is Thomas, also known as ts-thomas. This is a personal project which I fully made in my free time. It is hosted by the Github account from the company Nextapps where I work to give it more exposure.
-I have never received any financial support for this project from the company Nextapps as some of you might have guessed, since it is a free and open source project.
-I'm really happy that WinBox.js is getting so much positive feedback and also feature requests. Please feel free to support me by making a personal donation which helps me a lot to keep this project alive and also to providing all the contribution to keep WinBox.js on a professional top-end level.
+Hello my name is Thomas, also known as ts-thomas. This is a personal project which I fully made in my free time. It hosted by the Github account from the company Nextapps where I work to give it more exposure.
+I have never received any financial support for this project from the company Nextapps as some of you might have guessed, since it is a free open source project.
+I'm glad to see that WinBox.js gets so much positive feedback and also feature requests. Please feel free to make a financial support which is needed to keep this project alive and also to making all the contribution to keep WinBox.js on a profession top-end level.
 
-<a href="https://opencollective.com/winboxjs/donate" target="_blank" style="margin-right: 10px">
-    <img src="https://opencollective.com/webpack/donate/button@2x.png?color=blue" height="32" alt="Donate using Open Collective">
-</a>
-<a href="https://github.com/sponsors/ts-thomas/" target="_blank" style="margin-right: 10px">
-    <img src="https://camo.githubusercontent.com/b932f45963b659dfeb86b77ff29a9eaebe25a734d63a17a176aa82bf34845cf2/68747470733a2f2f696d672e736869656c64732e696f2f7374617469632f76313f6c6162656c3d53706f6e736f72266d6573736167653d254532253944254134266c6f676f3d47697448756226636f6c6f723d253233666538653836" height="32" alt="Donate using Github Sponsors">
-</a>
-<a href="https://liberapay.com/ts-thomas/donate" target="_blank" style="margin-right: 10px">
-    <img src="https://liberapay.com/assets/widgets/donate.svg" height="32" alt="Donate using Liberapay">
-</a>
-<a href="https://www.patreon.com/user?u=96245532" target="_blank" style="margin-right: 10px">
-    <img src="https://s3-us-west-1.amazonaws.com/widget-images/become-patron-widget-medium%402x.png" height="32" alt="Donate using Patreon">
-</a>
-<a href="https://salt.bountysource.com/teams/ts-thomas" target="_blank" style="margin-right: 10px">
-    <img src="https://d2bbtvgnhux6eq.cloudfront.net/assets/logos/alternate-7868987b01474c95f47678727f6657882f6565a36396eb4b637ea53cc5944ff8.svg" height="32" alt="Donate using Bountysource">
-</a>
-<a href="https://www.paypal.com/donate/?hosted_button_id=GEVR88FC9BWRW" target="_blank">
-    <img src="https://www.paypalobjects.com/webstatic/de_DE/i/de-pp-logo-200px.png" height="32" alt="Donate using PayPal">
-</a>
-<!-- [![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/ts-thomas/) -->
-<br><br>
 Thanks a lot,
 Thomas (ts-thomas)
+
+<a href="https://opencollective.com/winboxjs/donate" target="_blank">
+    <img src="https://opencollective.com/webpack/donate/button@2x.png?color=blue" height="48" alt="Donate to our Collective">
+</a>
 
 <a name="addon"></a>
 ### Plugins / Add-ons / Extensions
@@ -63,8 +47,8 @@ __Get Latest Stable Build (Recommended):__
     </tr>
     <tr>
         <td>winbox.bundle.min.js</td>
-        <td><a href="https://github.com/nextapps-de/winbox/raw/0.2.82/dist/winbox.bundle.min.js" target="_blank">Download</a></td>
-        <td><a href="https://rawcdn.githack.com/nextapps-de/winbox/0.2.82/dist/winbox.bundle.min.js" target="_blank">https://rawcdn.githack.com/nextapps-de/winbox/0.2.82/dist/winbox.bundle.min.js</a></td>
+        <td><a href="https://github.com/nextapps-de/winbox/raw/0.2.73/dist/winbox.bundle.min.js" target="_blank">Download</a></td>
+        <td><a href="https://rawcdn.githack.com/nextapps-de/winbox/0.2.73/dist/winbox.bundle.min.js" target="_blank">https://rawcdn.githack.com/nextapps-de/winbox/0.2.73/dist/winbox.bundle.min.js</a></td>
     </tr>
     <tr>
         <td colspan=3">
@@ -73,14 +57,14 @@ __Get Latest Stable Build (Recommended):__
     </tr>
     <tr>
         <td>winbox.min.js</td>
-        <td><a href="https://github.com/nextapps-de/winbox/raw/0.2.82/dist/js/winbox.min.js" target="_blank">Download</a></td>
-        <td><a href="https://rawcdn.githack.com/nextapps-de/winbox/0.2.82/dist/js/winbox.min.js" target="_blank">https://rawcdn.githack.com/nextapps-de/winbox/0.2.82/dist/js/winbox.min.js</a></td>
+        <td><a href="https://github.com/nextapps-de/winbox/raw/0.2.73/dist/js/winbox.min.js" target="_blank">Download</a></td>
+        <td><a href="https://rawcdn.githack.com/nextapps-de/winbox/0.2.73/dist/js/winbox.min.js" target="_blank">https://rawcdn.githack.com/nextapps-de/winbox/0.2.73/dist/js/winbox.min.js</a></td>
     </tr>
     <tr></tr>
     <tr>
         <td>winbox.min.css</td>
-        <td><a href="https://github.com/nextapps-de/winbox/raw/0.2.82/dist/css/winbox.min.css" target="_blank">Download</a></td>
-        <td><a href="https://rawcdn.githack.com/nextapps-de/winbox/0.2.82/dist/css/winbox.min.css" target="_blank">https://rawcdn.githack.com/nextapps-de/winbox/0.2.82/dist/css/winbox.min.css</a></td>
+        <td><a href="https://github.com/nextapps-de/winbox/raw/0.2.73/dist/css/winbox.min.css" target="_blank">Download</a></td>
+        <td><a href="https://rawcdn.githack.com/nextapps-de/winbox/0.2.73/dist/css/winbox.min.css" target="_blank">https://rawcdn.githack.com/nextapps-de/winbox/0.2.73/dist/css/winbox.min.css</a></td>
     </tr>
     <tr>
         <td colspan=3">
@@ -89,25 +73,25 @@ __Get Latest Stable Build (Recommended):__
     </tr>
     <tr>
         <td>ES6 Modules</td>
-        <td><a href="https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/nextapps-de/winbox/tree/0.2.82/src/js" target="_blank">Download</a></td>
+        <td><a href="https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/nextapps-de/winbox/tree/0.2.73/src/js" target="_blank">Download</a></td>
         <td>The <i>/src/js</i> folder of this Github repository</td>
     </tr>
     <tr></tr>
     <tr>
         <td>LESS Files (source)</td>
-        <td><a href="https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/nextapps-de/winbox/tree/0.2.82/src/css" target="_blank">Download</a></td>
+        <td><a href="https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/nextapps-de/winbox/tree/0.2.73/src/css" target="_blank">Download</a></td>
         <td>The <i>/src/css</i> folder of this Github repository</td>
     </tr>
     <tr></tr>
     <tr>
         <td>winbox.css (compiled)</td>
-        <td><a href="https://github.com/nextapps-de/winbox/raw/0.2.82/src/css/winbox.css" target="_blank">Download</a></td>
-        <td><a href="https://rawcdn.githack.com/nextapps-de/winbox/0.2.82/src/css/winbox.css" target="_blank">https://rawcdn.githack.com/nextapps-de/winbox/0.2.82/src/css/winbox.css</a></td>
+        <td><a href="https://github.com/nextapps-de/winbox/raw/0.2.73/src/css/winbox.css" target="_blank">Download</a></td>
+        <td><a href="https://rawcdn.githack.com/nextapps-de/winbox/0.2.73/src/css/winbox.css" target="_blank">https://rawcdn.githack.com/nextapps-de/winbox/0.2.73/src/css/winbox.css</a></td>
     </tr>
     <tr></tr>
     <tr>
         <td>src.zip</td>
-        <td><a href="https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/nextapps-de/winbox/tree/0.2.82/dist" target="_blank">Download</a></td>
+        <td><a href="https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/nextapps-de/winbox/tree/0.2.73/dist" target="_blank">Download</a></td>
         <td>Download all source files including image original resources.</td>
     </tr>
 </table>
@@ -181,7 +165,7 @@ You can also load modules via CDN, e.g.:
 
 ```html
 <script type="module">
-  import WinBox from "https://unpkg.com/winbox@0.2.82/src/js/winbox.js";
+  import WinBox from "https://unpkg.com/winbox@0.2.73/src/js/winbox.js";
 </script>
 ```
 
@@ -1687,5 +1671,5 @@ The final build is located in the `dist/` folder.
 
 ---
 
-Copyright 2021-2023 Thomas Wilkerling, Hosted by Nextapps GmbH<br>
+Copyright 2022 Nextapps GmbH<br>
 Released under the <a href="http://www.apache.org/licenses/LICENSE-2.0.html" target="_blank">Apache 2.0 License</a><br>

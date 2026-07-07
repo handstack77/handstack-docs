@@ -4,6 +4,11 @@ let $dimension = {
         'parsehtml'
     ],
 
+    hook: {
+        pageLoad() {
+        }
+    },
+
     event: {
         btn_getDocumentSize_click() {
             syn.$l.get('txt_getDocumentSize').value = JSON.stringify(syn.$d.getDocumentSize());
@@ -50,7 +55,7 @@ let $dimension = {
         },
 
         btn_measureHeight_click(evt) {
-            syn.$l.get('txt_measureHeight').value = JSON.stringify(syn.$d.measureHeight('hello world', '14px'));
+            syn.$l.get('txt_measureHeight').value = JSON.stringify(syn.$d.measureHeight('hello world', '200px', '14px'));
         },
 
         btn_measureSize_click(evt) {

@@ -2,742 +2,137 @@
 sidebar_position: 7
 ---
 
-# syn.$k
+# 키보드 단축키 사용법 (syn.$k)
 
 ## 개요
-syn.$k는 HandStack 웹 애플리케이션에서 키보드 이벤트 및 단축키 기능을 제공합니다. 특정 요소에 키 이벤트를 등록하고 관리하며, 사용자 친화적인 키보드 인터페이스를 구현할 수 있습니다.
+`syn.$k`는 특정 노드에서 발생하는 키보드 이벤트(keydown/keyup)를 키 코드 단위로 등록/해제할 수 있는 단축키 기능을 제공합니다. 폼 입력 필드나 특정 컨테이너에서 커스텀 단축키(예: Ctrl 조합, 방향키 이동 등)를 구현할 때 사용합니다.
 
-## 주요 기능
+## 로드 방법
+`syn.js`가 로드되면 전역에 `syn.$k`(별칭: `$keyboard`)로 즉시 사용할 수 있습니다.
 
-### 키 코드 상수
-
-#### keyCodes
-자주 사용되는 키의 키 코드를 상수로 제공합니다.
-
-**사용 가능한 키 코드**
-```javascript
-// 특수키
-syn.$k.keyCodes.backspace    // 8
-syn.$k.keyCodes.tab         // 9
-syn.$k.keyCodes.enter       // 13
-syn.$k.keyCodes.shift       // 16
-syn.$k.keyCodes.control     // 17
-syn.$k.keyCodes.alt         // 18
-syn.$k.keyCodes.capslock    // 20
-syn.$k.keyCodes.escape      // 27
-syn.$k.keyCodes.space       // 32
-
-// 화살표 키
-syn.$k.keyCodes.left        // 37
-syn.$k.keyCodes.up          // 38
-syn.$k.keyCodes.right       // 39
-syn.$k.keyCodes.down        // 40
-
-// 페이지 이동
-syn.$k.keyCodes.pageup      // 33
-syn.$k.keyCodes.pagedown    // 34
-syn.$k.keyCodes.end         // 35
-syn.$k.keyCodes.home        // 36
-syn.$k.keyCodes.delete      // 46
-
-// 숫자 (메인)
-syn.$k.keyCodes['0']        // 48
-syn.$k.keyCodes['1']        // 49
-// ... 9까지
-
-// 알파벳
-syn.$k.keyCodes.a           // 65
-syn.$k.keyCodes.b           // 66
-// ... z까지
-
-// 펑션키
-syn.$k.keyCodes.f1          // 112
-syn.$k.keyCodes.f2          // 113
-// ... f12까지
-
-// 숫자패드
-syn.$k.keyCodes.numpad0     // 96
-syn.$k.keyCodes.numpad1     // 97
-// ... numpad9까지
-syn.$k.keyCodes.multiply    // 106
-syn.$k.keyCodes.add         // 107
-syn.$k.keyCodes.subtract    // 109
-syn.$k.keyCodes.decimal     // 110
-syn.$k.keyCodes.divide      // 111
+## 빠른 시작
+```js
+syn.$k.setElement('myInput');
+syn.$k.addKeyCode('keydown', syn.$k.keyCodes.enter, (evt) => {
+    console.log('엔터 입력됨');
+});
 ```
 
-### 요소 및 이벤트 관리
-
-#### setElement(el)
-키보드 이벤트를 등록할 대상 요소를 설정합니다.
-
-**구문**
-```javascript
-syn.$k.setElement(el)
+## 주요 시나리오
+### 단축키 등록 대상 노드 지정
+`setElement(el)`로 키 이벤트를 수신할 노드를 지정합니다. 지정된 노드에는 내부적으로 `keydown`/`keyup` 리스너가 한 번만 등록되고, 이후 `addKeyCode`/`removeKeyCode` 호출은 이 노드를 기준으로 동작합니다.
+```js
+syn.$k.setElement('myInput');
 ```
 
-**매개변수**
-- `el` (String|Element): 요소 ID 또는 요소 객체
+### 단축키 콜백 등록/해제
+`addKeyCode(keyType, keyCode, func)`로 `keydown`/`keyup` 이벤트에 대한 콜백을, `keyCodes` 테이블의 키 이름으로 지정합니다. 콜백이 `false`를 반환하면 기본 동작이 취소(`preventDefault`/`stopPropagation`)됩니다.
+```js
+syn.$k.addKeyCode('keydown', syn.$k.keyCodes.a, (evt) => {
+    console.log('A 키 눌림');
+    return false;
+});
 
-**반환값**
-- `Object`: syn.$k 객체 (메서드 체이닝 가능)
-
-**예제**
-```javascript
-// 텍스트 입력 필드에 키보드 이벤트 등록 준비
-syn.$k.setElement('myTextInput');
-
-// 여러 요소에 순차적으로 설정
-syn.$k.setElement('input1')
-       .addKeyCode('keydown', syn.$k.keyCodes.enter, handleEnter)
-       .setElement('input2')
-       .addKeyCode('keydown', syn.$k.keyCodes.escape, handleEscape);
+syn.$k.removeKeyCode('keydown', syn.$k.keyCodes.a);
 ```
 
-#### addKeyCode(keyType, keyCode, func)
-특정 키에 이벤트 핸들러를 등록합니다.
-
-**구문**
-```javascript
-syn.$k.addKeyCode(keyType, keyCode, func)
+### KeyboardEvent.code 값을 keyCode 숫자로 변환
+브라우저 표준 `KeyboardEvent.code`(예: `'KeyA'`, `'Enter'`) 값을 `keyCodes` 테이블에서 사용하는 숫자 코드로 변환할 때 `getKeyCode(code)`를 사용합니다.
+```js
+const code = syn.$k.getKeyCode('KeyA'); // 65
 ```
 
-**매개변수**
-- `keyType` (String): 이벤트 타입 ('keydown' 또는 'keyup')
-- `keyCode` (Number): 키 코드
-- `func` (Function): 이벤트 핸들러 함수
+## 실전 예제 페이지
+`/sample/syn/keyboard.html` 예제에서 다음 항목을 실습할 수 있습니다.
+- keyCodes, keyNames, targetEL, elements 속성 확인
+- setElement(), addKeyCode(), removeKeyCode(), getKeyCode() 메서드 실습
 
-**반환값**
-- `Object`: syn.$k 객체 (메서드 체이닝 가능)
+## 주의 사항
+- `addKeyCode`/`removeKeyCode`는 반드시 `setElement`로 대상 노드를 지정한 뒤에 호출해야 합니다. 대상이 없으면 등록/삭제가 조용히 무시됩니다.
+- `addKeyCode`의 `keyCode` 인자는 숫자 키코드이므로 `syn.$k.keyCodes.a`처럼 `keyCodes` 테이블을 통해 조회해서 전달합니다.
+- `keyCodes`, `keyNames`는 `Object.freeze`로 동결되어 있어 런타임에 변경할 수 없습니다.
 
-**예제**
-```javascript
-// Enter 키 처리
-syn.$k.setElement('searchInput')
-       .addKeyCode('keydown', syn.$k.keyCodes.enter, function(evt) {
-           console.log('Enter 키가 눌렸습니다');
-           // 검색 실행
-           performSearch();
-           evt.preventDefault(); // 기본 동작 방지
-       });
+## 관련 모듈
+- API 상세는 아래 API 참조 섹션을 확인하세요.
 
-// ESC 키로 모달 닫기
-syn.$k.setElement('modalDialog')
-       .addKeyCode('keyup', syn.$k.keyCodes.escape, function(evt) {
-           console.log('ESC 키로 모달 닫기');
-           closeModal();
-       });
-```
+## API 참조
 
-#### removeKeyCode(keyType, keyCode)
-등록된 키 이벤트 핸들러를 제거합니다.
+## 모듈 정보
+| 항목 | 내용 |
+|---|---|
+| 전역 별칭 | `syn.$k` (원본: `context.$keyboard`) |
+| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 2153~2349번째 줄) |
+| 예제 페이지 | `/sample/syn/keyboard.html` |
+| 의존 모듈 | `syn.$l`(library, getElement/addEvent/random) |
 
-**구문**
-```javascript
-syn.$k.removeKeyCode(keyType, keyCode)
-```
+## 속성
+### `syn.$k.keyCodes`
+- 타입: `Readonly<Record<string, number>>`
+- 설명: `'backspace'`, `'enter'`, `'a'`, `'f1'` 등 키 이름 문자열과 브라우저 `keyCode` 숫자값의 매핑 테이블입니다. `Object.freeze`로 동결되어 있습니다.
 
-**매개변수**
-- `keyType` (String): 이벤트 타입
-- `keyCode` (Number): 키 코드
+### `syn.$k.keyNames`
+- 타입: `Readonly<Record<string, string>>`
+- 설명: `KeyboardEvent.code` 값(예: `'KeyA'`, `'ArrowLeft'`, `'Digit1'`)과 `keyCodes`에서 사용하는 키 이름 문자열의 매핑 테이블입니다. `Object.freeze`로 동결되어 있습니다.
 
-**반환값**
-- `Object`: syn.$k 객체 (메서드 체이닝 가능)
+### `syn.$k.targetEL`
+- 타입: `HTMLElement | null`
+- 설명: `setElement()`로 마지막으로 지정된 대상 노드입니다. 초기값은 `null`입니다.
 
-**예제**
-```javascript
-// 이전에 등록한 Enter 키 핸들러 제거
-syn.$k.setElement('searchInput')
-       .removeKeyCode('keydown', syn.$k.keyCodes.enter);
-```
+### `syn.$k.elements`
+- 타입: `Record<string, { keydown: object, keyup: object }>`
+- 설명: `setElement()`로 이벤트가 등록된 노드의 `eventID`를 키로 하여, 각 노드별 `keydown`/`keyup` 콜백 맵을 저장하는 내부 상태입니다. 초기값은 빈 객체입니다.
 
-## 실전 활용 예제
+## 메서드
+### `syn.$k.setElement(el)`
+- 설명: 지정한 노드를 키보드 단축키 수신 대상으로 설정합니다. 최초 호출 시 해당 노드에 `keydown`/`keyup` 리스너를 등록하고, `this.elements`에 콜백 저장소를 생성합니다. 이후 `addKeyCode`/`removeKeyCode`는 이 노드를 기준으로 동작합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | el | `string \\| HTMLElement` | Y | 대상 노드 또는 노드 id. |
+- 반환값: `this` — 메서드 체이닝을 위해 `$keyboard` 자기 자신을 반환합니다. 유효한 노드가 아니면 대상 갱신 없이 그대로 반환합니다.
+- 예시
+  ```js
+  syn.$k.setElement('myInput');
+  ```
 
-### 1. 검색 인터페이스 구현
-```javascript
-function setupSearchInterface() {
-    // 검색 입력 필드 설정
-    syn.$k.setElement('searchInput')
-           .addKeyCode('keydown', syn.$k.keyCodes.enter, function(evt) {
-               // Enter로 검색 실행
-               var searchTerm = evt.target.value.trim();
-               if (searchTerm) {
-                   performSearch(searchTerm);
-               }
-               evt.preventDefault();
-           })
-           .addKeyCode('keydown', syn.$k.keyCodes.escape, function(evt) {
-               // ESC로 검색창 초기화
-               evt.target.value = '';
-               clearSearchResults();
-           });
-    
-    // 검색 결과 목록에서 화살표 키 네비게이션
-    syn.$k.setElement('searchResults')
-           .addKeyCode('keydown', syn.$k.keyCodes.up, function(evt) {
-               navigateResults('up');
-               evt.preventDefault();
-           })
-           .addKeyCode('keydown', syn.$k.keyCodes.down, function(evt) {
-               navigateResults('down');
-               evt.preventDefault();
-           })
-           .addKeyCode('keydown', syn.$k.keyCodes.enter, function(evt) {
-               selectCurrentResult();
-               evt.preventDefault();
-           });
-    
-    function performSearch(term) {
-        console.log('검색 실행:', term);
-        // 실제 검색 로직 구현
-        fetch(`/api/search?q=${encodeURIComponent(term)}`)
-            .then(response => response.json())
-            .then(results => displayResults(results))
-            .catch(error => console.error('검색 오류:', error));
-    }
-    
-    function navigateResults(direction) {
-        var results = syn.$l.querySelectorAll('.search-result-item');
-        var currentIndex = -1;
-        
-        // 현재 선택된 항목 찾기
-        results.forEach((item, index) => {
-            if (syn.$m.hasClass(item, 'selected')) {
-                currentIndex = index;
-            }
-        });
-        
-        // 다음/이전 항목 선택
-        if (direction === 'up' && currentIndex > 0) {
-            selectResultItem(currentIndex - 1);
-        } else if (direction === 'down' && currentIndex < results.length - 1) {
-            selectResultItem(currentIndex + 1);
-        }
-    }
-    
-    function selectResultItem(index) {
-        var results = syn.$l.querySelectorAll('.search-result-item');
-        
-        // 모든 항목에서 selected 클래스 제거
-        results.forEach(item => syn.$m.removeClass(item, 'selected'));
-        
-        // 선택된 항목에 클래스 추가
-        if (results[index]) {
-            syn.$m.addClass(results[index], 'selected');
-        }
-    }
-}
+### `syn.$k.addKeyCode(keyType, keyCode, func)`
+- 설명: 현재 `targetEL`에 등록된 콜백 맵에 `keyType`(`'keydown'` 또는 `'keyup'`)과 `keyCode`(숫자)에 대응하는 콜백 함수를 저장합니다. 콜백이 `false`를 반환하면 `preventDefault`/`stopPropagation`이 호출됩니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | keyType | `'keydown' \\| 'keyup'` | Y | 대응할 이벤트 종류. |
+  | keyCode | `number` | Y | `keyCodes` 테이블에서 조회한 키코드 숫자값. |
+  | func | `function` | Y | 키 입력 시 실행할 콜백. `(evt) => ...` |
+- 반환값: `this`
+- 예시
+  ```js
+  syn.$k.setElement('myInput');
+  syn.$k.addKeyCode('keydown', syn.$k.keyCodes.a, (evt) => {
+      alert(evt.keyCode);
+  });
+  ```
 
-setupSearchInterface();
-```
+### `syn.$k.removeKeyCode(keyType, keyCode)`
+- 설명: 현재 `targetEL`에 등록된 `keyType`/`keyCode` 조합의 콜백을 삭제합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | keyType | `'keydown' \\| 'keyup'` | Y | 대응할 이벤트 종류. |
+  | keyCode | `number` | Y | 삭제할 키코드 숫자값. |
+- 반환값: `this`
+- 예시
+  ```js
+  syn.$k.removeKeyCode('keydown', syn.$k.keyCodes.a);
+  ```
 
-### 2. 폼 네비게이션 및 단축키
-```javascript
-function setupFormKeyboardNavigation() {
-    var formFields = syn.$l.querySelectorAll('input, select, textarea');
-    
-    formFields.forEach((field, index) => {
-        syn.$k.setElement(field)
-               // Tab과 Shift+Tab 처리
-               .addKeyCode('keydown', syn.$k.keyCodes.tab, function(evt) {
-                   if (evt.shiftKey) {
-                       // Shift+Tab: 이전 필드로 이동
-                       focusPreviousField(index);
-                   } else {
-                       // Tab: 다음 필드로 이동
-                       focusNextField(index);
-                   }
-                   evt.preventDefault();
-               })
-               // Enter로 다음 필드 이동 (textarea 제외)
-               .addKeyCode('keydown', syn.$k.keyCodes.enter, function(evt) {
-                   if (evt.target.tagName.toLowerCase() !== 'textarea') {
-                       focusNextField(index);
-                       evt.preventDefault();
-                   }
-               });
-    });
-    
-    // 폼 전역 단축키
-    syn.$k.setElement(document.body)
-           // Ctrl+S로 저장
-           .addKeyCode('keydown', syn.$k.keyCodes.s, function(evt) {
-               if (evt.ctrlKey) {
-                   saveForm();
-                   evt.preventDefault();
-               }
-           })
-           // Ctrl+R로 리셋
-           .addKeyCode('keydown', syn.$k.keyCodes.r, function(evt) {
-               if (evt.ctrlKey) {
-                   resetForm();
-                   evt.preventDefault();
-               }
-           })
-           // F1으로 도움말
-           .addKeyCode('keydown', syn.$k.keyCodes.f1, function(evt) {
-               showHelp();
-               evt.preventDefault();
-           });
-    
-    function focusNextField(currentIndex) {
-        var nextIndex = (currentIndex + 1) % formFields.length;
-        formFields[nextIndex].focus();
-    }
-    
-    function focusPreviousField(currentIndex) {
-        var prevIndex = currentIndex === 0 ? formFields.length - 1 : currentIndex - 1;
-        formFields[prevIndex].focus();
-    }
-    
-    function saveForm() {
-        console.log('폼 저장 중...');
-        // 실제 저장 로직 구현
-        var formData = new FormData(document.querySelector('form'));
-        // 저장 처리
-    }
-    
-    function resetForm() {
-        if (confirm('폼을 초기화하시겠습니까?')) {
-            document.querySelector('form').reset();
-        }
-    }
-    
-    function showHelp() {
-        var helpContent = `
-            키보드 단축키:
-            • Tab/Shift+Tab: 필드 간 이동
-            • Enter: 다음 필드로 이동
-            • Ctrl+S: 저장
-            • Ctrl+R: 초기화
-            • F1: 도움말
-        `;
-        alert(helpContent);
-    }
-}
-
-setupFormKeyboardNavigation();
-```
-
-### 3. 데이터 그리드 키보드 제어
-```javascript
-function setupGridKeyboardControl() {
-    var grid = syn.$l.get('dataGrid');
-    var selectedRow = 0;
-    var selectedCol = 0;
-    var rows = syn.$l.querySelectorAll('#dataGrid tr');
-    var cols = rows.length > 0 ? rows[0].cells.length : 0;
-    
-    syn.$k.setElement(grid)
-           // 화살표 키로 셀 이동
-           .addKeyCode('keydown', syn.$k.keyCodes.up, function(evt) {
-               moveSelection('up');
-               evt.preventDefault();
-           })
-           .addKeyCode('keydown', syn.$k.keyCodes.down, function(evt) {
-               moveSelection('down');
-               evt.preventDefault();
-           })
-           .addKeyCode('keydown', syn.$k.keyCodes.left, function(evt) {
-               moveSelection('left');
-               evt.preventDefault();
-           })
-           .addKeyCode('keydown', syn.$k.keyCodes.right, function(evt) {
-               moveSelection('right');
-               evt.preventDefault();
-           })
-           // Page Up/Down으로 페이지 이동
-           .addKeyCode('keydown', syn.$k.keyCodes.pageup, function(evt) {
-               changePage(-1);
-               evt.preventDefault();
-           })
-           .addKeyCode('keydown', syn.$k.keyCodes.pagedown, function(evt) {
-               changePage(1);
-               evt.preventDefault();
-           })
-           // Home/End로 행의 처음/끝 이동
-           .addKeyCode('keydown', syn.$k.keyCodes.home, function(evt) {
-               selectedCol = 0;
-               updateSelection();
-               evt.preventDefault();
-           })
-           .addKeyCode('keydown', syn.$k.keyCodes.end, function(evt) {
-               selectedCol = cols - 1;
-               updateSelection();
-               evt.preventDefault();
-           })
-           // Delete 키로 선택된 행 삭제
-           .addKeyCode('keydown', syn.$k.keyCodes.delete, function(evt) {
-               deleteSelectedRow();
-               evt.preventDefault();
-           })
-           // Enter 키로 편집 모드 진입
-           .addKeyCode('keydown', syn.$k.keyCodes.enter, function(evt) {
-               editSelectedCell();
-               evt.preventDefault();
-           });
-    
-    function moveSelection(direction) {
-        switch (direction) {
-            case 'up':
-                selectedRow = Math.max(0, selectedRow - 1);
-                break;
-            case 'down':
-                selectedRow = Math.min(rows.length - 1, selectedRow + 1);
-                break;
-            case 'left':
-                selectedCol = Math.max(0, selectedCol - 1);
-                break;
-            case 'right':
-                selectedCol = Math.min(cols - 1, selectedCol + 1);
-                break;
-        }
-        updateSelection();
-    }
-    
-    function updateSelection() {
-        // 모든 셀에서 선택 클래스 제거
-        syn.$l.querySelectorAll('#dataGrid td').forEach(cell => {
-            syn.$m.removeClass(cell, 'selected');
-        });
-        
-        // 현재 선택된 셀에 클래스 추가
-        var currentCell = rows[selectedRow]?.cells[selectedCol];
-        if (currentCell) {
-            syn.$m.addClass(currentCell, 'selected');
-            currentCell.scrollIntoView({ block: 'nearest' });
-        }
-    }
-    
-    function changePage(direction) {
-        console.log('페이지 이동:', direction > 0 ? '다음' : '이전');
-        // 실제 페이징 로직 구현
-    }
-    
-    function deleteSelectedRow() {
-        if (confirm('선택된 행을 삭제하시겠습니까?')) {
-            var rowToDelete = rows[selectedRow];
-            if (rowToDelete) {
-                rowToDelete.remove();
-                // 행 목록 업데이트
-                rows = syn.$l.querySelectorAll('#dataGrid tr');
-                selectedRow = Math.min(selectedRow, rows.length - 1);
-                updateSelection();
-            }
-        }
-    }
-    
-    function editSelectedCell() {
-        var currentCell = rows[selectedRow]?.cells[selectedCol];
-        if (currentCell) {
-            var currentValue = syn.$m.textContent(currentCell);
-            var input = syn.$m.create({
-                tag: 'input',
-                attributes: { type: 'text', value: currentValue },
-                styles: {
-                    width: '100%',
-                    border: 'none',
-                    padding: '2px'
-                }
-            });
-            
-            syn.$m.innerHTML(currentCell, '');
-            syn.$m.appendChild(currentCell, input);
-            input.focus();
-            input.select();
-            
-            // 편집 완료 처리
-            function finishEdit() {
-                var newValue = input.value;
-                syn.$m.textContent(currentCell, newValue);
-                grid.focus(); // 그리드로 포커스 복귀
-            }
-            
-            syn.$l.addEvent(input, 'blur', finishEdit);
-            syn.$l.addEvent(input, 'keydown', function(evt) {
-                if (evt.keyCode === syn.$k.keyCodes.enter) {
-                    finishEdit();
-                    evt.preventDefault();
-                } else if (evt.keyCode === syn.$k.keyCodes.escape) {
-                    syn.$m.textContent(currentCell, currentValue); // 원래 값 복원
-                    grid.focus();
-                    evt.preventDefault();
-                }
-            });
-        }
-    }
-    
-    // 초기 선택 상태 설정
-    updateSelection();
-    grid.setAttribute('tabindex', '0'); // 포커스 가능하도록 설정
-}
-
-setupGridKeyboardControl();
-```
-
-### 4. 모달 다이얼로그 키보드 제어
-```javascript
-function setupModalKeyboardControls() {
-    var modals = syn.$l.querySelectorAll('.modal');
-    
-    modals.forEach(modal => {
-        syn.$k.setElement(modal)
-               // ESC 키로 모달 닫기
-               .addKeyCode('keyup', syn.$k.keyCodes.escape, function(evt) {
-                   closeModal(modal);
-                   evt.preventDefault();
-               })
-               // Tab 키로 모달 내 포커스 순환
-               .addKeyCode('keydown', syn.$k.keyCodes.tab, function(evt) {
-                   trapFocus(modal, evt);
-               });
-    });
-    
-    function closeModal(modal) {
-        syn.$m.removeClass(modal, 'show');
-        syn.$m.setStyle(modal, 'display', 'none');
-        
-        // 이전 포커스 복원
-        var previousFocus = modal.dataset.previousFocus;
-        if (previousFocus) {
-            var prevElement = syn.$l.get(previousFocus);
-            if (prevElement) {
-                prevElement.focus();
-            }
-        }
-    }
-    
-    function trapFocus(modal, evt) {
-        var focusableElements = modal.querySelectorAll(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        
-        var firstElement = focusableElements[0];
-        var lastElement = focusableElements[focusableElements.length - 1];
-        
-        if (evt.shiftKey) {
-            // Shift + Tab
-            if (document.activeElement === firstElement) {
-                lastElement.focus();
-                evt.preventDefault();
-            }
-        } else {
-            // Tab
-            if (document.activeElement === lastElement) {
-                firstElement.focus();
-                evt.preventDefault();
-            }
-        }
-    }
-    
-    // 모달 열기 함수 (참고용)
-    function openModal(modalId) {
-        var modal = syn.$l.get(modalId);
-        if (modal) {
-            // 현재 포커스 저장
-            modal.dataset.previousFocus = document.activeElement.id;
-            
-            syn.$m.setStyle(modal, 'display', 'block');
-            syn.$m.addClass(modal, 'show');
-            
-            // 모달 내 첫 번째 포커스 가능한 요소로 포커스 이동
-            var firstFocusable = modal.querySelector(
-                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            );
-            if (firstFocusable) {
-                firstFocusable.focus();
-            }
-        }
-    }
-}
-
-setupModalKeyboardControls();
-```
-
-### 5. 게임 스타일 키보드 제어
-```javascript
-function setupGameControls() {
-    var player = syn.$l.get('gamePlayer');
-    var gameArea = syn.$l.get('gameArea');
-    var isGameActive = false;
-    var keyPressed = {};
-    
-    if (!player || !gameArea) return;
-    
-    syn.$k.setElement(document.body)
-           // WASD 또는 화살표 키로 이동
-           .addKeyCode('keydown', syn.$k.keyCodes.w, () => keyPressed['w'] = true)
-           .addKeyCode('keyup', syn.$k.keyCodes.w, () => keyPressed['w'] = false)
-           .addKeyCode('keydown', syn.$k.keyCodes.a, () => keyPressed['a'] = true)
-           .addKeyCode('keyup', syn.$k.keyCodes.a, () => keyPressed['a'] = false)
-           .addKeyCode('keydown', syn.$k.keyCodes.s, () => keyPressed['s'] = true)
-           .addKeyCode('keyup', syn.$k.keyCodes.s, () => keyPressed['s'] = false)
-           .addKeyCode('keydown', syn.$k.keyCodes.d, () => keyPressed['d'] = true)
-           .addKeyCode('keyup', syn.$k.keyCodes.d, () => keyPressed['d'] = false)
-           
-           // 화살표 키
-           .addKeyCode('keydown', syn.$k.keyCodes.up, () => keyPressed['up'] = true)
-           .addKeyCode('keyup', syn.$k.keyCodes.up, () => keyPressed['up'] = false)
-           .addKeyCode('keydown', syn.$k.keyCodes.down, () => keyPressed['down'] = true)
-           .addKeyCode('keyup', syn.$k.keyCodes.down, () => keyPressed['down'] = false)
-           .addKeyCode('keydown', syn.$k.keyCodes.left, () => keyPressed['left'] = true)
-           .addKeyCode('keyup', syn.$k.keyCodes.left, () => keyPressed['left'] = false)
-           .addKeyCode('keydown', syn.$k.keyCodes.right, () => keyPressed['right'] = true)
-           .addKeyCode('keyup', syn.$k.keyCodes.right, () => keyPressed['right'] = false)
-           
-           // 스페이스바로 점프/액션
-           .addKeyCode('keydown', syn.$k.keyCodes.space, function(evt) {
-               if (isGameActive) {
-                   performAction();
-                   evt.preventDefault();
-               }
-           })
-           
-           // P키로 게임 일시정지
-           .addKeyCode('keydown', syn.$k.keyCodes.p, function(evt) {
-               togglePause();
-               evt.preventDefault();
-           });
-    
-    // 게임 루프
-    function gameLoop() {
-        if (!isGameActive) return;
-        
-        var playerPos = syn.$d.offset(player);
-        var moveSpeed = 5;
-        var newX = playerPos.left;
-        var newY = playerPos.top;
-        
-        // 이동 처리
-        if (keyPressed['w'] || keyPressed['up']) {
-            newY -= moveSpeed;
-        }
-        if (keyPressed['s'] || keyPressed['down']) {
-            newY += moveSpeed;
-        }
-        if (keyPressed['a'] || keyPressed['left']) {
-            newX -= moveSpeed;
-        }
-        if (keyPressed['d'] || keyPressed['right']) {
-            newX += moveSpeed;
-        }
-        
-        // 경계 검사
-        var gameAreaSize = syn.$d.getSize(gameArea);
-        var playerSize = syn.$d.getSize(player);
-        
-        newX = Math.max(0, Math.min(gameAreaSize.width - playerSize.width, newX));
-        newY = Math.max(0, Math.min(gameAreaSize.height - playerSize.height, newY));
-        
-        // 플레이어 위치 업데이트
-        syn.$m.setStyle(player, 'left', newX + 'px');
-        syn.$m.setStyle(player, 'top', newY + 'px');
-        
-        requestAnimationFrame(gameLoop);
-    }
-    
-    function performAction() {
-        console.log('액션 실행!');
-        // 점프, 공격, 아이템 사용 등
-    }
-    
-    function togglePause() {
-        isGameActive = !isGameActive;
-        
-        if (isGameActive) {
-            console.log('게임 재개');
-            requestAnimationFrame(gameLoop);
-        } else {
-            console.log('게임 일시정지');
-        }
-    }
-    
-    // 게임 시작
-    function startGame() {
-        isGameActive = true;
-        syn.$m.setStyle(player, 'position', 'absolute');
-        requestAnimationFrame(gameLoop);
-    }
-    
-    startGame();
-}
-
-// setupGameControls();
-```
-
-## 주의사항
-
-1. **이벤트 충돌**: 여러 요소에서 같은 키를 처리할 때 이벤트 버블링과 캡처링을 고려해야 합니다.
-2. **메모리 누수**: 동적으로 생성되는 요소에 키 이벤트를 등록한 경우, 요소 제거 시 이벤트도 정리해야 합니다.
-3. **브라우저 기본 동작**: 일부 키 조합은 브라우저의 기본 동작과 충돌할 수 있으므로 `preventDefault()`를 적절히 사용해야 합니다.
-4. **접근성 고려**: 키보드만으로도 모든 기능에 접근할 수 있도록 설계해야 합니다.
-5. **국제화**: 키보드 레이아웃이 다른 국가에서는 키 코드가 다를 수 있습니다.
-
-## 관련 문서
-- [웹 접근성 키보드 가이드라인](https://www.w3.org/WAI/WCAG21/Understanding/keyboard-accessible.html)
-
-## 데모
-
-<iframe src="/sample/syn/keyboard.html" className="w:100% h:800px"></iframe>
-
-## 참조 Key Codes
-
-### 숫자
-| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 |
-
-### 숫자 키패드
-| numpad0 | numpad1 | numpad2 | numpad3 | numpad4 | numpad5 | numpad6 | numpad7 | numpad8 | numpad9 | multiply | add | subtract | decimal | divide |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 96 | 97 | 98 | 99 | 100 | 101 | 102 | 103 | 104 | 105 | 106 | 107 | 109 | 110 | 111 |
-
-### 특수문자
-| backspace | tab | enter | shift | control | alt | capslock | escape | space | pageup | pagedown | end | home | left | up | right | down | delete | semicolon | colon | equal | plus | comma | less | minus | underscore | period | greater | slash | questionmark | backtick | tilde | openingsquarebracket | openingcurlybracket | backslash | pipe | closingsquarebracket | closingcurlybracket | singlequote | doublequote | clear | meta | contextmenu |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 8 | 9 | 13 | 16 | 17 | 18 | 20 | 27 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 | 46 | 186 | 186 | 187 | 187 | 188 | 188 | 189 | 189 | 190 | 190 | 191 | 191 | 192 | 192 | 219 | 219 | 220 | 220 | 221 | 221 | 222 | 222 | 12 | 91 | 93 |
-
-### 영문자
-| a   | b   | c   | d   | e   | f   | g   | h   | i   | j   | k   | l   | m   | n   | o   | p   | q   | r   | s   | t   | u   | v   | w   | x   | y   | z   |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 65  | 66  | 67  | 68  | 69  | 70  | 71  | 72  | 73  | 74  | 75  | 76  | 77  | 78  | 79  | 80  | 81  | 82  | 83  | 84  | 85  | 86  | 87  | 88  | 89  | 90  |
-
-### 기능키
-| f1  | f2  | f3  | f4  | f5  | f6  | f7  | f8  | f9  | f10 | f11 | f12 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 112 | 113 | 114 | 115 | 116 | 117 | 118 | 119 | 120 | 121 | 122 | 123 |
-
-## Javascript 예제
-
-```javascript
-'use strict';
-let $keyboard = {
-    extends: [
-        'parsehtml'
-    ],
-
-    event: {
-        btn_setElement_click() {
-            syn.$k.setElement('txt_setElement');
-            syn.$l.get('txt_setElement').value = '설정 되었습니다';
-        },
-
-        btn_addKeyCode_click() {
-            syn.$k.setElement('txt_setElement');
-            syn.$k.addKeyCode('keydown', syn.$k.keyCodes.a, function (evt) {
-                alert(evt.keyCode);
-            });
-
-            syn.$k.addKeyCode('keyup', syn.$k.keyCodes.c, function (evt) {
-                alert(evt.keyCode);
-            });
-        },
-
-        removeKeyCode_click() {
-            syn.$k.setElement('txt_setElement');
-            syn.$k.removeKeyCode('keydown', syn.$k.keyCodes.a);
-        }
-    }
-};
-```
-소스) syn.$k Javascript 예제
+### `syn.$k.getKeyCode(code)`
+- 설명: 브라우저 표준 `KeyboardEvent.code` 값(예: `'KeyA'`)을 `keyNames` 테이블로 키 이름을 찾은 뒤, 다시 `keyCodes` 테이블에서 대응하는 숫자 코드로 변환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | code | `string` | Y | `KeyboardEvent.code` 값(예: `'KeyA'`, `'Enter'`, `'ArrowLeft'`). |
+- 반환값: `number | null` — 매핑되는 값이 없으면 `null`.
+- 예시
+  ```js
+  const code = syn.$k.getKeyCode('KeyA'); // 65
+  ```

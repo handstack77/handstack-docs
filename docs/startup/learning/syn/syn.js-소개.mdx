@@ -4,39 +4,42 @@ sidebar_position: 1
 
 # syn.js 소개
 
-`syn.js`는 HandStack 화면 개발에서 공통으로 사용하는 클라이언트 런타임입니다. DOM 조작, 브라우저 정보, 검증, HTTP 요청, 화면 생명주기, 거래 호출, 다국어 리소스, 출력 보조 기능을 하나의 전역 `syn` 네임스페이스로 제공합니다.
+`syn.js`는 HandStack 화면 개발에서 공통으로 사용하는 클라이언트 런타임입니다. 브라우저 정보, DOM 조작, HTTP 요청, 화면 생명주기, 거래 호출, 다국어 리소스, 출력, 검증, 암호화, 기본 타입 확장 유틸리티를 `syn` 네임스페이스와 전역 별칭으로 제공합니다.
 
-현재 HandStack의 웹 호스트는 다음 파일을 기준으로 `syn.js`를 제공합니다.
-
-```txt
-wwwroot/assets/js/syn.js
-```
-
-## 개발자가 먼저 알아야 할 것
-
-- `syn.module`은 화면 모듈과 내부 유틸리티 객체가 공통으로 사용하는 확장 가능한 객체 기반입니다.
-- `syn.Config`는 호스트, 애플리케이션, 거래, proxy, locale, cache 같은 화면 런타임 설정을 보관합니다.
-- 브라우저에서는 `synConfig` 또는 `synConfigName`을 통해 설정을 병합한 뒤 `syn.$w.contentLoaded()`가 화면 초기화를 수행합니다.
-- 화면 스크립트는 일반적으로 `config`, `prop`, `transaction`, `hook`, `event`, `method` 구조의 객체로 작성합니다.
-- 거래 호출은 `syn.$w.transactionAction()`에서 화면 거래 설정을 읽고, 내부적으로 `transactionDirect()`와 `executeTransaction()` 흐름을 거쳐 `transact` API로 전달됩니다.
+최신 예제와 API 기준은 HandStack 웹 호스트의 `/sample/syn` 예제와 `2.Modules/wwwroot/wwwroot/js/syn.js` 구현입니다.
 
 ## 공개 네임스페이스
 
 | 네임스페이스 | 문서 | 역할 |
 | --- | --- | --- |
-| `syn.$b` | [browser](browser) | 브라우저/디바이스 정보, 공유, 성능 측정 |
-| `syn.$m` | [manipulation](manipulation) | DOM 요소 값, 텍스트, 클래스, 스타일 조작 |
+| `syn.$b` | [browser](browser) | 브라우저/디바이스 정보, fingerprint, 공유, 성능 측정 |
+| `syn.$c` | [cryptography](cryptography) | Base64, hash, HMAC, AES/RSA, LZString, GUID |
 | `syn.$d` | [dimension](dimension) | 문서/창/요소의 크기와 위치 계산 |
-| `syn.$c` | [cryptography](cryptography) | Base64, hash, Web Crypto, AES/RSA, LZString |
 | `syn.$k` | [keyboard](keyboard) | 키 코드와 키보드 이벤트 관리 |
-| `syn.$v` | [validation](validation) | required, pattern, range, custom 검증 |
-| `syn.$l` | [library](library) | 요소 조회, 이벤트, 로그, 변환, 공통 유틸리티 |
+| `syn.$l` | [library](library) | DOM 조회, 이벤트, 변환, 로깅, 공통 유틸리티 |
+| `syn.$m` | [manipulation](manipulation) | DOM 탐색, 값/속성/스타일/클래스/구조 조작 |
+| `syn.$n` | [network](network) | rooms 전역 편의 메서드, Server-Sent Events, WebSocket |
+| `syn.$p` | [print](print) | Reportify와 Excel 템플릿 기반 출력 |
 | `syn.$r` | [request](request) | URL, cookie, HTTP 요청, blob URL |
-| `syn.$n` | [network](network) | iframe/window 간 메시지 채널 |
-| `syn.$w` | [webform](webform) | 화면 초기화, 데이터 바인딩, 거래, 리소스 로드 |
-| `syn.$p` | [print](print) | Reportify/Excel 템플릿 기반 출력 |
 | `syn.$res` | [resource](resource) | 다국어 리소스와 화면 텍스트 번역 |
-| `$date`, `$array`, `$string`, `$number`, `$object` | [date](date), [array](array), [string](string), [number](number), [object](object) | 기본 데이터 타입 보조 함수 |
+| `syn.$v` | [validation](validation) | required, pattern, range, custom 검증 |
+| `syn.$w` | [webform](webform) | 화면 초기화, 데이터 바인딩, 거래, 스크립트/스타일 로딩 |
+| `$array` | [array](array) | 배열 탐색, 정렬, 그룹화, tree 변환 |
+| `$date` | [date](date) | 날짜 포맷, 계산, 비교, 구간 처리 |
+| `$number` | [number](number) | 숫자 포맷, 반올림, 범위 처리 |
+| `$object` | [object](object) | 객체 복제, 병합, 경로 접근, 직렬화 보조 |
+| `$string` | [string](string) | 문자열 포맷, 치환, 인코딩, 비교, 마스킹 |
+
+## 보조/특수 문서
+
+| 문서 | 역할 |
+| --- | --- |
+| [iframe-main](iframe-main) | `syn.$n.rooms` 기반 부모 화면 메시지 채널 예제 |
+| [iframe-child](iframe-child) | `syn.$n.rooms` 기반 자식 iframe 메시지 채널 예제 |
+| [parsehtml](parsehtml) | HTML 문자열 파싱과 템플릿 처리 보조 |
+| [reflection](reflection) | reflection 예제와 `$object` 기반 대체 사용법 |
+| [template](template) | template 예제와 문자열/DOM 템플릿 처리 패턴 |
+| [syn.domain](syn.domain) | HandStack 도메인 모델 보조 문서 |
 
 ## 화면 모듈 기본 형태
 
@@ -96,5 +99,5 @@ let $sample = {
 
 - 화면 상태는 `prop`, 화면 이벤트는 `event`, 재사용 로직은 `method`, 생명주기 처리는 `hook`에 둡니다.
 - DOM 직접 접근은 가능하면 `syn.$l.get`, `syn.$m`, `syn.$w.getterValue/setterValue`를 사용해 일관성을 유지합니다.
-- 업무 데이터 조회/저장은 `syn.$w.transactionAction`을 우선 사용하고, 화면 거래 설정 밖에서 호출해야 할 때만 `transactionDirect`를 사용합니다.
-- 외부 HTTP 호출은 단순 요청이면 `syn.$r.httpFetch` 또는 `syn.$r.httpRequest`, HandStack 화면 API 스타일이면 `syn.$w.apiHttp`를 사용합니다.
+- 업무 데이터 조회/저장은 `syn.$w.transactionAction`을 우선 사용하고, 화면 거래 설정 밖에서 호출해야 할 때만 직접 HTTP/거래 API를 사용합니다.
+- 최신 API 세부 목록과 주의 사항은 각 모듈 문서의 `API 참조` 섹션을 기준으로 확인합니다.

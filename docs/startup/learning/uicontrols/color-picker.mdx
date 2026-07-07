@@ -1,0 +1,138 @@
+---
+sidebar_position: 7
+---
+
+# ColorPicker
+
+## 이 컨트롤은 무엇인가요?
+
+ColorPicker는 색상 값을 `#RRGGBB` 형태의 16진수 문자열로 입력받는 컨트롤입니다. 내부적으로 경량 색상 선택 라이브러리(`CP`, `/js/color-picker/color-picker.js`)를 사용하며, 화면에는 두 부분이 렌더링됩니다.
+
+- 색상 코드를 직접 타이핑할 수 있는 텍스트 입력창(실제로는 `TextBox` 컨트롤로 로드됨, 자동 마스크 `#SSSSSS` 적용)
+- 클릭하면 색상 팔레트 팝업(그러데이션 선택 영역 + 미리 정의된 색상 스와치 20개)을 여는 버튼
+
+두 방식 모두 같은 값을 공유하므로, 사용자는 팔레트를 클릭해서 고르거나 코드를 직접 입력해서 색상을 지정할 수 있습니다.
+
+## 언제 사용하나요?
+
+- 배경색, 글자색, 라벨 색상 등 관리 화면에서 색상값을 저장해야 할 때
+- 사용자가 미리 정의된 색상 팔레트 중에서 고르되, 필요하면 임의의 16진수 색상도 직접 입력할 수 있어야 할 때
+
+단순히 몇 가지 정해진 색상 중 하나만 고르면 되는 경우라면 `DropDownList`가 더 간단할 수 있습니다.
+
+## 빠른 시작
+
+```html
+<syn_colorpicker id="clpBackgroundColor" syn-datafield="BackgroundColor" syn-options="{
+    defaultColor: 'FF0000'
+}"></syn_colorpicker>
+```
+
+`/js/syn.loader.js`가 `syn_colorpicker` 태그를 자동으로 인식해 필요한 CSS/JS(`/js/color-picker/color-picker.js` 등)를 알아서 불러오므로, 별도의 스크립트 태그를 추가할 필요가 없습니다. 페이지 맨 아래에 `<script src="/js/syn.loader.js"></script>` 한 줄만 있으면 됩니다.
+
+## 예제 실행하기
+
+`example/` 폴더에 다음 예제가 있습니다. 실행 중인 사이트에서 아래 경로로 바로 열어볼 수 있습니다.
+
+- `example/basic.html` — 기본 색상 선택기, 미리 정의된 색상(`defaultColor`) 지정
+- `example/getset.html` — `getValue`/`setValue`/`clear` 메서드로 값을 읽고 쓰는 방법
+
+## 더 알아보기
+
+전체 옵션/메서드 목록은 아래 API 참조 섹션를 참고하세요.
+
+## 실전 예제 페이지
+
+`/uicontrols/ColorPicker/example/` 경로의 예제를 아래 iframe에서 바로 확인할 수 있습니다.
+
+### basic.html
+
+<iframe
+  src="/uicontrols/ColorPicker/example/basic.html"
+  width="100%"
+  height="640"
+  style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+  title="ColorPicker basic 실전 예제"
+  allow="fullscreen">
+</iframe>
+
+### getset.html
+
+<iframe
+  src="/uicontrols/ColorPicker/example/getset.html"
+  width="100%"
+  height="640"
+  style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+  title="ColorPicker getset 실전 예제"
+  allow="fullscreen">
+</iframe>
+
+## 소스와 로드 파일
+
+| 항목 | 내용 |
+|---|---|
+| 컨트롤 | `ColorPicker` |
+| 전역 별칭 | `syn.uicontrols.$colorpicker` |
+| 버전 | `v2025.10.1` |
+| 소스 | `uicontrols/ColorPicker/ColorPicker.js` |
+| 스타일 | `uicontrols/ColorPicker/ColorPicker.css` |
+
+## API 참조
+
+`syn.uicontrols.$colorpicker` (버전: `v2025.10.1`)
+
+## 마크업
+
+```html
+<syn_colorpicker id="clpColor" syn-datafield="Color" syn-options="{
+    defaultColor: 'FF0000',
+    defineColors: ['FF0000', '00FF00', '0000FF']
+}"></syn_colorpicker>
+```
+
+`controlLoad` 실행 시 원본 `<syn_colorpicker>` 엘리먼트는 `id`가 `<elID>_hidden`으로 바뀌고 화면에서 숨겨지며(`display:none`), 실제로 화면에 보이는 것은 새로 생성되는 다음 두 엘리먼트입니다.
+
+| 엘리먼트 ID | 설명 |
+|---|---|
+| `<elID>` | 색상 코드(`#RRGGBB`)를 직접 입력하는 텍스트 입력창. 내부적으로 `syn.uicontrols.$textbox.controlLoad(elID)`로 로드되어 `#SSSSSS` 마스크가 적용된 TextBox 컨트롤입니다. |
+| `<elID>_Button` | 클릭하면 색상 팔레트 팝업을 여는 버튼 |
+
+## Options (defaultSetting)
+
+| 옵션명 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| `elID` | string | `''` | 내부적으로 자동 설정되는 엘리먼트 ID (직접 지정할 필요 없음) |
+| `defaultColor` | string \| null | `null` | 초기 색상값. `#` 없이 6자리 16진수 문자열(예: `'FF0000'`)로 지정 |
+| `defineColors` | string[] | 20개 사전 정의 색상(`#` 없는 6자리 16진수 배열) | 팔레트 팝업에 표시할 색상 스와치 목록 |
+| `dataType` | string | `'string'` | 값의 데이터 타입 |
+| `belongID` | string \| string[] \| null | `null` | 이 필드가 속한 트랜잭션 함수 ID |
+| `getter` | boolean \| function | `false` | 값을 가져올 때 커스텀 변환 함수 |
+| `setter` | boolean \| function | `false` | 값을 설정할 때 커스텀 변환 함수 |
+| `controlText` | string \| null | `null` | 컨트롤 라벨/설명 텍스트(검증 메시지 등에 사용) |
+| `validators` | array \| null | `null` | 값 검증 규칙 |
+| `transactConfig` | object \| null | `null` | 트랜잭션 관련 설정 |
+| `triggerConfig` | object \| null | `null` | 다른 컨트롤에 의해 트리거되는 동작 설정 |
+
+## 메서드
+
+| 메서드 | 시그니처 | 설명 |
+|---|---|---|
+| `controlLoad` | `controlLoad(elID, setting)` | 컨트롤 초기화(마크업 상 `<syn_colorpicker>`가 자동으로 호출) |
+| `getValue` | `getValue(elID, meta)` | 현재 선택된 색상 코드(`#RRGGBB`) 문자열 반환 |
+| `setValue` | `setValue(elID, value, meta)` | 색상 코드(`#RRGGBB`)를 지정 |
+| `clear` | `clear(elID, isControlLoad)` | 선택된 색상을 초기화 |
+| `getControl` | `getControl(elID)` | 내부 컨트롤 레지스트리 항목(`객체 설정`) 반환. `picker`는 CP 라이브러리 인스턴스 |
+| `colorConvert` | `colorConvert(convertType, value)` | CP 라이브러리의 색상 변환 유틸리티 호출(예: `'_HSV2HEX'`) — 내부 구현 세부사항이며 일반적인 사용에서는 잘 쓰이지 않음 |
+| `setLocale` | `setLocale(elID, translations, control, options)` | 다국어 텍스트 적용 (현재 구현은 빈 함수) |
+
+## 이벤트 (syn-events)
+
+ColorPicker는 다른 컨트롤들과 달리 `eventHooks` 목록을 정의하지 않으며, `syn-events`를 통한 `<elID>_<eventName>` 자동 이벤트 와이어링을 지원하지 않습니다.
+
+색상이 바뀌는 시점을 감지하고 싶다면, 화면에 실제로 렌더링되는 텍스트 입력창(`id="<elID>"`)이 TextBox 컨트롤로도 등록되어 있음을 이용하세요. 즉 마크업에 `syn-events="['change']"`를 추가하면 `<elID>_change(evt)` 핸들러가 TextBox의 네이티브 `change` 이벤트로 호출됩니다(색상 코드를 직접 입력하거나 팔레트에서 선택해 코드란 값이 갱신될 때 발생).
+
+## 참고
+
+- 팔레트 팝업은 CP 라이브러리(`/js/color-picker/color-picker.js`, 로더가 자동 주입)가 그리며, `defineColors`에 지정한 색상 스와치 20개가 그 아래에 표시됩니다.
+- `getValue`/`setValue` 내부 코드의 지역 변수명이 `dateControl`로 되어 있는데, 이는 다른 날짜류 컨트롤 코드를 복사하면서 남은 이름으로 보이며 실제 동작(색상 값 읽기/쓰기)에는 영향이 없습니다.
+- `belongID`를 지정하면 내부 텍스트 입력창(`<elID>`)에도 동일하게 전달되어 트랜잭션 전송 시 값이 포함됩니다.

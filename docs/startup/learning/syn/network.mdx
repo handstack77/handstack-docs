@@ -2,1002 +2,229 @@
 sidebar_position: 12
 ---
 
-# syn.$n
+# network 사용법 (syn.$n)
 
 ## 개요
-syn.$n은 HandStack에서 iframe 화면 간에 양방향 통신 기능을 제공하는 네트워크 통신 라이브러리입니다. 부모 창과 자식 iframe 간의 안전한 메시지 전달, 이벤트 바인딩, 채널 관리 등의 기능을 통해 복잡한 웹 애플리케이션에서의 창 간 통신을 간단하게 만들어줍니다.
+`$network` 모듈(전역 별칭 `syn.$n`)은 세 가지 통신 기능을 제공합니다.
+1. rooms/channel: `postMessage` 기반 창(window) 간 요청-응답 채널(`rooms.connect`, `findChannel`, `call`, `broadCast`, `emit`)
+2. SSE 클라이언트: `EventSource` 기반 서버 푸시 수신(`startSse`, `stopSse`, `stopAllSse`, `getSseConnection`)
+3. WebSocket 클라이언트: 양방향 소켓 통신, 자동 재연결 포함(`startSocket`, `sendSocketMessage`, `stopSocket`, `stopAllSockets`, `getSocket`)
 
-## 주요 기능
+이 문서(및 `network.html` 예제)는 2번(SSE), 3번(WebSocket), 그리고 1번 중 두 번째 창 없이도 동일 화면에서 바로 쓸 수 있는 전역 편의 메서드(`findChannel`, `call`, `broadCast`, `emit`)를 다룹니다.
+`rooms.connect()`로 부모/자식 iframe 두 화면을 직접 연결하고 채널 객체의 `bind()`/`call()`/`emit()`을 사용하는 저수준 흐름은 이미 [iframe-main](iframe-main) / [iframe-child](iframe-child)에서 다루므로 이 문서에서는 반복하지 않습니다.
 
-### 채널 연결
+## 로드 방법
+```html
+<script src="/js/syn.loader.js"></script>
+```
+`syn.loader.js`가 `syn.js`(모듈 전역: `syn.$n` 별칭 포함)를 로드하고, 같은 이름의 `network.js`를 페이지 스크립트로 연결합니다.
 
-#### syn.$n.rooms.connect(options)
-새로운 통신 채널을 생성하고 연결합니다.
+## 빠른 시작
+- rooms 편의 메서드: `findChannel`/`call`/`broadCast`/`emit` 버튼 중 아무거나 클릭하면, 화면 뒤에 숨겨진 `<iframe>`을 자동으로 만들고 `scope: 'network-demo'`로 채널을 연결한 뒤 호출을 수행합니다(자세한 구현은 아래 "주의 사항" 참고).
+- SSE: `syn.$n.startSse(id, url, eventHandlers, options)` 입력창에 본인이 확인한 SSE 엔드포인트 주소를 넣고 연결을 시작합니다. 주소를 비워두면 안내 메시지만 출력됩니다.
+- WebSocket: `syn.$n.startSocket(id, url, eventHandlers, options)` 입력창에 본인이 확인한 WebSocket 엔드포인트 주소(`wss://...`)를 넣고 연결을 시작합니다.
 
-**구문**
+## 주요 시나리오
+- 채널 조회: `syn.$n.findChannel(channelID)`는 이미 `rooms.connect({ scope: channelID })`로 연결된 채널 객체를 찾습니다. 연결이 없으면 `undefined`를 반환합니다.
+- 특정 채널 호출: `syn.$n.call(channelID, evt, params)`는 `findChannel(channelID)`로 채널을 찾은 뒤, 내부적으로 채널 객체의 `call()`을 호출합니다. 성공/실패 콜백은 모듈이 자체적으로 `debugOutput` 옵션에 따라 로그만 남기므로, 응답 값을 직접 받아 화면에 쓰고 싶다면 `rooms.connect()`가 반환한 채널 객체의 `call({ method, params, success, error })`을 직접 사용해야 합니다([iframe-main](iframe-main) 참고).
+- 전체 방송: `syn.$n.broadCast(evt, params)`는 현재 화면에 연결된 모든 채널에 동일한 `evt`를 호출합니다.
+- 내 채널로 통보: `syn.$n.emit(evt, params)`는 `syn.$n.myChannelID`에 해당하는 채널을 찾아 응답을 기대하지 않는 메시지를 보냅니다. `myChannelID`는 보통 화면 URL의 `channelID` 쿼리 문자열로 자동 설정됩니다(자식 iframe 화면에서 주로 사용).
+- SSE 수신: `startSse(id, url, eventHandlers, options)`로 연결을 열면 `open`/`message`/`error` 기본 핸들러가 제공되며, `eventHandlers`로 커스텀 이벤트 이름(`heartbeat`, `notice` 등 서버가 보내는 이벤트 이름)에 대한 핸들러를 추가로 등록할 수 있습니다.
+- WebSocket 통신: `startSocket(id, url, eventHandlers, options)`은 기본적으로 `autoReconnect: true`(3초 간격)로 동작합니다. `sendSocketMessage(id, message)`는 연결이 열려 있을 때만(`readyState === OPEN`) 전송에 성공합니다.
+
+## 실전 예제 페이지
+- `/sample/syn/network.html` + `network.js`
+  - `btn_findChannel_click()` / `btn_call_click()` / `btn_broadCast_click()` / `btn_emit_click()`: 숨겨진 데모 iframe과의 채널을 대상으로 전역 편의 메서드 시연
+  - `btn_startSse_click()` / `btn_getSseConnection_click()` / `btn_stopSse_click()` / `btn_stopAllSse_click()`: SSE 연결 수명주기
+  - `btn_startSocket_click()` / `btn_sendSocketMessage_click()` / `btn_getSocket_click()` / `btn_stopSocket_click()` / `btn_stopAllSockets_click()`: WebSocket 연결 수명주기
+
+## 주의 사항
+- 이 저장소에는 실제 SSE/WebSocket 서버가 없습니다. `network.html`의 SSE·WebSocket 입력창은 기본값이 비어 있으며 `placeholder`로만 예시 주소(`https://example.com/sse`, `wss://example.com/socket`)를 표시합니다. 실제 확인 가능한 서버 주소를 직접 입력해야 연결이 이루어지며, 실패 시 `error`/`close` 이벤트가 출력창(textarea)에 그대로 표시됩니다.
+- rooms 편의 메서드 데모의 한계: `syn.$n.call`/`syn.$n.broadCast`/`syn.$n.emit`은 실제로 연결된 채널이 있어야 동작합니다. 이 페이지 혼자서는 상대 창이 없으므로, `network.js`가 화면 뒤에 보이지 않는 `<iframe>`을 하나 생성해 `syn.js`를 그대로 로드시키고 `rooms.connect()`로 반대편 채널을 만들어 시연용 상대로 사용합니다. 이는 예제를 위한 자체 구성이며, 실제 서비스에서는 iframe_main/iframe_child 예제처럼 실제로 별도의 화면(부모/자식)이 존재합니다.
+- `syn.$n.emit()`은 `syn.$n.myChannelID`가 설정되어 있어야 동작합니다. 데모에서는 버튼 클릭 시 `syn.$n.myChannelID = 'network-demo'`로 임시 지정합니다. 실제 화면에서는 URL의 `channelID`(또는 `ChannelID`/`CHANNELID`/`channelid`) 쿼리 문자열로 페이지 로드 시 자동 설정됩니다.
+- SSE/WebSocket 연결은 페이지를 벗어나도 자동으로 정리되지 않으므로, 예제를 반복 실행할 때는 `stopSse`/`stopSocket` 계열 메서드로 정리하는 습관을 들이는 것이 좋습니다.
+
+## 관련 모듈
+- API 상세는 아래 API 참조 섹션을 확인하세요.
+- rooms/channel의 저수준 흐름(부모 화면 관점): [iframe-main](iframe-main)
+- rooms/channel의 저수준 흐름(자식 화면 관점): [iframe-child](iframe-child)
+
+## API 참조
+
+## 모듈 정보
+| 항목 | 내용 |
+|---|---|
+| 전역 별칭 | `syn.$n` |
+| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 6056~6919번째 줄) |
+| 예제 페이지 | `/sample/syn/network.html` |
+
+이 문서에서 다루지 않는 `rooms.connect()`, 채널 객체의 `bind()`/`.call()`/`.emit()`은 [iframe-main](iframe-main) / [iframe-child](iframe-child)를 참고하세요.
+
+## 메서드
+
+### `syn.$n.findChannel(channelID)`
+- 설명: `scope`가 `channelID`와 일치하는, 이미 연결된 채널을 `$network.connections`에서 찾습니다. 소스 위치: 약 6597~6600번째 줄.
+- 매개변수
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `channelID` | `string` | Y | `rooms.connect({ scope })`에 지정했던 채널 식별자 |
+
+- 반환값: 채널 객체 또는 `undefined`
+- 예시
 ```javascript
-syn.$n.rooms.connect(options)
+var connection = syn.$n.findChannel('network-demo');
 ```
 
-**매개변수**
-- `options` (Object): 연결 설정 객체
-  - `window` (Window): 통신할 대상 윈도우
-  - `origin` (String): 허용할 origin (보안), '*'는 모든 origin 허용
-  - `scope` (String): 채널 범위 식별자
-  - `debugOutput` (Boolean): 디버그 출력 여부
+### `syn.$n.call(channelID, evt, params)`
+- 설명: `channelID`로 채널을 찾아 `evt` 메서드를 호출합니다. 성공/실패 시 `connection.options.debugOutput`이 `true`이면 `syn.$l.eventLog`로 로그만 남기는 내장 콜백을 사용합니다(커스텀 `success`/`error` 콜백이 필요하면 채널 객체의 `.call()`을 직접 사용). 소스 위치: 약 6602~6624번째 줄.
+- 매개변수
 
-**반환값**
-- `Channel`: 통신 채널 객체
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `channelID` | `string` | Y | 대상 채널 식별자(scope) |
+| `evt` | `string` | Y | 상대에서 `bind`로 등록한 메서드 이름 |
+| `params` | `any` | N | 전달할 데이터 |
 
-**예제**
+- 반환값: 없음. 채널을 찾지 못하면 경고 로그만 남기고 종료합니다.
+- 예시
 ```javascript
-// 부모 창에서 iframe과 연결
-var iframe = document.getElementById('myIframe');
-var channel = syn.$n.rooms.connect({
-    window: iframe.contentWindow,
-    origin: '*',
-    scope: 'main-iframe-channel',
-    debugOutput: true
-});
-
-// 자식 iframe에서 부모와 연결
-var parentChannel = syn.$n.rooms.connect({
-    window: window.parent,
-    origin: '*',
-    scope: 'child-parent-channel'
-});
+syn.$n.call('network-demo', 'ping', { message: 'hello' });
 ```
 
-### 이벤트 바인딩
+### `syn.$n.broadCast(evt, params)`
+- 설명: 현재 화면에 연결된 모든 채널(`$network.connections`)에 대해 동일한 `evt`를 호출합니다. 소스 위치: 약 6626~6644번째 줄.
+- 매개변수
 
-#### channel.bind(eventName, handler)
-채널에 이벤트 핸들러를 바인딩합니다.
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `evt` | `string` | Y | 각 채널에서 `bind`로 등록한 메서드 이름 |
+| `params` | `any` | N | 전달할 데이터(모든 채널에 동일하게 전달) |
 
-**구문**
+- 반환값: 없음
+- 예시
 ```javascript
-channel.bind(eventName, handler)
+syn.$n.broadCast('ping', { message: 'to all channels' });
 ```
 
-**매개변수**
-- `eventName` (String): 이벤트 이름
-- `handler` (Function): 이벤트 처리 함수
+### `syn.$n.emit(evt, params)`
+- 설명: `syn.$n.myChannelID`에 해당하는 채널을 찾아 응답을 기대하지 않는 메시지를 전송합니다. `myChannelID`가 설정되지 않았거나 해당 채널이 없으면 경고 로그 후 종료합니다. 소스 위치: 약 6646~6667번째 줄.
+- 매개변수
 
-**예제**
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `evt` | `string` | Y | 상대에서 `bind`로 등록한 메서드 이름 |
+| `params` | `any` | N | 전달할 데이터 |
+
+- 반환값: 없음
+- 예시
 ```javascript
-// 메시지 수신 이벤트 바인딩
-channel.bind('userMessage', function(event, data) {
-    console.log('사용자 메시지 수신:', data);
-    // 응답 전송
-    channel.emit({
-        method: 'messageReceived',
-        params: ['메시지를 받았습니다']
-    });
-});
-
-// 데이터 요청 이벤트 바인딩
-channel.bind('dataRequest', function(event, requestData) {
-    console.log('데이터 요청:', requestData);
-    
-    // 데이터 처리
-    var responseData = processRequest(requestData);
-    
-    // 응답 전송
-    return responseData;
-});
+syn.$n.myChannelID = 'network-demo'; // 보통은 URL의 channelID 쿼리 문자열로 자동 설정됨
+syn.$n.emit('note', { message: 'hello parent' });
 ```
 
-### 메시지 전송
+### `syn.$n.startSse(id, url, eventHandlers, options = {})`
+- 설명: `EventSource`로 SSE(Server-Sent Events) 연결을 생성합니다. 이미 같은 `id`로 연결이 있으면 기존 연결을 그대로 반환합니다. 소스 위치: 약 6687~6739번째 줄.
+- 매개변수
 
-#### channel.call(options)
-원격 함수를 호출하고 응답을 받습니다.
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `id` | `string` | Y | 연결을 구분하는 고유 식별자 |
+| `url` | `string` | Y | SSE 엔드포인트 주소 |
+| `eventHandlers` | `object` | N | 이벤트 이름별 핸들러(`open`, `message`, `error` 기본 제공, 서버 정의 커스텀 이벤트 이름도 등록 가능) |
+| `options.withCredentials` | `boolean` | N | 기본값 `false` |
 
-**구문**
+- 반환값: `EventSource` 인스턴스 또는 브라우저 미지원/생성 실패 시 `null`
+- 예시
 ```javascript
-channel.call(options)
-```
-
-**매개변수**
-- `options` (Object): 호출 설정 객체
-  - `method` (String): 호출할 메서드 이름
-  - `params` (Array): 전달할 매개변수 배열
-  - `success` (Function): 성공 콜백 함수
-  - `error` (Function): 오류 콜백 함수
-
-**예제**
-```javascript
-// 부모 창에서 iframe의 함수 호출
-channel.call({
-    method: 'updateUserData',
-    params: [{
-        id: 123,
-        name: '홍길동',
-        email: 'hong@example.com'
-    }],
-    success: function(result) {
-        console.log('사용자 데이터 업데이트 성공:', result);
-    },
-    error: function(error, message) {
-        console.error('업데이트 실패:', error, message);
-    }
-});
-
-// 자식 iframe에서 부모 창의 함수 호출
-channel.call({
-    method: 'navigateTo',
-    params: ['/users/123'],
-    success: function(result) {
-        console.log('네비게이션 성공:', result);
-    }
-});
-```
-
-#### channel.emit(options)
-이벤트를 발생시킵니다.
-
-**구문**
-```javascript
-channel.emit(options)
-```
-
-**매개변수**
-- `options` (Object): 이벤트 설정 객체
-  - `method` (String): 이벤트 이름
-  - `params` (Array): 전달할 데이터 배열
-  - `success` (Function): 성공 콜백 (선택사항)
-  - `error` (Function): 오류 콜백 (선택사항)
-
-**예제**
-```javascript
-// 상태 변경 이벤트 발생
-channel.emit({
-    method: 'statusChanged',
-    params: ['loading', 'Starting data load...']
-});
-
-// 파일 업로드 완료 이벤트
-channel.emit({
-    method: 'fileUploaded',
-    params: [{
-        filename: 'document.pdf',
-        size: 1024000,
-        url: '/uploads/document.pdf'
-    }],
-    success: function() {
-        console.log('파일 업로드 이벤트 전송 완료');
-    }
+syn.$n.startSse('realtime-updates', '/api/events', {
+    open() { console.log('SSE 연결 성공!'); },
+    message(evt) { console.log('일반 메시지:', JSON.parse(evt.data)); },
+    heartbeat(evt) { console.log('서버 상태:', evt.data, '마지막 이벤트 ID:', evt.lastEventId); }
 });
 ```
 
-## 실전 활용 예제
-
-### 1. 부모-자식 iframe 통신 시스템
+### `syn.$n.stopSse(id)`
+- 설명: `id`로 등록된 SSE 연결을 닫고 목록에서 제거합니다. 소스 위치: 약 6742~6752번째 줄.
+- 매개변수: `id` (`string`, 필수)
+- 반환값: 연결을 찾아 닫았으면 `true`, 없으면 `false`
+- 예시
 ```javascript
-// === 부모 창 (main.html) ===
-let $main = {
-    prop: {
-        iframeChannels: []
-    },
-
-    hook: {
-        pageLoad() {
-            // iframe 로드 완료 후 채널 연결
-            var iframe = document.getElementById('childFrame');
-            iframe.onload = function() {
-                $this.method.connectToIframe('child-channel');
-            };
-        }
-    },
-
-    method: {
-        connectToIframe(channelId) {
-            var iframe = document.getElementById('childFrame');
-            
-            var channel = syn.$n.rooms.connect({
-                debugOutput: true,
-                window: iframe.contentWindow,
-                origin: '*',
-                scope: channelId
-            });
-
-            // 자식으로부터의 메시지 처리
-            channel.bind('childMessage', function(event, data) {
-                console.log('자식으로부터 메시지:', data);
-                $this.method.processChildMessage(data);
-            });
-
-            // 데이터 요청 처리
-            channel.bind('requestData', function(event, requestType) {
-                return $this.method.getDataForChild(requestType);
-            });
-
-            // 채널 저장
-            $this.prop.iframeChannels.push({
-                id: channelId,
-                channel: channel
-            });
-        },
-
-        sendMessageToChild(channelId, message) {
-            var channelInfo = $this.prop.iframeChannels.find(function(item) {
-                return item.id === channelId;
-            });
-
-            if (channelInfo) {
-                channelInfo.channel.call({
-                    method: 'parentMessage',
-                    params: [message],
-                    success: function(response) {
-                        console.log('자식 응답:', response);
-                    },
-                    error: function(error) {
-                        console.error('메시지 전송 실패:', error);
-                    }
-                });
-            }
-        },
-
-        processChildMessage(data) {
-            switch(data.type) {
-                case 'userAction':
-                    $this.method.handleUserAction(data.payload);
-                    break;
-                case 'statusUpdate':
-                    $this.method.updateStatus(data.payload);
-                    break;
-            }
-        },
-
-        getDataForChild(requestType) {
-            switch(requestType) {
-                case 'userProfile':
-                    return {
-                        id: 123,
-                        name: '홍길동',
-                        email: 'hong@example.com',
-                        role: 'admin'
-                    };
-                case 'appSettings':
-                    return {
-                        theme: 'dark',
-                        language: 'ko',
-                        notifications: true
-                    };
-                default:
-                    return null;
-            }
-        }
-    },
-
-    event: {
-        btnSendToChild_click() {
-            var message = {
-                type: 'command',
-                action: 'refresh',
-                timestamp: new Date()
-            };
-            
-            $this.method.sendMessageToChild('child-channel', message);
-        }
-    }
-};
-
-// === 자식 창 (child.html) ===
-let $child = {
-    prop: {
-        parentChannel: null
-    },
-
-    hook: {
-        pageLoad() {
-            // 부모와 연결이 필요한 경우에만
-            if (window !== window.parent) {
-                $this.method.connectToParent('child-channel');
-            }
-        }
-    },
-
-    method: {
-        connectToParent(channelId) {
-            $this.prop.parentChannel = syn.$n.rooms.connect({
-                window: window.parent,
-                origin: '*',
-                scope: channelId
-            });
-
-            // 부모로부터의 메시지 처리
-            $this.prop.parentChannel.bind('parentMessage', function(event, data) {
-                console.log('부모로부터 메시지:', data);
-                $this.method.processParentMessage(data);
-            });
-        },
-
-        processParentMessage(data) {
-            switch(data.type) {
-                case 'command':
-                    $this.method.executeCommand(data.action);
-                    break;
-                case 'dataUpdate':
-                    $this.method.updateData(data.payload);
-                    break;
-            }
-        },
-
-        sendMessageToParent(message) {
-            if ($this.prop.parentChannel) {
-                $this.prop.parentChannel.emit({
-                    method: 'childMessage',
-                    params: [message]
-                });
-            }
-        },
-
-        requestDataFromParent(dataType) {
-            return new Promise(function(resolve, reject) {
-                if ($this.prop.parentChannel) {
-                    $this.prop.parentChannel.call({
-                        method: 'requestData',
-                        params: [dataType],
-                        success: function(data) {
-                            resolve(data);
-                        },
-                        error: function(error) {
-                            reject(error);
-                        }
-                    });
-                } else {
-                    reject('부모 채널이 연결되지 않았습니다');
-                }
-            });
-        }
-    },
-
-    event: {
-        btnNotifyParent_click() {
-            var message = {
-                type: 'userAction',
-                payload: {
-                    action: 'buttonClick',
-                    element: 'btnNotifyParent',
-                    timestamp: new Date()
-                }
-            };
-            
-            $this.method.sendMessageToParent(message);
-        },
-
-        async btnRequestUserData_click() {
-            try {
-                var userData = await $this.method.requestDataFromParent('userProfile');
-                console.log('사용자 데이터:', userData);
-                
-                // UI 업데이트
-                document.getElementById('userName').textContent = userData.name;
-                document.getElementById('userEmail').textContent = userData.email;
-            } catch (error) {
-                console.error('데이터 요청 실패:', error);
-            }
-        }
-    }
-};
+syn.$n.stopSse('realtime-updates');
 ```
 
-### 2. 다중 iframe 관리 시스템
+### `syn.$n.stopAllSse()`
+- 설명: 등록된 모든 SSE 연결을 순회하며 `stopSse`를 호출합니다. 소스 위치: 약 6754~6758번째 줄.
+- 매개변수: 없음
+- 반환값: 없음
+
+### `syn.$n.getSseConnection(id)`
+- 설명: `id`로 등록된 `EventSource` 인스턴스를 반환합니다. 소스 위치: 약 6760~6762번째 줄.
+- 매개변수: `id` (`string`, 필수)
+- 반환값: `EventSource` 인스턴스 또는 `undefined`
+- 예시
 ```javascript
-// 다중 iframe 관리자
-let $multiIframeManager = {
-    prop: {
-        channels: new Map(),
-        messageQueue: [],
-        broadcastChannels: []
-    },
-
-    method: {
-        registerIframe(iframeId, channelId) {
-            var iframe = document.getElementById(iframeId);
-            if (!iframe) return false;
-
-            var channel = syn.$n.rooms.connect({
-                debugOutput: false,
-                window: iframe.contentWindow,
-                origin: '*',
-                scope: channelId
-            });
-
-            // 공통 이벤트 바인딩
-            channel.bind('ready', function(event, data) {
-                console.log(iframeId + ' 준비 완료:', data);
-                $this.method.processQueuedMessages(channelId);
-            });
-
-            channel.bind('broadcast', function(event, message) {
-                $this.method.broadcastToOthers(channelId, message);
-            });
-
-            $this.prop.channels.set(channelId, {
-                iframe: iframe,
-                channel: channel,
-                ready: false
-            });
-
-            return true;
-        },
-
-        sendMessage(channelId, method, params) {
-            var channelInfo = $this.prop.channels.get(channelId);
-            
-            if (!channelInfo) {
-                console.error('채널을 찾을 수 없습니다:', channelId);
-                return;
-            }
-
-            if (!channelInfo.ready) {
-                // 준비되지 않은 경우 큐에 저장
-                $this.prop.messageQueue.push({
-                    channelId: channelId,
-                    method: method,
-                    params: params
-                });
-                return;
-            }
-
-            channelInfo.channel.call({
-                method: method,
-                params: params,
-                success: function(result) {
-                    console.log('메시지 전송 성공:', result);
-                },
-                error: function(error) {
-                    console.error('메시지 전송 실패:', error);
-                }
-            });
-        },
-
-        processQueuedMessages(channelId) {
-            var channelInfo = $this.prop.channels.get(channelId);
-            if (channelInfo) {
-                channelInfo.ready = true;
-            }
-
-            // 대기 중인 메시지 처리
-            var queuedMessages = $this.prop.messageQueue.filter(function(msg) {
-                return msg.channelId === channelId;
-            });
-
-            queuedMessages.forEach(function(msg) {
-                $this.method.sendMessage(msg.channelId, msg.method, msg.params);
-            });
-
-            // 처리된 메시지 제거
-            $this.prop.messageQueue = $this.prop.messageQueue.filter(function(msg) {
-                return msg.channelId !== channelId;
-            });
-        },
-
-        broadcastToAll(method, params, excludeChannel) {
-            $this.prop.channels.forEach(function(channelInfo, channelId) {
-                if (channelId !== excludeChannel) {
-                    $this.method.sendMessage(channelId, method, params);
-                }
-            });
-        },
-
-        broadcastToOthers(senderChannelId, message) {
-            this.broadcastToAll('broadcast', [message], senderChannelId);
-        },
-
-        closeChannel(channelId) {
-            var channelInfo = $this.prop.channels.get(channelId);
-            if (channelInfo && channelInfo.channel) {
-                // 채널 정리 (필요시 추가 정리 작업)
-                $this.prop.channels.delete(channelId);
-                console.log('채널 종료:', channelId);
-            }
-        }
-    },
-
-    hook: {
-        pageLoad() {
-            // 여러 iframe 등록
-            $this.method.registerIframe('iframe1', 'channel-1');
-            $this.method.registerIframe('iframe2', 'channel-2');
-            $this.method.registerIframe('iframe3', 'channel-3');
-        }
-    },
-
-    event: {
-        btnBroadcastMessage_click() {
-            var message = {
-                type: 'announcement',
-                title: '공지사항',
-                content: '모든 사용자에게 전달되는 메시지입니다',
-                timestamp: new Date()
-            };
-
-            $this.method.broadcastToAll('systemMessage', [message]);
-        },
-
-        btnSendToSpecific_click() {
-            var targetChannel = document.getElementById('selectTargetChannel').value;
-            var message = document.getElementById('txtMessage').value;
-
-            $this.method.sendMessage(targetChannel, 'specificMessage', [{
-                text: message,
-                sender: 'parent',
-                timestamp: new Date()
-            }]);
-        }
-    }
-};
+var connection = syn.$n.getSseConnection('realtime-updates');
+console.log(connection?.readyState);
 ```
 
-### 3. 실시간 협업 시스템
+### `syn.$n.startSocket(id, url, eventHandlers = {}, options = {})`
+- 설명: `WebSocket` 연결을 생성합니다. 이미 같은 `id`로 연결이 있으면 기존 소켓을 그대로 반환합니다. 소스 위치: 약 6785~6871번째 줄.
+- 매개변수
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `id` | `string` | Y | 연결을 구분하는 고유 식별자 |
+| `url` | `string` | Y | WebSocket 엔드포인트 주소(`ws://` 또는 `wss://`) |
+| `eventHandlers.open` | `function(event)` | N | 연결 성공 시 호출 |
+| `eventHandlers.message` | `function(data, event)` | N | 메시지 수신 시 호출. `options.json`이 `true`(기본값)이면 `data`는 JSON 파싱된 값 |
+| `eventHandlers.close` | `function(event)` | N | 연결 종료 시 호출 |
+| `eventHandlers.error` | `function(event)` | N | 오류 발생 시 호출 |
+| `options.autoReconnect` | `boolean` | N | 기본값 `true`. 비정상 종료 시 자동 재연결 |
+| `options.reconnectInterval` | `number` | N | 기본값 `3000`(ms) |
+| `options.json` | `boolean` | N | 기본값 `true`. 수신 메시지를 JSON으로 파싱 시도 |
+
+- 반환값: `WebSocket` 인스턴스 또는 브라우저 미지원 시 `null`
+- 예시
 ```javascript
-// 실시간 협업 관리자
-let $collaborationManager = {
-    prop: {
-        participants: new Map(),
-        documentState: {
-            content: '',
-            version: 0,
-            lastModified: null
-        }
-    },
-
-    method: {
-        addParticipant(participantId, channel) {
-            $this.prop.participants.set(participantId, {
-                channel: channel,
-                cursor: { line: 0, column: 0 },
-                selection: null,
-                isActive: true
-            });
-
-            // 참가자 이벤트 바인딩
-            channel.bind('documentEdit', function(event, edit) {
-                $this.method.handleDocumentEdit(participantId, edit);
-            });
-
-            channel.bind('cursorMove', function(event, position) {
-                $this.method.handleCursorMove(participantId, position);
-            });
-
-            channel.bind('participantLeave', function(event) {
-                $this.method.removeParticipant(participantId);
-            });
-
-            // 현재 문서 상태 전송
-            $this.method.syncDocumentState(participantId);
-            
-            // 다른 참가자들에게 알림
-            $this.method.notifyParticipantJoined(participantId);
-        },
-
-        handleDocumentEdit(participantId, edit) {
-            // 문서 버전 확인
-            if (edit.baseVersion !== $this.prop.documentState.version) {
-                // 충돌 해결 필요
-                $this.method.resolveConflict(participantId, edit);
-                return;
-            }
-
-            // 문서 업데이트 적용
-            $this.method.applyEdit(edit);
-            
-            // 다른 참가자들에게 변경사항 전파
-            $this.method.broadcastEdit(participantId, edit);
-        },
-
-        applyEdit(edit) {
-            var content = $this.prop.documentState.content;
-            
-            switch(edit.type) {
-                case 'insert':
-                    content = content.slice(0, edit.position) + 
-                             edit.text + 
-                             content.slice(edit.position);
-                    break;
-                case 'delete':
-                    content = content.slice(0, edit.position) + 
-                             content.slice(edit.position + edit.length);
-                    break;
-                case 'replace':
-                    content = content.slice(0, edit.position) + 
-                             edit.newText + 
-                             content.slice(edit.position + edit.oldText.length);
-                    break;
-            }
-
-            $this.prop.documentState = {
-                content: content,
-                version: $this.prop.documentState.version + 1,
-                lastModified: new Date()
-            };
-        },
-
-        broadcastEdit(excludeParticipant, edit) {
-            $this.prop.participants.forEach(function(participant, participantId) {
-                if (participantId !== excludeParticipant) {
-                    participant.channel.emit({
-                        method: 'documentUpdated',
-                        params: [edit, $this.prop.documentState.version]
-                    });
-                }
-            });
-        },
-
-        handleCursorMove(participantId, position) {
-            var participant = $this.prop.participants.get(participantId);
-            if (participant) {
-                participant.cursor = position;
-                
-                // 다른 참가자들에게 커서 위치 업데이트
-                $this.prop.participants.forEach(function(otherParticipant, otherParticipantId) {
-                    if (otherParticipantId !== participantId) {
-                        otherParticipant.channel.emit({
-                            method: 'cursorUpdated',
-                            params: [participantId, position]
-                        });
-                    }
-                });
-            }
-        },
-
-        syncDocumentState(participantId) {
-            var participant = $this.prop.participants.get(participantId);
-            if (participant) {
-                participant.channel.emit({
-                    method: 'documentSync',
-                    params: [$this.prop.documentState]
-                });
-            }
-        },
-
-        resolveConflict(participantId, edit) {
-            // 간단한 충돌 해결: 최신 버전으로 동기화
-            $this.method.syncDocumentState(participantId);
-            
-            var participant = $this.prop.participants.get(participantId);
-            if (participant) {
-                participant.channel.emit({
-                    method: 'conflictResolved',
-                    params: ['문서가 최신 버전으로 동기화되었습니다']
-                });
-            }
-        }
-    }
-};
-
-// 협업 참가자 (iframe 내부)
-let $collaborationParticipant = {
-    prop: {
-        participantId: null,
-        parentChannel: null,
-        documentVersion: 0,
-        isEditing: false
-    },
-
-    method: {
-        initialize(participantId) {
-            $this.prop.participantId = participantId;
-            
-            if (window !== window.parent) {
-                $this.prop.parentChannel = syn.$n.rooms.connect({
-                    window: window.parent,
-                    origin: '*',
-                    scope: 'collaboration-' + participantId
-                });
-
-                // 협업 이벤트 바인딩
-                $this.method.bindCollaborationEvents();
-                
-                // 참가자 등록
-                $this.method.joinCollaboration();
-            }
-        },
-
-        bindCollaborationEvents() {
-            // 문서 동기화
-            $this.prop.parentChannel.bind('documentSync', function(event, documentState) {
-                $this.method.updateDocument(documentState);
-            });
-
-            // 문서 업데이트
-            $this.prop.parentChannel.bind('documentUpdated', function(event, edit, version) {
-                $this.method.applyRemoteEdit(edit, version);
-            });
-
-            // 커서 업데이트
-            $this.prop.parentChannel.bind('cursorUpdated', function(event, participantId, position) {
-                $this.method.showParticipantCursor(participantId, position);
-            });
-        },
-
-        joinCollaboration() {
-            if ($this.prop.parentChannel) {
-                $this.prop.parentChannel.emit({
-                    method: 'participantJoin',
-                    params: [$this.prop.participantId]
-                });
-            }
-        },
-
-        sendEdit(edit) {
-            edit.baseVersion = $this.prop.documentVersion;
-            
-            if ($this.prop.parentChannel) {
-                $this.prop.parentChannel.emit({
-                    method: 'documentEdit',
-                    params: [edit]
-                });
-            }
-        },
-
-        sendCursorPosition(position) {
-            if ($this.prop.parentChannel) {
-                $this.prop.parentChannel.emit({
-                    method: 'cursorMove',
-                    params: [position]
-                });
-            }
-        }
-    },
-
-    event: {
-        editor_textChange(event) {
-            if (!$this.prop.isEditing) {
-                var edit = {
-                    type: 'insert',
-                    position: event.start,
-                    text: event.text,
-                    timestamp: new Date()
-                };
-                
-                $this.method.sendEdit(edit);
-            }
-        },
-
-        editor_cursorMove(event) {
-            $this.method.sendCursorPosition({
-                line: event.line,
-                column: event.column
-            });
-        }
-    }
-};
+syn.$n.startSocket('chat', 'wss://example.com/chat', {
+    open() { syn.$n.sendSocketMessage('chat', { type: 'join', user: 'alex' }); },
+    message(data) { console.log(data); },
+    close(evt) { console.log('연결 끊김. 코드:', evt.code); }
+});
 ```
 
-### 4. 보안 메시지 전송 시스템
+### `syn.$n.sendSocketMessage(id, message)`
+- 설명: `id`로 연결된 WebSocket이 열려 있을 때(`readyState === WebSocket.OPEN`) 메시지를 전송합니다. `options.json`이 `true`이고 `message`가 객체이면 `JSON.stringify`로 직렬화합니다. 소스 위치: 약 6874~6890번째 줄.
+- 매개변수
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `id` | `string` | Y | 대상 연결 식별자 |
+| `message` | `string \\| object` | Y | 전송할 메시지 |
+
+- 반환값: 전송 성공 시 `true`, 연결이 없거나 열려 있지 않거나 전송 실패 시 `false`
+- 예시
 ```javascript
-// 보안 통신 관리자
-let $secureMessaging = {
-    prop: {
-        allowedOrigins: ['https://trusted-domain.com'],
-        encryptionKey: null,
-        channels: new Map()
-    },
-
-    method: {
-        createSecureChannel(targetWindow, origin, scope) {
-            // origin 검증
-            if ($this.prop.allowedOrigins.indexOf(origin) === -1 && origin !== '*') {
-                throw new Error('허용되지 않은 origin: ' + origin);
-            }
-
-            var channel = syn.$n.rooms.connect({
-                window: targetWindow,
-                origin: origin,
-                scope: scope,
-                debugOutput: false
-            });
-
-            // 보안 이벤트 바인딩
-            channel.bind('handshake', function(event, publicKey) {
-                $this.method.performHandshake(scope, publicKey);
-            });
-
-            channel.bind('secureMessage', function(event, encryptedData) {
-                $this.method.handleSecureMessage(scope, encryptedData);
-            });
-
-            $this.prop.channels.set(scope, channel);
-            return channel;
-        },
-
-        performHandshake(channelScope, remotePublicKey) {
-            // 간단한 키 교환 시뮬레이션
-            var sharedSecret = $this.method.generateSharedSecret(remotePublicKey);
-            $this.prop.encryptionKey = sharedSecret;
-
-            var channel = $this.prop.channels.get(channelScope);
-            if (channel) {
-                channel.emit({
-                    method: 'handshakeComplete',
-                    params: [true]
-                });
-            }
-        },
-
-        sendSecureMessage(channelScope, message) {
-            var channel = $this.prop.channels.get(channelScope);
-            if (!channel || !$this.prop.encryptionKey) {
-                throw new Error('보안 채널이 준비되지 않았습니다');
-            }
-
-            var encryptedMessage = $this.method.encrypt(message);
-            var signature = $this.method.sign(encryptedMessage);
-
-            channel.emit({
-                method: 'secureMessage',
-                params: [{
-                    data: encryptedMessage,
-                    signature: signature,
-                    timestamp: Date.now()
-                }]
-            });
-        },
-
-        handleSecureMessage(channelScope, encryptedData) {
-            try {
-                // 서명 검증
-                if (!$this.method.verifySignature(encryptedData.data, encryptedData.signature)) {
-                    throw new Error('메시지 서명 검증 실패');
-                }
-
-                // 타임스탬프 검증 (재전송 공격 방지)
-                var now = Date.now();
-                if (now - encryptedData.timestamp > 300000) { // 5분 초과
-                    throw new Error('메시지가 너무 오래되었습니다');
-                }
-
-                // 복호화
-                var decryptedMessage = $this.method.decrypt(encryptedData.data);
-                
-                // 메시지 처리
-                $this.method.processMessage(channelScope, decryptedMessage);
-
-            } catch (error) {
-                console.error('보안 메시지 처리 오류:', error);
-            }
-        },
-
-        encrypt(message) {
-            // 실제 구현에서는 Web Crypto API 사용
-            return btoa(JSON.stringify(message) + $this.prop.encryptionKey);
-        },
-
-        decrypt(encryptedData) {
-            // 실제 구현에서는 Web Crypto API 사용
-            var decoded = atob(encryptedData);
-            var messageJson = decoded.replace($this.prop.encryptionKey, '');
-            return JSON.parse(messageJson);
-        },
-
-        sign(data) {
-            // 간단한 해시 기반 서명 시뮬레이션
-            return btoa(data + $this.prop.encryptionKey).slice(0, 16);
-        },
-
-        verifySignature(data, signature) {
-            var expectedSignature = $this.method.sign(data);
-            return signature === expectedSignature;
-        },
-
-        generateSharedSecret(remotePublicKey) {
-            // 실제 구현에서는 ECDH 키 교환 사용
-            return 'shared-secret-' + Date.now();
-        }
-    }
-};
+syn.$n.sendSocketMessage('chat', { type: 'message', text: 'hello' });
 ```
 
-## 참고사항
+### `syn.$n.stopSocket(id)`
+- 설명: `id`로 등록된 WebSocket 연결을 의도적으로 종료합니다(자동 재연결 타이머도 함께 정리). 소스 위치: 약 6893~6906번째 줄.
+- 매개변수: `id` (`string`, 필수)
+- 반환값: 없음
 
-1. **보안**: origin을 '*'로 설정하면 모든 도메인에서 접근 가능하므로 프로덕션에서는 구체적인 도메인을 지정해야 합니다
-2. **성능**: 대량의 메시지 전송 시 스로틀링을 고려해야 합니다
-3. **메모리**: 사용하지 않는 채널은 적절히 정리해야 메모리 누수를 방지할 수 있습니다
-4. **디버깅**: debugOutput 옵션을 통해 개발 시 메시지 흐름을 추적할 수 있습니다
-5. **호환성**: 일부 브라우저에서는 postMessage의 동작이 다를 수 있으므로 충분한 테스트가 필요합니다
+### `syn.$n.stopAllSockets()`
+- 설명: 등록된 모든 WebSocket 연결을 순회하며 `stopSocket`을 호출합니다. 소스 위치: 약 6908~6910번째 줄.
+- 매개변수: 없음
+- 반환값: 없음
 
-## 데모
-
-<iframe src="/sample/syn/iframe_main.html" className="w:100% h:380"></iframe>
-
-## Javascript 예제
-
+### `syn.$n.getSocket(id)`
+- 설명: `id`로 등록된 원시 `WebSocket` 인스턴스를 반환합니다. 소스 위치: 약 6912~6914번째 줄.
+- 매개변수: `id` (`string`, 필수)
+- 반환값: `WebSocket` 인스턴스 또는 `undefined`
+- 예시
 ```javascript
-'use strict';
-let $iframe_main = {
-    event: {
-        btnChildrenConnect_click() {
-            var channelID = 'channelID';
-            var iframeChannel = syn.$w.channels.find(function (item) { return item.id == channelID });
-            if (iframeChannel == undefined) {
-                var iframe = syn.$l.get('ifmChildren');
-                var contentWindow = iframe.contentWindow;
-                var frameMessage = {
-                    id: channelID,
-                    channel: syn.$n.rooms.connect({
-                        debugOutput: true,
-                        window: contentWindow,
-                        origin: '*',
-                        scope: channelID
-                    })
-                };
-
-                frameMessage.channel.bind('response', function (evt, val) {
-                    alert('iframe_main ' + val);
-                });
-
-                syn.$w.channels.push(frameMessage);
-            }
-        },
-
-        btnChildrenLoad_click() {
-            var iframe = syn.$l.get('ifmChildren');
-            iframe.src = 'iframe_child.html';
-        },
-
-        btnParent2Children_click() {
-            var channelID = 'channelID';
-            var length = syn.$w.channels.length;
-            for (var i = 0; i < length; i++) {
-                var frameMessage = syn.$w.channels[i];
-
-                if (channelID == frameMessage.id) {
-                    frameMessage.channel.call({
-                        method: 'request',
-                        params: ['request data'],
-                        error(error, message) {
-                            alert('iframe_main request ERROR: ' + error + ' (' + message + ')');
-                        },
-                        success(val) {
-                            alert('iframe_main request function returns: ' + val);
-                        }
-                    });
-                }
-            }
-        }
-    }
-}
+var socket = syn.$n.getSocket('chat');
+console.log(socket?.readyState);
 ```
-소스) iframe_main.js Javascript 예제
-
-```javascript
-'use strict';
-let $iframe_child = {
-    prop: {
-        childrenChannel: null
-    },
-
-    hook: {
-        pageLoad() {
-            var channelID = 'channelID';
-            if (window != window.parent && channelID) {
-                $this.prop.childrenChannel = syn.$n.rooms.connect({ window: window.parent, origin: '*', scope: channelID });
-                $this.prop.childrenChannel.bind('request', function (evt, params) {
-                    alert('iframe_child ' + params);
-                });
-            }
-        }
-    },
-
-    event: {
-        btnChildren2Parent_click() {
-            if ($this.prop.childrenChannel != null) {
-                $this.prop.childrenChannel.emit({
-                    method: 'response',
-                    params: ['response data'],
-                    error(error, message) {
-                        alert('iframe_child response ERROR: ' + error + ' (' + message + ')');
-                    },
-                    success(val) {
-                        alert('iframe_child response function returns: ' + val);
-                    }
-                });
-            }
-        }
-    }
-}
-
-```
-소스) iframe_child.js Javascript 예제

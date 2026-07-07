@@ -2,928 +2,325 @@
 sidebar_position: 18
 ---
 
-# $object
+# Object 확장 사용법 ($object)
 
 ## 개요
-$object는 JavaScript의 객체 처리를 확장하여 타입 검사, 객체 조작, 데이터 변환 등을 더욱 편리하게 만들어주는 유틸리티 함수 모음입니다. 객체 타입 확인, null/undefined 검사, 기본값 생성, 데이터 포맷 변환 등의 다양한 기능을 제공합니다.
+`$object`는 일반 객체를 다루기 위한 확장 함수를 제공합니다. 값의 타입 판별(`isString`, `isNumber`, `isDate` 등), 깊은 복사, 객체 병합, CSV/파라미터 문자열 변환, JSON 값 캐스팅 등 여러 모듈에서 공통으로 사용하는 유틸리티가 모여 있습니다.
 
-## 주요 기능
+## 로드 방법
+`syn.js`가 로드되면 전역에 `$object`로 즉시 사용할 수 있습니다. (`syn.` 접두사 없이 전역 변수로 노출됨에 유의)
 
-### null/undefined 검사
-
-#### isNullOrUndefined(value)
-값이 null이거나 undefined인지 확인합니다.
-
-**구문**
-```javascript
-$object.isNullOrUndefined(value)
+## 빠른 시작
+```js
+$object.isString('hello');   // true
+$object.clone({ a: 1 });     // { a: 1 } (새 객체)
 ```
 
-**매개변수**
-- `value` (Any): 검사할 값
-
-**반환값**
-- `Boolean`: null이거나 undefined이면 true, 아니면 false
-
-**예제**
-```javascript
-// 기본 검사
-console.log($object.isNullOrUndefined(null));      // true
-console.log($object.isNullOrUndefined(undefined)); // true
-console.log($object.isNullOrUndefined(''));        // false
-console.log($object.isNullOrUndefined(0));         // false
-console.log($object.isNullOrUndefined({}));        // false
-
-// 함수에서 활용
-function processUser(user) {
-    if ($object.isNullOrUndefined(user)) {
-        return '사용자 정보가 없습니다';
-    }
-    return '사용자: ' + user.name;
-}
-
-console.log(processUser(null));           // 사용자 정보가 없습니다
-console.log(processUser({name: '홍길동'})); // 사용자: 홍길동
+## 주요 시나리오
+### 값의 타입 판별
+`isNullOrUndefined`, `isDefined`, `isNull`, `isArray`, `isDate`, `isString`, `isNumber`, `isFunction`, `isObject`, `isObjectEmpty`, `isBoolean`, `isEmpty` 등으로 값의 타입과 상태를 판별합니다.
+```js
+$object.isEmpty([]);        // true
+$object.isBoolean('Y');     // true ('TRUE'/'FALSE'/'T'/'F'/'Y'/'N'/'1'/'0' 문자열도 인식)
 ```
 
-#### isNull(value)
-값이 null인지 확인합니다.
-
-**구문**
-```javascript
-$object.isNull(value)
+### 깊은 복사와 객체 병합
+`clone(val, isNested)`은 객체/배열/Date/HTMLElement를 복사하고, `extend(to, from, overwrite)`는 중첩 객체까지 재귀적으로 병합합니다.
+```js
+const copy = $object.clone({ a: { b: 1 } });
+$object.extend({ a: 1 }, { a: 2, b: 3 }); // { a: 2, b: 3 }
 ```
 
-**예제**
-```javascript
-console.log($object.isNull(null));      // true
-console.log($object.isNull(undefined)); // false
-console.log($object.isNull(''));        // false
+### 객체를 CSV/파라미터 문자열로 변환
+`toCSV(obj, options)`는 중첩 객체를 평탄화하여 CSV 문자열로, `toParameterString(jsonObject)`는 `@key:value;` 형태의 파라미터 문자열로 변환합니다.
+```js
+$object.toCSV([{ a: 1, b: 2 }], { delimiter: ';' });
+$object.toParameterString({ name: 'hong', age: 20 });
 ```
 
-#### isDefined(value)
-값이 정의되어 있는지 확인합니다 (undefined가 아닌지).
-
-**구문**
-```javascript
-$object.isDefined(value)
+### 타입 기본값과 JSON 값 캐스팅
+`defaultValue(type)`로 타입별 기본값을 얻고, `parseJsonValue(value, jsonType)`로 문자열 값을 지정한 타입으로 캐스팅합니다.
+```js
+$object.defaultValue('number');            // 0
+$object.parseJsonValue('123', 'integer');  // 123
 ```
 
-**예제**
-```javascript
-console.log($object.isDefined(undefined)); // false
-console.log($object.isDefined(null));      // true
-console.log($object.isDefined(''));        // true
-console.log($object.isDefined(0));         // true
+### 특정 키를 제외한 객체 만들기
+`excludeKeys(sourceObject, keysToExclude)`로 민감한 필드나 불필요한 속성을 제외한 새 객체를 만들 수 있습니다.
+```js
+$object.excludeKeys({ a: 1, password: '*' }, ['password']);
 ```
 
-### 타입 검사
-
-#### getType(value)
-값의 정확한 타입을 반환합니다.
-
-**구문**
-```javascript
-$object.getType(value)
-```
-
-**반환값**
-- `String`: 타입 문자열 ('string', 'number', 'boolean', 'object', 'array', 'function', 'date', 'null', 'undefined')
-
-**예제**
-```javascript
-console.log($object.getType('hello'));      // 'string'
-console.log($object.getType(123));          // 'number'
-console.log($object.getType(true));         // 'boolean'
-console.log($object.getType({}));           // 'object'
-console.log($object.getType([]));           // 'array'
-console.log($object.getType(new Date()));   // 'date'
-console.log($object.getType(null));         // 'null'
-console.log($object.getType(undefined));    // 'undefined'
-console.log($object.getType(function(){})); // 'function'
-
-// 타입별 처리
-function processValue(value) {
-    var type = $object.getType(value);
-    
-    switch(type) {
-        case 'string':
-            return '문자열: ' + value;
-        case 'number':
-            return '숫자: ' + value;
-        case 'array':
-            return '배열 길이: ' + value.length;
-        case 'object':
-            return '객체 키 개수: ' + Object.keys(value).length;
-        default:
-            return '타입: ' + type;
-    }
-}
-```
-
-#### isString(value)
-문자열인지 확인합니다.
-
-**구문**
-```javascript
-$object.isString(value)
-```
-
-**예제**
-```javascript
-console.log($object.isString('hello'));  // true
-console.log($object.isString(123));      // false
-console.log($object.isString(''));       // true
-```
-
-#### isNumber(value)
-숫자인지 확인합니다.
-
-**구문**
-```javascript
-$object.isNumber(value)
-```
-
-**예제**
-```javascript
-console.log($object.isNumber(123));      // true
-console.log($object.isNumber(0));        // true
-console.log($object.isNumber('123'));    // false
-console.log($object.isNumber(NaN));      // false
-```
-
-#### isBoolean(value)
-불린 값인지 확인합니다.
-
-**구문**
-```javascript
-$object.isBoolean(value)
-```
-
-**예제**
-```javascript
-console.log($object.isBoolean(true));    // true
-console.log($object.isBoolean(false));   // true
-console.log($object.isBoolean(1));       // false
-console.log($object.isBoolean('true'));  // false
-```
-
-#### isArray(value)
-배열인지 확인합니다.
-
-**구문**
-```javascript
-$object.isArray(value)
-```
-
-**예제**
-```javascript
-console.log($object.isArray([]));        // true
-console.log($object.isArray([1,2,3]));   // true
-console.log($object.isArray({}));        // false
-console.log($object.isArray('array'));   // false
-```
-
-#### isObject(value)
-객체인지 확인합니다.
-
-**구문**
-```javascript
-$object.isObject(value)
-```
-
-**예제**
-```javascript
-console.log($object.isObject({}));       // true
-console.log($object.isObject([]));       // false
-console.log($object.isObject(null));     // false
-console.log($object.isObject(new Date()));// true
-```
-
-#### isFunction(value)
-함수인지 확인합니다.
-
-**구문**
-```javascript
-$object.isFunction(value)
-```
-
-**예제**
-```javascript
-console.log($object.isFunction(function(){})); // true
-console.log($object.isFunction(() => {}));     // true
-console.log($object.isFunction('function'));   // false
-```
-
-#### isDate(value)
-날짜 객체인지 확인합니다.
-
-**구문**
-```javascript
-$object.isDate(value)
-```
-
-**예제**
-```javascript
-console.log($object.isDate(new Date()));     // true
-console.log($object.isDate('2023-12-25'));   // false
-console.log($object.isDate(Date.now()));     // false
-```
-
-### 객체 상태 검사
-
-#### isEmpty(value)
-값이 비어있는지 확인합니다.
-
-**구문**
-```javascript
-$object.isEmpty(value)
-```
-
-**반환값**
-- `Boolean`: 비어있으면 true, 아니면 false
-
-**예제**
-```javascript
-// 다양한 타입의 빈 값 검사
-console.log($object.isEmpty(''));        // true
-console.log($object.isEmpty([]));        // true
-console.log($object.isEmpty({}));        // true
-console.log($object.isEmpty(null));      // true
-console.log($object.isEmpty(undefined)); // true
-
-console.log($object.isEmpty('hello'));   // false
-console.log($object.isEmpty([1]));       // false
-console.log($object.isEmpty({a: 1}));    // false
-
-// 폼 유효성 검사에 활용
-function validateForm(formData) {
-    var errors = [];
-    
-    for (var key in formData) {
-        if ($object.isEmpty(formData[key])) {
-            errors.push(key + '를 입력하세요');
-        }
-    }
-    
-    return errors;
-}
-
-var form = {
-    name: '홍길동',
-    email: '',
-    phone: null
-};
-
-console.log(validateForm(form)); // ['email를 입력하세요', 'phone를 입력하세요']
-```
-
-#### isObjectEmpty(obj)
-객체가 비어있는지 확인합니다.
-
-**구문**
-```javascript
-$object.isObjectEmpty(obj)
-```
-
-**예제**
-```javascript
-console.log($object.isObjectEmpty({}));           // true
-console.log($object.isObjectEmpty({a: 1}));       // false
-console.log($object.isObjectEmpty({a: null}));    // false
-
-// 빈 객체 필터링
-var objects = [
-    {},
-    {name: '홍길동'},
-    {age: null},
-    {}
-];
-
-var nonEmptyObjects = objects.filter(function(obj) {
-    return !$object.isObjectEmpty(obj);
-});
-
-console.log(nonEmptyObjects); // [{name: '홍길동'}, {age: null}]
-```
-
-### 기본값 생성
-
-#### defaultValue(type)
-타입에 따른 기본값을 반환합니다.
-
-**구문**
-```javascript
-$object.defaultValue(type)
-```
-
-**매개변수**
-- `type` (String): 타입 문자열 ('string', 'number', 'boolean', 'array', 'object', 'date')
-
-**반환값**
-- `Any`: 해당 타입의 기본값
-
-**예제**
-```javascript
-console.log($object.defaultValue('string'));  // ''
-console.log($object.defaultValue('number'));  // 0
-console.log($object.defaultValue('boolean')); // false
-console.log($object.defaultValue('array'));   // []
-console.log($object.defaultValue('object'));  // {}
-console.log($object.defaultValue('date'));    // new Date()
-
-// 객체 초기화에 활용
-function createUser(userData) {
-    return {
-        id: userData.id || $object.defaultValue('number'),
-        name: userData.name || $object.defaultValue('string'),
-        active: userData.active !== undefined ? userData.active : $object.defaultValue('boolean'),
-        tags: userData.tags || $object.defaultValue('array'),
-        metadata: userData.metadata || $object.defaultValue('object'),
-        createdAt: userData.createdAt || $object.defaultValue('date')
-    };
-}
-
-var user = createUser({
-    id: 123,
-    name: '홍길동'
-});
-
-console.log(user);
-// {
-//   id: 123,
-//   name: '홍길동',
-//   active: false,
-//   tags: [],
-//   metadata: {},
-//   createdAt: 2023-12-25T10:30:00.000Z
-// }
-```
-
-### 데이터 변환
-
-#### toCSV(data, columns, delimiter)
-객체 배열을 CSV 문자열로 변환합니다.
-
-**구문**
-```javascript
-$object.toCSV(data, columns, delimiter)
-```
-
-**매개변수**
-- `data` (Array): 객체 배열
-- `columns` (Array): 포함할 컬럼 배열 (선택사항)
-- `delimiter` (String): 구분자 (기본값: ',')
-
-**반환값**
-- `String`: CSV 형식 문자열
-
-**예제**
-```javascript
-var users = [
-    {id: 1, name: '홍길동', age: 30, city: '서울'},
-    {id: 2, name: '김철수', age: 25, city: '부산'},
-    {id: 3, name: '이영희', age: 28}  // city 누락
-];
-
-// 전체 컬럼
-var csv1 = $object.toCSV(users);
-console.log(csv1);
-// "id,name,age,city
-// 1,홍길동,30,서울
-// 2,김철수,25,부산
-// 3,이영희,28,"
-
-// 특정 컬럼만
-var csv2 = $object.toCSV(users, ['name', 'age']);
-console.log(csv2);
-// "name,age
-// 홍길동,30
-// 김철수,25
-// 이영희,28"
-
-// 다른 구분자
-var csv3 = $object.toCSV(users, ['name', 'age'], ';');
-console.log(csv3);
-// "name;age
-// 홍길동;30
-// 김철수;25
-// 이영희;28"
-
-// CSV 다운로드 기능
-function downloadCSV(data, filename) {
-    var csvContent = $object.toCSV(data);
-    var blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
-    var link = document.createElement('a');
-    
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-}
-```
-
-#### toParameterString(obj)
-객체를 URL 파라미터 문자열로 변환합니다.
-
-**구문**
-```javascript
-$object.toParameterString(obj)
-```
-
-**매개변수**
-- `obj` (Object): 변환할 객체
-
-**반환값**
-- `String`: URL 파라미터 형식 문자열
-
-**예제**
-```javascript
-var params = {
-    name: '홍길동',
-    age: 30,
-    active: true,
-    tags: ['developer', 'javascript']
-};
-
-var paramString = $object.toParameterString(params);
-console.log(paramString);
-// "name=홍길동&age=30&active=true&tags=developer,javascript"
-
-// AJAX 요청에 활용
-function makeRequest(endpoint, data) {
-    var url = endpoint;
-    var queryString = $object.toParameterString(data);
-    
-    if (queryString) {
-        url += '?' + queryString;
-    }
-    
-    return fetch(url);
-}
-
-makeRequest('/api/users', {
-    page: 1,
-    limit: 10,
-    status: 'active'
-});
-// GET /api/users?page=1&limit=10&status=active
-```
-
-## 실전 활용 예제
-
-### 1. 데이터 유효성 검사기
-```javascript
-function DataValidator() {
-    this.rules = {};
-}
-
-DataValidator.prototype.addRule = function(field, rule) {
-    this.rules[field] = rule;
-};
-
-DataValidator.prototype.validate = function(data) {
-    var errors = [];
-    
-    for (var field in this.rules) {
-        var value = data[field];
-        var rule = this.rules[field];
-        
-        // 필수 필드 검사
-        if (rule.required && $object.isEmpty(value)) {
-            errors.push(field + '는 필수 입력 항목입니다');
-            continue;
-        }
-        
-        // 타입 검사
-        if (!$object.isNullOrUndefined(value) && rule.type) {
-            var expectedType = rule.type;
-            var actualType = $object.getType(value);
-            
-            if (actualType !== expectedType) {
-                errors.push(field + '는 ' + expectedType + ' 타입이어야 합니다');
-            }
-        }
-        
-        // 사용자 정의 검사
-        if (rule.validator && $object.isFunction(rule.validator)) {
-            var result = rule.validator(value);
-            if (result !== true) {
-                errors.push(result || field + ' 유효성 검사 실패');
-            }
-        }
-    }
-    
-    return {
-        isValid: errors.length === 0,
-        errors: errors
-    };
-};
-
-// 사용 예시
-var validator = new DataValidator();
-
-validator.addRule('email', {
-    required: true,
-    type: 'string',
-    validator: function(value) {
-        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailPattern.test(value) || '유효한 이메일 주소를 입력하세요';
-    }
-});
-
-validator.addRule('age', {
-    required: true,
-    type: 'number',
-    validator: function(value) {
-        return (value >= 0 && value <= 120) || '나이는 0-120 사이여야 합니다';
-    }
-});
-
-var userData = {
-    email: 'invalid-email',
-    age: 'not-a-number'
-};
-
-var result = validator.validate(userData);
-console.log(result);
-// {
-//   isValid: false,
-//   errors: [
-//     'email는 유효한 이메일 주소를 입력하세요',
-//     'age는 number 타입이어야 합니다'
-//   ]
-// }
-```
-
-### 2. 객체 깊은 복사 유틸리티
-```javascript
-function ObjectUtils() {}
-
-ObjectUtils.deepClone = function(obj) {
-    if ($object.isNullOrUndefined(obj)) {
-        return obj;
-    }
-    
-    if ($object.isDate(obj)) {
-        return new Date(obj.getTime());
-    }
-    
-    if ($object.isArray(obj)) {
-        return obj.map(function(item) {
-            return ObjectUtils.deepClone(item);
-        });
-    }
-    
-    if ($object.isObject(obj)) {
-        var cloned = {};
-        for (var key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                cloned[key] = ObjectUtils.deepClone(obj[key]);
-            }
-        }
-        return cloned;
-    }
-    
-    return obj;
-};
-
-ObjectUtils.deepMerge = function(target, source) {
-    var result = ObjectUtils.deepClone(target);
-    
-    for (var key in source) {
-        if (source.hasOwnProperty(key)) {
-            if ($object.isObject(source[key]) && $object.isObject(result[key])) {
-                result[key] = ObjectUtils.deepMerge(result[key], source[key]);
-            } else {
-                result[key] = ObjectUtils.deepClone(source[key]);
-            }
-        }
-    }
-    
-    return result;
-};
-
-// 사용 예시
-var original = {
-    user: {
-        name: '홍길동',
-        age: 30,
-        hobbies: ['독서', '영화감상']
-    },
-    settings: {
-        theme: 'dark'
-    }
-};
-
-var cloned = ObjectUtils.deepClone(original);
-cloned.user.name = '김철수';
-cloned.user.hobbies.push('운동');
-
-console.log('원본:', original.user.name);  // '홍길동'
-console.log('복사본:', cloned.user.name);  // '김철수'
-
-var updates = {
-    user: {
-        email: 'hong@example.com'
-    },
-    settings: {
-        language: 'ko'
-    }
-};
-
-var merged = ObjectUtils.deepMerge(original, updates);
-console.log(merged);
-// {
-//   user: {
-//     name: '홍길동',
-//     age: 30,
-//     hobbies: ['독서', '영화감상'],
-//     email: 'hong@example.com'
-//   },
-//   settings: {
-//     theme: 'dark',
-//     language: 'ko'
-//   }
-// }
-```
-
-### 3. 타입 안전 데이터 액세서
-```javascript
-function SafeAccessor(data) {
-    this.data = data || {};
-}
-
-SafeAccessor.prototype.get = function(path, defaultValue) {
-    var keys = path.split('.');
-    var current = this.data;
-    
-    for (var i = 0; i < keys.length; i++) {
-        if ($object.isNullOrUndefined(current) || !current.hasOwnProperty(keys[i])) {
-            return defaultValue;
-        }
-        current = current[keys[i]];
-    }
-    
-    return current;
-};
-
-SafeAccessor.prototype.set = function(path, value) {
-    var keys = path.split('.');
-    var current = this.data;
-    
-    for (var i = 0; i < keys.length - 1; i++) {
-        if ($object.isNullOrUndefined(current[keys[i]]) || !$object.isObject(current[keys[i]])) {
-            current[keys[i]] = {};
-        }
-        current = current[keys[i]];
-    }
-    
-    current[keys[keys.length - 1]] = value;
-    return this;
-};
-
-SafeAccessor.prototype.has = function(path) {
-    return !$object.isNullOrUndefined(this.get(path));
-};
-
-SafeAccessor.prototype.remove = function(path) {
-    var keys = path.split('.');
-    var current = this.data;
-    
-    for (var i = 0; i < keys.length - 1; i++) {
-        if ($object.isNullOrUndefined(current[keys[i]])) {
-            return this;
-        }
-        current = current[keys[i]];
-    }
-    
-    delete current[keys[keys.length - 1]];
-    return this;
-};
-
-// 사용 예시
-var data = {
-    user: {
-        profile: {
-            name: '홍길동',
-            age: 30
-        }
-    }
-};
-
-var accessor = new SafeAccessor(data);
-
-// 안전한 데이터 접근
-console.log(accessor.get('user.profile.name'));        // '홍길동'
-console.log(accessor.get('user.profile.email', ''));   // '' (기본값)
-console.log(accessor.get('user.nonexistent.field'));   // undefined
-
-// 중첩 객체 생성
-accessor.set('user.preferences.theme', 'dark');
-accessor.set('user.preferences.language', 'ko');
-
-console.log(accessor.data);
-// {
-//   user: {
-//     profile: { name: '홍길동', age: 30 },
-//     preferences: { theme: 'dark', language: 'ko' }
-//   }
-// }
-
-// 존재 여부 확인
-console.log(accessor.has('user.profile.name'));     // true
-console.log(accessor.has('user.profile.phone'));    // false
-```
-
-### 4. 타입별 데이터 처리기
-```javascript
-function DataProcessor() {
-    this.processors = {
-        'string': this.processString,
-        'number': this.processNumber,
-        'boolean': this.processBoolean,
-        'array': this.processArray,
-        'object': this.processObject,
-        'date': this.processDate
-    };
-}
-
-DataProcessor.prototype.process = function(data) {
-    var type = $object.getType(data);
-    var processor = this.processors[type];
-    
-    if ($object.isFunction(processor)) {
-        return processor.call(this, data);
-    }
-    
-    return data;
-};
-
-DataProcessor.prototype.processString = function(str) {
-    if ($object.isEmpty(str)) {
-        return $object.defaultValue('string');
-    }
-    return str.trim();
-};
-
-DataProcessor.prototype.processNumber = function(num) {
-    if (isNaN(num) || !isFinite(num)) {
-        return $object.defaultValue('number');
-    }
-    return num;
-};
-
-DataProcessor.prototype.processBoolean = function(bool) {
-    return Boolean(bool);
-};
-
-DataProcessor.prototype.processArray = function(arr) {
-    var self = this;
-    return arr.map(function(item) {
-        return self.process(item);
-    });
-};
-
-DataProcessor.prototype.processObject = function(obj) {
-    var self = this;
-    var processed = {};
-    
-    for (var key in obj) {
-        if (obj.hasOwnProperty(key)) {
-            processed[key] = self.process(obj[key]);
-        }
-    }
-    
-    return processed;
-};
-
-DataProcessor.prototype.processDate = function(date) {
-    return $object.isDate(date) ? date : new Date();
-};
-
-// 사용 예시
-var processor = new DataProcessor();
-
-var rawData = {
-    name: '  홍길동  ',
-    age: '30',
-    active: 'true',
-    scores: [85, '92', null, 78],
-    profile: {
-        email: '  hong@example.com  ',
-        phone: null
-    },
-    createdAt: 'invalid-date'
-};
-
-var processedData = processor.process(rawData);
-console.log(processedData);
-// {
-//   name: '홍길동',
-//   age: '30',
-//   active: true,
-//   scores: [85, '92', 0, 78],
-//   profile: {
-//     email: 'hong@example.com',
-//     phone: 0
-//   },
-//   createdAt: 2023-12-25T10:30:00.000Z
-// }
-```
-
-## 참고사항
-
-1. **성능**: 타입 검사는 반복적으로 수행될 수 있으므로 캐싱을 고려합니다
-2. **메모리**: 깊은 복사 시 순환 참조를 주의해야 합니다  
-3. **호환성**: 다양한 브라우저에서 typeof의 동작이 다를 수 있습니다
-4. **확장성**: 사용자 정의 타입 검사 함수를 추가할 수 있습니다
-5. **디버깅**: 타입 불일치 오류 시 명확한 에러 메시지를 제공합니다
-
-## 데모
-
-<iframe src="/sample/syn/extension_object.html" className="w:100% h:100vh"></iframe>
-
-## Javascript 예제
-
-```javascript
-'use strict';
-let $extension_object = {
-    extends: [
-        'parsehtml'
-    ],
-
-    event: {
-        btn_isNullOrUndefined_click() {
-            syn.$l.get('txt_isNullOrUndefined').value = `${$object.isNullOrUndefined('')}, ${$object.isNullOrUndefined(undefined)}, ${$object.isNullOrUndefined(null)}, ${$object.isNullOrUndefined({})}`;
-        },
-
-        btn_toCSV_click() {
-            syn.$l.get('txt_toCSV').value = $object.toCSV([{ a: 1, b: 2 }, { a: 3, b: 4, c: 5 }, { a: 6 }, { b: 7 }], ['a', 'b'], ';');
-        },
-
-        btn_toParameterString_click() {
-            var json = {
-                symbol: 'hello world1',
-                price: 12345,
-                date: new Date(),
-                boolean: true
-            };
-
-            syn.$l.get('txt_toParameterString').value = $object.toParameterString(json);
-        },
-
-        btn_getType_click() {
-            syn.$l.get('txt_getType').value = `${$object.getType('')}, ${$object.getType(12345)}, ${$object.getType(true)}, ${$object.getType({})}, ${$object.getType(new Date())}, ${$object.getType(null)}, ${$object.getType(syn.$l.get('txt_getType'))}`;
-        },
-
-        btn_defaultValue_click() {
-            syn.$l.get('txt_defaultValue').value = `${$object.defaultValue('string')}, ${$object.defaultValue('bool')}, ${$object.defaultValue('date')}, ${$object.defaultValue('number')}`;
-        },
-
-        btn_isDefined_click() {
-            syn.$l.get('txt_valueType').value = $object.isDefined(undefined);
-        },
-
-        btn_isNull_click() {
-            syn.$l.get('txt_valueType').value = $object.isNull(null);
-        },
-
-        btn_isArray_click() {
-            syn.$l.get('txt_valueType').value = $object.isArray([]);
-        },
-
-        btn_isDate_click() {
-            syn.$l.get('txt_valueType').value = $object.isDate(new Date());
-        },
-
-        btn_isString_click() {
-            syn.$l.get('txt_valueType').value = $object.isString('');
-        },
-
-        btn_isNumber_click() {
-            syn.$l.get('txt_valueType').value = $object.isNumber(12345);
-        },
-
-        btn_isFunction_click() {
-            syn.$l.get('txt_valueType').value = $object.isFunction(() => { });
-        },
-
-        btn_isObject_click() {
-            syn.$l.get('txt_valueType').value = $object.isObject({});
-        },
-
-        btn_isObjectEmpty_click() {
-            syn.$l.get('txt_valueType').value = $object.isObjectEmpty({});
-        },
-
-        btn_isBoolean_click() {
-            syn.$l.get('txt_valueType').value = $object.isBoolean(false);
-        },
-
-        btn_isEmpty_click() {
-            syn.$l.get('txt_valueType').value = $object.isEmpty([]);
-        },
-    },
-};
-```
-소스) object Javascript 예제
+## 실전 예제 페이지
+`/sample/syn/extension_object.html` 예제에서 다음 항목을 실습할 수 있습니다.
+- `$object.version` 속성 조회
+- `isNullOrUndefined()`, `toCSV()`, `toParameterString()`, `getType()`, `defaultValue()`
+- `isDefined()`, `isNull()`, `isArray()`, `isDate()`, `isString()`, `isNumber()`, `isFunction()`, `isObject()`, `isObjectEmpty()`, `isBoolean()`
+- `isEmpty()`, `clone()`, `extend()`, `excludeKeys()`, `parseJsonValue()`
+
+## 주의 사항
+- `clone(val, isNested)`은 `isNested`가 `false`이면 얕은 복사(1단계)만 수행합니다. 중첩 객체까지 완전히 분리하려면 기본값(`true`)을 그대로 사용하세요.
+- `extend(to, from, overwrite)`는 `overwrite`가 `false`이면 `to`에 이미 존재하는 키는 덮어쓰지 않습니다.
+- `isBoolean()`은 실제 `boolean` 타입 외에도 `'TRUE'/'FALSE'/'T'/'F'/'Y'/'N'/'1'/'0'` 문자열을 boolean으로 인식할 수 있는지 여부를 판별하는 함수이지 boolean 값 자체를 반환하는 변환 함수가 아닙니다.
+- `toCSV()`는 두 번째 인자로 배열이 아닌 `{ scopechar, delimiter, newline }` 형태의 옵션 객체를 받습니다(과거 예제처럼 배열/구분자를 개별 인자로 넘기지 않도록 주의).
+
+## 관련 모듈
+- API 상세는 아래 API 참조 섹션을 확인하세요.
+
+## API 참조
+
+## 모듈 정보
+| 항목 | 내용 |
+|---|---|
+| 전역 별칭 | `$object` (syn.$ 접두사 없음, 전역 변수) |
+| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 4165~4385번째 줄) |
+| 예제 페이지 | `/sample/syn/extension_object.html` |
+| 의존 모듈 | `$string`(`toValue`, `toDynamic`, `toBoolean`) |
+
+## 메서드
+
+### `$object.isNullOrUndefined(val)`
+- 설명: 값이 `undefined` 또는 `null`인지 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $object.isNullOrUndefined(null); // true
+  ```
+
+### `$object.toCSV(obj, options = {})`
+- 설명: 객체 또는 객체 배열을 중첩 속성까지 평탄화하여 CSV 문자열로 변환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | obj | `object` \| `Array<object>` | Y | 변환할 객체 또는 객체 배열 |
+  | options | `object` | N | `{ scopechar = '/', delimiter = ',', newline = '\n' }` |
+- 반환값: `string` \| `null` — `obj`가 객체가 아니면 `null`
+- 예시
+  ```js
+  const result = $object.toCSV([{ a: 1, b: 2 }, { a: 3, b: 4 }], { delimiter: ';' });
+  ```
+
+### `$object.toParameterString(jsonObject)`
+- 설명: JSON 객체를 `@key:value;` 형태의 파라미터 문자열로 변환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | jsonObject | `object` | Y | 변환할 객체 |
+- 반환값: `string`
+- 예시
+  ```js
+  const result = $object.toParameterString({ symbol: 'hello', price: 12345 });
+  ```
+
+### `$object.getType(val)`
+- 설명: 값의 타입을 문자열로 반환합니다(`'null'`, `'array'`, `'date'`, `'element'`, `'object'`와 기본 `typeof` 결과를 포함).
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `string`
+- 예시
+  ```js
+  const result = $object.getType(new Date()); // 'date'
+  ```
+
+### `$object.defaultValue(type)`
+- 설명: 지정한 타입 이름의 기본값을 반환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | type | `string` | Y | `'boolean'`, `'function'`, `'null'`, `'number'`/`'numeric'`/`'int'`, `'object'`, `'date'`/`'datetime'`, `'string'`, `'symbol'`, `'undefined'`, `'array'` 중 하나 |
+- 반환값: `any` — 알 수 없는 타입은 빈 문자열(`''`)
+- 예시
+  ```js
+  const result = $object.defaultValue('number'); // 0
+  ```
+
+### `$object.isDefined(val)`
+- 설명: 값이 `undefined`가 아닌지 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $object.isDefined(undefined); // false
+  ```
+
+### `$object.isNull(val)`
+- 설명: 값이 `null`인지 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $object.isNull(null); // true
+  ```
+
+### `$object.isArray(val)`
+- 설명: 값이 배열인지 확인합니다(`Array.isArray` 래핑).
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $object.isArray([]); // true
+  ```
+
+### `$object.isDate(val)`
+- 설명: 값이 유효한 `Date` 인스턴스인지 확인합니다(Invalid Date는 `false`).
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $object.isDate(new Date()); // true
+  ```
+
+### `$object.isString(val)`
+- 설명: 값이 문자열 타입인지 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $object.isString('hello'); // true
+  ```
+
+### `$object.isNumber(val)`
+- 설명: 값이 `NaN`이 아닌 숫자 타입인지 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $object.isNumber(12345); // true
+  ```
+
+### `$object.isFunction(val)`
+- 설명: 값이 함수 타입인지 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $object.isFunction(() => {}); // true
+  ```
+
+### `$object.isObject(val)`
+- 설명: 값이 `null`이 아닌 객체 타입인지 확인합니다(배열, Date 등도 포함).
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $object.isObject({}); // true
+  ```
+
+### `$object.isObjectEmpty(val)`
+- 설명: 값이 순수 객체(plain object)이면서 속성이 하나도 없는지 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $object.isObjectEmpty({}); // true
+  ```
+
+### `$object.isBoolean(val)`
+- 설명: 값이 boolean 타입이거나, boolean으로 해석 가능한 문자열(`'TRUE'`, `'FALSE'`, `'T'`, `'F'`, `'Y'`, `'N'`, `'1'`, `'0'`, 대소문자 무관)인지 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $object.isBoolean('Y'); // true
+  ```
+
+### `$object.isEmpty(val)`
+- 설명: 값이 `undefined`/`null`/`NaN`/공백 문자열/빈 배열/빈 순수 객체 중 하나인지 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 검사할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $object.isEmpty([]); // true
+  ```
+
+### `$object.clone(val, isNested = true)`
+- 설명: 객체, 배열, `Date`, `HTMLElement`를 복사합니다. `isNested`가 `true`이면 중첩 구조까지 재귀적으로 복사(깊은 복사)하고, `false`이면 최상위 속성만 복사(얕은 복사)합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | `any` | Y | 복사할 값 |
+  | isNested | `boolean` | N | 재귀(깊은) 복사 여부(기본값 true) |
+- 반환값: `any` — 객체가 아니면 원본 값을 그대로 반환
+- 예시
+  ```js
+  const result = $object.clone({ a: { b: 1 } });
+  ```
+
+### `$object.extend(to, from, overwrite = true)`
+- 설명: `from` 객체의 속성을 `to` 객체에 재귀적으로 병합합니다. 중첩 객체는 재귀적으로 병합되고, 배열/Date/HTMLElement는 병합 대상에서 제외되어 값 자체가 복제되어 대입됩니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | to | `object` | Y | 병합 대상 객체 |
+  | from | `object` | Y | 병합할 원본 객체 |
+  | overwrite | `boolean` | N | 기존 키를 덮어쓸지 여부(기본값 true) |
+- 반환값: `object` — 병합된 `to` 객체
+- 예시
+  ```js
+  const result = $object.extend({ a: 1 }, { a: 2, b: 3 }); // { a: 2, b: 3 }
+  ```
+
+### `$object.excludeKeys(sourceObject, keysToExclude)`
+- 설명: `sourceObject`에서 `keysToExclude`에 포함된 키를 제외한 나머지 속성만으로 새 객체를 만듭니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | sourceObject | `object` | Y | 원본 객체 |
+  | keysToExclude | `Array<string>` | Y | 제외할 키 목록 |
+- 반환값: `object`
+- 예시
+  ```js
+  const result = $object.excludeKeys({ a: 1, b: 2, c: 3 }, ['b']); // { a: 1, c: 3 }
+  ```
+
+### `$object.parseJsonValue(value, jsonType)`
+- 설명: 문자열 등의 값을 지정한 JSON 타입으로 캐스팅합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | value | `any` | Y | 변환할 값 |
+  | jsonType | `string` | Y | `'integer'`, `'number'`, `'boolean'`, `'object'`, `'array'`, `'string'`(기본값) |
+- 반환값: `any` — `value`가 `null`/`undefined`이면 그대로 반환
+- 예시
+  ```js
+  const result = $object.parseJsonValue('123', 'integer'); // 123
+  ```

@@ -1,5 +1,5 @@
 /**
- * Dark Reader v4.9.89
+ * Dark Reader v4.9.92
  * https://darkreader.org/
  */
 
@@ -355,20 +355,35 @@
         darkSchemeTextColor: DEFAULT_COLORS.darkScheme.text,
         lightSchemeBackgroundColor: DEFAULT_COLORS.lightScheme.background,
         lightSchemeTextColor: DEFAULT_COLORS.lightScheme.text,
-        scrollbarColor: isMacOS ? "" : "auto",
+        scrollbarColor: "",
         selectionColor: "auto",
         styleSystemControls: !isCSSColorSchemePropSupported,
         lightColorScheme: "Default",
         darkColorScheme: "Default",
         immediateModify: false
     };
+    const filterModeSites = [
+        "*.officeapps.live.com",
+        "*.sharepoint.com",
+        "docs.google.com",
+        "onedrive.live.com"
+    ];
     ({
         schemeVersion: 0,
         enabled: true,
         fetchNews: true,
         theme: DEFAULT_THEME,
         presets: [],
-        customThemes: [],
+        customThemes: filterModeSites.map((url) => {
+            const engine = isChromium
+                ? ThemeEngine.svgFilter
+                : ThemeEngine.cssFilter;
+            return {
+                url: [url],
+                theme: {...DEFAULT_THEME, engine},
+                builtIn: true
+            };
+        }),
         enabledByDefault: true,
         enabledFor: [],
         disabledFor: [],
@@ -393,7 +408,7 @@
         enableForPDF: true,
         enableForProtectedPages: false,
         enableContextMenus: false,
-        detectDarkTheme: false
+        detectDarkTheme: true
     });
 
     function isArrayLike(items) {
@@ -2733,7 +2748,7 @@
             lines.push(`    color-scheme: dark !important;`);
             lines.push("}");
             lines.push("iframe {");
-            lines.push(`    color-scheme: initial;`);
+            lines.push(`    color-scheme: dark !important;`);
             lines.push("}");
         }
         const bgSelectors = joinSelectors(
@@ -2841,70 +2856,26 @@
         return lines.join("\n");
     }
     function getModifiedScrollbarStyle(theme) {
-        const lines = [];
         let colorTrack;
-        let colorIcons;
         let colorThumb;
-        let colorThumbHover;
-        let colorThumbActive;
-        let colorCorner;
         if (theme.scrollbarColor === "auto") {
             colorTrack = modifyBackgroundColor({r: 241, g: 241, b: 241}, theme);
-            colorIcons = modifyForegroundColor({r: 96, g: 96, b: 96}, theme);
             colorThumb = modifyBackgroundColor({r: 176, g: 176, b: 176}, theme);
-            colorThumbHover = modifyBackgroundColor(
-                {r: 144, g: 144, b: 144},
-                theme
-            );
-            colorThumbActive = modifyBackgroundColor(
-                {r: 96, g: 96, b: 96},
-                theme
-            );
-            colorCorner = modifyBackgroundColor(
-                {r: 255, g: 255, b: 255},
-                theme
-            );
         } else {
             const rgb = parseColorWithCache(theme.scrollbarColor);
             const hsl = rgbToHSL(rgb);
-            const isLight = hsl.l > 0.5;
-            const lighten = (lighter) => ({
-                ...hsl,
-                l: clamp(hsl.l + lighter, 0, 1)
-            });
             const darken = (darker) => ({
                 ...hsl,
                 l: clamp(hsl.l - darker, 0, 1)
             });
             colorTrack = hslToString(darken(0.4));
-            colorIcons = hslToString(isLight ? darken(0.4) : lighten(0.4));
             colorThumb = hslToString(hsl);
-            colorThumbHover = hslToString(lighten(0.1));
-            colorThumbActive = hslToString(lighten(0.2));
-            colorCorner = hslToString(darken(0.5));
         }
-        lines.push("::-webkit-scrollbar {");
-        lines.push(`    background-color: ${colorTrack};`);
-        lines.push(`    color: ${colorIcons};`);
-        lines.push("}");
-        lines.push("::-webkit-scrollbar-thumb {");
-        lines.push(`    background-color: ${colorThumb};`);
-        lines.push("}");
-        lines.push("::-webkit-scrollbar-thumb:hover {");
-        lines.push(`    background-color: ${colorThumbHover};`);
-        lines.push("}");
-        lines.push("::-webkit-scrollbar-thumb:active {");
-        lines.push(`    background-color: ${colorThumbActive};`);
-        lines.push("}");
-        lines.push("::-webkit-scrollbar-corner {");
-        lines.push(`    background-color: ${colorCorner};`);
-        lines.push("}");
-        if (isFirefox) {
-            lines.push("* {");
-            lines.push(`    scrollbar-color: ${colorThumb} ${colorTrack};`);
-            lines.push("}");
-        }
-        return lines.join("\n");
+        return [
+            `* {`,
+            `    scrollbar-color: ${colorThumb} ${colorTrack};`,
+            `}`
+        ].join("\n");
     }
     function getModifiedFallbackStyle(theme, {strict}) {
         const factory = defaultFallbackFactory;
@@ -6882,7 +6853,9 @@
         document.head.appendChild(overrideStyle);
         setupNodePositionWatcher(overrideStyle, "override");
         const variableStyle = createOrUpdateStyle("darkreader--variables");
-        const selectionColors = getSelectionColor(theme);
+        const selectionColors = theme?.selectionColor
+            ? getSelectionColor(theme)
+            : null;
         const neutralBackgroundColor = modifyBackgroundColor(
             parseColorWithCache("#ffffff"),
             theme
@@ -6895,8 +6868,8 @@
             `:root {`,
             `   --darkreader-neutral-background: ${neutralBackgroundColor};`,
             `   --darkreader-neutral-text: ${neutralTextColor};`,
-            `   --darkreader-selection-background: ${selectionColors.backgroundColorSelection};`,
-            `   --darkreader-selection-text: ${selectionColors.foregroundColorSelection};`,
+            `   --darkreader-selection-background: ${selectionColors?.backgroundColorSelection ?? "initial"};`,
+            `   --darkreader-selection-text: ${selectionColors?.foregroundColorSelection ?? "initial"};`,
             `}`
         ].join("\n");
         document.head.insertBefore(variableStyle, inlineStyle.nextSibling);

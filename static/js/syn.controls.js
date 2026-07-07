@@ -1,6 +1,393 @@
 /// <reference path="/js/syn.js" />
 
 (function (window) {
+    'use strict';
+    syn.uicontrols = syn.uicontrols || new syn.module();
+    var $calendar = syn.uicontrols.$calendar || new syn.module();
+
+    $calendar.extend({
+        name: 'syn.uicontrols.$calendar',
+        version: 'v2025.12.26',
+        calendarControls: [],
+        defaultSetting: {
+            elID: '',
+            height: 'auto',
+            expandRows: true,
+            locale: 'ko',
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            },
+            dayMaxEvents: true,
+            displayEventTime: false,
+            selectable: false,
+            editable: false,
+            eventMapping: {
+                id: 'ScheduleEventID',
+                title: 'ScheduleTitle',
+                start: 'StartDate',
+                end: 'EndDate',
+                backgroundColor: 'BackgroundColor',
+                borderColor: 'BackgroundColor',
+                textColor: 'TextColor',
+                allDay: 'AllDay',
+                color: 'Color',
+                classNames: 'ClassNames'
+            },
+            getter: false,
+            setter: false,
+            transactConfig: null,
+            triggerConfig: null
+        },
+
+        addModuleList: function (el, moduleList, setting, controlType) {
+            var elementID = el.getAttribute('id');
+            var dataField = el.getAttribute('syn-datafield');
+            var formDataField = el.closest('form') ? el.closest('form').getAttribute('syn-datafield') : '';
+
+            moduleList.push({
+                id: elementID,
+                formDataFieldID: formDataField,
+                field: dataField,
+                module: this.name,
+                type: controlType
+            });
+        },
+
+        controlLoad: function (elID, setting) {
+            var el = syn.$l.get(elID);
+            setting = syn.$w.argumentsExtend($calendar.defaultSetting, setting);
+
+            var mod = window[syn.$w.pageScript];
+            if (mod && mod.hook.controlInit) {
+                var moduleSettings = mod.hook.controlInit(elID, setting);
+                setting = syn.$w.argumentsExtend(setting, moduleSettings);
+            }
+
+            setting.elID = elID;
+            el.setAttribute('syn-options', JSON.stringify(setting));
+
+            if (mod) {
+                var hookEvents = el.getAttribute('syn-events') || [];
+                if (hookEvents) {
+                    try {
+                        if (typeof hookEvents === 'string' && hookEvents.indexOf('[') === 0) {
+                            hookEvents = eval(hookEvents);
+                        }
+                    } catch (e) {
+                        console.error('Event parsing error:', e);
+                        hookEvents = [];
+                    }
+
+                    if (Array.isArray(hookEvents)) {
+                        for (var i = 0, length = hookEvents.length; i < length; i++) {
+                            var hook = hookEvents[i];
+                            var eventHandler = mod.event ? mod.event['{0}_{1}'.format(elID, hook)] : null;
+                            if (eventHandler) {
+                                setting[hook] = eventHandler;
+                            }
+                        }
+                    }
+                }
+            }
+
+            const customProperties = [
+                'elID',
+                'eventMapping',
+                'getter',
+                'setter',
+                'transactConfig',
+                'triggerConfig'
+            ];
+
+            const calendarSettings = {};
+            Object.keys(setting).forEach(key => {
+                if (customProperties.includes(key) == false) {
+                    calendarSettings[key] = setting[key];
+                }
+            });
+
+            var calendar = new FullCalendar.Calendar(el, calendarSettings);
+            calendar.render();
+
+            $calendar.calendarControls.push({
+                id: elID,
+                calendar: calendar,
+                setting: $object.clone(setting)
+            });
+        },
+
+        getValue: function (elID, meta) {
+            return null;
+        },
+
+        setValue: function (elID, value, meta) {
+            var control = $calendar.getControl(elID);
+            if (!control || !value) {
+                return;
+            }
+
+            var oldEventSource = control.calendar.getEventSourceById(elID + '_eventSource');
+            if (oldEventSource) {
+                oldEventSource.remove();
+            }
+
+            var mapping = control.setting.eventMapping;
+            var newEvents = value.map(function (item) {
+                var eventObj = {};
+                var extendedProps = Object.assign({}, item);
+                extendedProps.Flag = 'R';
+
+                for (var key in mapping) {
+                    var sourceKey = mapping[key];
+                    if (item.hasOwnProperty(sourceKey)) {
+                        eventObj[key] = item[sourceKey];
+                        delete extendedProps[sourceKey];
+                    }
+                }
+
+                eventObj.extendedProps = extendedProps;
+                return eventObj;
+            });
+
+            control.calendar.addEventSource({
+                id: elID + '_eventSource',
+                events: newEvents
+            });
+        },
+
+        getterValue: function (elID, meta) {
+            var createEvents = syn.uicontrols.$calendar.findEvents(elID, { Flag: 'C' });
+            var deleteEvents = syn.uicontrols.$calendar.findEvents(elID, { Flag: 'D' });
+            var updateEvents = syn.uicontrols.$calendar.findEvents(elID, { Flag: 'U' });
+
+            var allModifiedEvents = createEvents.concat(updateEvents, deleteEvents);
+
+            var result = allModifiedEvents.map(function (event) {
+                var flattenedEvent = {};
+                var key;
+
+                for (key in event) {
+                    if (Object.prototype.hasOwnProperty.call(event, key) && key !== 'extendedProps' && key !== 'source') {
+                        flattenedEvent[key] = event[key];
+                    }
+                }
+
+                if (event.extendedProps && typeof event.extendedProps === 'object') {
+                    for (key in event.extendedProps) {
+                        if (Object.prototype.hasOwnProperty.call(event.extendedProps, key)) {
+                            flattenedEvent[key] = event.extendedProps[key];
+                        }
+                    }
+                }
+
+                return flattenedEvent;
+            });
+
+            return result;
+        },
+
+        addEvent: function (elID, eventData) {
+            var control = $calendar.getControl(elID);
+            if (!control || !eventData) {
+                return;
+            }
+
+            var calendar = control.calendar;
+            var mapping = control.setting.eventMapping;
+
+            var eventObj = {};
+            var extendedProps = Object.assign({}, eventData);
+            extendedProps.Flag = 'C';
+
+            for (var key in mapping) {
+                var sourceKey = mapping[key];
+                if (eventData.hasOwnProperty(sourceKey)) {
+                    eventObj[key] = eventData[sourceKey];
+                    delete extendedProps[sourceKey];
+                }
+            }
+
+            eventObj.extendedProps = extendedProps;
+            calendar.addEvent(eventObj);
+        },
+
+        removeEvent: function (elID, eventID) {
+            var calendar = this.getCalendar(elID);
+            if (!calendar) {
+                return;
+            }
+
+            var event = calendar.getEventById(eventID);
+            if (event) {
+                if (event.extendedProps && event.extendedProps.Flag === 'C') {
+                    event.remove();
+                }
+                else {
+                    event.setExtendedProp('Flag', 'D');
+                    event.setProp('display', 'none');
+                }
+            }
+        },
+
+        updateEvent: function (elID, eventData) {
+            var control = this.getControl(elID);
+            if (!control || !eventData) {
+                return;
+            }
+
+            var calendar = control.calendar;
+            var mapping = control.setting.eventMapping;
+            var idKey = mapping.id;
+
+            if (!eventData.hasOwnProperty(idKey)) {
+                return;
+            }
+
+            var eventID = eventData[idKey];
+            var event = calendar.getEventById(eventID);
+
+            if (!event) {
+                return;
+            }
+
+            var currentFlag = event.extendedProps ? event.extendedProps.Flag : 'R';
+            if (currentFlag === 'R') {
+                event.setExtendedProp('Flag', 'U');
+            }
+
+            for (var key in mapping) {
+                var sourceKey = mapping[key];
+                if (eventData.hasOwnProperty(sourceKey)) {
+                    var newVal = eventData[sourceKey];
+
+                    if (key !== 'id') {
+                        event.setProp(key, newVal);
+                    }
+                }
+            }
+
+            for (var propKey in eventData) {
+                if (eventData.hasOwnProperty(propKey)) {
+                    var isMapped = false;
+                    for (var mapKey in mapping) {
+                        if (mapping[mapKey] === propKey) {
+                            isMapped = true;
+                            break;
+                        }
+                    }
+
+                    if (!isMapped) {
+                        event.setExtendedProp(propKey, eventData[propKey]);
+                    }
+                }
+            }
+        },
+
+        getEvents: function (elID) {
+            var result = null;
+            var control = $calendar.getControl(elID);
+            if (control) {
+                result = control.calendar.getEvents().map(function (evt) {
+                    return evt.toPlainObject();
+                });
+            }
+            return result;
+        },
+
+        findEvents: function (elID, filter) {
+            var calendar = this.getCalendar(elID);
+            if (!calendar) {
+                return [];
+            }
+
+            var allEvents = calendar.getEvents();
+
+            if (!filter || Object.keys(filter).length === 0) {
+                return allEvents.map(function (e) { return e.toPlainObject(); });
+            }
+
+            var filteredEvents = allEvents.filter(function (event) {
+                for (var key in filter) {
+                    if (filter.hasOwnProperty(key)) {
+                        var filterValue = filter[key];
+                        var eventValue;
+
+                        if (key === 'title' || key === 'id' || key === 'start' || key === 'end') {
+                            eventValue = event[key];
+                        }
+                        else {
+                            eventValue = event.extendedProps ? event.extendedProps[key] : undefined;
+                        }
+
+                        if (eventValue === undefined || eventValue === null) {
+                            return false;
+                        }
+
+                        if (typeof eventValue === 'string' && typeof filterValue === 'string') {
+                            if (eventValue.toLowerCase().indexOf(filterValue.toLowerCase()) === -1) {
+                                return false;
+                            }
+                        }
+                        else {
+                            if (eventValue != filterValue) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+                return true;
+            });
+
+            return filteredEvents.map(function (e) { return e.toPlainObject(); });
+        },
+
+        clear: function (elID, isControlLoad) {
+            var control = $calendar.getControl(elID);
+            if (control) {
+                control.calendar.removeAllEvents();
+            }
+        },
+
+        getControl: function (elID) {
+            return $calendar.calendarControls.find(function (item) { return item.id === elID; }) || null;
+        },
+
+        getCalendar: function (elID) {
+            var control = this.getControl(elID);
+            return control ? control.calendar : null;
+        },
+
+        gotoDate: function (elID, date) {
+            var calendar = this.getCalendar(elID);
+            if (calendar) {
+                calendar.gotoDate(date);
+            }
+        },
+
+        changeView: function (elID, viewName, dateOrRange) {
+            var calendar = this.getCalendar(elID);
+            if (calendar) {
+                calendar.changeView(viewName, dateOrRange);
+            }
+        },
+
+        refetchEvents: function (elID) {
+            var calendar = this.getCalendar(elID);
+            if (calendar) {
+                calendar.refetchEvents();
+            }
+        }
+    });
+
+    syn.uicontrols.$calendar = $calendar;
+})(window);
+
+/// <reference path="/js/syn.js" />
+
+(function (window) {
     syn.uicontrols = syn.uicontrols || new syn.module();
     var $chart = syn.uicontrols.$chart || new syn.module();
 
@@ -253,7 +640,7 @@
 
     $checkbox.extend({
         name: 'syn.uicontrols.$checkbox',
-        version: 'v2025.3.24',
+        version: 'v2025.10.1',
         defaultSetting: {
             contents: '',
             toSynControl: false,
@@ -299,6 +686,7 @@
                 el.setAttribute('syn-options', JSON.stringify(setting));
                 el.style.display = 'none';
 
+                var className = el.getAttribute('class');
                 var dataFieldID = el.getAttribute('syn-datafield');
                 var events = el.getAttribute('syn-events');
                 var value = el.value;
@@ -319,7 +707,7 @@
                 var parent = el.parentNode;
                 var wrapper = syn.$m.create({
                     tag: 'span',
-                    className: 'formControl'
+                    className: $string.isNullOrEmpty(className) == true ? 'form-control' : className
                 });
                 wrapper.innerHTML = html;
 
@@ -423,7 +811,8 @@
 
     $codepicker.extend({
         name: 'syn.uicontrols.$codepicker',
-        version: 'v2025.3.25',
+        version: 'v2025.12.11',
+        codeHelpUrl: `${syn.$w.proxyBasePath}/assets/shared/codehelp/index2.html`,
         defaultSetting: {
             dataSourceID: null,
             storeSourceID: null,
@@ -446,8 +835,10 @@
             searchText: '',
             isMultiSelect: false,
             isAutoSearch: true,
+            isSingleAutoReturn: true,
             isOnlineData: false,
             viewType: '',
+            sharedAssetUrl: '',
             dataType: 'string',
             belongID: null,
             getter: false,
@@ -481,22 +872,24 @@
                 var moduleSettings = mod.hook.controlInit(elID, setting);
                 setting = syn.$w.argumentsExtend(setting, moduleSettings);
             }
+            setting.sharedAssetUrl = setting.sharedAssetUrl || syn.Config.SharedAssetUrl;
 
             el.setAttribute('id', el.id + '_hidden');
             el.setAttribute('syn-options', JSON.stringify(setting));
             el.style.display = 'none';
 
+            var className = el.getAttribute('class');
             var dataField = el.getAttribute('syn-datafield');
             var events = el.getAttribute('syn-events');
 
             var textboxCode = syn.$m.create({
                 id: `${elID}_Code`,
                 tag: 'input',
-                className: 'form-control mr-1 pr-1'
+                className: $string.isNullOrEmpty(className) == true ? 'form-control' : className
             });
 
             textboxCode.type = 'text';
-            textboxCode.setAttribute('syn-events', `['keydown', 'blur']`);
+            textboxCode.setAttribute('syn-events', `['keydown', 'change']`);
             textboxCode.setAttribute('baseID', elID);
 
             if ($string.isNullOrEmpty(dataField) == false) {
@@ -504,11 +897,11 @@
             }
 
             if ($string.isNullOrEmpty(setting.codeElementWidth) == false) {
-                textboxCode.style.width = codeElementWidth;
+                textboxCode.style.width = setting.codeElementWidth;
             }
 
             if ($string.isNullOrEmpty(setting.codeElementClass) == false) {
-                syn.$m.addClass(textboxCode, codeElementClass);
+                syn.$m.addClass(textboxCode, setting.codeElementClass);
             }
 
             if ($string.toBoolean(setting.readonly) == true) {
@@ -538,7 +931,6 @@
             if ($object.isNullOrUndefined(events) == false) {
                 textboxCode.setAttribute('syn-events', events);
             }
-            syn.$m.insertAfter(textboxCode, el);
 
             var buttonOpen = syn.$m.create({
                 id: `${elID}_Button`,
@@ -547,8 +939,6 @@
             });
             buttonOpen.innerHTML = `<i class="ti ti-search"></i>`;
 
-            syn.$m.insertAfter(buttonOpen, textboxCode);
-
             var textboxText = syn.$m.create({
                 id: `${elID}_Text`,
                 tag: 'input',
@@ -556,7 +946,7 @@
             });
 
             textboxText.type = 'text';
-            textboxText.setAttribute('syn-events', `['keydown', 'blur']`);
+            textboxText.setAttribute('syn-events', `['keydown', 'change']`);
             textboxText.setAttribute('baseID', elID);
 
             if ($string.isNullOrEmpty(setting.textDataFieldID) == false) {
@@ -564,11 +954,11 @@
             }
 
             if ($string.isNullOrEmpty(setting.textElementWidth) == false) {
-                textboxText.style.width = textElementWidth;
+                textboxText.style.width = setting.textElementWidth;
             }
 
             if ($string.isNullOrEmpty(setting.textElementClass) == false) {
-                syn.$m.addClass(textboxText, textElementClass);
+                syn.$m.addClass(textboxText, setting.textElementClass);
             }
 
             if ($string.toBoolean(setting.readonly) == true) {
@@ -598,7 +988,10 @@
             if ($object.isNullOrUndefined(events) == false) {
                 textboxText.setAttribute('syn-events', events);
             }
-            syn.$m.insertAfter(textboxText, buttonOpen);
+
+            syn.$m.insertBefore(textboxCode, el);
+            syn.$m.insertAfter(textboxText, textboxCode);
+            syn.$m.insertAfter(buttonOpen, el);
 
             var codeEL = syn.$l.get(elID + '_Code');
             syn.$l.addEvent(codeEL, 'focus', function (evt) {
@@ -615,13 +1008,21 @@
 
                 syn.$l.get(elID + '_Text').value = '';
 
-                if (evt.keyCode == 13 || evt instanceof FocusEvent) {
+                if (el.value != '' && evt.keyCode == 13 || evt instanceof FocusEvent) {
                     syn.$l.trigger(syn.$l.get(elID + '_Button'), 'click', evt)
+                }
+                else {
+                    var inputValue = el.value;
+                    var inputText = syn.$l.get(elID + '_Text').value;
+                    var changeHandler = mod.event[elID + '_change'];
+                    if (changeHandler) {
+                        changeHandler(elID, inputValue, inputText, null);
+                    }
                 }
             }
 
             syn.$l.addEvent(codeEL, 'keydown', fnCodeChange);
-            syn.$l.addEvent(codeEL, 'blur', fnCodeChange);
+            syn.$l.addEvent(codeEL, 'change', fnCodeChange);
 
             var synOptions = codeEL.getAttribute('syn-options');
             if ($string.isNullOrEmpty(synOptions) == false) {
@@ -646,13 +1047,21 @@
 
                 syn.$l.get(elID + '_Code').value = '';
 
-                if (evt.keyCode == 13 || evt instanceof FocusEvent) {
+                if (el.value != '' && evt.keyCode == 13 || evt instanceof FocusEvent) {
                     syn.$l.trigger(syn.$l.get(elID + '_Button'), 'click', evt)
+                }
+                else {
+                    var inputValue = syn.$l.get(elID + '_Code').value;
+                    var inputText = el.value;
+                    var changeHandler = mod.event[elID + '_change'];
+                    if (changeHandler) {
+                        changeHandler(elID, inputValue, inputText, null);
+                    }
                 }
             }
 
             syn.$l.addEvent(textEL, 'keydown', fnTextChange);
-            syn.$l.addEvent(textEL, 'blur', fnTextChange);
+            syn.$l.addEvent(textEL, 'change', fnTextChange);
 
             synOptions = textEL.getAttribute('syn-options');
             if ($string.isNullOrEmpty(synOptions) == false) {
@@ -682,13 +1091,18 @@
                 synOptions.searchValue = syn.$l.get(synOptions.codeElementID).value;
                 synOptions.searchText = syn.$l.get(synOptions.textElementID).value;
 
+                var buttonHandler = mod.event[elID + '_buttonClick'];
+                if (buttonHandler) {
+                    buttonHandler(elID, synOptions);
+                }
+
                 var inputValue = syn.$l.get(synOptions.codeElementID).value;
                 var inputText = syn.$l.get(synOptions.textElementID).value;
                 syn.uicontrols.$codepicker.find(synOptions, function (result) {
                     if (result && result.length > 0) {
                         var changeHandler = mod.event[elID + '_change'];
                         if (changeHandler) {
-                            changeHandler(inputValue, inputText, result);
+                            changeHandler(elID, inputValue, inputText, result);
                         }
                     }
 
@@ -742,12 +1156,11 @@
             }
 
             var dialogOptions = $object.clone(syn.$w.dialogOptions);
-            dialogOptions.minWidth = 640;
-            dialogOptions.minHeight = 480;
+            dialogOptions.minWidth = setting.dialogWidth || 640;
+            dialogOptions.minHeight = setting.dialogHeight || 480;
             dialogOptions.close = true;
             dialogOptions.caption = (setting.controlText || setting.columnText || setting.headerText || setting.dataSourceID) + ' 코드도움';
-
-            var url = $string.isNullOrEmpty(setting.url) == false ? setting.url : syn.Config.SharedAssetUrl + 'codehelp/index.html';
+            var url = $string.isNullOrEmpty(setting.url) == false ? setting.url : $codepicker.codeHelpUrl;
             syn.$w.showUIDialog(url + '?parameterID={0}'.format(parameterID), dialogOptions, function (result) {
                 if (result && result.length > 0) {
                     var value = '';
@@ -857,7 +1270,7 @@
 
     $colorpicker.extend({
         name: 'syn.uicontrols.$colorpicker',
-        version: 'v2025.3.1',
+        version: 'v2025.10.1',
         colorControls: [],
         defaultSetting:
         {
@@ -904,6 +1317,7 @@
             el.setAttribute('syn-options', JSON.stringify(setting));
             el.style.display = 'none';
 
+            var className = el.getAttribute('class');
             var dataField = el.getAttribute('syn-datafield');
 
             var html = '<div class="control">' +
@@ -915,7 +1329,7 @@
             var wrapper = syn.$m.create({
                 tag: 'div',
                 id: elID + '_box',
-                className: 'control-set'
+                className: $string.isNullOrEmpty(className) == true ? 'form-control control-set' : className
             });
             wrapper.innerHTML = html;
 
@@ -1046,6 +1460,7 @@
     });
     syn.uicontrols.$colorpicker = $colorpicker;
 })(window);
+
 /// <reference path="/js/syn.js" />
 
 (function (window) {
@@ -1293,7 +1708,7 @@
 
     $data.extend({
         name: 'syn.uicontrols.$data',
-        version: 'v2025.3.10',
+        version: 'v2025.9.16',
         bindingList: [],
         storeList: [],
 
@@ -1334,12 +1749,34 @@
             });
         },
 
-        getValue(elID, meta) {
+        getValue(elID, isAll) {
             var result = null;
             $data.propertyEvent = false;
             var metaStore = $data.getMetaStore(elID);
             if (metaStore) {
                 result = $this.store[metaStore.dataSourceID];
+                if (result) {
+                    if ($string.toBoolean(isAll) == true) {
+                        result = $this.store[metaStore.dataSourceID];
+                    }
+                    else if (Array.isArray(result)) {
+                        result = result.filter(item => {
+                            return item && item.Flag !== 'R';
+                        });
+                    }
+                    else if (typeof result === 'object') {
+                        var filteredResult = {};
+                        for (var key in result) {
+                            if (result.hasOwnProperty(key) == true) {
+                                var item = result[key];
+                                if (item && typeof item === 'object') {
+                                    filteredResult[key] = item;
+                                }
+                            }
+                        }
+                        result = filteredResult;
+                    }
+                }
             }
             $data.propertyEvent = true;
 
@@ -1351,7 +1788,44 @@
         },
 
         clear(elID, isControlLoad) {
-            // 지원 안함
+            $data.propertyEvent = false;
+            var metaStore = $data.getMetaStore(elID);
+            if (metaStore) {
+                let targetStore = $this.store[metaStore.dataSourceID];
+                if (metaStore.storeType == 'Form' && metaStore.columns) {
+                    metaStore.columns.forEach(column => {
+                        const columnName = column.data;
+                        const dataType = column.dataType;
+
+                        let initialValue;
+
+                        switch (dataType) {
+                            case 'string':
+                                initialValue = '';
+                                break;
+                            case 'number':
+                            case 'numeric':
+                            case 'int':
+                                initialValue = 0;
+                                break;
+                            case 'bool':
+                            case 'boolean':
+                                initialValue = false;
+                                break;
+                            default:
+                                initialValue = null;
+                                break;
+                        }
+
+                        targetStore[columnName] = initialValue;
+                    });
+                }
+                else if (targetStore.length && targetStore.length > 0)
+                {
+                    targetStore.length = 0;
+                }
+            }
+            $data.propertyEvent = true;
         },
 
         getMetaStore(elID) {
@@ -1565,12 +2039,13 @@
 
     $datepicker.extend({
         name: 'syn.uicontrols.$datepicker',
-        version: 'v2025.3.1',
+        version: 'v2025.10.1',
         dateControls: [],
         defaultSetting: {
             elID: '',
             width: '100%',
             value: '',
+            placeholder: '',
             defaultDate: null,
             setDefaultDate: false,
             minDate: null,
@@ -1639,15 +2114,20 @@
                 }
             }
 
+            var className = el.getAttribute('class');
             var dataField = el.getAttribute('syn-datafield');
             var events = el.getAttribute('syn-events');
 
             var textbox = syn.$m.create({
                 id: elID,
                 tag: 'input',
-                className: 'form-control'
+                className: $string.isNullOrEmpty(className) == true ? 'form-control' : className
             });
             textbox.type = 'text';
+
+            if ($string.isNullOrEmpty(setting.placeholder) == false) {
+                textbox.setAttribute('placeholder', setting.placeholder);
+            }
 
             if ($string.isNullOrEmpty(dataField) == false) {
                 textbox.setAttribute('syn-datafield', dataField);
@@ -1675,7 +2155,7 @@
                 textbox.setAttribute('syn-events', events);
             }
 
-            syn.$m.insertAfter(textbox, el);
+            syn.$m.insertBefore(textbox, el);
 
             var button = syn.$m.create({
                 id: `${elID}_Button`,
@@ -1683,7 +2163,7 @@
                 className: 'btn btn-icon f:20! bg-muted-lt'
             });
             button.innerHTML = `<i class="ti ti-calendar"></i>`;
-            syn.$m.insertAfter(button, textbox);
+            syn.$m.insertAfter(button, el);
 
             syn.uicontrols.$textbox.controlLoad(elID, eval('(' + syn.$l.get(elID).getAttribute('syn-options') + ')'));
 
@@ -1710,6 +2190,12 @@
                     var selectFunction = '{0}_onselect'.format(elID);
                     if (mod && mod.event[selectFunction]) {
                         mod.event[selectFunction](elID, date);
+                    }
+
+                    const el = syn.$l.get(elID);
+                    var control = $datepicker.getControl(elID);
+                    if (el && $string.isNullOrEmpty(el.placeholder) == true && control && $string.isNullOrEmpty(control.setting.placeholder) == false) {
+                        el.placeholder = control.setting.placeholder;
                     }
                 },
                 onSelect(date) {
@@ -1942,12 +2428,12 @@
 
     $dateperiodpicker.extend({
         name: 'syn.uicontrols.$dateperiodpicker',
-        version: 'v2025.3.24',
+        version: 'v2025.5.22',
         dateControls: [],
         selectedYear: null,
         pkaStartDate: null,
         pkaEndDate: null,
-        periodPickerHtml: '<div class=card-body><div class="row g-1"><div class="col pl-0"><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnThisYear>올해</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnUntilToday>오늘까지</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnToday>오늘</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnPreviousDay>전일</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnWeekly>주간</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnPreviousWeek>전주</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnThisMonth>당월</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnPreviousMonth>이전달</button></div></div><div class="row g-1 mt-1"><div class="col pl-0"><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnPreviousYear>전년도</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnTwoYearAgo>전전년도</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnQuarter1>1분기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnQuarter2>2분기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnQuarter3>3분기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnQuarter4>4분기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnFirstHalf>상반기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnSecondHalf>하반기</button></div></div><div class="row g-1 mt-1"><div class="col pl-0"><div class="w-100 btn-group"role=group><input id=_DatePeriodPicker_chkPeriodMonth1 type=checkbox class=btn-check value=01> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth1>1월</label> <input id=_DatePeriodPicker_chkPeriodMonth2 type=checkbox class=btn-check value=02> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth2>2월</label> <input id=_DatePeriodPicker_chkPeriodMonth3 type=checkbox class=btn-check value=03> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth3>3월</label> <input id=_DatePeriodPicker_chkPeriodMonth4 type=checkbox class=btn-check value=04> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth4>4월</label> <input id=_DatePeriodPicker_chkPeriodMonth5 type=checkbox class=btn-check value=05> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth5>5월</label> <input id=_DatePeriodPicker_chkPeriodMonth6 type=checkbox class=btn-check value=06> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth6>6월</label> <input id=_DatePeriodPicker_chkPeriodMonth7 type=checkbox class=btn-check value=07> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth7>7월</label> <input id=_DatePeriodPicker_chkPeriodMonth8 type=checkbox class=btn-check value=08> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth8>8월</label> <input id=_DatePeriodPicker_chkPeriodMonth9 type=checkbox class=btn-check value=09> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth9>9월</label> <input id=_DatePeriodPicker_chkPeriodMonth10 type=checkbox class=btn-check value=10> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth10>10월</label> <input id=_DatePeriodPicker_chkPeriodMonth11 type=checkbox class=btn-check value=11> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth11>11월</label> <input id=_DatePeriodPicker_chkPeriodMonth12 type=checkbox class=btn-check value=12> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth12>12월</label></div></div></div><div class="row mt-2"><div class="col pl-0"><div class=h:227 id=calStartDate></div><input id=_DatePeriodPicker_txtStartDate type=hidden></div><div class="col pl-0"><div class=h:227 id=calEndDate></div><input id=_DatePeriodPicker_txtEndDate type=hidden></div></div></div><div class="p-2 card-footer"><div class="row align-items-center"><div class=col>선택기간: <span id=spnPeriodDate>0일</span></div><div class=col-auto><div class="btn-list flex-nowrap"><button class="btn w-100 btn-primary"id=_DatePeriodPicker_btnConfirm>확인</button></div></div></div></div>',
+        periodPickerHtml: '<div class=card-body><div class="row g-1"><div class="col pl-0"><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnThisYear>올해</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnUntilToday>오늘까지</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnToday>오늘</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnPreviousDay>전일</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnWeekly>주간</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnPreviousWeek>전주</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnThisMonth>당월</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnPreviousMonth>이전달</button></div></div><div class="row g-1 mt-1"><div class="col pl-0"><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnPreviousYear>전년도</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnTwoYearAgo>전전년도</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnQuarter1>1분기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnQuarter2>2분기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnQuarter3>3분기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnQuarter4>4분기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnFirstHalf>상반기</button></div><div class=col><button class="btn w-100 border-color:#ccc!"id=_DatePeriodPicker_btnSecondHalf>하반기</button></div></div><div class="row g-1 mt-1"><div class="col pl-0"><div class="w-100 btn-group"role=group><input id=_DatePeriodPicker_chkPeriodMonth1 type=checkbox class=btn-check value=01> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth1>1월</label> <input id=_DatePeriodPicker_chkPeriodMonth2 type=checkbox class=btn-check value=02> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth2>2월</label> <input id=_DatePeriodPicker_chkPeriodMonth3 type=checkbox class=btn-check value=03> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth3>3월</label> <input id=_DatePeriodPicker_chkPeriodMonth4 type=checkbox class=btn-check value=04> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth4>4월</label> <input id=_DatePeriodPicker_chkPeriodMonth5 type=checkbox class=btn-check value=05> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth5>5월</label> <input id=_DatePeriodPicker_chkPeriodMonth6 type=checkbox class=btn-check value=06> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth6>6월</label> <input id=_DatePeriodPicker_chkPeriodMonth7 type=checkbox class=btn-check value=07> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth7>7월</label> <input id=_DatePeriodPicker_chkPeriodMonth8 type=checkbox class=btn-check value=08> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth8>8월</label> <input id=_DatePeriodPicker_chkPeriodMonth9 type=checkbox class=btn-check value=09> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth9>9월</label> <input id=_DatePeriodPicker_chkPeriodMonth10 type=checkbox class=btn-check value=10> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth10>10월</label> <input id=_DatePeriodPicker_chkPeriodMonth11 type=checkbox class=btn-check value=11> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth11>11월</label> <input id=_DatePeriodPicker_chkPeriodMonth12 type=checkbox class=btn-check value=12> <label class="btn p-2"for=_DatePeriodPicker_chkPeriodMonth12>12월</label></div></div></div><div class="row mt-2"><div class="col pl-0"><div class=h:227 id=calStartDate></div><input id=_DatePeriodPicker_txtStartDate type=hidden></div><div class="col pl-0"><div class=h:227 id=calEndDate></div><input id=_DatePeriodPicker_txtEndDate type=hidden></div></div></div><div class="p-2 card-footer"><div class="row align-items-center"><div class=col>선택기간: <span id=spnPeriodDate>0일</span></div><div class=col-auto><div class="btn-list flex-nowrap"><button class="btn w-100"id=_DatePeriodPicker_btnReset>기간 선택 취소</button><button class="btn w-100 btn-primary"id=_DatePeriodPicker_btnConfirm>확인</button></div></div></div></div>',
         defaultSetting: {
             elID: '',
             width: '100%',
@@ -1975,6 +2461,8 @@
             numberOfMonths: 1,
             startDataFieldID: '',
             endDataFieldID: '',
+            startClassName: 'form-control',
+            endClassName: 'form-control',
             dataType: 'string',
             belongID: null,
             getter: false,
@@ -2022,7 +2510,7 @@
             var textbox1 = syn.$m.create({
                 id: textbox1ID,
                 tag: 'input',
-                className: 'form-control'
+                className: $string.isNullOrEmpty(setting.startClassName) == true ? 'form-control' : setting.startClassName
             });
 
             textbox1.type = 'text';
@@ -2073,7 +2561,7 @@
             var textbox2 = syn.$m.create({
                 id: textbox2ID,
                 tag: 'input',
-                className: 'form-control'
+                className: $string.isNullOrEmpty(setting.endClassName) == true ? 'form-control' : setting.endClassName
             });
 
             textbox2.type = 'text';
@@ -2152,19 +2640,20 @@
                 syn.$l.addEvent('_DatePeriodPicker_btnQuarter4', 'click', $dateperiodpicker._DatePeriodPicker_btnQuarter4_click);
                 syn.$l.addEvent('_DatePeriodPicker_btnFirstHalf', 'click', $dateperiodpicker._DatePeriodPicker_btnFirstHalf_click);
                 syn.$l.addEvent('_DatePeriodPicker_btnSecondHalf', 'click', $dateperiodpicker._DatePeriodPicker_btnSecondHalf_click);
+                syn.$l.addEvent('_DatePeriodPicker_btnReset', 'click', $dateperiodpicker._DatePeriodPicker_btnReset_click);
                 syn.$l.addEvent('_DatePeriodPicker_btnConfirm', 'click', $dateperiodpicker._DatePeriodPicker_btnConfirm_click);
-                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth1', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
-                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth2', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
-                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth3', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
-                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth4', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
-                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth5', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
-                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth6', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
-                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth7', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
-                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth8', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
-                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth9', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
-                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth10', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
-                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth11', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
-                syn.$l.addEvent('_DatePeriodPicker_chkPeriodMonth12', 'change', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_change);
+                syn.$l.addEvent(syn.$l.querySelector('[for="_DatePeriodPicker_chkPeriodMonth1"]'), 'click', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_click);
+                syn.$l.addEvent(syn.$l.querySelector('[for="_DatePeriodPicker_chkPeriodMonth2"]'), 'click', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_click);
+                syn.$l.addEvent(syn.$l.querySelector('[for="_DatePeriodPicker_chkPeriodMonth3"]'), 'click', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_click);
+                syn.$l.addEvent(syn.$l.querySelector('[for="_DatePeriodPicker_chkPeriodMonth4"]'), 'click', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_click);
+                syn.$l.addEvent(syn.$l.querySelector('[for="_DatePeriodPicker_chkPeriodMonth5"]'), 'click', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_click);
+                syn.$l.addEvent(syn.$l.querySelector('[for="_DatePeriodPicker_chkPeriodMonth6"]'), 'click', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_click);
+                syn.$l.addEvent(syn.$l.querySelector('[for="_DatePeriodPicker_chkPeriodMonth7"]'), 'click', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_click);
+                syn.$l.addEvent(syn.$l.querySelector('[for="_DatePeriodPicker_chkPeriodMonth8"]'), 'click', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_click);
+                syn.$l.addEvent(syn.$l.querySelector('[for="_DatePeriodPicker_chkPeriodMonth9"]'), 'click', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_click);
+                syn.$l.addEvent(syn.$l.querySelector('[for="_DatePeriodPicker_chkPeriodMonth10"]'), 'click', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_click);
+                syn.$l.addEvent(syn.$l.querySelector('[for="_DatePeriodPicker_chkPeriodMonth11"]'), 'click', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_click);
+                syn.$l.addEvent(syn.$l.querySelector('[for="_DatePeriodPicker_chkPeriodMonth12"]'), 'click', $dateperiodpicker._DatePeriodPicker_chkPeriodMonth_click);
 
                 $dateperiodpicker.selectedYear = $date.toString(new Date(), 'y');
 
@@ -2248,7 +2737,7 @@
 
                 syn.$l.addEvent(document.body, 'click', (evt) => {
                     var popup = syn.$l.get('divPeriodPicker');
-                    if (syn.$m.hasClass(popup, 'hidden') == false) {
+                    if (popup && syn.$m.hasClass(popup, 'hidden') == false) {
                         var elID = popup.getAttribute('elID');
                         if (popup.contains(evt.target) == false) {
                             var button = evt.target.closest('button');
@@ -2256,18 +2745,18 @@
                                 $dateperiodpicker.hidePopup();
                             }
                         }
-                    }
 
-                    evt.returnValue = false;
-                    evt.cancel = true;
-                    if (evt.preventDefault) {
-                        evt.preventDefault();
-                    }
+                        evt.returnValue = false;
+                        evt.cancel = true;
+                        if (evt.preventDefault) {
+                            evt.preventDefault();
+                        }
 
-                    if (evt.stopPropagation) {
-                        evt.stopPropagation();
+                        if (evt.stopPropagation) {
+                            evt.stopPropagation();
+                        }
+                        return false;
                     }
-                    return false;
                 });
             }
 
@@ -2553,14 +3042,11 @@
             var endedAt = new Date(endDate);
 
             $dateperiodpicker.pkaStartDate.setDate(startDate);
-            $dateperiodpicker.pkaStartDate.setStartRange($date.addDay(startedAt, -1));
-            $dateperiodpicker.pkaStartDate.setEndRange(endedAt);
-            $dateperiodpicker.pkaStartDate.draw();
-
             $dateperiodpicker.pkaEndDate.setDate(endDate);
-            $dateperiodpicker.pkaEndDate.setStartRange($date.addDay(startedAt, -1));
-            $dateperiodpicker.pkaEndDate.setEndRange(endedAt);
-            $dateperiodpicker.pkaEndDate.draw();
+            setTimeout(() => {
+                $dateperiodpicker.pkaStartDate.setDate(startDate);
+                $dateperiodpicker.pkaEndDate.setDate(endDate);
+            }, 25);
 
             syn.$l.get('spnPeriodDate').innerText = `${($date.diff(startedAt, endedAt) + 1)}일`;
         },
@@ -2571,7 +3057,9 @@
             var endDate = $date.getLastDate(new Date(startDate));
 
             $dateperiodpicker.setDateRange(startDate, endDate);
-            $dateperiodpicker.checkPeriodMonth([$string.toNumber(month)]);
+            setTimeout(() => {
+                $dateperiodpicker.checkPeriodMonth([$string.toNumber(month)]);
+            }, 30);
         },
 
         checkPeriodMonth(months) {
@@ -2590,7 +3078,10 @@
             var endDate = year + '-12-31';
 
             $dateperiodpicker.setDateRange(startDate, endDate);
-            $dateperiodpicker.checkPeriodMonth([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+
+            setTimeout(() => {
+                $dateperiodpicker.checkPeriodMonth([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnUntilToday_click() {
@@ -2601,8 +3092,10 @@
 
             $dateperiodpicker.setDateRange(startDate, endDate);
 
-            var thisMonth = parseInt($date.toString(date, 'm'));
-            $dateperiodpicker.checkPeriodMonth(Array(thisMonth).fill().map((_, i) => i + 1));
+            setTimeout(() => {
+                var thisMonth = parseInt($date.toString(date, 'm'));
+                $dateperiodpicker.checkPeriodMonth(Array(thisMonth).fill().map((_, i) => i + 1));
+            }, 30);
         },
 
         _DatePeriodPicker_btnToday_click() {
@@ -2612,8 +3105,10 @@
 
             $dateperiodpicker.setDateRange(startDate, endDate);
 
-            var thisMonth = parseInt($date.toString(date, 'm'));
-            $dateperiodpicker.checkPeriodMonth([thisMonth]);
+            setTimeout(() => {
+                var thisMonth = parseInt($date.toString(date, 'm'));
+                $dateperiodpicker.checkPeriodMonth([thisMonth]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnPreviousDay_click() {
@@ -2623,8 +3118,10 @@
 
             $dateperiodpicker.setDateRange(startDate, endDate);
 
-            var thisMonth = parseInt($date.toString(date, 'm'));
-            $dateperiodpicker.checkPeriodMonth([thisMonth]);
+            setTimeout(() => {
+                var thisMonth = parseInt($date.toString(date, 'm'));
+                $dateperiodpicker.checkPeriodMonth([thisMonth]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnWeekly_click() {
@@ -2639,8 +3136,10 @@
 
             $dateperiodpicker.setDateRange(startDate, endDate);
 
-            var thisMonth = parseInt($date.toString(date, 'm'));
-            $dateperiodpicker.checkPeriodMonth([thisMonth]);
+            setTimeout(() => {
+                var thisMonth = parseInt($date.toString(date, 'm'));
+                $dateperiodpicker.checkPeriodMonth([thisMonth]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnPreviousWeek_click() {
@@ -2661,8 +3160,10 @@
 
             $dateperiodpicker.setDateRange(startDate, endDate);
 
-            var thisMonth = parseInt($date.toString(date, 'm'));
-            $dateperiodpicker.checkPeriodMonth([thisMonth]);
+            setTimeout(() => {
+                var thisMonth = parseInt($date.toString(date, 'm'));
+                $dateperiodpicker.checkPeriodMonth([thisMonth]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnThisMonth_click() {
@@ -2672,8 +3173,10 @@
 
             $dateperiodpicker.setDateRange(startDate, endDate);
 
-            var thisMonth = parseInt($date.toString(date, 'm'));
-            $dateperiodpicker.checkPeriodMonth([thisMonth]);
+            setTimeout(() => {
+                var thisMonth = parseInt($date.toString(date, 'm'));
+                $dateperiodpicker.checkPeriodMonth([thisMonth]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnPreviousMonth_click() {
@@ -2684,8 +3187,10 @@
 
             $dateperiodpicker.setDateRange(startDate, endDate);
 
-            var thisMonth = parseInt($date.toString(date, 'm'));
-            $dateperiodpicker.checkPeriodMonth([thisMonth]);
+            setTimeout(() => {
+                var thisMonth = parseInt($date.toString(date, 'm'));
+                $dateperiodpicker.checkPeriodMonth([thisMonth]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnPreviousYear_click() {
@@ -2695,7 +3200,10 @@
             var endDate = year + '-12-31';
 
             $dateperiodpicker.setDateRange(startDate, endDate);
-            $dateperiodpicker.checkPeriodMonth([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+
+            setTimeout(() => {
+                $dateperiodpicker.checkPeriodMonth([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnTwoYearAgo_click() {
@@ -2705,67 +3213,114 @@
             var endDate = year + '-12-31';
 
             $dateperiodpicker.setDateRange(startDate, endDate);
-            $dateperiodpicker.checkPeriodMonth([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+
+            setTimeout(() => {
+                $dateperiodpicker.checkPeriodMonth([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnQuarter1_click() {
             var date = new Date($dateperiodpicker.selectedYear + '-01-01');
             var year = $date.toString(date, 'y');
             var startDate = year + '-01-01';
-            var endDate = $date.getLastDate(new Date(year + '-03-01'));
+            var endDate = $date.getLastDate(new Date(year + '-03-31'));
 
             $dateperiodpicker.setDateRange(startDate, endDate);
-            $dateperiodpicker.checkPeriodMonth([1, 2, 3]);
+
+            setTimeout(() => {
+                $dateperiodpicker.checkPeriodMonth([1, 2, 3]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnQuarter2_click() {
             var date = new Date($dateperiodpicker.selectedYear + '-01-01');
             var year = $date.toString(date, 'y');
             var startDate = year + '-04-01';
-            var endDate = $date.getLastDate(new Date(year + '-06-01'));
+            var endDate = $date.getLastDate(new Date(year + '-06-30'));
 
             $dateperiodpicker.setDateRange(startDate, endDate);
-            $dateperiodpicker.checkPeriodMonth([4, 5, 6]);
+
+            setTimeout(() => {
+                $dateperiodpicker.checkPeriodMonth([4, 5, 6]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnQuarter3_click() {
             var date = new Date($dateperiodpicker.selectedYear + '-01-01');
             var year = $date.toString(date, 'y');
             var startDate = year + '-07-01';
-            var endDate = $date.getLastDate(new Date(year + '-09-01'));
+            var endDate = $date.getLastDate(new Date(year + '-09-30'));
 
             $dateperiodpicker.setDateRange(startDate, endDate);
-            $dateperiodpicker.checkPeriodMonth([7, 8, 9]);
+
+            setTimeout(() => {
+                $dateperiodpicker.checkPeriodMonth([7, 8, 9]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnQuarter4_click() {
             var date = new Date($dateperiodpicker.selectedYear + '-01-01');
             var year = $date.toString(date, 'y');
             var startDate = year + '-10-01';
-            var endDate = $date.getLastDate(new Date(year + '-12-01'));
+            var endDate = $date.getLastDate(new Date(year + '-12-31'));
 
             $dateperiodpicker.setDateRange(startDate, endDate);
-            $dateperiodpicker.checkPeriodMonth([10, 11, 12]);
+
+            setTimeout(() => {
+                $dateperiodpicker.checkPeriodMonth([10, 11, 12]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnFirstHalf_click() {
             var date = new Date($dateperiodpicker.selectedYear + '-01-01');
             var year = $date.toString(date, 'y');
             var startDate = year + '-01-01';
-            var endDate = $date.getLastDate(new Date(year + '-06-01'));
+            var endDate = $date.getLastDate(new Date(year + '-06-30'));
 
             $dateperiodpicker.setDateRange(startDate, endDate);
-            $dateperiodpicker.checkPeriodMonth([1, 2, 3, 4, 5, 6]);
+
+            setTimeout(() => {
+                $dateperiodpicker.checkPeriodMonth([1, 2, 3, 4, 5, 6]);
+            }, 30);
         },
 
         _DatePeriodPicker_btnSecondHalf_click() {
             var date = new Date($dateperiodpicker.selectedYear + '-01-01');
             var year = $date.toString(date, 'y');
             var startDate = year + '-07-01';
-            var endDate = $date.getLastDate(new Date(year + '-12-01'));
+            var endDate = $date.getLastDate(new Date(year + '-12-31'));
 
             $dateperiodpicker.setDateRange(startDate, endDate);
-            $dateperiodpicker.checkPeriodMonth([7, 8, 9, 10, 11, 12]);
+
+            setTimeout(() => {
+                $dateperiodpicker.checkPeriodMonth([7, 8, 9, 10, 11, 12]);
+            }, 30);
+        },
+
+        _DatePeriodPicker_btnReset_click() {
+            var popup = syn.$l.get('divPeriodPicker');
+            if (syn.$m.hasClass(popup, 'hidden') == false) {
+                var elID = popup.getAttribute('elID');
+
+                var control = $dateperiodpicker.getControl(elID);
+                if (control) {
+                    var textbox1 = syn.$l.get(control.textbox1ID);
+                    textbox1.value = '';
+
+                    var textbox2 = syn.$l.get(control.textbox2ID);
+                    textbox2.value = '';
+
+                    var mod = window[syn.$w.pageScript];
+                    var events = eval(textbox1.getAttribute('syn-events'));
+
+                    var resetFunction = '{0}_onreset'.format(elID);
+                    if (events && events.includes('onreset') && mod && mod.event[resetFunction]) {
+                        mod.event[resetFunction](elID, textbox1.value, textbox2.value);
+                    }
+                }
+
+                $dateperiodpicker.hidePopup();
+            }
         },
 
         _DatePeriodPicker_btnConfirm_click() {
@@ -2802,8 +3357,11 @@
             }
         },
 
-        _DatePeriodPicker_chkPeriodMonth_change(evt) {
-            $dateperiodpicker.checkSelectedMonth(evt.target.value);
+        _DatePeriodPicker_chkPeriodMonth_click(evt) {
+            const el = syn.$l.get(evt.target.getAttribute('for'));
+            if (el) {
+                $dateperiodpicker.checkSelectedMonth(el.value);
+            }
         }
     });
     syn.uicontrols.$dateperiodpicker = $dateperiodpicker;
@@ -2818,7 +3376,7 @@
 
     $multiselect.extend({
         name: 'syn.uicontrols.$multiselect',
-        version: 'v2025.3.1',
+        version: 'v2025.9.10',
         selectControls: [],
         defaultSetting: {
             elID: '',
@@ -2828,13 +3386,14 @@
             local: true,
             search: false,
             multiSelectAll: true,
-            width: '100%',
-            classNames: null,
+            width: null,
+            classNames: 'border-0 form-select',
             dataSourceID: null,
             storeSourceID: null,
             parameters: null, // @ParameterValue:HELLO WORLD;
             selectedValue: null,
             toSynControl: false,
+            sharedAssetUrl: '',
             dataType: 'string',
             belongID: null,
             getter: false,
@@ -2870,6 +3429,7 @@
 
             setting.elID = elID;
             setting.storeSourceID = setting.storeSourceID || setting.dataSourceID;
+            setting.sharedAssetUrl = setting.sharedAssetUrl || syn.Config.SharedAssetUrl;
 
             var el = syn.$l.get(elID);
             el.setAttribute('syn-options', JSON.stringify(setting));
@@ -2890,7 +3450,7 @@
                     syn.$w.removeReadyCount();
                 } else {
                     if (setting.local == true) {
-                        syn.$w.loadJson(syn.Config.SharedAssetUrl + 'code/{0}.json'.format(setting.storeSourceID), setting, function (setting, json) {
+                        syn.$w.loadJson(setting.sharedAssetUrl + 'code/{0}.json'.format(setting.storeSourceID), setting, function (setting, json) {
                             if (json) {
                                 mod.config.dataSource[setting.storeSourceID] = json;
                                 $multiselect.loadData(setting.elID, json, setting.required);
@@ -2925,13 +3485,14 @@
             setting.elID = elID;
             setting.storeSourceID = setting.storeSourceID || setting.dataSourceID;
             setting = syn.$w.argumentsExtend(JSON.parse(syn.$l.get(elID).getAttribute('syn-options')), setting);
+            setting.deleteCache = $object.isNullOrUndefined(setting.deleteCache) == true ? true : setting.deleteCache;
 
             var el = syn.$l.get(elID);
             el.setAttribute('syn-options', JSON.stringify(setting));
 
             if (setting.dataSourceID) {
                 var mod = window[syn.$w.pageScript];
-                if (mod.config && mod.config.dataSource && mod.config.dataSource[setting.storeSourceID]) {
+                if (mod.config && mod.config.dataSource && mod.config.dataSource[setting.storeSourceID] && $string.toBoolean(setting.deleteCache) == true) {
                     delete mod.config.dataSource[setting.storeSourceID];
                 }
 
@@ -2956,7 +3517,7 @@
                     }
                 } else {
                     if (setting.local == true) {
-                        syn.$w.loadJson(syn.Config.SharedAssetUrl + 'code/{0}.json'.format(setting.storeSourceID), setting, function (setting, json) {
+                        syn.$w.loadJson(setting.sharedAssetUrl + 'code/{0}.json'.format(setting.storeSourceID), setting, function (setting, json) {
                             mod.config.dataSource[setting.storeSourceID] = json;
                             $multiselect.loadData(setting.elID, json, setting.required);
                             if (setting.selectedValue) {
@@ -3349,7 +3910,7 @@
 
     $select.extend({
         name: 'syn.uicontrols.$select',
-        version: 'v2025.3.1',
+        version: 'v2025.9.10',
         selectControls: [],
         defaultSetting: {
             elID: '',
@@ -3359,13 +3920,14 @@
             local: true,
             search: false,
             multiSelectAll: false,
-            width: '100%',
-            classNames: null,
+            width: null,
+            classNames: 'border-0 form-select',
             dataSourceID: null,
             storeSourceID: null,
             parameters: null, // @ParameterValue:HELLO WORLD;
             selectedValue: null,
             toSynControl: true,
+            sharedAssetUrl: '',
             dataType: 'string',
             belongID: null,
             getter: false,
@@ -3400,6 +3962,7 @@
 
             setting.elID = elID;
             setting.storeSourceID = setting.storeSourceID || setting.dataSourceID;
+            setting.sharedAssetUrl = setting.sharedAssetUrl || syn.Config.SharedAssetUrl;
 
             var el = syn.$l.get(elID);
             el.setAttribute('syn-options', JSON.stringify(setting));
@@ -3420,7 +3983,7 @@
                     syn.$w.removeReadyCount();
                 } else {
                     if (setting.local == true) {
-                        syn.$w.loadJson(syn.Config.SharedAssetUrl + 'code/{0}.json'.format(setting.storeSourceID), setting, function (setting, json) {
+                        syn.$w.loadJson(setting.sharedAssetUrl + 'code/{0}.json'.format(setting.storeSourceID), setting, function (setting, json) {
                             if (json) {
                                 mod.config.dataSource[setting.storeSourceID] = json;
                                 $select.loadData(setting.elID, json, setting.required);
@@ -3456,13 +4019,14 @@
             setting.elID = elID;
             setting.storeSourceID = setting.storeSourceID || setting.dataSourceID;
             setting = syn.$w.argumentsExtend(JSON.parse(syn.$l.get(elID).getAttribute('syn-options')), setting);
+            setting.deleteCache = $object.isNullOrUndefined(setting.deleteCache) == true ? true : setting.deleteCache;
 
             var el = syn.$l.get(elID);
             el.setAttribute('syn-options', JSON.stringify(setting));
 
             if (setting.dataSourceID) {
                 var mod = window[syn.$w.pageScript];
-                if (mod.config && mod.config.dataSource && mod.config.dataSource[setting.storeSourceID]) {
+                if (mod.config && mod.config.dataSource && mod.config.dataSource[setting.storeSourceID] && $string.toBoolean(setting.deleteCache) == true) {
                     delete mod.config.dataSource[setting.storeSourceID];
                 }
 
@@ -3487,7 +4051,7 @@
                     }
                 } else {
                     if (setting.local == true) {
-                        syn.$w.loadJson(syn.Config.SharedAssetUrl + 'code/{0}.json'.format(setting.storeSourceID), setting, function (setting, json) {
+                        syn.$w.loadJson(setting.sharedAssetUrl + 'code/{0}.json'.format(setting.storeSourceID), setting, function (setting, json) {
                             mod.config.dataSource[setting.storeSourceID] = json;
                             $select.loadData(setting.elID, json, setting.required);
                             if (setting.selectedValue) {
@@ -3833,7 +4397,7 @@
 
     $fileclient.extend({
         name: 'syn.uicontrols.$fileclient',
-        version: 'v2025.3.1',
+        version: 'v2025.9.16',
 
         fileManagers: [],
         fileControls: [],
@@ -3906,6 +4470,7 @@
             pageHttpDownloadFile: 'http-download-file',
             pageVirtualDownloadFile: 'virtual-download-file',
             pageVirtualDeleteFile: 'virtual-delete-file',
+            sharedAssetUrl: '',
             dataType: 'string',
             belongID: null,
             getter: false,
@@ -3943,6 +4508,7 @@
 
             setting.uploadType = null;
             setting.uploadUrl = null;
+            setting.sharedAssetUrl = setting.sharedAssetUrl || syn.Config.SharedAssetUrl;
 
             if ($string.isNullOrEmpty(setting.fileManagerServer) == true && syn.Config && syn.Config.FileManagerServer) {
                 setting.fileManagerServer = syn.Config.FileManagerServer;
@@ -3999,16 +4565,16 @@
                 setting.uploadSizeLimit = repositoryData.UploadSizeLimit;
 
                 if (setting.uploadType == 'Single') {
-                    setting.uploadUrl = syn.Config.SharedAssetUrl + 'upload/SingleFile.html';
+                    setting.uploadUrl = setting.sharedAssetUrl + 'upload/SingleFile.html';
                 }
                 else if (setting.uploadType == 'Profile') {
-                    setting.uploadUrl = syn.Config.SharedAssetUrl + 'upload/ProfilePicture.html';
+                    setting.uploadUrl = setting.sharedAssetUrl + 'upload/ProfilePicture.html';
                 }
                 else if (setting.uploadType == 'Multi') {
-                    setting.uploadUrl = syn.Config.SharedAssetUrl + 'upload/MultiFiles.html';
+                    setting.uploadUrl = setting.sharedAssetUrl + 'upload/MultiFiles.html';
                 }
                 else if (setting.uploadType == 'ImageLink') {
-                    setting.uploadUrl = syn.Config.SharedAssetUrl + 'upload/ImageLinkFiles.html';
+                    setting.uploadUrl = setting.sharedAssetUrl + 'upload/ImageLinkFiles.html';
                 }
 
                 setting.elID = elID;
@@ -4244,7 +4810,7 @@
                 syn.$m.addClass(divFile, 'input-group');
 
                 var file = document.createElement('input');
-                syn.$m.addClass(file, 'form-control');
+                syn.$m.addClass(file, 'form-control f:14!');
 
                 var remove = document.createElement('button');
                 syn.$m.addClass(remove, 'btn btn-icon bg-muted-lt');
@@ -5826,17 +6392,7 @@
                             syn.$w.alert('"{0}" 내용을 확인하기 위해 팝업을 허용해야 합니다'.format(help.subject));
                         }
                         else {
-                            var html = `
-                            <html style="margin: 0;">
-                                <head>
-                                    <link type="text/css" rel="stylesheet" href="/js/tinymce/skins/ui/oxide/content.min.css">
-                                    <link type="text/css" rel="stylesheet" href="/js/tinymce/skins/content/default/content.min.css">
-                                </head>
-                                <body style="margin: 0; width: 100%; padding:8px;" class="mce-content-body">
-                                    <h1>${help.subject}</h1>${help.sentence}
-                                </body>
-                            </html>
-                            `;
+                            var html = `<html style="margin: 0;"><head><link type="text/css" rel="stylesheet" href="/js/tinymce/skins/ui/oxide/content.min.css"><link type="text/css" rel="stylesheet" href="/js/tinymce/skins/content/default/content.min.css"></head><body style="margin: 0; width: 100%; padding:8px;" class="mce-content-body"><h1>${help.subject}</h1>${help.sentence}</body></html>`;
 
                             helpWindow.document.open();
                             helpWindow.document.write(html);
@@ -5996,7 +6552,7 @@
 
     $radio.extend({
         name: 'syn.uicontrols.$radio',
-        version: 'v2025.3.26',
+        version: 'v2025.10.1',
         defaultSetting: {
             contents: '',
             toSynControl: false,
@@ -6039,6 +6595,8 @@
                 el.setAttribute('id', el.id + '_hidden');
                 el.setAttribute('syn-options', JSON.stringify(setting));
                 el.style.display = 'none';
+
+                var className = el.getAttribute('class');
                 var dataFieldID = el.getAttribute('syn-datafield');
                 var events = el.getAttribute('syn-events');
                 var value = el.value;
@@ -6059,7 +6617,7 @@
                 var parent = el.parentNode;
                 var wrapper = syn.$m.create({
                     tag: 'span',
-                    className: 'formControl'
+                    className: $string.isNullOrEmpty(className) == true ? 'form-control' : className
                 });
                 wrapper.innerHTML = html;
 
@@ -6222,7 +6780,7 @@
             el.style.height = setting.height;
 
             el.setAttribute('syn-options', JSON.stringify(setting));
-            el.setAttribute('spellcheck', 'false');
+            el.spellcheck = $string.toBoolean(setting.spellcheck) == true ? 'true' : 'false';
 
             var events = el.getAttribute('syn-events');
             var editor = null;
@@ -6417,7 +6975,7 @@
 
     $textbox.extend({
         name: 'syn.uicontrols.$textbox',
-        version: 'v2025.3.25',
+        version: 'v2026.1.3',
         defaultSetting: {
             editType: 'text',
             inValidateClear: true,
@@ -6435,7 +6993,17 @@
             controlText: null,
             validators: null,
             transactConfig: null,
-            triggerConfig: null
+            triggerConfig: null,
+            datalistID: null,
+            datalistItems: [],
+            datalistUrl: null,
+            datalistValueField: 'value',
+            datalistLabelField: 'label',
+            dataSourceID: null,
+            storeSourceID: null,
+            parameters: null,
+            local: true,
+            sharedAssetUrl: ''
         },
 
         addModuleList(el, moduleList, setting, controlType) {
@@ -6463,7 +7031,47 @@
                 setting = syn.$w.argumentsExtend(setting, moduleSettings);
             }
 
+            setting.elID = elID;
+            setting.storeSourceID = setting.storeSourceID || setting.dataSourceID;
+            setting.sharedAssetUrl = setting.sharedAssetUrl || syn.Config.SharedAssetUrl;
+
             el.setAttribute('syn-options', JSON.stringify(setting));
+            el.spellcheck = $string.toBoolean(setting.spellcheck) == true ? 'true' : 'false';
+
+            if ($string.isNullOrEmpty(setting.datalistID) == false || (setting.datalistItems && setting.datalistItems.length > 0) || setting.storeSourceID) {
+                $textbox.setupDatalist(el, setting);
+            }
+
+            if (setting.storeSourceID) {
+                syn.$w.addReadyCount();
+                var dataSource = null;
+                if (mod.config && mod.config.dataSource && mod.config.dataSource[setting.storeSourceID] && setting.local == true) {
+                    dataSource = mod.config.dataSource[setting.storeSourceID];
+                }
+
+                if (dataSource) {
+                    $textbox.loadData(setting.elID, dataSource);
+                    syn.$w.removeReadyCount();
+                } else {
+                    if (setting.local == true) {
+                        syn.$w.loadJson(setting.sharedAssetUrl + 'code/{0}.json'.format(setting.storeSourceID), setting, function (setting, json) {
+                            if (json) {
+                                mod.config.dataSource[setting.storeSourceID] = json;
+                                $textbox.loadData(setting.elID, json);
+                            }
+                            syn.$w.removeReadyCount();
+                        }, false);
+                    } else {
+                        syn.$w.getDataSource(setting.dataSourceID, setting.parameters, function (json) {
+                            if (json) {
+                                mod.config.dataSource[setting.storeSourceID] = json;
+                                $textbox.loadData(setting.elID, json);
+                            }
+                            syn.$w.removeReadyCount();
+                        });
+                    }
+                }
+            }
 
             if ($object.isEmpty(setting.placeText) == false) {
                 superplaceholder({
@@ -6515,9 +7123,6 @@
                     syn.$l.addEvent(el, 'blur', $textbox.event_numeric_blur);
                     syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
-                    if (el.offsetWidth) {
-                        // el.offsetWidth = el.offsetWidth <= 28 ? 0 : el.offsetWidth - 28;
-                    }
 
                     new ISpin(el, {
                         wrapperClass: 'ispin-wrapper',
@@ -6553,6 +7158,20 @@
                     syn.$l.addEvent(el, 'blur', $textbox.event_minute_blur);
                     syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
                     syn.$m.setStyle(el, 'ime-mode', 'disabled');
+                    break;
+                case 'time5':
+                    syn.$l.addEvent(el, 'focus', $textbox.event_focus);
+                    syn.$l.addEvent(el, 'blur', $textbox.event_time5_blur);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
+                    syn.$m.setStyle(el, 'ime-mode', 'disabled');
+                    VMasker(el).maskPattern('99:99');
+                    break;
+                case 'time8':
+                    syn.$l.addEvent(el, 'focus', $textbox.event_focus);
+                    syn.$l.addEvent(el, 'blur', $textbox.event_time8_blur);
+                    syn.$l.addEvent(el, 'input', $textbox.event_numeric_input);
+                    syn.$m.setStyle(el, 'ime-mode', 'disabled');
+                    VMasker(el).maskPattern('99:99:99');
                     break;
                 case 'yearmonth':
                     syn.$l.addEvent(el, 'focus', $textbox.event_focus);
@@ -6631,6 +7250,266 @@
 
             if (setting.bindingID && syn.uicontrols.$data) {
                 syn.uicontrols.$data.bindingSource(elID, setting.bindingID);
+            }
+        },
+
+        dataRefresh(elID, setting, callback) {
+            setting = setting || {};
+            setting.elID = elID;
+            setting.storeSourceID = setting.storeSourceID || setting.dataSourceID;
+            setting = syn.$w.argumentsExtend(JSON.parse(syn.$l.get(elID).getAttribute('syn-options')), setting);
+            setting.deleteCache = $object.isNullOrUndefined(setting.deleteCache) == true ? true : setting.deleteCache;
+
+            var el = syn.$l.get(elID);
+            el.setAttribute('syn-options', JSON.stringify(setting));
+
+            if (setting.dataSourceID || setting.storeSourceID) {
+                var mod = window[syn.$w.pageScript];
+                if (mod.config && mod.config.dataSource && mod.config.dataSource[setting.storeSourceID] && $string.toBoolean(setting.deleteCache) == true) {
+                    delete mod.config.dataSource[setting.storeSourceID];
+                }
+
+                if (mod && mod.hook.controlInit) {
+                    var moduleSettings = mod.hook.controlInit(elID, setting);
+                    setting = syn.$w.argumentsExtend(setting, moduleSettings);
+                }
+
+                var dataSource = null;
+                if (mod.config && mod.config.dataSource && mod.config.dataSource[setting.storeSourceID]) {
+                    dataSource = mod.config.dataSource[setting.storeSourceID];
+                }
+
+                if (dataSource) {
+                    $textbox.loadData(setting.elID, dataSource);
+                    if (callback) {
+                        callback();
+                    }
+                } else {
+                    if (setting.local == true) {
+                        syn.$w.loadJson(setting.sharedAssetUrl + 'code/{0}.json'.format(setting.storeSourceID), setting, function (setting, json) {
+                            mod.config.dataSource[setting.storeSourceID] = json;
+                            $textbox.loadData(setting.elID, json);
+
+                            if (callback) {
+                                callback();
+                            }
+                        }, false);
+                    } else {
+                        syn.$w.getDataSource(setting.dataSourceID, setting.parameters, function (json) {
+                            mod.config.dataSource[setting.storeSourceID] = json;
+                            $textbox.loadData(setting.elID, json);
+
+                            if (callback) {
+                                callback();
+                            }
+                        });
+                    }
+                }
+            }
+        },
+
+        loadData(elID, dataSource) {
+            var items = [];
+            if (dataSource && dataSource.DataSource) {
+                var length = dataSource.DataSource.length;
+                for (var i = 0; i < length; i++) {
+                    var item = dataSource.DataSource[i];
+                    items.push({
+                        value: item[dataSource.CodeColumnID],
+                        label: item[dataSource.ValueColumnID]
+                    });
+                }
+            }
+            $textbox.setDatalistItems(elID, items);
+        },
+
+        setupDatalist(el, setting) {
+            var elID = el.getAttribute('id');
+            var datalistID = setting.datalistID || elID + '_datalist';
+
+            var datalistEl = syn.$l.get(datalistID);
+            if ($object.isNullOrUndefined(datalistEl) == true) {
+                datalistEl = document.createElement('datalist');
+                datalistEl.id = datalistID;
+                el.parentNode.insertBefore(datalistEl, el.nextSibling);
+            }
+
+            el.setAttribute('list', datalistID);
+
+            if (setting.datalistItems && setting.datalistItems.length > 0) {
+                $textbox.setDatalistItems(elID, setting.datalistItems);
+            }
+
+            if ($string.isNullOrEmpty(setting.datalistUrl) == false) {
+                syn.$l.addEvent(el, 'focus', function () {
+                    $textbox.loadDatalistItems(elID);
+                });
+            }
+        },
+
+        setDatalistItems(elID, items) {
+            var el = syn.$l.get(elID);
+            if ($object.isNullOrUndefined(el) == false) {
+                var setting = JSON.parse(el.getAttribute('syn-options'));
+                var datalistID = setting.datalistID || elID + '_datalist';
+                var datalistEl = syn.$l.get(datalistID);
+
+                if ($object.isNullOrUndefined(datalistEl) == false) {
+                    datalistEl.innerHTML = '';
+
+                    items.forEach(function (item) {
+                        var option = document.createElement('option');
+                        if ($object.isString(item) == true) {
+                            option.value = item;
+                        } else {
+                            option.value = item.label || '';
+                        }
+                        datalistEl.appendChild(option);
+                    });
+
+                    setting.datalistItems = items;
+                    el.setAttribute('syn-options', JSON.stringify(setting));
+                }
+            }
+        },
+
+        addDatalistItem(elID, item) {
+            var el = syn.$l.get(elID);
+            if ($object.isNullOrUndefined(el) == false) {
+                var setting = JSON.parse(el.getAttribute('syn-options'));
+                var datalistID = setting.datalistID || elID + '_datalist';
+                var datalistEl = syn.$l.get(datalistID);
+
+                if ($object.isNullOrUndefined(datalistEl) == false) {
+                    var option = document.createElement('option');
+                    if ($object.isString(item) == true) {
+                        option.value = item;
+                    } else {
+                        option.value = item.value || '';
+                        if (item.label) {
+                            option.label = item.label;
+                            option.textContent = item.label;
+                        }
+                    }
+                    datalistEl.appendChild(option);
+
+                    if (!setting.datalistItems) {
+                        setting.datalistItems = [];
+                    }
+                    setting.datalistItems.push(item);
+                    el.setAttribute('syn-options', JSON.stringify(setting));
+                }
+            }
+        },
+
+        removeDatalistItem(elID, value) {
+            var el = syn.$l.get(elID);
+            if ($object.isNullOrUndefined(el) == false) {
+                var setting = JSON.parse(el.getAttribute('syn-options'));
+                var datalistID = setting.datalistID || elID + '_datalist';
+                var datalistEl = syn.$l.get(datalistID);
+
+                if ($object.isNullOrUndefined(datalistEl) == false) {
+                    var options = datalistEl.querySelectorAll('option');
+                    options.forEach(function (option) {
+                        if (option.value === value) {
+                            option.remove();
+                        }
+                    });
+
+                    if (setting.datalistItems) {
+                        setting.datalistItems = setting.datalistItems.filter(function (item) {
+                            return ($object.isString(item) ? item : item.value) !== value;
+                        });
+                        el.setAttribute('syn-options', JSON.stringify(setting));
+                    }
+                }
+            }
+        },
+
+        clearDatalistItems(elID) {
+            var el = syn.$l.get(elID);
+            if ($object.isNullOrUndefined(el) == false) {
+                var setting = JSON.parse(el.getAttribute('syn-options'));
+                var datalistID = setting.datalistID || elID + '_datalist';
+                var datalistEl = syn.$l.get(datalistID);
+
+                if ($object.isNullOrUndefined(datalistEl) == false) {
+                    datalistEl.innerHTML = '';
+                    setting.datalistItems = [];
+                    el.setAttribute('syn-options', JSON.stringify(setting));
+                }
+            }
+        },
+
+        getDatalistItems(elID) {
+            var result = [];
+            var el = syn.$l.get(elID);
+            if ($object.isNullOrUndefined(el) == false) {
+                var setting = JSON.parse(el.getAttribute('syn-options'));
+                result = setting.datalistItems || [];
+            }
+            return result;
+        },
+
+        loadDatalistItems(elID, url, callback) {
+            var el = syn.$l.get(elID);
+            if ($object.isNullOrUndefined(el) == false) {
+                var setting = JSON.parse(el.getAttribute('syn-options'));
+                var loadUrl = url || setting.datalistUrl;
+
+                if ($string.isNullOrEmpty(loadUrl) == false) {
+                    syn.$w.executeRequest({
+                        url: loadUrl,
+                        method: 'GET',
+                        success: function (response) {
+                            var items = [];
+                            if (Array.isArray(response)) {
+                                items = response.map(function (item) {
+                                    if ($object.isString(item)) {
+                                        return { value: item };
+                                    } else {
+                                        return {
+                                            value: item[setting.datalistValueField] || item.value || '',
+                                            label: item[setting.datalistLabelField] || item.label || ''
+                                        };
+                                    }
+                                });
+                            }
+                            $textbox.setDatalistItems(elID, items);
+
+                            if (callback && typeof callback === 'function') {
+                                callback(items);
+                            }
+                        },
+                        error: function (error) {
+                            console.error('datalist 로드 실패:', error);
+                            if (callback && typeof callback === 'function') {
+                                callback(null, error);
+                            }
+                        }
+                    });
+                }
+            }
+        },
+
+        filterDatalistItems(elID, filterText) {
+            var el = syn.$l.get(elID);
+            if ($object.isNullOrUndefined(el) == false) {
+                var setting = JSON.parse(el.getAttribute('syn-options'));
+                var allItems = setting.datalistItems || [];
+
+                if ($string.isNullOrEmpty(filterText) == true) {
+                    $textbox.setDatalistItems(elID, allItems);
+                } else {
+                    var filteredItems = allItems.filter(function (item) {
+                        var value = $object.isString(item) ? item : (item.value || '');
+                        var label = $object.isString(item) ? '' : (item.label || '');
+                        var searchText = filterText.toLowerCase();
+                        return value.toLowerCase().includes(searchText) || label.toLowerCase().includes(searchText);
+                    });
+                    $textbox.setDatalistItems(elID, filteredItems);
+                }
             }
         },
 
@@ -6742,14 +7621,15 @@
 
         event_blur(evt) {
             var el = evt.target || evt.srcElement || evt;
+            var synOptions = JSON.parse(el.getAttribute('syn-options'));
+            const value = (synOptions.editType == 'number' || synOptions.editType == 'numeric') ? $string.toNumberString(el.value) : el.value;
             var maxlengthB = el.getAttribute('maxlengthB');
             if ($string.isNullOrEmpty(maxlengthB) == false) {
                 var length = parseInt(el.getAttribute('maxlengthB'));
-                var textLength = $string.length(el.value);
+                var textLength = $string.length(value);
 
                 if (textLength > length) {
                     var alertOptions = $object.clone(syn.$w.alertOptions);
-                    // alertOptions.stack = '영어외에는 2자리씩 계산되며, 현재 {1}글자를 입력했습니다'.format($string.toCurrency(textLength));
                     syn.$w.alert($resource.translations.textMaxLength.format($string.toCurrency(length)), '정보', alertOptions);
 
                     el.focus();
@@ -6760,11 +7640,10 @@
                 var maxLength = el.getAttribute('maxlength');
                 if ($string.isNullOrEmpty(maxLength) == false) {
                     var length = parseInt(el.getAttribute('maxlength'));
-                    var textLength = el.value.length;
+                    var textLength = $string.length(value);
 
                     if (textLength > length) {
                         var alertOptions = $object.clone(syn.$w.alertOptions);
-                        // alertOptions.stack = '영어외에는 2자리씩 계산되며, 현재 {1}글자를 입력했습니다'.format($string.toCurrency(textLength));
                         syn.$w.alert($resource.translations.textMaxLength.format($string.toCurrency(length)), '정보', alertOptions);
 
                         el.focus();
@@ -6797,6 +7676,80 @@
 
                 if (el.value.length == 1) {
                     el.value = el.value.padStart(2, '0');
+                }
+            }
+        },
+
+        event_time5_blur(evt) {
+            var el = evt.target || evt.srcElement || evt;
+            var value = el.value;
+
+            if (value.length > 0) {
+                el.setAttribute('placeholder', '');
+                var parts = value.split(':');
+                var isValid = false;
+
+                if (parts.length === 1) {
+                    var hour = parseInt(parts[0], 10);
+                    if (hour >= 0 && hour <= 23) {
+                        el.value = String(hour).padStart(2, '0') + ':00';
+                        isValid = true;
+                    }
+                }
+                else if (parts.length === 2) {
+                    var hour = parseInt(parts[0], 10);
+                    var minute = parseInt(parts[1], 10);
+                    if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                        el.value = String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0');
+                        isValid = true;
+                    }
+                }
+
+                if (isValid == false) {
+                    el.value = '';
+                    el.setAttribute('placeholder', 'HH:MM');
+                }
+            }
+        },
+
+        event_time8_blur(evt) {
+            var el = evt.target || evt.srcElement || evt;
+            var value = el.value;
+
+            if (value.length > 0) {
+                el.setAttribute('placeholder', '');
+                var parts = value.split(':');
+                var isValid = false;
+
+                if (parts.length === 1) {
+                    var hour = parseInt(parts[0], 10);
+                    if (hour >= 0 && hour <= 23) {
+                        el.value = String(hour).padStart(2, '0') + ':00';
+                        isValid = true;
+                    }
+                }
+                else if (parts.length === 2) {
+                    var hour = parseInt(parts[0], 10);
+                    var minute = parseInt(parts[1], 10);
+                    if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                        el.value = String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0') + ':00';
+                        isValid = true;
+                    }
+                }
+                else if (parts.length === 3) {
+                    var hour = parseInt(parts[0], 10);
+                    var minute = parseInt(parts[1], 10);
+                    var second = parseInt(parts[2], 10);
+
+                    if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 && second >= 0 && second <= 59) {
+                        el.value = String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0') + ':' + String(second).padStart(2, '0');
+                        isValid = true;
+                    }
+                }
+
+                if (isValid == false) {
+                    el.value = '';
+                    el.setAttribute('placeholder', 'HH:MM:SS');
                 }
             }
         },
@@ -6842,6 +7795,8 @@
             if (val.startsWith('-') == true && val.length == 1 || val.trim().length == 0) {
                 el.value = '0';
             }
+
+            el.value = $string.toNumber(val).toString();
         },
 
         event_numeric_blur(evt) {
@@ -6906,7 +7861,7 @@
                             }
                         }
                     } else if (value.length == 11) {
-                        if (syn.$v.regexs.areaPhone.test(value) == true) {
+                        if (syn.$v.regexs.areaPhone.test(value) == true || syn.$v.regexs.onesPhone.test(value) == true) {
                             el.value = value.substr(0, 3).concat('-', value.substr(3, 4), '-', value.substr(7, 4));
                         }
                         else if (syn.$v.regexs.mobilePhone.test(value) == true) {
@@ -6996,7 +7951,7 @@
                             }
                         }
                     } else if (value.length == 11) {
-                        if (syn.$v.regexs.areaPhone.test(value) == true) {
+                        if (syn.$v.regexs.areaPhone.test(value) == true || syn.$v.regexs.onesPhone.test(value) == true) {
                             el.value = value.substr(0, 3).concat('-', value.substr(3, 4), '-', value.substr(7, 4));
                         }
                         else if (syn.$v.regexs.mobilePhone.test(value) == true) {
@@ -7196,7 +8151,7 @@
             end = el.value.length;
 
             var moveCaret = function () {
-                if (el.type != 'email' && el.setSelectionRange) {
+                if (el.type == 'text' && el.setSelectionRange) {
                     el.setSelectionRange(begin, end);
                 } else if (el.createTextRange) {
                     var range = el.createTextRange();
@@ -7217,20 +8172,11 @@
             if ($object.isNullOrUndefined(el) == false) {
                 var setting = JSON.parse(el.getAttribute('syn-options'));
                 switch (setting.editType) {
-                    case 'text':
-                    case 'english':
                     case 'number':
-                    case 'spinner':
-                    case 'date':
-                    case 'hour':
-                    case 'minute':
-                    case 'yearmonth':
-                    case 'homephone':
-                    case 'mobilephone':
-                    case 'email':
-                    case 'juminno':
-                    case 'businessno':
-                    case 'corporateno':
+                    case 'numeric':
+                        result = $string.toNumberString(el.value);
+                        break;
+                    default:
                         var mod = window[syn.$w.pageScript];
                         if (setting.getter === true && mod.hook.frameEvent) {
                             result = mod.hook.frameEvent('controlGetter', {
@@ -7246,12 +8192,6 @@
                             result = el.value;
                         }
                         break;
-                    case 'numeric':
-                        result = el.value.replace(/,/g, '');
-                        break;
-                    default:
-                        result = '';
-                        break;
                 }
             }
 
@@ -7265,20 +8205,11 @@
                     var result = '';
                     var setting = JSON.parse(el.getAttribute('syn-options'));
                     switch (setting.editType) {
-                        case 'text':
-                        case 'english':
                         case 'number':
-                        case 'spinner':
-                        case 'date':
-                        case 'hour':
-                        case 'minute':
-                        case 'yearmonth':
-                        case 'homephone':
-                        case 'mobilephone':
-                        case 'email':
-                        case 'juminno':
-                        case 'businessno':
-                        case 'corporateno':
+                        case 'numeric':
+                            el.value = $string.isNumber(value) == true ? $string.toCurrency(value) : value;
+                            break;
+                        default:
                             var mod = window[syn.$w.pageScript];
                             if (setting && setting.setter === true && mod.hook.frameEvent) {
                                 result = mod.hook.frameEvent('controlSetter', {
@@ -7294,23 +8225,15 @@
                                 el.value = value;
                             }
                             break;
-                        case 'numeric':
-                            if (value.indexOf(',') > -1) {
-                                el.value = value;
-                            }
-                            else {
-                                el.value = $string.isNumber(value) == true ? $string.toCurrency(value) : value;
-                            }
-                            break;
-                        default:
-                            el.value = '';
-                            break;
                     }
                 }
                 else {
                     var triggerOptions = syn.$w.getTriggerOptions(elID);
                     if (triggerOptions && triggerOptions.value) {
                         el.value = triggerOptions.value;
+                    }
+                    else {
+                        el.value = '';
                     }
                 }
             }
@@ -7367,7 +8290,7 @@
 
     $sourceeditor.extend({
         name: 'syn.uicontrols.$sourceeditor',
-        version: 'v2025.3.1',
+        version: 'v2026.2.25',
         editorPendings: [],
         editorControls: [],
         defaultSetting: {
@@ -7391,6 +8314,16 @@
             triggerConfig: null
         },
 
+        concreate() {
+            if (window.monaco) {
+            }
+            else {
+                if (!$string.isNullOrEmpty(syn.Config.DomainBaseUrl) && syn.Config.DomainBaseUrl !== location.origin) {
+                    $sourceeditor.defaultSetting.basePath = $sourceeditor.defaultSetting.basePath.replace('/lib/monaco-editor/min/vs', `${syn.Config.DomainBaseUrl}/lib/monaco-editor/min/vs`);
+                }
+            }
+        },
+
         controlLoad(elID, setting) {
             if (window.monaco) {
                 $sourceeditor.lazyControlLoad(elID, setting);
@@ -7399,7 +8332,7 @@
                 syn.$w.loadScript($sourceeditor.defaultSetting.basePath + '/loader.js', 'monacosourceeditor', () => {
                     if (window.require) {
                         require.config({
-                            paths: { 'vs': syn.uicontrols.$sourceeditor.defaultSetting.basePath },
+                            paths: { 'vs': $sourceeditor.defaultSetting.basePath },
                             'vs/nls': {
                                 availableLanguages: {
                                     '*': 'ko'
@@ -7709,7 +8642,7 @@
 
     $htmleditor.extend({
         name: 'syn.uicontrols.$htmleditor',
-        version: 'v2025.3.24',
+        version: 'v2026.2.25',
         userWorkID: '',
         applicationID: '',
         editorPendings: [],
@@ -7729,7 +8662,7 @@
             convert_urls: false,
             isNumberTempDependency: true,
             height: 300,
-            imageFileSizeLimit: 300000,
+            imageFileSizeLimit: 6291456,
             viewerHtml: '<html><head><base href="/"><style type="text/css">body { font-family: \'Noto Sans KR\', \'Pretendard\', \'Nanum Gothic\', \'Malgun Gothic\', Gulim, 굴림, sans-serif !important; font-size: 14px; }</style><link type="text/css" rel="stylesheet" href="/lib/tinymce/skins/ui/oxide/content.min.css"><link type="text/css" rel="stylesheet" href="/lib/tinymce/skins/content/default/content.min.css"></head><body id="tinymce" class="mce-content-body">{0}<script>document.onselectstart = function () { return false; }; document.oncontextmenu = function () { return false; }; document.addEventListener && document.addEventListener("click", function(e) {for (var elm = e.target; elm; elm = elm.parentNode) {if (elm.nodeName === "A" && !(e.ctrlKey && !e.altKey)) {e.preventDefault();}}}, false);</script></body></html>',
             language: 'ko_KR',
             // plugins: [
@@ -7758,6 +8691,7 @@
             prefixHtml: '',
             suffixHtml: '',
             limitGuideLineWidth: '',
+            deprecation_warnings: false,
             dataType: 'string',
             belongID: null,
             getter: false,
@@ -7786,7 +8720,24 @@
             if (window.tinymce) {
             }
             else {
-                syn.$w.loadScript('/lib/tinymce/tinymce.min.js');
+                if ($string.isNullOrEmpty(syn.Config.DomainBaseUrl) == true || syn.Config.DomainBaseUrl == location.origin) {
+                    if (syn.Config && $string.isNullOrEmpty(syn.Config.ProxyPathName) == false) {
+                        syn.$w.loadScript(`${syn.$w.proxyBasePath}/lib/tinymce/tinymce.min.js`);
+                    }
+                    else {
+                        syn.$w.loadScript('/lib/tinymce/tinymce.min.js');
+                    }
+                }
+                else {
+                    if (syn.Config && $string.isNullOrEmpty(syn.Config.ProxyPathName) == false) {
+                        syn.$w.loadScript(`${syn.Config.DomainBaseUrl}${syn.$w.proxyBasePath}/lib/tinymce/tinymce.min.js`);
+                    }
+                    else {
+                        syn.$w.loadScript(`${syn.Config.DomainBaseUrl}/lib/tinymce/tinymce.min.js`);
+                    }
+
+                    $htmleditor.defaultSetting.viewerHtml = $htmleditor.defaultSetting.viewerHtml.replace(/<base href="\/">/, `<base href="${syn.Config.DomainBaseUrl}/">`);
+                }
             }
         },
 
@@ -8150,11 +9101,19 @@
                         var length = tds.length;
                         for (var i = 0; i < length; i++) {
                             var td = tds[i];
-                            if ($string.isNullOrEmpty(td.style.width) == false) {
+                            if ($string.isNullOrEmpty(td.style.width) == true || td.style.width == '0px') {
+                                td.style.width = '100%';
+                                td.setAttribute('width', '100%');
+                            }
+                            else {
                                 td.setAttribute('width', td.style.width);
                             }
 
-                            if ($string.isNullOrEmpty(td.style.height) == false) {
+                            if ($string.isNullOrEmpty(td.style.height) == true || td.style.height == '0px') {
+                                td.style.height = '100%';
+                                td.setAttribute('height', '100%');
+                            }
+                            else {
                                 td.setAttribute('height', td.style.height);
                             }
                         }
@@ -8850,6 +9809,10 @@
         setValue(elID, value, meta) {
             var editor = $htmleditor.getHtmlEditor(elID);
             if (editor) {
+                if ($string.isNullOrEmpty(value) == true) {
+                    value = '';
+                }
+
                 var controlOptions = syn.$l.get('{0}_hidden'.format(elID)).getAttribute('syn-options');
                 if ($object.isNullOrUndefined(controlOptions) == false) {
                     var setting = JSON.parse(controlOptions);
@@ -8895,7 +9858,7 @@
 
     $organization.extend({
         name: 'syn.uicontrols.$organization',
-        version: 'v2025.3.1',
+        version: 'v2025.10.1',
         organizationControls: [],
         eventHooks: [
             'nodedrop',
@@ -8974,6 +9937,7 @@
                 setting.createNode = eval(setting.createNode);
             }
 
+            var className = el.getAttribute('class');
             var hookEvents = el.getAttribute('syn-events');
             try {
                 if (hookEvents) {
@@ -8987,7 +9951,7 @@
             var wrapper = document.createElement('div');
             wrapper.style.width = setting.width;
             wrapper.style.height = setting.height;
-            wrapper.className = 'organization-container';
+            wrapper.className = $string.isNullOrEmpty(className) == true ? 'organization-container' : className
             wrapper.innerHTML = '<div id="' + elID + '"></div>';
             parent.appendChild(wrapper);
 
@@ -9657,594 +10621,499 @@
     syn.uicontrols.$tree = $tree;
 })(window);
 
-/// <reference path="/js/syn.js" />
+/// <reference path='/js/syn.js' />
 
 (function (window) {
     'use strict';
-    if (window.Handsontable) {
-        var textEditor = Handsontable.editors.TextEditor.prototype.extend();
 
-        Handsontable.validators.registerValidator('require', function (query, callback) {
-            var result = false;
-            if ($string.isNullOrEmpty(query) == true) {
-                result = false;
-            } else {
-                result = true;
+    if (window.AUIGrid) {
+        window.AUIGrid.TextareaEditor = window.AUIGrid.Class({
+            tagName: 'div',
+            element: null,
+            cssClass: 'aui-grid-edit-renderer-custom aui-grid-edit-renderer-custom-textarea',
+            data: null,
+            columnData: null,
+            columnIndex: -1,
+            rowIndex: -1,
+            dataField: '',
+            extraProps: null,
+            __textareaEle: null,
+
+            destroy: function (unload) {
+                this.__textarea.removeEventListener('keyup', this.__textareaKeyUpHandler);
+                this.__confirmBtn.removeEventListener('click', this.__confirmBtnClickHandler);
+                this.__cancelBtn.removeEventListener('click', this.__cancelBtnClickHandler);
+
+                this.__textarea = null;
+                this.__confirmBtn = null;
+                this.__cancelBtn = null;
+
+                this.$super.destroy(unload);
+            },
+
+            create: function () {
+                var extraProps = this.extraProps;
+
+                this.__textarea = document.createElement('textarea');
+                var measureWidth = (text) => {
+                    var el = document.createElement('div');
+
+                    el.style.position = 'absolute';
+                    el.style.visibility = 'hidden';
+                    el.style.whiteSpace = 'nowrap';
+                    el.style.left = '-9999px';
+                    el.innerText = text;
+
+                    document.body.appendChild(el);
+                    var width = window.getComputedStyle(el).width;
+                    document.body.removeChild(el);
+                    return width;
+                }
+
+                var measureHeight = (text, width) => {
+                    var el = document.createElement('div');
+
+                    el.style.position = 'absolute';
+                    el.style.visibility = 'hidden';
+                    el.style.width = width;
+                    el.style.left = '-9999px';
+                    el.innerText = text;
+
+                    document.body.appendChild(el);
+                    var height = window.getComputedStyle(el).height;
+                    document.body.removeChild(el);
+                    return height;
+                }
+
+                var documentWidth = document.documentElement.clientWidth || document.body.clientWidth || 0;
+                var documentHeight = document.documentElement.clientHeight || document.body.clientHeight || 0;
+                var frameWidth = documentWidth - 200;
+                var frameHeight = documentHeight / 2 - 60;
+                var textWidth = parseInt(measureWidth(this.labelText).replace('px', ''));
+                var textHeight = parseInt(measureHeight(this.labelText).replace('px', ''));
+
+                var columnWidth = parseInt(this.columnData.width);
+
+                if (frameWidth < columnWidth) {
+                    frameWidth = columnWidth;
+                }
+
+                if (frameWidth < textWidth) {
+                    textWidth = frameWidth;
+                }
+
+                if (frameHeight < textHeight) {
+                    textHeight = frameHeight;
+                }
+
+                if (textWidth < columnWidth) {
+                    textWidth = columnWidth;
+                }
+
+                var minHeight = (extraProps && extraProps.minHeight) ? extraProps.minHeight : 60;
+                if (textHeight < minHeight) {
+                    textHeight = minHeight;
+                }
+
+                this.__textarea.setAttribute('spellcheck', 'false');
+                this.__textarea.style.width = `${textWidth}px`;
+                this.__textarea.style.height = `${textHeight}px`;
+                this.__textarea.value = this.data[this.dataField];
+                this.__textareaKeyUpHandler = this.__textareaKeyUpHandler.bind(this);
+                this.__textarea.addEventListener('keyup', this.__textareaKeyUpHandler);
+                this.element.appendChild(this.__textarea);
+
+                this.__confirmBtn = document.createElement('button');
+                this.__confirmBtn.className = 'custom-textarea-confirm-btn';
+                this.__confirmBtn.innerText = extraProps.confirm || '확 인';
+                this.__confirmBtnClickHandler = this.__confirmBtnClickHandler.bind(this);
+                this.__confirmBtn.addEventListener('click', this.__confirmBtnClickHandler);
+
+                this.__cancelBtn = document.createElement('button');
+                this.__cancelBtn.className = 'custom-textarea-cancel-btn';
+                this.__cancelBtn.innerText = extraProps.cancel || '취 소';
+                this.__cancelBtnClickHandler = this.__cancelBtnClickHandler.bind(this);
+                this.__cancelBtn.addEventListener('click', this.__cancelBtnClickHandler);
+
+                this.element.appendChild(this.__confirmBtn);
+                this.element.appendChild(this.__cancelBtn);
+
+                setTimeout(
+                    function () {
+                        document.getElementsByClassName('aui-grid-edit-renderer-custom')[0].style.width = null;
+                        this.__textarea.style.minWidth = '240px';
+                        this.__textarea.focus();
+                        this.__textarea.select();
+                    }.bind(this)
+                );
+            },
+
+            triggerEditEndEvent: function (newValue, which) {
+                this.$super.triggerEditEndEvent(newValue, which);
+            },
+
+            triggerEditCancelEvent: function (which) {
+                this.$super.triggerEditCancelEvent(which);
+            },
+
+            injectValue: function (value) {
+                this.$super.injectValue(value);
+            },
+
+            __textareaKeyUpHandler: function (evt) {
+                if (evt.keyCode == 13 && evt.ctrlKey) {
+                    evt.preventDefault();
+                    this.triggerEditEndEvent(this.__textarea.value);
+                    return;
+                } else if (evt.keyCode == 27) {
+                    evt.preventDefault();
+                    this.triggerEditCancelEvent();
+                    return;
+                }
+
+                if (evt.keyCode != 13) this.injectValue(this.__textarea.value);
+            },
+
+            __confirmBtnClickHandler: function (evt) {
+                this.triggerEditEndEvent(this.__textarea.value);
+            },
+
+            __cancelBtnClickHandler: function (evt) {
+                this.triggerEditCancelEvent();
             }
-            if (callback) {
-                callback(result);
-            }
-            return result;
-        });
-
-
-        Handsontable.cellTypes.registerCellType('codehelp', {
-            editor: textEditor,
-            renderer(instance, td, row, column, prop, value, cellProperties) {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-                var button;
-                var label;
-
-                label = document.createElement('SPAN');
-                label.textContent = value;
-
-                button = document.createElement('BUTTON');
-                syn.$m.addCssText(button, 'height: 21px;;');
-                syn.$m.addClass(button, 'btn w:21px mt:1px float:right');
-                button.tag = [instance, td, row, column, prop, value, cellProperties];
-                button.innerHTML = '<i class="ti ti-search"></i>';
-
-                Handsontable.dom.addEvent(button, 'click', function (evt) {
-                    evt.preventDefault();
-
-                    var el = evt.currentTarget;
-                    var hot = el.tag[0];
-                    var row = el.tag[2];
-                    var col = el.tag[3];
-                    var columnName = el.tag[4];
-
-                    var columnInfos = hot.getSettings().columns;
-                    var columnInfo = columnInfos.filter(function (item) { return item.data == columnName; })[0];
-
-                    var elID = hot.rootElement.id;
-                    var synOptions = syn.$w.argumentsExtend(syn.uicontrols.$codepicker.defaultSetting, columnInfo);
-                    synOptions.elID = elID;
-                    synOptions.viewType = 'grid';
-
-                    syn.uicontrols.$codepicker.find(synOptions, function (result) {
-                        var mod = window[syn.$w.pageScript];
-
-                        var returnHandler = mod.hook.frameEvent;
-                        if (returnHandler) {
-                            returnHandler.call(this, 'codeReturn', {
-                                elID: elID,
-                                row: row,
-                                col: col,
-                                columnName: columnName,
-                                result: result
-                            });
-                        }
-                    });
-                });
-
-                Handsontable.dom.empty(td);
-                td.appendChild(button);
-                td.appendChild(label);
-
-                if (cellProperties && cellProperties.className) {
-                    var classNames = cellProperties.className.split(' ');
-                    for (var i = 0; i < classNames.length; i++) {
-                        var className = classNames[i];
-                        if (className != '') {
-                            syn.$m.addClass(td, className);
-                        }
-                    }
-                }
-
-                return td;
-            },
-            validator(query, callback) {
-                callback(true);
-            },
-            allowInvalid: true
-        });
-
-        Handsontable.cellTypes.registerCellType('button', {
-            renderer(instance, td, row, column, prop, value, cellProperties) {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-                if ($string.isNullOrEmpty(value) == false) {
-                    var columnOptions = instance.getSettings().columns[column].columnOptions;
-                    var button = document.createElement('BUTTON');
-                    button.classList.add('celltype');
-
-                    if (columnOptions) {
-                        if (columnOptions.clearBorder == true) {
-                            button.style.border = '0px';
-                            button.style.backgroundColor = 'transparent';
-                            button.style.textDecoration = 'underline';
-                        }
-
-                        if (columnOptions.color) {
-                            button.style.color = columnOptions.color;
-                        }
-
-                        if (columnOptions.bold == true) {
-                            button.style.fontWeight = '900';
-                        }
-                    }
-
-                    if (value.indexOf && value.indexOf('|') > -1) {
-                        var values = value.split('|');
-                        var classLists = values[0];
-                        if (classLists.split(' ').length > 1) {
-                            var classValues = classLists.split(' ');
-                            for (var key in classValues) {
-                                button.classList.add(classValues[key]);
-                            }
-                        }
-                        else {
-                            button.classList.add(classLists);
-                        }
-
-                        value = values[1];
-                    }
-
-                    button.tag = [instance, td, row, column, prop, value, cellProperties];
-                    button.setAttribute('data', value);
-                    button.textContent = (columnOptions && $string.toBoolean(columnOptions.toCurrency) == true) ? $string.toCurrency(value) : value;
-
-                    syn.$l.addEvent(button, 'click', function (evt) {
-                        evt.preventDefault();
-
-                        var el = event.target || event.srcElement;
-                        var mod = window[syn.$w.pageScript];
-                        var eventHandler = mod.event['{0}_cellButtonClick'.format(instance.rootElement.id)];
-                        if (eventHandler) {
-                            eventHandler.apply(el, [instance.rootElement.id, row, column, prop, value]);
-                        }
-                    });
-
-                    Handsontable.dom.empty(td);
-                    td.appendChild(button);
-
-                    if (cellProperties && cellProperties.className) {
-                        var classNames = cellProperties.className.split(' ');
-                        for (var i = 0; i < classNames.length; i++) {
-                            var className = classNames[i];
-                            if (className != '') {
-                                syn.$m.addClass(td, className);
-                            }
-                        }
-                    }
-                }
-
-                return td;
-            },
-            validator(query, callback) {
-                callback(true);
-            },
-            allowInvalid: true
-        });
-
-        Handsontable.cellTypes.registerCellType('safehtml', {
-            editor: textEditor,
-            renderer(instance, td, row, column, prop, value, cellProperties) {
-                var escaped = Handsontable.helper.stringify(value);
-
-                var stripTags = function (input, allowed) {
-                    var tags = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi,
-                        commentsAndPhpTags = /<!--[\s\S]*?-->|<\?(?:php)?[\s\S]*?\?>/gi;
-
-                    allowed = (((allowed || "") + "").toLowerCase().match(/<[a-z][a-z0-9]*>/g) || []).join('');
-
-                    return input.replace(commentsAndPhpTags, '').replace(tags, function ($0, $1) {
-                        return allowed.indexOf('<' + $1.toLowerCase() + '>') > -1 ? $0 : '';
-                    });
-                };
-
-                escaped = stripTags(escaped, '<em><p><br><b><u><strong><a><big><img>');
-                td.innerHTML = escaped;
-
-                if (cellProperties && cellProperties.className) {
-                    var classNames = cellProperties.className.split(' ');
-                    for (var i = 0; i < classNames.length; i++) {
-                        var className = classNames[i];
-                        if (className != '') {
-                            syn.$m.addClass(td, className);
-                        }
-                    }
-                }
-
-                return td;
-            },
-            validator(query, callback) {
-                callback(true);
-            },
-            allowInvalid: true
-        });
-
-        Handsontable.cellTypes.registerCellType('image', {
-            editor: textEditor,
-            renderer(instance, td, row, column, prop, value, cellProperties) {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-                var escaped = Handsontable.helper.stringify(value),
-                    img;
-
-                if (escaped.indexOf('http') === 0) {
-                    img = document.createElement('IMG');
-                    img.src = value;
-
-                    Handsontable.dom.addEvent(img, 'click', function (e) {
-                        e.preventDefault();
-                    });
-
-                    Handsontable.dom.empty(td);
-                    td.appendChild(img);
-                } else {
-                    Handsontable.renderers.TextRenderer.apply(this, arguments);
-                }
-
-                if (cellProperties && cellProperties.className) {
-                    var classNames = cellProperties.className.split(' ');
-                    for (var i = 0; i < classNames.length; i++) {
-                        var className = classNames[i];
-                        if (className != '') {
-                            syn.$m.addClass(td, className);
-                        }
-                    }
-                }
-
-                return td;
-            },
-            validator(query, callback) {
-                callback(true);
-            },
-            allowInvalid: true
-        });
-
-        Handsontable.cellTypes.registerCellType('radio', {
-            renderer(instance, td, row, column, prop, value, cellProperties) {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-                var inputID = 'rdo_{0}_{1}_{2}'.format(instance.rootElement.id, row, column);
-                var input = document.createElement('INPUT');
-                input.id = inputID;
-                input.type = 'radio';
-                syn.$m.addClass(input, 'form-check-input');
-
-                if (value) {
-                    if ($string.toBoolean(value) === true) {
-                        input.checked = true;
-                    }
-                    else {
-                        input.checked = false;
-                    }
-                }
-
-                Handsontable.dom.addEvent(input, 'click', function (evt) {
-                    evt.preventDefault();
-
-                    var el = evt.target || evt.srcElement;
-                    var mod = window[syn.$w.pageScript];
-                    var gridSettings = instance.getSettings();
-                    var readonly = gridSettings.columns[column].readOnly;
-                    var cellMeta = instance.getCellMeta(row, column);
-                    if (readonly === false && cellMeta.readOnly == false) {
-                        if (gridSettings.data && gridSettings.data.length > 0) {
-                            var data = gridSettings.data;
-                            var length = data.length;
-                            for (var i = 0; i < length; i++) {
-                                if ($string.toBoolean(data[i][prop]) == true) {
-                                    if (data[i]['Flag'] == 'R') {
-                                        data[i]['Flag'] = 'U';
-                                    }
-
-                                    data[i][prop] = 0;
-                                    var radio = syn.$l.get('rdo_{0}_{1}_{2}'.format(instance.rootElement.id, i, column));
-                                    if (radio) {
-                                        radio.checked = false;
-                                    }
-                                }
-                            }
-                        }
-
-                        instance.setDataAtCell(row, column, (el.checked === true ? '1' : '0'));
-
-                        var eventHandler = mod.event['{0}_cellRadioClick'.format(instance.rootElement.id)];
-                        if (eventHandler) {
-                            eventHandler.apply(el, [instance.rootElement.id, row, column, prop, (el.checked === true ? '1' : '0')]);
-                        }
-                        instance.render();
-                    }
-                });
-
-                Handsontable.dom.empty(td);
-                td.appendChild(input);
-
-                if (cellProperties && cellProperties.className) {
-                    var classNames = cellProperties.className.split(' ');
-                    for (var i = 0; i < classNames.length; i++) {
-                        var className = classNames[i];
-                        if (className != '') {
-                            syn.$m.addClass(td, className);
-                        }
-                    }
-                }
-
-                return td;
-            },
-            validator(query, callback) {
-                callback(true);
-            },
-            allowInvalid: true
-        });
-
-        Handsontable.cellTypes.registerCellType('checkbox2', {
-            renderer(instance, td, row, column, prop, value, cellProperties) {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-                var inputID = 'chk_syngrid_{0}_{1}_{2}'.format(instance.rootElement.id, row, column);
-                var input = document.createElement('INPUT');
-                input.id = inputID;
-                input.type = 'checkbox';
-                syn.$m.addClass(input, 'form-check-input');
-
-                if (value) {
-                    if ($string.toBoolean(value) === true) {
-                        input.checked = true;
-                    }
-                    else {
-                        input.checked = false;
-                    }
-                }
-
-                Handsontable.dom.addEvent(input, 'click', function (evt) {
-                    evt.preventDefault();
-
-                    var el = evt.target || evt.srcElement;
-                    var mod = window[syn.$w.pageScript];
-                    var readonly = instance.getSettings().columns[column].readOnly;
-
-                    var cellMeta = instance.getCellMeta(row, column);
-                    if (readonly == false || cellMeta.readOnly == false) {
-                        instance.setDataAtCell(row, column, (el.checked === true ? '1' : '0'));
-
-                        var eventHandler = mod.event['{0}_cellCheckboxClick'.format(instance.rootElement.id)];
-                        if (eventHandler) {
-                            eventHandler.apply(el, [instance.rootElement.id, row, column, prop, (el.checked === true ? '1' : '0')]);
-                        }
-                    }
-                });
-
-                Handsontable.dom.empty(td);
-                td.appendChild(input);
-
-                if (cellProperties && cellProperties.className) {
-                    var classNames = cellProperties.className.split(' ');
-                    for (var i = 0; i < classNames.length; i++) {
-                        var className = classNames[i];
-                        if (className != '') {
-                            syn.$m.addClass(td, className);
-                        }
-                    }
-                }
-
-                return td;
-            },
-            validator(query, callback) {
-                callback(true);
-            },
-            allowInvalid: true
-        });
+        }).extend(window.AUIGrid.EditRendererBase);
     }
 
     syn.uicontrols = syn.uicontrols || new syn.module();
-    var $grid = syn.uicontrols.$grid || new syn.module();
+    var $auigrid = syn.uicontrols.$auigrid || new syn.module();
 
-    $grid.extend({
-        name: 'syn.uicontrols.$grid',
-        version: 'v2025.3.25',
-        defaultHotSettings: {
-            licenseKey: 'non-commercial-and-evaluation',
-            language: 'ko-KR',
-            locale: 'ko-KR',
-            imeFastEdit: true,
-            data: [],
-            colWidths: 120,
-            rowHeights: 31,
-            rowHeaders: true,
-            copyPaste: true,
-            beforePaste(data, coords) {
+    $auigrid.extend({
+        name: 'syn.uicontrols.$auigrid',
+        version: 'v2025.03.11',
+
+        gridControls: [],
+        gridCodeDatas: [],
+        nowHeaderMenuVisible: false,
+        currentDataField: null,
+        codeHelpUrl: `${syn.$w.proxyBasePath}/assets/shared/codehelp/index2.html`,
+        gridOptions: {
+            headerHeight: 40,
+            rowHeight: 40,
+            showFooter: false,
+            footerPosition: 'bottom',
+            enableClipboard: true,
+            wrapSelectionMove: false,
+            fillColumnSizeMode: false,
+            enableCellMerge: false,
+            cellMergeRowSpan: true,
+            cellMergePolicy: 'default',
+            fixedRowCount: 0,
+            fixedColumnCount: 0,
+            showRowNumColumn: true,
+            showStateColumn: false,
+            showRowCheckColumn: false,
+            rowCheckToRadio: false,
+            showDragKnobColumn: false,
+            enableDrag: false,
+            enableDrop: false,
+            enableSorting: true,
+            enableMovingColumn: false,
+            wordWrap: false,
+            editable: true,
+            copyWithHeaderText: true,
+            enterKeyColumnBase: true,
+            selectionMode: 'multipleCells',
+            hoverMode: 'singleRow',
+            useContextMenu: true,
+            enableFilter: true,
+            showInlineFilter: false,
+            showEditedCellMarker: false,
+            useGroupingPanel: false,
+            showStateColumn: false,
+            displayTreeOpen: false,
+            simplifySelectionEvent: true,
+            softRemoveRowMode: false,
+            allowClipboardPaste: false,
+            applyRestPercentWidth: true,
+            copyDisplayFunction: (rowIndex, columnIndex, value, item, columnItem) => {
+                if (columnItem.editRenderer && (columnItem.editRenderer.type == 'DropDownListRenderer'
+                    || columnItem.columnType == 'password'
+                )) {
+                    return true;
+                }
                 return false;
             },
-            autoColumnSize: false,
-            stretchH: 'none',
-            undo: false,
-            observeChanges: false,
-            observeDOMVisibility: true,
-            currentRowClassName: 'currentRow',
-            manualColumnResize: true,
-            manualRowResize: false,
-            manualColumnMove: false,
-            manualRowMove: false,
-            manualColumnFreeze: false,
-            autoInsertRow: false,
-            isRemoveRowHidden: true,
-            autoWrapRow: true,
-            outsideClickDeselects: true,
-            selectionMode: 'range',
-            sortIndicator: false,
-            columnSorting: true,
-            wordWrap: false,
-            dropdownMenu: false,
-            filters: true,
-            isContainFilterHeader: false,
-            firstShowColIndex: null,
-            lastShowColIndex: null,
-            fillHandle: false,
-            contextMenu: {
-                items: {
-                    "copy": {
-                        name: '내용복사'
-                    },
-                    "hidden_columns_hide": {
-                        name: '컬럼 숨김',
-                        callback(key, selection, clickEvent) {
-                            if (selection && selection.length > 0) {
-                                var range = selection[0];
-                                var startIndex = range.start.col;
-                                var endIndex = range.end.col;
-                                var targetColumns = [];
-
-                                for (startIndex; startIndex <= endIndex; startIndex++) {
-                                    targetColumns.push(startIndex);
-                                }
-
-                                $grid.visibleColumns(this.rootElement.id, targetColumns, false);
-
-                                var mod = window[syn.$w.pageScript];
-                                if (mod) {
-                                    var eventHandler = mod.event ? mod.event['{0}_{1}'.format(this.rootElement.id, 'afterHiddenColumns')] : null;
-                                    if (eventHandler) {
-                                        eventHandler.apply(syn.$l.get(this.rootElement.id), [targetColumns]);
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "hidden_columns_show": {
-                        name: '컬럼 표시',
-                        callback(key, selection, clickEvent) {
-                            if (selection && selection.length > 0) {
-                                var range = selection[0];
-                                var startIndex = range.start.col;
-                                var endIndex = range.end.col;
-                                var targetColumns = [];
-
-                                for (startIndex; startIndex <= endIndex; startIndex++) {
-                                    targetColumns.push(startIndex);
-                                }
-
-                                $grid.visibleColumns(this.rootElement.id, targetColumns, true);
-
-                                var mod = window[syn.$w.pageScript];
-                                if (mod) {
-                                    var eventHandler = mod.event ? mod.event['{0}_{1}'.format(this.rootElement.id, 'afterUnHiddenColumns')] : null;
-                                    if (eventHandler) {
-                                        eventHandler.apply(syn.$l.get(this.rootElement.id), targetColumns);
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "columns_chooser": {
-                        name: '컬럼 표시 선택',
-                        callback(key, selection, clickEvent) {
-                            var hot = this;
-                            var elID = this.rootElement.id;
-                            var dialogOptions = $object.clone(syn.$w.dialogOptions);
-                            dialogOptions.minWidth = 240;
-                            dialogOptions.minHeight = 240;
-
-                            var columnChooler = syn.$l.get('columnChooserHtml');
-                            if (!columnChooler) {
-                                var wrapper = syn.$m.create({
-                                    tag: 'div',
-                                    id: 'columnChooserHtml'
-                                });
-                                wrapper.style.display = 'none';
-                                wrapper.innerHTML = '<h3 class="mt-0 mb-0">컬럼 표시 선택</h3><div class="btn-area"><input type="button" id="btnColumnApply" class="btn btn-primary" value="컬럼 표시 적용"></div><ul class="row" id="lstChooseColumns" style = "overflow: auto; height: 150px; width:360px; padding-top:10px; padding-left:10px;" > <li><input type="checkbox" id="a"><label for="a">컬럼명</label></li></ul>';
-                                document.body.appendChild(wrapper);
-                                columnChooler = syn.$l.get('columnChooserHtml');
-                            }
-
-                            Handsontable.dom.addEvent(columnChooler.querySelector('#btnColumnApply'), 'click', function () {
-                                var result = [];
-                                var liELs = syn.$l.get('lstChooseColumns').children;
-                                for (var i = 0; i < liELs.length; i++) {
-                                    var liEL = liELs[i];
-                                    var columnID = liEL.children[0].id.split('_')[2];
-                                    var isHidden = !liEL.children[0].checked;
-                                    result.push({
-                                        col: i,
-                                        colID: columnID,
-                                        isHidden: isHidden
-                                    });
-                                }
-                                syn.$w.closeDialog(result);
-                            });
-
-                            var ulEL = columnChooler.querySelector('ul');
-                            ulEL.innerHTML = '';
-
-                            var gridSettings = hot.getSettings();
-                            var colHeaders = hot.getSettings().colHeaders;
-                            var gridColumns = gridSettings.columns;
-                            for (var i = 1; i < gridColumns.length; i++) {
-                                var colHeader = colHeaders[i];
-                                var gridColumn = gridColumns[i];
-
-                                var liEL = document.createElement('li');
-                                var liEL = syn.$m.create({ tag: 'li', className: 'col-12' });
-                                syn.$m.setStyle(liEL, 'padding-top', '10px');
-                                var checkboxID = '{0}_checkbox_{1}'.format(elID, gridColumn.data);
-                                var isHidden = $grid.isColumnHidden(elID, i);
-                                var checkEL = syn.$m.create({ tag: 'input', id: checkboxID, attributes: { type: 'checkbox' } });
-                                checkEL.checked = !isHidden;
-                                var labelEL = syn.$m.create({ tag: 'label', id: '{0}_label_{1}'.format(elID, gridColumn.data), attributes: { for: checkboxID } });
-                                syn.$m.setStyle(labelEL, 'padding-left', '10px');
-                                labelEL.textContent = colHeader;
-
-                                syn.$m.appendChild(liEL, checkEL);
-                                syn.$m.appendChild(liEL, labelEL);
-                                syn.$m.appendChild(ulEL, liEL);
-                            }
-
-                            syn.$w.showDialog(syn.$l.get('columnChooserHtml'), dialogOptions, function (result) {
-                                if (result) {
-                                    var showColumns = [];
-                                    var hideColumns = [];
-                                    for (var i = 1; i < gridColumns.length; i++) {
-                                        var item = result[i - 1];
-                                        if (item) {
-                                            if (item.isHidden == false) {
-                                                showColumns.push(i);
-                                            }
-                                            else {
-                                                hideColumns.push(i)
-                                            }
-                                        }
-                                    }
-
-                                    $grid.visibleColumns(elID, showColumns, true);
-                                    $grid.visibleColumns(elID, hideColumns, false);
-
-                                    var mod = window[syn.$w.pageScript];
-                                    if (mod) {
-                                        var eventHandler = mod.event ? mod.event['{0}_{1}'.format(elID, 'afterVisibleColumns')] : null;
-                                        if (eventHandler) {
-                                            eventHandler.apply(syn.$l.get(elID), showColumns, hideColumns);
-                                        }
-                                    }
-                                }
-                            });
-                        }
+            rowNumHeaderText: '',
+            noDataMessage: '',
+            groupingMessage: '여기에 컬럼을 드래그하면 그룹핑이 됩니다.',
+            rowStyleFunction: (rowIndex, item) => {
+                if (item._$isGroupSumField) {
+                    switch (item._$depth) {
+                        case 2:
+                            return 'aui-grid-row-depth1-style';
+                        case 3:
+                            return 'aui-grid-row-depth2-style';
+                        case 4:
+                            return 'aui-grid-row-depth3-style';
+                        default:
+                            return 'aui-grid-row-depth-default-style';
                     }
                 }
-            },
-            hiddenColumns: {
-                columns: [0],
-                indicators: false
-            },
-            deleteKeyColumns: [],
-            keyLockedColumns: [],
-            summarys: [],
-            exportColumns: [],
-            transactConfig: null,
-            triggerConfig: null
+
+                return null;
+            }
         },
-        gridControls: [],
-        handsontableHooks: null,
-        gridHooks: [],
-        gridCodeDatas: [],
+
+        controlLoad(elID, setting) {
+            var el = syn.$l.get(elID);
+            var gridID = '#' + elID;
+            setting = syn.$w.argumentsExtend($auigrid.gridOptions, setting);
+
+            var columnLayout = null;
+            if (setting.columns) {
+                var flagColumn = setting.columns.find(function (item) { return item.length > 0 && item[0] == 'Flag'; });
+                if ($object.isNullOrUndefined(flagColumn) == true) {
+                    setting.columns.unshift(['Flag', 'Flag', 60, true, 'text', true, 'left']);
+                }
+                columnLayout = $auigrid.getInitializeColumns(elID, setting.columns, setting.editable);
+            }
+
+            var mod = window[syn.$w.pageScript];
+            if (mod && mod.hook.controlInit) {
+                setting.columnLayout = columnLayout;
+                var moduleSettings = mod.hook.controlInit(elID, setting);
+                setting = syn.$w.argumentsExtend(setting, moduleSettings);
+
+                columnLayout = $object.clone(setting.columnLayout);
+                delete setting.columnLayout;
+            }
+
+            setting.width = setting.width || '100%';
+            if ($object.isNumber(setting.width) == true) {
+                setting.width = setting.width + 'px';
+            }
+
+            setting.height = setting.height || '240px';
+            if ($object.isNumber(setting.height) == true) {
+                setting.height = setting.height + 'px';
+            }
+
+            setting.columns = columnLayout || setting.columns || [];
+            el.setAttribute('id', el.id + '_hidden');
+            el.setAttribute('syn-options', JSON.stringify(setting));
+            el.style.display = 'none';
+
+            var className = el.getAttribute('class') || '';
+            var dataField = el.getAttribute('syn-datafield');
+            var html = `<div id="{0}" class="syn-auigrid ${className}" style="width:${setting.width};height:${setting.height};overflow:hidden;"></div>`.format(elID, dataField);
+
+            var parent = el.parentNode;
+            var wrapper = document.createElement('div');
+            wrapper.innerHTML = html;
+
+            parent.appendChild(wrapper);
+
+            var fileEL = document.createElement('input');
+            fileEL.id = '{0}_ImportFile'.format(elID);
+            fileEL.type = 'file';
+            fileEL.style.display = 'none';
+            fileEL.accept = '.csv, .xls, .xlsx';
+            syn.$l.addEvent(fileEL, 'change', $auigrid.importFileLoad);
+            parent.appendChild(fileEL);
+
+            var controlSetting = $object.clone(setting);
+            $auigrid.gridControls.push({
+                id: elID,
+                gridID: AUIGrid.create(gridID, columnLayout, controlSetting),
+                setting: controlSetting
+            });
+
+            if (setting.grandTotals) {
+                $auigrid.setFooter(elID, setting.grandTotals);
+            }
+
+            if (mod) {
+                // https://www.auisoft.net/documentation/auigrid/DataGrid/Events.html
+                var gridHookEvents = el.getAttribute('syn-events') || [];
+                try {
+                    if (gridHookEvents) {
+                        gridHookEvents = eval(gridHookEvents);
+
+                        var bypassHookEvents = ['cellEditEndBefore', 'cellEditEnd'];
+                        for (var i = 0, length = gridHookEvents.length; i < length; i++) {
+                            var hook = gridHookEvents[i];
+                            var eventHandler = mod.event ? mod.event['{0}_{1}'.format(elID, hook)] : null;
+                            if (bypassHookEvents.includes(hook) == false && eventHandler) {
+                                AUIGrid.bind(gridID, hook, eventHandler);
+                            }
+                        }
+
+                        if (gridHookEvents.includes('clipboardPaste') == true && gridHookEvents.indexOf('pasteBegin') == -1) {
+                            AUIGrid.bind(gridID, 'pasteBegin', function (evt) {
+                                var elID = evt.pid.substring(1);
+                                var setting = $auigrid.getGridSetting(elID);
+                                if ($string.toBoolean(setting.allowClipboardPaste) == false) {
+                                    return false;
+                                }
+
+                                var mod = window[syn.$w.pageScript];
+                                var eventHandler = mod.event ? mod.event['{0}_{1}'.format(elID, 'clipboardPaste')] : null;
+                                if (eventHandler) {
+                                    const clipboardData = eventHandler(elID, evt.clipboardData);
+                                    if ($object.isNullOrUndefined(clipboardData) == false && clipboardData.length > 0 && clipboardData[0].length > 0 && $object.isArray(clipboardData) == true && $object.isArray(clipboardData[0]) == true) {
+                                        return clipboardData;
+                                    }
+                                }
+                                return false;
+                            });
+                        }
+
+                        if (gridHookEvents.includes('afterSelectionEnd') == true && gridHookEvents.indexOf('selectionChange') == -1) {
+                            AUIGrid.bind(gridID, 'selectionChange', function (evt) {
+                                var elID = evt.pid.substring(1);
+                                var mod = window[syn.$w.pageScript];
+                                var eventHandler = mod.event ? mod.event['{0}_{1}'.format(elID, 'afterSelectionEnd')] : null;
+                                if (eventHandler) {
+                                    var primeCell = evt.primeCell;
+                                    var rowIndex = primeCell.rowIndex;
+                                    var columnIndex = primeCell.columnIndex;
+                                    var dataField = primeCell.dataField;
+                                    var value = primeCell.value;
+                                    var editable = primeCell.editable;
+                                    var item = primeCell.item;
+
+                                    eventHandler(elID, rowIndex, columnIndex, dataField, value, editable, item);
+                                }
+                            });
+                        }
+
+                        AUIGrid.bind(gridID, 'cellEditEndBefore', function (evt) {
+                            var gridID = evt.pid;
+                            var elID = gridID.substring(1);
+                            var rowIndex = evt.rowIndex;
+                            var columnIndex = evt.columnIndex;
+                            var dataField = evt.dataField;
+                            var item = evt.item;
+                            var oldValue = evt.oldValue;
+                            var newValue = evt.value;
+                            var mod = window[syn.$w.pageScript];
+                            var columns = AUIGrid.getColumnInfoList(gridID);
+                            var columnInfo = columns.find((item) => { return item.dataField == dataField });
+                            if (columnInfo && columnInfo.columnType == 'dropdown' && $string.isNullOrEmpty(columnInfo.nameColumnID) == false) {
+                                if (rowIndex > -1) {
+                                    var storeSourceID = columnInfo.storeSourceID || columnInfo.dataSourceID;
+                                    if (storeSourceID) {
+                                        if (mod.config && mod.config.dataSource) {
+                                            var keyValueList = mod.config.dataSource[storeSourceID] ? mod.config.dataSource[storeSourceID].DataSource : [];
+                                            var keyValue = keyValueList.find((item) => { return item.CodeID == newValue });
+                                            if (keyValue) {
+                                                AUIGrid.setCellValue(gridID, rowIndex, columnInfo.nameColumnID, keyValue.CodeValue);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (columnInfo && columnInfo.columnType == 'codehelp' && oldValue != newValue) {
+                                if (rowIndex > -1) {
+                                    if (window.event.keyCode == 13) {
+                                        $auigrid.showCodeHelpPopup(evt);
+                                    }
+                                }
+                            }
+
+                            var eventHandler = mod.event ? mod.event['{0}_{1}'.format(elID, 'cellEditEndBefore')] : null;
+                            if (eventHandler) {
+                                var value = eventHandler(elID, evt);
+                                if ($object.isNullOrUndefined(value) == false) {
+                                    newValue = value;
+                                }
+                            }
+
+                            return newValue;
+                        });
+
+                        AUIGrid.bind(gridID, 'cellEditEnd', function (evt) {
+                            var elID = evt.pid.substring(1);
+                            var eventHandler1 = mod.event ? mod.event['{0}_{1}'.format(elID, 'cellEditEnd')] : null;
+                            if (eventHandler1) {
+                                eventHandler1(elID, evt);
+                            }
+
+                            var eventHandler2 = mod.event ? mod.event['{0}_{1}'.format(elID, 'afterChange')] : null;
+                            if (eventHandler2) {
+                                var rowIndex = evt.rowIndex;
+                                var columnIndex = evt.columnIndex;
+                                var dataField = evt.dataField;
+                                var oldValue = evt.oldValue;
+                                var newValue = evt.value;
+                                var item = evt.item;
+
+                                eventHandler2(elID, rowIndex, columnIndex, dataField, oldValue, newValue, item);
+                            }
+                        });
+
+                        if (gridHookEvents.indexOf('contextMenu') == -1) {
+                            if (syn.$l.get('auigridHeaderContextMenu') == null) {
+                                var contextEL = document.createElement('ul');
+                                contextEL.id = 'auigridHeaderContextMenu';
+                                contextEL.className = 'aui-grid-context-ui-menu';
+                                contextEL.style.cssText = 'position: absolute; display: none; z-index: 100; padding: 16px;';
+
+                                var li1 = document.createElement('li');
+                                li1.id = 'headerItem1';
+                                li1.textContent = '오름차순 정렬';
+                                contextEL.appendChild(li1);
+
+                                var li2 = document.createElement('li');
+                                li2.id = 'headerItem2';
+                                li2.textContent = '내림차순 정렬';
+                                contextEL.appendChild(li2);
+
+                                var li3 = document.createElement('li');
+                                li3.id = 'headerItem3';
+                                li3.textContent = '정렬 초기화';
+                                contextEL.appendChild(li3);
+
+                                contextEL.appendChild(document.createElement('li'));
+
+                                var li4 = document.createElement('li');
+                                li4.id = 'headerItem4';
+                                li4.textContent = '현재 칼럼 숨기기';
+                                contextEL.appendChild(li4);
+
+                                var li5 = document.createElement('li');
+                                li5.id = 'headerItem5';
+                                li5.textContent = '모든 칼럼 보이기';
+                                contextEL.appendChild(li5);
+
+                                var li6 = document.createElement('li');
+                                li6.id = 'headerItem6';
+                                li6.textContent = '컬럼 숨김 복원하기';
+                                contextEL.appendChild(li6);
+
+                                document.body.appendChild(contextEL);
+
+                                syn.$l.addEvent(document, 'click', function (evt) {
+                                    $auigrid.hideContextMenu();
+                                });
+
+                                AUIGrid.bind(gridID, 'vScrollChange', function (evt) {
+                                    $auigrid.hideContextMenu();
+                                });
+
+                                AUIGrid.bind(gridID, 'hScrollChange', function (evt) {
+                                    $auigrid.hideContextMenu();
+                                });
+                            }
+
+                            AUIGrid.bind(gridID, 'contextMenu', $auigrid.contextEventHandler);
+                        }
+                    }
+                } catch (error) {
+                    syn.$l.eventLog('AUIGrid_gridHookEvents', error.toString(), 'Debug');
+                }
+            }
+        },
 
         addModuleList(el, moduleList, setting, controlType) {
             var elementID = el.getAttribute('id');
@@ -10260,736 +11129,608 @@
             });
         },
 
-        controlLoad(elID, setting) {
-            var el = syn.$l.get(elID);
+        // columns = [{
+        //    0 columnID: '',
+        //    1 columnText: '',
+        //    2 width: '',
+        //    3 isHidden: '',
+        //    4 columnType: '',
+        //    5 readOnly: '',
+        //    6 alignConstants: '',
+        //    7 belongID: '',
+        //    8 options: { sorting: true, placeholder: 'Empty Cell' }
+        //    9 children: [columns]
+        // }]
+        getInitializeColumns(elID, columns, editable) {
+            var result = [];
+            var length = columns.length;
+            for (var i = 0; i < length; i++) {
+                var column = columns[i];
 
-            setting = syn.$w.argumentsExtend($grid.defaultHotSettings, setting);
+                var columnID = column[0];
+                var columnText = column[1];
+                var width = column[2];
+                var isHidden = column[3];
+                var columnType = column[4];
+                var readOnly = column[5];
+                var alignConstants = column[6];
+                var belongID = column[7];
+                var options = column[8];
+                var children = column[9];
 
-            if (setting.columns) {
-                var moduleHotSettings = $grid.getInitializeColumns(setting, elID);
-                setting = syn.$w.argumentsExtend(setting, moduleHotSettings);
-            }
-
-            var mod = window[syn.$w.pageScript];
-            if (mod && mod.hook.controlInit) {
-                var moduleHotSettings = mod.hook.controlInit(elID, setting);
-                setting = syn.$w.argumentsExtend(setting, moduleHotSettings);
-            }
-
-            setting.elementID = elID;
-            setting.colHeaders = setting.colHeaders || ['Flag', 'A', 'B', 'C'];
-            if (setting.colHeaders.indexOf('Flag') == -1) {
-                setting.colHeaders.unshift('Flag');
-                setting.colWidths.unshift(10);
-            }
-
-            setting.columns = setting.columns || [{ data: 0 }, { data: 1 }, { data: 2 }, { data: 3 }];
-            var isFlagColumn = false;
-            var columnCount = setting.columns.length;
-            for (var i = 0; i < columnCount; i++) {
-                var column = setting.columns[i];
-                if (column.data == 'Flag') {
-                    isFlagColumn = true;
-                    break;
-                }
-            }
-
-            if (isFlagColumn == false) {
-                setting.columns.unshift({
-                    data: 'Flag',
-                    type: 'text',
-                    readOnly: true
-                });
-            }
-
-            if (setting.dropdownMenu === true) {
-                setting.dropdownMenu = ['filter_by_condition', 'filter_operators', 'filter_by_condition2', 'filter_action_bar'];
-            }
-            else {
-                setting.dropdownMenu = false;
-            }
-
-            var debounceFn = Handsontable.helper.debounce(function (colIndex, event) {
-                var el = (event.target || event.srcElement);
-                colIndex = $grid.getActiveColIndex(el.gridID);
-                var hot = $grid.getGridControl(el.gridID);
-                var filtersPlugin = hot.getPlugin('filters');
-
-                if (filtersPlugin.isEnabled() == false) {
-                    filtersPlugin.enablePlugin();
-                }
-
-                filtersPlugin.clearConditions(colIndex);
-
-                if (event.target.value.length > 0) {
-                    filtersPlugin.addCondition(colIndex, 'contains', [event.target.value]);
-                }
-                filtersPlugin.filter();
-            }, 100);
-
-            var isSummary = false;
-            if (setting.summarys && setting.summarys.length > 0) {
-                isSummary = true;
-                setting.fixedRowsBottom = 1;
-                setting.cells = function (row, column, prop) {
-                    var hot = this.instance;
-
-                    var gridValue = $grid.getGridValue(hot.elID);
-                    if (gridValue.applyCells == true) {
-                        var gridSettings = hot.getSettings();
-                        if (gridSettings.summarys && gridSettings.summarys.length > 0) {
-                            var lastRowIndex = gridSettings.data.length - 1;
-                            if (row === lastRowIndex) {
-                                var cellProperties = {};
-
-                                // 고정 행 모든 컬럼 cell 타입을 text로 변경
-                                cellProperties.type = 'text';
-                                cellProperties.readOnly = true;
-                                cellProperties.className = 'summaryRow';
-
-                                var summaryColumn = gridSettings.columns.find(function (item) { return item.data == prop });
-                                if (summaryColumn && summaryColumn.className && summaryColumn.className.indexOf(cellProperties.className) == -1) {
-                                    cellProperties.className += ' ' + summaryColumn.className;
-                                }
-
-                                return cellProperties;
-                            }
-                        }
-                    }
-
-                    var mod = window[syn.$w.pageScript];
-                    if (mod) {
-                        var eventHandler = mod.event['{0}_applyCells'.format(hot.elID)];
-                        if (eventHandler) {
-                            var cellProperties = eventHandler.apply(hot, [hot.elID, row, column, prop]);
-                            if (cellProperties) {
-                                return cellProperties;
-                            }
-                        }
-                    }
+                var columnInfo = {
+                    elID: elID,
+                    headerText: columnText,
+                    columnType: columnType,
+                    filter: {
+                        enable: true,
+                        showIcon: true
+                    },
+                    isHidden: isHidden,
+                    visible: !isHidden,
+                    editable: $string.toBoolean(editable) == false ? false : !$string.toBoolean(readOnly),
+                    style: $object.isNullOrUndefined(alignConstants) == true ? '' : `text:${alignConstants}!`,
+                    belongID: $object.isNullOrUndefined(belongID) == true ? '' : ($object.isArray(belongID) == true ? belongID.join(',') : belongID),
+                    validators: null
                 };
-            }
-            else {
-                setting.cells = function (row, column, prop) {
-                    var mod = window[syn.$w.pageScript];
-                    if (mod) {
-                        var hot = this.instance;
-                        var eventHandler = mod.event['{0}_applyCells'.format(hot.elID)];
-                        if (eventHandler) {
-                            var cellProperties = eventHandler.apply(hot, [hot.elID, row, column, prop]);
-                            if (cellProperties) {
-                                return cellProperties;
+
+                if ($object.isNullOrUndefined(columnID) == false) {
+                    columnInfo.dataField = columnID;
+                }
+
+                if ($object.isNullOrUndefined(width) == false && width > 0) {
+                    columnInfo.width = width;
+                }
+
+                if (options) {
+                    for (var option in options) {
+                        if (columnInfo[option] || option == '') {
+                            if (option == 'style') {
+                                columnInfo[option] = columnInfo[option] + ' ' + options[option];
                             }
-                        }
-                    }
-                };
-            }
 
-            setting.beforeColumnSort = function (currentSortConfig, destinationSortConfigs) {
-                var hot = this;
-                var gridSettings = hot.getSettings();
-                if (gridSettings.summarys && gridSettings.summarys.length > 0) {
-                    var gridValue = $grid.getGridValue(hot.elID);
-                    gridValue.applyCells = false;
-
-                    var gridSettings = hot.getSettings();
-                    var itemToFind = gridSettings.data.find(function (item) { return item['Flag'] == 'S' });
-                    if (itemToFind) {
-                        var rowIndex = gridSettings.data.indexOf(itemToFind);
-                        if (rowIndex > -1) {
-                            gridSettings.data.splice(rowIndex, 1);
+                            continue;
                         }
+
+                        if (option == 'filterEnable') {
+                            columnInfo.filter = $string.toBoolean(options[option]);
+                            columnInfo.showIcon = $string.toBoolean(options[option]);
+                        }
+
+                        columnInfo[option] = options[option];
                     }
                 }
-            }
 
-            setting.afterColumnSort = function (currentSortConfig, destinationSortConfigs) {
-                var hot = this;
-                var gridSettings = hot.getSettings();
-                if (gridSettings.summarys && gridSettings.summarys.length > 0) {
-                    $grid.renderSummary(hot);
-                }
-            };
-
-            setting.afterGetColHeader = function (col, TH) {
-                if (typeof col !== 'number') {
-                    return col;
+                if ($string.toBoolean(readOnly) == true) {
+                    columnInfo.style = columnInfo.style + ' column-readonly';
                 }
 
-                if (col >= 0 && setting.isContainFilterHeader == true && TH.childElementCount < 2) {
-                    var div = document.createElement('div');
-                    var input = document.createElement('input');
-
-                    div.className = 'filterHeader';
-                    input.gridID = elID;
-
-                    Handsontable.dom.addEvent(input, 'contextmenu', function (evt) {
-                        Handsontable.dom.stopImmediatePropagation(evt);
-                        if (evt.preventDefault) {
-                            evt.preventDefault();
-                        }
-
-                        return false;
-                    });
-
-                    Handsontable.dom.addEvent(input, 'keydown', function (evt) {
-                        debounceFn(col, evt);
-                    });
-
-                    Handsontable.dom.addEvent(input, 'focus', function (evt) {
-                        var mod = window[syn.$w.pageScript];
-                        if (mod) {
-                            mod.prop.focusControl = syn.$l.get(input.gridID);
-                        }
-                    });
-
-                    div.appendChild(input);
-                    TH.appendChild(div);
+                if (columnInfo.validators && columnInfo.validators.indexOf('require') > -1) {
+                    columnInfo.style = columnInfo.style + ' column-required';
                 }
 
-                var childElementCount = $object.isArray(setting.dropdownMenu) == true ? 3 : 2;
-                var column = setting.columns[col];
-                if (column && column.isSelectAll === true) {
-                    childElementCount = childElementCount + 2;
-                }
-
-                if (col >= 0 && column && (column.type == 'checkbox' || column.type == 'checkbox2') && column.isSelectAll === true && TH.firstElementChild.childElementCount < childElementCount) {
-                    if (TH.firstElementChild.childElementCount != 3 && syn.$m.hasClass(TH, 'hiddenHeader') == false) {
-                        var inputID = 'chk_syngrid_All_{0}_{1}'.format(elID, col);
-                        if (syn.$l.get(inputID) != null) {
-                            syn.$m.remove(syn.$l.get(inputID));
-                            syn.$m.remove(syn.$l.querySelector('label[for="' + inputID + '"]'));
-                        }
-                        var input = document.createElement('input');
-                        input.id = inputID;
-                        input.type = 'checkbox';
-                        input.setAttribute('columnSelectAll', '1');
-                        input.gridID = elID;
-                        input.checked = column.toogleChecked == 1 ? true : false;
-                        syn.$m.addClass(input, 'form-check-input');
-
-                        Handsontable.dom.addEvent(input, 'click', function (evt) {
-                            var el = evt.target || evt.srcElement;
-                            var toogleChecked = el.checked ? '1' : '0';
-                            column.toogleChecked = toogleChecked;
-
-                            var mod = window[syn.$w.pageScript];
-                            var eventHandler = mod.event['{0}_selectAllCheck'.format(input.gridID)];
-                            if (eventHandler) {
-                                eventHandler.apply(el, [input.gridID, col, $string.toBoolean(column.toogleChecked.toString())]);
-                                var hot = $grid.getGridControl(el.gridID);
-                                hot.render();
-                            }
-                            else {
-                                var hot = $grid.getGridControl(el.gridID);
-                                var gridSettings = $grid.getSettings(el.gridID);
-
-                                if (gridSettings.data && gridSettings.data.length > 0) {
-                                    var data = gridSettings.data;
-                                    var length = data.length;
-                                    var colProp = hot.colToProp(col);
-                                    for (var i = 0; i < length; i++) {
-                                        var flag = data[i]['Flag'];
-                                        if (flag == 'R') {
-                                            data[i]['Flag'] = 'U';
+                var dataSource = null;
+                if ($object.isString(columnType) == true) {
+                    switch (columnType) {
+                        case 'text':
+                            if ($string.isNullOrEmpty(columnInfo.cellButtonIcon) == false) {
+                                columnInfo.renderer = {
+                                    type: "IconRenderer",
+                                    iconPosition: "aisleRight",
+                                    iconWidth: 18,
+                                    iconHeight: 18,
+                                    iconTableRef: {
+                                        default: columnInfo.cellButtonIcon
+                                    },
+                                    onClick: function (evt) {
+                                        var gridID = evt.pid;
+                                        var elID = gridID.substring(1);
+                                        var isAllowEdit = AUIGrid.getProp(gridID, 'editable');
+                                        var mod = window[syn.$w.pageScript];
+                                        var eventHandler = isAllowEdit == true && mod.event ? mod.event['{0}_{1}'.format(elID, 'cellEditBegin')] : null;
+                                        if (eventHandler) {
+                                            var value = eventHandler(evt);
+                                            isAllowEdit = $string.toBoolean(value);
                                         }
 
-                                        if (flag != 'S') {
-                                            data[i][colProp] = toogleChecked;
-                                        }
-                                    }
-                                }
-                                hot.render();
-                            }
-
-                            evt.stopImmediatePropagation();
-                        });
-
-                        syn.$m.prepend(input, TH.firstElementChild);
-                    }
-                }
-                else {
-                    var checkbox = TH.querySelector('input[type="checkbox"]');
-                    if (col >= 0 && column && (column.type == 'checkbox' || column.type == 'checkbox2') && checkbox != null) {
-                        TH.firstElementChild.removeChild(checkbox);
-
-                        var label = TH.querySelector('label[for]');
-                        TH.firstElementChild.removeChild(label);
-                    }
-                }
-            };
-
-            if (setting.isContainFilterHeader == true) {
-                setting.className = 'contain-filter-header';
-            }
-
-            setting.width = setting.width || '100%';
-            setting.height = setting.height || 240;
-
-            el.setAttribute('id', el.id + '_hidden');
-            el.setAttribute('syn-options', JSON.stringify(setting));
-            el.style.display = 'none';
-
-            var parent = el.parentNode;
-            var wrapper = document.createElement('div');
-            if (isSummary == true) {
-                syn.$m.addClass(wrapper, 'summaryRow');
-            }
-            wrapper.id = elID;
-
-            parent.appendChild(wrapper);
-
-            var fileEL = document.createElement('input');
-            fileEL.id = '{0}_ImportFile'.format(elID);
-            fileEL.type = 'file';
-            fileEL.style.display = 'none';
-            fileEL.accept = '.csv, .xls, .xlsx';
-            Handsontable.dom.addEvent(fileEL, 'change', $grid.importFileLoad);
-            parent.appendChild(fileEL);
-
-            el = syn.$l.get(elID);
-
-            if (!$grid.handsontableHooks) {
-                $grid.handsontableHooks = Handsontable.hooks.getRegistered();
-            }
-
-            $grid.gridHooks = [
-                'afterChange',
-                'afterCreateRow',
-                'afterRemoveRow',
-                'beforeOnCellMouseDown',
-                'afterSelectionEnd',
-                'beforeKeyDown'
-            ];
-
-            var gridHookEvents = syn.$l.get(el.id + '_hidden').getAttribute('syn-events');
-            try {
-                if (gridHookEvents) {
-                    gridHookEvents = eval(gridHookEvents);
-                }
-            } catch (error) {
-                syn.$l.eventLog('WebGrid_controlLoad', error.toString(), 'Debug');
-            }
-
-            if (gridHookEvents) {
-                for (var i = 0; i < gridHookEvents.length; i++) {
-                    var hook = gridHookEvents[i];
-                    if ($grid.gridHooks.indexOf(hook) == -1) {
-                        $grid.gridHooks.push(hook);
-                    }
-                }
-            }
-
-            $grid.gridHooks.forEach(function (hook) {
-                setting[hook] = function () {
-                    var elID = this.rootElement.id;
-                    var $grid = syn.uicontrols.$grid;
-                    var mod = window[syn.$w.pageScript];
-                    var hot = $grid.getGridControl(elID);
-
-                    if (hot == null) { return; }
-
-                    // syn.$l.eventLog('gridHooks', 'elID: {0}, hook: {1}'.format(elID, hook), 'Debug');
-                    var defaultGridHooks = [
-                        'afterChange',
-                        'afterCreateRow',
-                        'afterRemoveRow',
-                        'beforeOnCellMouseDown',
-                        'afterSelectionEnd',
-                        'beforeKeyDown'
-                    ];
-
-                    var gridValue = $grid.getGridValue(elID);
-                    if (defaultGridHooks.indexOf(hook) == -1) {
-                        if (gridValue.passSelectCellEvent == true) {
-                        }
-                        else {
-                            if (mod) {
-                                var eventHandler = mod.event ? mod.event['{0}_{1}'.format(elID, hook)] : null;
-                                if (eventHandler) {
-                                    eventHandler.apply(syn.$l.get(elID), arguments);
-                                }
-                            }
-                        }
-                        return;
-                    }
-
-                    if (gridValue) {
-                        if (hook == 'afterChange' && (gridValue.eventName == 'insertRow' || gridValue.eventName == 'removeRow')) {
-                            gridValue.eventName == '';
-                            return;
-                        }
-                    }
-
-                    if (hook == 'beforeKeyDown') {
-                        var evt = arguments[0];
-                        if (evt.altKey == true && evt.keyCode == 13) {
-                            Handsontable.dom.stopImmediatePropagation(evt);
-                        }
-                        else if (evt.shiftKey == true && evt.keyCode == 9) {
-                            var selected = hot.getSelected()[0];
-                            var currentRow = selected[0];
-                            var currentCol = selected[1];
-                            var firstCol = $grid.getFirstShowColIndex(elID);
-                            var lastCol = $grid.getLastShowColIndex(elID);
-
-                            if (currentRow > 0 && currentCol == firstCol) {
-                                Handsontable.dom.stopImmediatePropagation(evt);
-                                if (evt.preventDefault) {
-                                    evt.preventDefault();
-                                }
-
-                                hot.selectCell((currentRow - 1), lastCol);
-                            }
-                            else if (currentRow == 0 && currentCol == firstCol) {
-                                Handsontable.dom.stopImmediatePropagation(evt);
-                                if (evt.preventDefault) {
-                                    evt.preventDefault();
-                                }
-
-                                var lastRow = hot.countRows() - 1;
-                                if (lastRow > -1) {
-                                    hot.selectCell(lastRow, lastCol);
-                                }
-                            }
-                        }
-                        else if (evt.keyCode == 9) {
-                            var selected = hot.getSelected()[0];
-                            var currentRow = selected[0];
-                            var currentCol = selected[1];
-                            var firstCol = $grid.getFirstShowColIndex(elID);
-                            var lastCol = $grid.getLastShowColIndex(elID);
-                            var lastRow = hot.countRows() - 1;
-
-                            if (currentRow < lastRow && currentCol == lastCol) {
-                                Handsontable.dom.stopImmediatePropagation(evt);
-                                if (evt.preventDefault) {
-                                    evt.preventDefault();
-                                }
-
-                                hot.selectCell((currentRow + 1), firstCol);
-                            }
-                            else if (currentRow == lastRow && currentCol == lastCol) {
-                                Handsontable.dom.stopImmediatePropagation(evt);
-                                if (evt.preventDefault) {
-                                    evt.preventDefault();
-                                }
-
-                                if (setting.autoInsertRow == true) {
-                                    $grid.insertRow(elID, {
-                                        amount: 1
-                                    }, function (row) {
-                                        hot.selectCell(row, firstCol);
-                                    });
-
-                                    Handsontable.dom.stopImmediatePropagation(evt);
-                                    if (evt.preventDefault) {
-                                        evt.preventDefault();
-                                    }
-                                }
-                                else {
-                                    hot.selectCell(0, firstCol);
-                                }
-                            }
-                        }
-                    } else if (hook == 'afterChange' || hook == 'afterCreateRow' || hook == 'afterRemoveRow' || hook == 'hiddenRow') {
-                        if (hook == 'afterChange' && arguments[1] == 'loadData') {
-                            return;
-                        }
-                        else if (hook == 'afterChange' && arguments[1] == 'edit' && arguments[0][0][1] == 'Flag') {
-                            return;
-                        }
-
-                        var rowIndex;
-                        if (hook == 'afterCreateRow') {
-                            var method_index = arguments[0];
-                            var method_amount = arguments[1];
-                            var method_source = arguments[2];
-
-                            rowIndex = method_index;
-
-                            // var columns = setting.columns;
-                            // var defaultFields = method_source ? method_source : {};
-                            // var defalutValue = '';
-                            // 
-                            // var defaultValues = [];
-                            // for (var amount = 0; amount < method_amount; amount++) {
-                            //     var amountIndex = rowIndex + amount;
-                            //     var length = columns.length;
-                            //     for (var i = 0; i < length; i++) {
-                            //         var column = columns[i];
-                            //         if (column.type == 'numeric') {
-                            //             defalutValue = 0;
-                            //         } else if (column.type == 'checkbox') {
-                            //             defalutValue = false;
-                            //         }
-                            // 
-                            //         if (defaultFields[column.data]) {
-                            //             defalutValue = defaultFields[column.data];
-                            //         }
-                            // 
-                            //         defaultValues.push([amountIndex, i, defalutValue]);
-                            //         defalutValue = '';
-                            //     }
-                            // }
-                            // 
-                            // if (defaultValues.length > 0) {
-                            //     defaultValues[0][2] = 'C'
-                            //     hot.setDataAtCell(defaultValues);
-                            //     return;
-                            // }
-                        } else if (hook == 'afterChange') {
-                            var method_changes = arguments[0];
-                            var method_source = arguments[1];
-
-                            if ($object.isNullOrUndefined(method_changes) == true) {
-                                return;
-                            }
-
-                            rowIndex = method_changes[0][0];
-
-                            var columnName = method_changes[0][1];
-                            var changeValue = method_changes[0][3];
-                            var columnInfos = hot.getSettings().columns;
-                            // var colIndex = hot.propToCol(columnName);
-                            var columnInfo = columnInfos.filter(function (item) { return item.data == columnName; })[0];
-                            if (columnInfo.type == 'dropdown') {
-                                var dataSource = columnInfo.dataSource;
-                                if (dataSource) {
-                                    if (columnInfo.required == false && changeValue == '') {
-                                        method_changes[0][4] = '';
-
-                                        hot.setDataAtCell(rowIndex, hot.propToCol(columnInfo.codeColumnID), '');
-                                    }
-                                    else {
-                                        for (var j = 0; j < dataSource.DataSource.length; j++) {
-                                            var item = dataSource.DataSource[j];
-                                            if (item[dataSource.ValueColumnID] == changeValue) {
-                                                var code = item[dataSource.CodeColumnID];
-                                                method_changes[0][4] = code;
-
-                                                hot.setDataAtCell(rowIndex, hot.propToCol(columnInfo.codeColumnID), code);
-                                                break;
+                                        if (isAllowEdit == true) {
+                                            var mod = window[syn.$w.pageScript];
+                                            var eventHandler = mod.event['{0}_cellButtonClick'.format(elID)];
+                                            if (eventHandler) {
+                                                eventHandler(elID, evt.rowIndex, evt.columnIndex, evt.dataField, evt.item);
                                             }
                                         }
                                     }
                                 }
                             }
-                            else if (columnInfo.type == 'codehelp') {
-                                var oldValue = method_changes[0][2];
-                                if (changeValue == '') {
-                                    method_changes[0][4] = '';
 
-                                    hot.setDataAtCell(rowIndex, hot.propToCol(columnInfo.codeColumnID), '');
-                                }
-                                else if (oldValue != changeValue) {
-                                    hot.setDataAtCell(rowIndex, hot.propToCol(columnInfo.codeColumnID), '');
-                                }
+                            columnInfo.editRenderer = {
+                                type: 'InputEditRenderer',
+                                showEditorBtn: false,
+                                showEditorBtnOver: $string.isNullOrEmpty(columnInfo.cellButtonIcon),
+                                onlyNumeric: $string.toBoolean(columnInfo.onlyNumeric),
+                                inputMode: $string.isNullOrEmpty(columnInfo.inputMode) == false ? 'text' : columnInfo.inputMode
                             }
-                        } else if (hook == 'afterRemoveRow') {
-                            var method_index = arguments[0];
-                            var method_amount = arguments[1];
-
-                            rowIndex = method_index;
-                        } else if (hook == 'hiddenRow') {
-                            var method_rows = arguments[0];
-
-                            rowIndex = method_rows[0];
-                        }
-
-                        if (rowIndex || rowIndex == 0) { } else {
-                            return;
-                        }
-
-                        var physicalRowIndex = hot.toPhysicalRow(rowIndex); // Handsontable.hooks.run(hot, 'modifyRow', rowIndex);
-                        var rowData = hot.getSourceDataAtRow(physicalRowIndex);
-                        // var rowMeta = hot.getCellMetaAtRow(physicalRowIndex);
-                        var rowFlag = rowData && rowData.Flag ? rowData.Flag : 'C';
-
-                        if (hook == 'afterCreateRow') {
-                            rowFlag = 'C';
-                        } else if (hook == 'afterChange') {
-                            if (rowFlag == 'R' && method_changes[0][2] != method_changes[0][3]) {
-                                rowFlag = 'U';
+                            break;
+                        case 'textarea':
+                            columnInfo.style = columnInfo.style + ' white-space:pre-wrap';
+                            columnInfo.wrapText = true;
+                            columnInfo.editRenderer = {
+                                type: "CustomEditRenderer",
+                                jsClass: AUIGrid.TextareaEditor,
+                                extraProps: {
+                                    confirm: "확인",
+                                    cancel: "취소",
+                                    minHeight: 100
+                                },
+                                showEditorBtn: false,
+                                showEditorBtnOver: true,
                             }
-                        } else if (hook == 'hiddenRow') {
-                            if (rowFlag == 'R' || rowFlag == 'U') {
-                                rowFlag = 'D';
+                            break;
+                        case 'korean':
+                            columnInfo.editRenderer = {
+                                type: 'InputEditRenderer',
+                                showEditorBtn: false,
+                                showEditorBtnOver: true,
+                                regExp: '^[ㄱ-힣0-9\\s,.~!@#$%^&*()[\\]{}<>`\'":;|+\\-\\/\\\\]+$',
                             }
-                        }
-
-                        if (hook == 'afterRemoveRow') {
-
-                        } else {
-                            var cellRowFlag = hot.getDataAtCell(rowIndex, 0);
-                            if (cellRowFlag != rowFlag) {
-                                hot.setDataAtCell(rowIndex, 0, rowFlag);
-
-                                if (hook == 'afterCreateRow' && rowFlag == 'C') {
-
+                            break;
+                        case 'english':
+                            columnInfo.editRenderer = {
+                                type: 'InputEditRenderer',
+                                showEditorBtn: false,
+                                showEditorBtnOver: true,
+                                regExp: '^[a-zA-Z0-9\\s,.~!@#$%^&*()[\\]{}<>`\'":;|+\\-\\/\\\\]+$',
+                            }
+                            break;
+                        case 'number':
+                            if ($string.toBoolean(columnInfo.barRender) == true) {
+                                columnInfo.renderer = {
+                                    type: 'BarRenderer',
+                                    min: columnInfo.barMin || 0,
+                                    max: columnInfo.barMax || 100,
                                 }
                             }
-                        }
-                    }
-                    else if (hook == 'beforeOnCellMouseDown') {
-                        var event = arguments[0];
-                        var coords = arguments[1];
-                        var td = arguments[2];
-
-                        if (coords.row === -1 && event.target.nodeName === 'INPUT') {
-                            event.stopImmediatePropagation();
-                            this.deselectCell();
-                        }
-
-                        if (coords.row == -1) {
-                            var gridValue = $grid.getGridValue(elID);
-                            gridValue.colHeaderClick = true;
-                            gridValue.previousRow = coords.row;
-                            gridValue.previousCol = coords.col;
-                        }
-
-                        var now = new Date().getTime();
-                        if (!(td.lastClick && now - td.lastClick < 200)) {
-                            td.lastClick = now;
-                        } else {
-                            hook = 'afterOnCellDoubleClick';
-                        }
-                    }
-
-                    if (mod) {
-                        var el = syn.$l.get(elID);
-                        var elHidden = syn.$l.get(elID + '_hidden');
-                        var gridHookEvents = elHidden.getAttribute('syn-events');
-                        try {
-                            if (gridHookEvents) {
-                                gridHookEvents = eval(gridHookEvents);
-                            }
-                        } catch (error) {
-                            syn.$l.eventLog('WebGrid_gridHookEvents', error.toString(), 'Debug');
-                        }
-
-                        if (gridHookEvents) {
-                            if (gridHookEvents.indexOf(hook) > -1) {
-                                if (gridValue.passSelectCellEvent == true) {
+                            else if ($string.toBoolean(columnInfo.stepRender) == true) {
+                                columnInfo.renderer = {
+                                    type: 'NumberStepRenderer',
+                                    min: columnInfo.stepMin || 0,
+                                    max: columnInfo.stepMax || 100,
+                                    step: columnInfo.stepStep || 10,
+                                    inputHeight: columnInfo.stepInputHeight || 28,
+                                    textEditable: columnInfo.stepEditable || true
                                 }
-                                else {
-                                    if (mod) {
-                                        var eventHandler = mod.event ? mod.event['{0}_{1}'.format(elID, hook)] : null;
-                                        if (eventHandler) {
-                                            eventHandler.apply(el, arguments);
-                                        }
+                            }
+
+                            columnInfo.editRenderer = {
+                                type: 'InputEditRenderer',
+                                showEditorBtn: false,
+                                showEditorBtnOver: false,
+                                onlyNumeric: true,
+                                allowPoint: false,
+                                allowNegative: $object.isNullOrUndefined(columnInfo.allowNegative) == true ? false : $string.toBoolean(columnInfo.allowNegative),
+                                textAlign: 'center',
+                                autoThousandSeparator: false
+                            }
+
+                            if ($string.isNullOrEmpty(columnInfo.format) == false) {
+                                columnInfo.labelFunction = (rowIndex, columnIndex, value, headerText, item) => {
+                                    return AUIGrid.formatNumber(value, columnInfo.format);
+                                }
+                            }
+
+                            if ($string.isNullOrEmpty(columnInfo.expFunction) == false && eval('typeof ' + columnInfo.expFunction) == 'function') {
+                                columnInfo.expFunction = eval(columnInfo.expFunction);
+                            }
+                            break;
+                        case 'numeric':
+                            if ($object.isNullOrUndefined(columnInfo.dataType) == true) {
+                                columnInfo.dataType = 'numeric';
+                            }
+
+                            columnInfo.editRenderer = {
+                                type: 'InputEditRenderer',
+                                showEditorBtn: false,
+                                showEditorBtnOver: false,
+                                onlyNumeric: true,
+                                allowPoint: true,
+                                allowNegative: $object.isNullOrUndefined(columnInfo.allowNegative) == true ? true : $string.toBoolean(columnInfo.allowNegative),
+                                textAlign: 'right',
+                                autoThousandSeparator: true
+                            }
+
+                            if ($string.isNullOrEmpty(columnInfo.expFunction) == false && eval('typeof ' + columnInfo.expFunction) == 'function') {
+                                columnInfo.expFunction = eval(columnInfo.expFunction);
+                            }
+                            break;
+                        case 'password':
+                            var editRenderer = {
+                                type: 'InputEditRenderer',
+                                showEditorBtn: false,
+                                showEditorBtnOver: true,
+                                passwordMode: false,
+                                regExp: '^[a-zA-Z0-9\\s,.~!@#$%^&*()[\\]{}<>`\'":;|+\\-\\/\\\\]+$'
+                            }
+
+                            columnInfo.editRenderer = {
+                                type: 'ConditionRenderer',
+                                conditionFunction: function (rowIndex, columnIndex, value, item, dataField) {
+                                    return editRenderer;
+                                }
+                            }
+
+                            columnInfo.labelFunction = (rowIndex, columnIndex, value, headerText, item) => {
+                                value += '';
+                                return value.replace(/./gi, '*');
+                            }
+                            break;
+                        case 'safehtml':
+                            columnInfo.renderer = {
+                                type: 'TemplateRenderer',
+                                showEditorBtn: false,
+                                showEditorBtnOver: true,
+                                wordWrap: $string.toBoolean(columnInfo.wordWrap)
+                            }
+
+                            columnInfo.editRenderer = {
+                                type: 'CustomEditRenderer',
+                                jsClass: AUIGrid.TextareaEditor,
+                                vPosition: 'top',
+                                extraProps: {
+                                    confirm: '확인 (Ctrl + Enter)',
+                                    cancel: '취소 (Esc)'
+                                }
+                            }
+
+                            columnInfo.labelFunction = (rowIndex, columnIndex, value, headerText, item) => {
+                                var result = '';
+                                value += '';
+                                var stripTags = (input, allowed) => {
+                                    var tags = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi,
+                                        commentsTags = /<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gi;
+
+                                    allowed = (((allowed || '') + '').toLowerCase().match(/<[a-z][a-z0-9]*>/g) || []).join('');
+
+                                    return input.replace(commentsTags, '').replace(tags, function ($0, $1) {
+                                        return allowed.indexOf('<' + $1.toLowerCase() + '>') > -1 ? $0 : '';
+                                    });
+                                };
+
+                                result = stripTags(value, '<em><p><br><b><u><strong><big><img><div><span><label>');
+                                return result == '' ? value : result;
+                            };
+                            break;
+                        case 'link':
+                            columnInfo.renderer = {
+                                type: 'LinkRenderer',
+                                baseUrl: 'javascript',
+                                jsCallback: (rowIndex, columnIndex, value, item) => {
+                                    var mod = window[syn.$w.pageScript];
+                                    var eventHandler = mod.event['{0}_cellLinkClick'.format(columnInfo.elID)];
+                                    if (eventHandler) {
+                                        var gridID = $auigrid.getGridID(columnInfo.elID);
+                                        var dataField = AUIGrid.getDataFieldByColumnIndex(gridID, columnIndex);
+                                        eventHandler(columnInfo.elID, rowIndex, columnIndex, dataField, value, item);
                                     }
                                 }
                             }
-                        }
+                            break;
+                        case 'button':
+                            columnInfo.renderer = {
+                                type: 'ButtonRenderer',
+                                onClick: (evt) => {
+                                    var gridID = evt.pid;
+                                    var elID = gridID.substring(1);
+                                    var isAllowEdit = AUIGrid.getProp(gridID, 'editable');
+                                    var mod = window[syn.$w.pageScript];
+                                    var eventHandler = isAllowEdit == true && mod.event ? mod.event['{0}_cellButtonClick'.format(elID)] : null;
+                                    if (eventHandler) {
+                                        eventHandler(elID, evt.rowIndex, evt.columnIndex, evt.dataField, evt.item);
+                                    }
+                                },
+                                visibleFunction: function (rowIndex, columnIndex, value, item, dataField) {
+                                    if ($string.isNullOrEmpty(value) == true) {
+                                        return false;
+                                    }
+                                    return true;
+                                }
+                            }
 
-                        // if ($l && syn.$l.hasEvent(el, hook) == true) {
-                        //     var options = eval('(' + elHidden.getAttribute('syn-options') + ')');
-                        //     if (options.transactConfig) {
-                        //         var gridValue = $grid.getGridValue(elID);
-                        //         var previousRow = -1;
-                        //         if (gridValue) {
-                        //             previousRow = gridValue.previousRow;
-                        //         }
-                        //         var currentRow = $grid.getActiveRowIndex(elID);
-                        //         if (gridValue.colHeaderClick == false && currentRow != previousRow) {
-                        //             syn.$l.trigger(el, hook, options.transactConfig);
-                        //         }
-                        //     }
-                        // 
-                        //     if (options.triggerConfig) {
-                        //         var gridValue = $grid.getGridValue(elID);
-                        //         var previousRow = -1;
-                        //         if (gridValue) {
-                        //             previousRow = gridValue.previousRow;
-                        //         }
-                        //         var currentRow = $grid.getActiveRowIndex(elID);
-                        //         if (gridValue.colHeaderClick == false && currentRow != previousRow) {
-                        //             syn.$l.trigger(el, hook, options.transactConfig);
-                        //         }
-                        //         syn.$l.trigger(el, hook, options.triggerConfig);
-                        //     }
-                        // }
+                            if ($string.isNullOrEmpty(columnInfo.labelText) == false) {
+                                columnInfo.renderer.labelText = columnInfo.labelText;
+                            }
+
+                            if ($string.isNullOrEmpty(columnInfo.disabledFunction) == false && eval('typeof ' + columnInfo.disabledFunction) == 'function') {
+                                columnInfo.renderer.disabledFunction = eval(columnInfo.disabledFunction);
+                            }
+                            break;
+                        case 'image':
+                            columnInfo.renderer = {
+                                type: 'ImageRenderer',
+                                imgHeight: $string.isNullOrEmpty(columnInfo.imgHeight) == true ? 24 : columnInfo.imgHeight,
+                            }
+
+                            if ($string.isNullOrEmpty(columnInfo.prefix) == false) {
+                                columnInfo.renderer.prefix = columnInfo.prefix;
+                            }
+
+                            if ($string.isNullOrEmpty(columnInfo.altField) == false) {
+                                columnInfo.renderer.altField = columnInfo.altField;
+                            }
+
+                            if ($string.isNullOrEmpty(columnInfo.srcFunction) == false && eval('typeof ' + columnInfo.srcFunction) == 'function') {
+                                columnInfo.renderer.srcFunction = eval(columnInfo.srcFunction);
+                            }
+                            break;
+                        case 'imagefallback':
+                            columnInfo.renderer = {
+                                type: 'TemplateRenderer',
+                                imgHeight: $string.isNullOrEmpty(columnInfo.imgHeight) == true ? 24 : columnInfo.imgHeight,
+                            }
+
+                            if ($string.isNullOrEmpty(columnInfo.altField) == false) {
+                                columnInfo.renderer.altField = columnInfo.altField;
+                            }
+
+                            columnInfo.labelFunction = function (rowIndex, columnIndex, value, headerText, item) { // HTML 템플릿 작성
+                                if ($string.isNullOrEmpty(value) == true) {
+                                    return '';
+                                }
+
+                                if ($string.isNullOrEmpty(columnInfo.altField) == false) {
+                                    columnInfo.renderer.altField = columnInfo.altField;
+                                }
+
+                                var info = $auigrid.getColumnInfo(columnInfo.elID, columnIndex);
+
+                                const altText = info.altField ? item[info.altField] : value;
+                                let onErrorHandler = 'this.onerror=null;';
+                                if ($string.isNullOrEmpty(info.fallbackUrl) == false) {
+                                    onErrorHandler = `this.src='${info.fallbackUrl}';`;
+                                } else if ($string.toBoolean(info.hideOnError) == true) {
+                                    onErrorHandler = "this.style.display='none';";
+                                }
+
+                                if ($string.isNullOrEmpty(info.prefix) == false) {
+                                    value = info.prefix + value;
+                                }
+
+                                return `<img class="aui-img" style="border: 0px; padding: 0px; margin: 0px; text-align: center; vertical-align: middle; max-width: 100%; height: ${info.imgHeight}px;" alt="${altText}" src="${value}" onerror="${onErrorHandler}">`;
+                            }
+
+                            break;
+                        case 'dropdown':
+                            var mod = window[syn.$w.pageScript];
+                            var storeSourceID = columnInfo.storeSourceID || columnInfo.dataSourceID;
+                            if (storeSourceID) {
+                                if (mod.config && mod.config.dataSource && mod.config.dataSource[storeSourceID]) {
+                                    dataSource = mod.config.dataSource[storeSourceID];
+                                }
+                            }
+
+                            if ($object.isNullOrUndefined(dataSource) == true) {
+                                mod.config.dataSource[storeSourceID] = {
+                                    CodeColumnID: columnInfo.keyField || 'CodeID',
+                                    ValueColumnID: columnInfo.valueField || 'CodeValue',
+                                    DataSource: []
+                                };
+                                dataSource = mod.config.dataSource[storeSourceID];
+                                syn.$w.addReadyCount();
+                                $auigrid.dataRefresh(elID, columnInfo);
+                            }
+
+                            columnInfo.labelFunction = function (rowIndex, columnIndex, value, headerText, item) {
+                                var result = '';
+                                var storeSourceID = this.storeSourceID || this.dataSourceID;
+                                var keyField = this.keyField || 'CodeID';
+                                var valueField = this.valueField || 'CodeValue';
+                                if (storeSourceID) {
+                                    var dataSource = $this.config.dataSource[storeSourceID] ? $this.config.dataSource[storeSourceID].DataSource : [];
+                                    for (var i = 0, len = dataSource.length; i < len; i++) {
+                                        var item = dataSource[i];
+                                        if (item[keyField] == value) {
+                                            result = item[valueField];
+                                            break;
+                                        }
+                                    }
+                                }
+                                return result == '' ? value : result;
+                            };
+
+                            columnInfo.editRenderer = {
+                                type: 'DropDownListRenderer',
+                                easyMode: true,
+                                showEditorBtn: false,
+                                showEditorBtnOver: true,
+                                listAlign: 'left',
+                                list: $this.config.dataSource[storeSourceID] ? $this.config.dataSource[storeSourceID].DataSource : [],
+                                keyField: columnInfo.keyField || 'CodeID',
+                                valueField: columnInfo.valueField || 'CodeValue',
+                                listFunction: function (rowIndex, columnIndex, item, dataField) {
+                                    var result = [];
+                                    var info = $auigrid.getColumnInfo(elID, dataField);
+                                    var storeSourceID = info.storeSourceID || info.dataSourceID;
+                                    if (storeSourceID) {
+                                        result = $this.config.dataSource[storeSourceID] ? $this.config.dataSource[storeSourceID].DataSource : [];
+                                    }
+                                    return result;
+                                }
+                            }
+                            break;
+                        case 'checkbox':
+                            columnInfo.renderer = {
+                                type: 'CheckBoxEditRenderer',
+                                showLabel: false,
+                                editable: true,
+                                checkValue: $string.isNullOrEmpty(columnInfo.checkValue) == true ? '1' : columnInfo.checkValue,
+                                unCheckValue: $string.isNullOrEmpty(columnInfo.unCheckValue) == true ? '0' : columnInfo.unCheckValue,
+                            }
+
+                            if ($string.isNullOrEmpty(columnInfo.checkableFunction) == false && eval('typeof ' + columnInfo.checkableFunction) == 'function') {
+                                columnInfo.renderer.checkableFunction = eval(columnInfo.checkableFunction);
+                            }
+                            else {
+                                columnInfo.renderer.checkableFunction = (rowIndex, columnIndex, value, isChecked, item, dataField) => {
+                                    var result = true;
+                                    var info = $auigrid.getColumnInfo(elID, dataField);
+                                    if (info) {
+                                        result = info.editable;
+                                    }
+                                    return result;
+                                }
+                            }
+                            break;
+                        case 'codehelp':
+                            columnInfo.renderer = {
+                                type: "IconRenderer",
+                                iconPosition: "aisleRight",
+                                iconWidth: 18,
+                                iconHeight: 18,
+                                iconTableRef: {
+                                    default: columnInfo.cellButtonIcon || '/img/btn/search.png'
+                                },
+                                onClick: $auigrid.showCodeHelpPopup
+                            }
+
+                            columnInfo.editRenderer = {
+                                type: 'InputEditRenderer',
+                                showEditorBtn: false,
+                                showEditorBtnOver: false,
+                            }
+
+                            columnInfo.dataSource = columnInfo.dataSource || null;
+                            columnInfo.dataSourceID = columnInfo.dataSourceID || '';
+                            columnInfo.storeSourceID = columnInfo.storeSourceID || columnInfo.dataSourceID;
+                            columnInfo.local = $object.isNullOrUndefined(columnInfo.local) == true ? true : columnInfo.local;
+                            columnInfo.controlText = columnInfo.controlText || '';
+                            columnInfo.codeColumnID = columnInfo.codeColumnID ? columnInfo.codeColumnID : columnID;
+                            columnInfo.textColumnID = columnInfo.textColumnID ? columnInfo.textColumnID : columnID;
+                            columnInfo.parameters = columnInfo.parameters || '';
+                            break;
+                        case 'date':
+                            columnInfo.dataType = 'date';
+                            columnInfo.dateInputFormat = 'yyyy-mm-dd';
+                            columnInfo.formatString = $string.isNullOrEmpty(columnInfo.formatString) == true ? 'yyyy-mm-dd' : columnInfo.formatString;
+                            columnInfo.editRenderer = {
+                                type: 'CalendarRenderer',
+                                showEditorBtn: false,
+                                showEditorBtnOver: true,
+                                defaultFormat: 'yyyy-mm-dd',
+                                showPlaceholder: false,
+                                openDirectly: true,
+                                onlyCalendar: false,
+                                showExtraDays: true,
+                                showTodayBtn: true,
+                                showUncheckDateBtn: true,
+                                uncheckDateValue: '',
+                                validator: function (oldValue, newValue, item, dataField) {
+                                    const isValid = $string.isNullOrEmpty(newValue) == true ? true : $date.isDate(newValue);
+                                    return {
+                                        validate: isValid,
+                                        message: '유효한 날짜 형식으로 입력해주세요.'
+                                    };
+                                }
+                            };
+                            columnInfo.labelFunction = function (rowIndex, columnIndex, value, headerText, item) {
+                                var date = new Date(value);
+                                if (isNaN(date.getTime()) || !value) {
+                                    return '';
+                                }
+
+                                return AUIGrid.formatDate(value, 'yyyy-mm-dd');
+                            };
+                            break;
+                        case 'time':
+                            let timeFormat = $string.toBoolean(columnInfo.showTimeSecond) == true ? 'HH:MM:ss' : 'HH:MM';
+                            if ($string.isNullOrEmpty(columnInfo.formatString) == false) {
+                                timeFormat = columnInfo.formatString;
+                            }
+
+                            columnInfo.dataType = 'date';
+                            columnInfo.dateInputFormat = timeFormat;
+                            columnInfo.formatString = timeFormat;
+                            columnInfo.editRenderer = {
+                                type: 'CalendarRenderer',
+                                showEditorBtn: false,
+                                showEditorBtnOver: true,
+                                defaultFormat: timeFormat,
+                                openDirectly: true,
+                                onlyCalendar: true,
+                                onlyTimeMode: true,
+                                showTimePicker: true,
+                                showTimeSecond: $string.isNullOrEmpty(columnInfo.showTimeSecond) == true ? false : columnInfo.showTimeSecond,
+                                showConfirmBtn: true,
+                                showUncheckDateBtn: true,
+                                uncheckDateText: '시간 선택 해제',
+                                uncheckDateValue: '',
+                                hourInterval: 1,
+                                minList: columnInfo.minList || [0, 30],
+                                hourList: columnInfo.hourList || [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+                            };
+                            break;
+                        case 'sparkline':
+                            columnInfo.renderer = {
+                                type: 'SparkLineRenderer',
+                                markMaxValue: true,
+                                markMinValue: true,
+                                markFirstValue: true,
+                                markLastValue: true,
+                            }
+                            break;
+                        case 'sparkcolumn':
+                            columnInfo.renderer = {
+                                type: 'SparkColumnRenderer',
+                                markMaxValue: true,
+                                markMinValue: true,
+                                markFirstValue: true,
+                                markLastValue: true,
+                            }
+                            break;
                     }
 
-                    if (hook == 'afterOnCellDoubleClick') {
-                        hook = 'beforeOnCellMouseDown';
+                    if ($string.isNullOrEmpty(columnInfo.dataType) == true) {
+                        columnInfo.dataType = 'string'; // numeric, string, date, boolean
                     }
 
-                    if (hook == 'afterSelectionEnd') {
-                        var gridValue = $grid.getGridValue(elID);
-                        gridValue.colHeaderClick = false;
-                        gridValue.previousRow = arguments[0];
-                        gridValue.previousCol = arguments[1];
+                    if ($string.isNullOrEmpty(columnInfo.tooltip) == false) {
+                        columnInfo.headerTooltip = {
+                            show: true,
+                            tooltipHtml: columnInfo.tooltip
+                        };
+                    }
 
-                        if (mod) {
-                            mod.prop.focusControl = syn.$l.get(elID);
-                        }
+                    if ($string.isNullOrEmpty(columnInfo.maxlength) == false && $object.isNullOrUndefined(columnInfo.editRenderer) == false) {
+                        columnInfo.editRenderer.maxlength = columnInfo.maxlength;
                     }
                 }
-            });
 
-            var controlSetting = $object.clone(setting);
-            $grid.gridControls.push({
-                id: elID,
-                hot: new Handsontable(el, controlSetting),
-                setting: controlSetting,
-                value: {
-                    eventName: '',
-                    colHeaderClick: false,
-                    applyCells: false,
-                    previousRow: -1,
-                    previousCol: -1
+                if ($object.isNullOrUndefined(children) == false) {
+                    columnInfo.children = $auigrid.getInitializeColumns(elID, children, editable);
                 }
-            });
 
-            var wtHolder = syn.$l.get(elID).querySelector('.wtHolder');
-            wtHolder.gridID = elID;
-            Handsontable.dom.addEvent(wtHolder, 'click', function (evt) {
-                var mod = window[syn.$w.pageScript];
-                if (mod) {
-                    mod.prop.focusControl = syn.$l.get(wtHolder.gridID);
-                }
-            });
-
-            if ($grid.gridCodeDatas.length > 0) {
-                var length = $grid.gridCodeDatas.length;
-                for (var i = 0; i < length; i++) {
-                    syn.$w.addReadyCount();
-                    var codeData = $grid.gridCodeDatas[i];
-                    $grid.dataRefresh(codeData.elID, codeData.type);
-                }
+                result.push(columnInfo);
             }
 
-            if (setting.bindingID && syn.uicontrols.$data) {
-                syn.uicontrols.$data.bindingSource(elID, setting.bindingID);
-            }
-
-            if ($object.isNullOrUndefined($grid.remainingReadyIntervalID) == true) {
-                $grid.remainingReadyIntervalID = setInterval(function () {
-                    if (syn.$w.isPageLoad == true) {
-                        clearInterval($grid.remainingReadyIntervalID);
-                        $grid.remainingReadyIntervalID = null;
-
-                        for (var i = 0, length = $grid.gridControls.length; i < length; i++) {
-                            var hot = $grid.gridControls[i].hot;
-                            hot.render();
-                        }
-                    }
-                }, 25);
-            }
+            return result;
         },
 
         dataRefresh(elID, setting, callback) {
+            var gridID = $auigrid.getGridID(elID);
+            if ($object.isNullOrUndefined(gridID) == true) {
+                gridID = elID.replace('#', '');
+            }
+
             var defaultSetting = {
-                columnName: null,
-                codeColumnID: null,
+                dataField: null,
                 required: true,
+                emptyText: '전체',
                 local: true,
+                sharedAssetUrl: '',
                 dataSourceID: null,
                 storeSourceID: null,
                 dataSource: null,
                 parameters: null,
+                deleteCache: false,
                 selectedValue: null
             }
 
@@ -10997,10 +11738,11 @@
             setting.elID = elID;
             setting.storeSourceID = setting.storeSourceID || setting.dataSourceID;
             setting = syn.$w.argumentsExtend(defaultSetting, setting);
+            setting.sharedAssetUrl = setting.sharedAssetUrl || syn.Config.SharedAssetUrl;
 
-            if (setting.columnName && setting.storeSourceID) {
+            if (setting.dataField && setting.storeSourceID) {
                 var mod = window[syn.$w.pageScript];
-                if (mod.config && mod.config.dataSource && mod.config.dataSource[setting.storeSourceID]) {
+                if (mod.config && mod.config.dataSource && mod.config.dataSource[setting.storeSourceID] && $string.toBoolean(setting.deleteCache) == true) {
                     delete mod.config.dataSource[setting.storeSourceID];
                 }
 
@@ -11010,1326 +11752,2149 @@
                 }
 
                 var dataSource = null;
-                if (mod.config && mod.config.dataSource && mod.config.dataSource[setting.dataSourceID]) {
-                    dataSource = mod.config.dataSource[setting.dataSourceID];
+                if (mod.config && mod.config.dataSource && mod.config.dataSource[setting.storeSourceID]) {
+                    dataSource = mod.config.dataSource[setting.storeSourceID];
                 }
 
-                var hot = $grid.getGridControl(elID);
-                var gridSettings = hot.getSettings();
-                var columnInfos = gridSettings.columns;
-                var colIndex = hot.propToCol(setting.columnName);
-                var columnInfo = columnInfos[colIndex];
-                if (columnInfo.type == 'dropdown') {
-                    var loadData = function (columnInfo, dataSource, setting) {
-                        columnInfo.dataSource = dataSource;
-                        columnInfo.storeSourceID = setting.storeSourceID;
-                        columnInfo.local = setting.local;
-                        columnInfo.required = setting.required;
-                        columnInfo.codeColumnID = setting.codeColumnID || columnInfo.codeColumnID;
-                        var source = [];
-
-                        if (columnInfo.required == false) {
-                            source.push('');
-                        }
-
-                        for (var j = 0; j < dataSource.DataSource.length; j++) {
-                            var item = dataSource.DataSource[j];
-                            source.push(item[dataSource.ValueColumnID]);
-                        }
-
-                        columnInfo.source = source;
-                        columnInfo.visibleRows = 10;
-                        columnInfo.trimDropdown = true;
-                        columnInfo.trimWhitespace = true;
-                        columnInfo.wordWrap = false;
-                        columnInfo.allowInvalid = false;
-                        $grid.updateSettings(setting.elID, gridSettings);
-
-                        if (setting.selectedValue) {
-                            var row = $grid.getActiveRowIndex(elID);
-
-                            if (row > -1) {
-                                var codeColIndex = hot.propToCol(columnInfo.codeColumnID);
-                                var selectedText = '';
-                                var length = columnInfo.dataSource.DataSource.length;
-                                for (var i = 0; i < length; i++) {
-                                    var item = columnInfo.dataSource.DataSource[i];
-                                    if (item.CodeID == setting.selectedValue) {
-                                        selectedText = item.CodeValue;
-                                        break;
-                                    }
+                if (dataSource && dataSource.DataSource.length > 0) {
+                    if (callback) {
+                        callback();
+                    }
+                    syn.$w.removeReadyCount();
+                } else {
+                    if (setting.local == true) {
+                        syn.$w.loadJson(setting.sharedAssetUrl + 'code/{0}.json'.format(setting.storeSourceID), setting, function (setting, json) {
+                            if (json) {
+                                if (setting.required == false) {
+                                    var empty = {};
+                                    empty[json.CodeColumnID] = '';
+                                    empty[json.ValueColumnID] = setting.emptyText || '';
+                                    json.DataSource.unshift(empty);
                                 }
 
-                                var codeValue = [
-                                    [row, codeColIndex, setting.selectedValue],
-                                    [row, colIndex, selectedText]
-                                ];
-                                hot.setDataAtCell(codeValue);
+                                mod.config.dataSource[setting.storeSourceID] = json;
+                                if (callback) {
+                                    callback();
+                                }
                             }
-                        }
-                    }
-
-                    if (dataSource) {
-                        loadData(columnInfo, dataSource, setting);
-                        if (callback) {
-                            callback();
-                        }
-                        syn.$w.removeReadyCount();
+                            syn.$w.removeReadyCount();
+                        }, false);
                     } else {
-                        if (setting.local == true) {
-                            syn.$w.loadJson(syn.Config.SharedAssetUrl + 'code/{0}.json'.format(setting.storeSourceID), setting, function (setting, json) {
-                                if (json) {
-                                    mod.config.dataSource[setting.storeSourceID] = json;
-                                    loadData(columnInfo, json, setting);
-                                    if (callback) {
-                                        callback();
-                                    }
+                        syn.$w.getDataSource(setting.dataSourceID, setting.parameters, function (json) {
+                            if (json) {
+                                if (setting.required == false) {
+                                    var empty = {};
+                                    empty[json.CodeColumnID] = '';
+                                    empty[json.ValueColumnID] = setting.emptyText || '';
+                                    json.DataSource.unshift(empty);
                                 }
-                                syn.$w.removeReadyCount();
-                            }, false);
-                        } else {
-                            syn.$w.getDataSource(setting.dataSourceID, setting.parameters, function (json) {
-                                if (json) {
-                                    mod.config.dataSource[setting.storeSourceID] = json;
-                                    loadData(columnInfo, json, setting);
-                                    if (callback) {
-                                        callback();
-                                    }
+
+                                mod.config.dataSource[setting.storeSourceID] = json;
+                                if (callback) {
+                                    callback();
                                 }
-                                syn.$w.removeReadyCount();
-                            });
-                        }
+                            }
+                            syn.$w.removeReadyCount();
+                        });
                     }
                 }
+
+                AUIGrid.setColumnPropByDataField(gridID, setting.dataField, setting);
             }
         },
 
-        // columns = [{
-        //    0 columnID: '',
-        //    1 columnName: '',
-        //    2 width: '',
-        //    3 isHidden: '',
-        //    4 columnType: '',
-        //    5 readOnly: '',
-        //    6 alignConstants: '',
-        //    7 belongID: '',
-        //    8 validators: ['require', 'unique', 'number', 'ipaddress', 'email', 'date', 'dateformat']
-        //    9 options: { sorting: true, placeholder: 'Empty Cell' }
-        // }]
-        getInitializeColumns(settings, elID) {
-            var columns = settings.columns;
-            var gridSetting = {
-                colHeaders: [],
-                columns: [],
-                colWidths: [],
-                hiddenColumns: {
-                    columns: [0],
-                    indicators: false
-                }
-            };
+        showCodeHelpPopup(evt) {
+            var gridID = evt.pid;
+            var elID = gridID.substring(1);
+            var rowIndex = evt.rowIndex;
+            var columnIndex = evt.columnIndex;
+            var dataField = evt.dataField;
+            var isAllowEdit = AUIGrid.getProp(gridID, 'editable');
+            var mod = window[syn.$w.pageScript];
+            var eventHandler = isAllowEdit == true && mod.event ? mod.event['{0}_{1}'.format(elID, 'cellEditBegin')] : null;
+            if (eventHandler) {
+                var value = eventHandler(evt);
+                isAllowEdit = $string.toBoolean(value);
+            }
 
-            var length = columns.length;
-            for (var i = 0; i < length; i++) {
-                var column = columns[i];
+            if (isAllowEdit == true) {
+                var columns = AUIGrid.getColumnInfoList(gridID);
+                var columnInfo = columns.find((item) => { return item.dataField == dataField });
+                if (columnInfo && columnInfo.columnType == 'codehelp') {
+                    if (rowIndex > -1) {
+                        var synOptions = syn.$w.argumentsExtend(syn.uicontrols.$codepicker.defaultSetting, columnInfo);
 
-                var columnID = column[0];
-                var columnName = column[1];
-                var width = column[2];
-                var isHidden = column[3];
-                var columnType = column[4];
-                var readOnly = column[5];
-                var alignConstants = column[6];
-                var belongID = column[7];
-                var validators = column[8];
-                var options = column[9];
-
-                var columnInfo = {
-                    data: columnID,
-                    type: 'text',
-                    filter: true,
-                    isHidden: isHidden,
-                    readOnly: $string.toBoolean(settings.readOnly) == true ? true : $string.toBoolean(readOnly),
-                    className: $object.isNullOrUndefined(alignConstants) == true ? '' : 'ht' + $string.capitalize(alignConstants),
-                    belongID: $object.isNullOrUndefined(belongID) == true ? '' : belongID,
-                    validators: null
-                }
-
-                if (column.length > 8 && validators) {
-                    columnInfo.validators = validators;
-
-                    if (columnInfo.validators.indexOf('require') > -1) {
-                        columnInfo.className = columnInfo.className + ' required';
-                    }
-                }
-
-                if (column.length > 9 && options) {
-                    var columnOptions = options;
-
-                    if ($string.isNullOrEmpty(columnOptions.placeholder) == false) {
-                        columnInfo.placeholder = columnOptions.placeholder;
-                    }
-
-                    if (columnOptions.sorting == true) {
-                    }
-                    else {
-                        columnInfo.columnSorting = {
-                            indicator: false,
-                            headerAction: false,
-                            compareFunctionFactorycompareFunctionFactory() {
-                                return function comparator() {
-                                    return 0;
-                                };
+                        var codeButtonHandler = mod.event['{0}_codeButtonClick'.format(elID)];
+                        if (codeButtonHandler) {
+                            var codeOptions = codeButtonHandler(elID, evt.rowIndex, evt.columnIndex, evt.dataField, evt.item);
+                            if ($object.isObject(codeOptions) == true) {
+                                synOptions = syn.$w.argumentsExtend(synOptions, codeOptions);
                             }
-                        };
-                    }
-
-                    if ((columnInfo.type == 'checkbox' || columnInfo.type == 'checkbox2') && columnOptions.isRadioTheme == true) {
-                        columnInfo.className = columnInfo.className + ' required';
-                    }
-
-                    columnInfo.columnOptions = columnOptions;
-                }
-
-                if (column.length != 10 && settings.columnSorting == false) {
-                    columnInfo.columnSorting = {
-                        indicator: false,
-                        headerAction: false,
-                        compareFunctionFactorycompareFunctionFactory() {
-                            return function comparator() {
-                                return 0;
-                            };
-                        }
-                    };
-                }
-
-                var dataSource = null;
-                var type = columnType;
-                if ($object.isString(type) == true) {
-                    columnInfo.type = type;
-                    if ((columnInfo.type == 'dropdown' || columnInfo.type == 'codehelp')) {
-                        syn.$l.eventLog('getInitializeColumns', '"{0}" 컬럼 타입은 객체로 선언 필요'.format(type), 'Warning');
-                    }
-                    else if (columnInfo.type == 'checkbox' || columnInfo.type == 'checkbox2') {
-                        columnInfo.isSelectAll = false;
-                        columnInfo.checkedTemplate = '1';
-                        columnInfo.uncheckedTemplate = '0';
-                        columnInfo.allowInvalid = false;
-                    }
-                    else if (columnInfo.type == 'numeric' || columnInfo.type == 'date' || columnInfo.type == 'time' || columnInfo.type == 'autocomplete') {
-                        columnInfo.allowInvalid = false;
-                        if (columnInfo.type == 'numeric') {
-                            if (type.numericFormat) {
-                                columnInfo.numericFormat = type.numericFormat;
-                            }
-                            else if (type.numericFormat == false) {
-                            }
-                            else {
-                                columnInfo.numericFormat = {
-                                    pattern: '0,00',
-                                    culture: 'ko-KR'
-                                }
+                            else if ($string.toBoolean(codeOptions) == false) {
+                                return;
                             }
                         }
-                        else if (columnInfo.type == 'date') {
-                            columnInfo.dateFormat = type.timeFormat;
-                            columnInfo.correctFormat = type.correctFormat;
-                            columnInfo.defaultDate = type.defaultDate;
-                            columnInfo.datePickerConfig = type.datePickerConfig;
-                        }
-                        else if (columnInfo.type == 'time') {
-                            columnInfo.timeFormat = type.timeFormat;
-                            columnInfo.correctFormat = type.correctFormat;
-                        }
-                    }
-                }
-                else {
-                    columnInfo.type = type.columnType;
 
-                    if ((columnInfo.type == 'dropdown' || columnInfo.type == 'codehelp')) {
-                        var storeSourceID = type.storeSourceID || type.dataSourceID;
-                        if (storeSourceID) {
-                            var mod = window[syn.$w.pageScript];
-                            if (mod.config && mod.config.dataSource && mod.config.dataSource[storeSourceID]) {
-                                dataSource = mod.config.dataSource[storeSourceID];
+                        synOptions.elID = elID;
+                        synOptions.viewType = 'auigrid';
+                        synOptions.url = $auigrid.codeHelpUrl || '';
+                        synOptions.searchText = evt.text || evt.value || '';
+                        syn.uicontrols.$codepicker.find(synOptions, function (result) {
+                            var changeHandler = mod.event['{0}_codeChange'.format(elID)];
+                            if (changeHandler) {
+                                changeHandler(elID, evt.rowIndex, evt.columnIndex, evt.dataField, result);
                             }
-                        }
-                    }
-                    else if (columnInfo.type == 'checkbox' || columnInfo.type == 'checkbox2') {
-                        columnInfo.isSelectAll = $object.isNullOrUndefined(type.isSelectAll) == false && type.isSelectAll === true ? true : false;
-                        columnInfo.checkedTemplate = $object.isNullOrUndefined(type.checkedTemplate) == false ? type.checkedTemplate : '1';
-                        columnInfo.uncheckedTemplate = $object.isNullOrUndefined(type.uncheckedTemplate) == false ? type.uncheckedTemplate : '1';
-                        columnInfo.allowInvalid = $object.isNullOrUndefined(type.allowInvalid) == false && type.allowInvalid === true ? true : false;
-                    }
-                    else if (columnInfo.type == 'numeric' || columnInfo.type == 'date' || columnInfo.type == 'time' || columnInfo.type == 'autocomplete') {
-                        columnInfo.allowInvalid = false;
-                        if (columnInfo.type == 'numeric') {
-                            if (type.numericFormat) {
-                                columnInfo.numericFormat = type.numericFormat;
-                            }
-                            else if (type.numericFormat == false) {
-                            }
-                            else {
-                                columnInfo.numericFormat = {
-                                    pattern: '0,00',
-                                    culture: 'ko-KR'
-                                }
-                            }
-                        }
-                        else if (columnInfo.type == 'date') {
-                            columnInfo.dateFormat = type.timeFormat;
-                            columnInfo.correctFormat = type.correctFormat;
-                            columnInfo.defaultDate = type.defaultDate;
-                            columnInfo.datePickerConfig = type.datePickerConfig;
-                        }
-                        else if (columnInfo.type == 'time') {
-                            columnInfo.timeFormat = type.timeFormat;
-                            columnInfo.correctFormat = type.correctFormat;
-                        }
-                    }
-                }
 
-                if (columnInfo.type == 'dropdown') {
-                    var source = [];
-                    if (dataSource) {
-                        for (var j = 0; j < dataSource.DataSource.length; j++) {
-                            var item = dataSource.DataSource[j];
-                            source.push(item[dataSource.ValueColumnID]);
-                        }
-                    }
-                    else {
-                        if (elID) {
-                            type.columnName = columnID;
-                            if (type.local === true) {
-                                $grid.dataRefresh(elID, type);
-                            }
-                            else {
-                                $grid.gridCodeDatas.push({
+                            var returnHandler = mod.hook.frameEvent;
+                            if (returnHandler) {
+                                returnHandler.call(this, 'codeReturn', {
                                     elID: elID,
-                                    type: type
+                                    row: rowIndex,
+                                    col: columnIndex,
+                                    columnName: dataField,
+                                    result: result
                                 });
                             }
+                        });
+
+                        setTimeout(() => { AUIGrid.forceEditingComplete(gridID, null, false); }, 25);
+                    }
+                }
+            }
+        },
+
+        hideContextMenu() {
+            if ($auigrid.nowHeaderMenuVisible) {
+                $('#auigridHeaderContextMenu').menu('destroy');
+                $('#auigridHeaderContextMenu').hide();
+                $auigrid.nowHeaderMenuVisible = false;
+            }
+        },
+
+        contextEventHandler(evt) {
+            if ($auigrid.nowHeaderMenuVisible) {
+                $auigrid.hideContextMenu();
+            }
+
+            if (evt.target == 'header') {
+                syn.$m.removeClass('headerItem1', 'hidden');
+                syn.$m.removeClass('headerItem2', 'hidden');
+                syn.$m.removeClass('headerItem3', 'hidden');
+                syn.$m.removeClass('headerItem4', 'hidden');
+                syn.$m.removeClass('headerItem5', 'hidden');
+                syn.$m.removeClass('headerItem6', 'hidden');
+                if ($string.isNullOrEmpty(evt.dataField) == true) {
+                    syn.$m.addClass('headerItem1', 'hidden');
+                    syn.$m.addClass('headerItem2', 'hidden');
+                    syn.$m.addClass('headerItem4', 'hidden');
+                }
+                else {
+                    syn.$m.addClass('headerItem5', 'hidden');
+                    syn.$m.addClass('headerItem6', 'hidden');
+                    $auigrid.currentDataField = evt.dataField.replaceAll(',', '_');
+                }
+
+                $auigrid.nowHeaderMenuVisible = true;
+                $("#auigridHeaderContextMenu").attr('context', JSON.stringify(evt));
+                $('#auigridHeaderContextMenu').menu({
+                    select: $auigrid.headerMenuSelectHandler
+                });
+
+                $('#auigridHeaderContextMenu').css({
+                    left: evt.pageX,
+                    top: evt.pageY
+                }).show();
+
+            } else if (evt.target == 'body') {
+                return true;
+            }
+        },
+
+        headerMenuSelectHandler(evt, ui) {
+            var context = JSON.parse($('#auigridHeaderContextMenu').attr('context'));
+            var gridID = context.pid;
+            var selectedId = ui.item.prop('id');
+
+            switch (selectedId) {
+                case 'headerItem1':
+                    AUIGrid.setSorting(gridID, [{ dataField: $auigrid.currentDataField, sortType: 1 }]);
+                    break;
+                case 'headerItem2':
+                    AUIGrid.setSorting(gridID, [{ dataField: $auigrid.currentDataField, sortType: -1 }]);
+                    break;
+                case 'headerItem3':
+                    AUIGrid.clearSortingAll(gridID);
+                    break;
+                case 'headerItem4':
+                    AUIGrid.hideColumnByDataField(gridID, $auigrid.currentDataField);
+                    break;
+                case 'headerItem5':
+                    AUIGrid.showAllColumns(gridID);
+                    $('#headerItemUL span.ui-icon[data]').addClass('ui-icon-check').removeClass('ui-icon-blank');
+                    break;
+                case 'headerItem6':
+                    AUIGrid.showAllColumns(gridID);
+                    const columnInfos = AUIGrid.getColumnInfoList(gridID);
+                    for (let i = 0, length = columnInfos.length; i < length; i++) {
+                        const columnInfo = columnInfos[i];
+                        if (columnInfo.isHidden == true) {
+                            const dataField = AUIGrid.getDataFieldByColumnIndex(gridID, columnInfo.columnIndex);
+                            AUIGrid.hideColumnByDataField(gridID, dataField);
                         }
                     }
+                    break;
+            }
 
-                    columnInfo.dataSource = dataSource;
-                    columnInfo.dataSourceID = type.dataSourceID;
-                    columnInfo.storeSourceID = type.storeSourceID || type.dataSourceID;
-                    columnInfo.local = (type.local === true);
-                    columnInfo.codeBelongID = type.codeBelongID;
-                    columnInfo.codeColumnID = type.codeColumnID;
-                    columnInfo.codeColumnType = type.codeColumnType ? type.codeColumnType : 'text';
-                    columnInfo.codeColumnHidden = type.codeColumnHidden == undefined ? true : type.codeColumnHidden;
-                    columnInfo.source = source;
-                    columnInfo.strict = true;
-                    columnInfo.visibleRows = $object.isNullOrUndefined(source) == true ? 0 : source.length + 1;
-                    columnInfo.trimDropdown = true;
-                    columnInfo.trimWhitespace = true;
-                    columnInfo.wordWrap = false;
-                    columnInfo.allowInvalid = false;
-                } else if (columnInfo.type == 'codehelp') {
-                    columnInfo.dataSource = dataSource;
-                    columnInfo.dataSourceID = type.dataSourceID;
-                    columnInfo.storeSourceID = type.storeSourceID || type.dataSourceID;
-                    columnInfo.local = type.local;
-                    columnInfo.controlText = type.controlText;
-                    columnInfo.codeColumnID = type.codeColumnID ? type.codeColumnID : columnID;
-                    columnInfo.textColumnID = type.textColumnID ? type.textColumnID : columnID;
-                    columnInfo.parameters = type.parameters ? type.parameters : '';
-                } else if (columnInfo.type == 'date') {
-                    columnInfo.dateFormat = type.dateFormat ? type.dateFormat : 'YYYY-MM-DD';
-                    columnInfo.correctFormat = true;
-                    columnInfo.datePickerConfig = {
-                        format: columnInfo.dateFormat,
-                        ariaLabel: '날짜를 선택 하세요',
-                        i18n: {
-                            previousMonth: '이전 달',
-                            nextMonth: '다음 달',
-                            months: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
-                            weekdays: ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'],
-                            weekdaysShort: ['일', '월', '화', '수', '목', '금', '토']
-                        },
-                        showWeekNumber: false,
-                        showMonthAfterYear: true,
-                        yearSuffix: '년',
-                        firstDay: 0,
-                        numberOfMonths: 1
-                    }
+            $auigrid.hideContextMenu();
+        },
+
+        propToCol(elID, dataField) {
+            var result = -1;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
                 }
+                result = AUIGrid.getColumnIndexByDataField(gridID, dataField);
+            }
 
-                if (columnInfo.type == 'dropdown') {
-                    var hiddenColumnInfo = {
-                        data: columnInfo.codeColumnID,
-                        type: columnInfo.codeColumnType,
-                        filter: true,
-                        readOnly: true,
-                        className: 'htLeft',
-                        belongID: columnInfo.codeBelongID ? columnInfo.codeBelongID : $object.clone(belongID)
-                    }
+            return result;
+        },
 
-                    if (columnInfo.codeColumnHidden == true) {
-                        gridSetting.colHeaders.push(columnName + '_$HIDDEN');
-                        columnInfo.columnText = columnName + '_$HIDDEN';
+        getProperty(elID, name) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getProp(gridID, name);
+            }
+
+            return result;
+        },
+
+        // value = { headerText: '헤더 그룹', headerStyle: 'my-strong-header' }
+        setColumnProperty(elID, dataField, value) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isString(dataField) == true) {
+                    AUIGrid.setColumnPropByDataField(gridID, dataField, value);
+                }
+                else {
+                    AUIGrid.setColumnProp(gridID, dataField, value);
+                }
+            }
+        },
+
+        setProperty(elID, name, value) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.setProp(gridID, name, value);
+
+                AUIGrid.update(gridID);
+            }
+        },
+
+        setFooter(elID, footerLayout, isChangeFooter) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.setProp(gridID, 'showFooter', true);
+
+                if ($string.toBoolean(isChangeFooter) == false) {
+                    AUIGrid.setFooter(gridID, footerLayout);
+                }
+                else {
+                    AUIGrid.changeFooterLayout(gridID, footerLayout);
+                }
+            }
+        },
+
+        search(elID, dataField, term, options) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var defaultOptions = {
+                    direction: true,
+                    caseSensitive: false,
+                    wholeWord: false,
+                    wrapSearch: true
+                };
+
+                options = syn.$w.argumentsExtend(defaultOptions, options);
+
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+                AUIGrid.search(gridID, dataField, term, options);
+            }
+        },
+
+        searchAll(elID, term, options) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var defaultOptions = {
+                    direction: true,
+                    caseSensitive: false,
+                    wholeWord: false,
+                    wrapSearch: true
+                };
+
+                options = syn.$w.argumentsExtend(defaultOptions, options);
+
+                AUIGrid.searchAll(gridID, term, options);
+            }
+        },
+
+        setControlSize(elID, size) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var el = syn.$l.get(elID);
+                if (el) {
+                    if (size) {
+                        if ($object.isNumber(size.width) == true) {
+                            size.width = size.width + 'px';
+                        }
+
+                        if ($object.isNumber(size.height) == true) {
+                            size.height = size.height + 'px';
+                        }
+
+                        if ($object.isNullOrUndefined(size.width) == true) {
+                            size.width = '100%';
+                            el.style.width = '100%';
+                        }
+                        else {
+                            el.style.width = size.width;
+                        }
+
+                        if ($object.isNullOrUndefined(size.height) == true) {
+                            size.height = '100%';
+                            el.style.height = '100%';
+                        }
+                        else {
+                            el.style.height = size.height;
+                        }
+
+                        setTimeout(() => { AUIGrid.resize(gridID, size.width, size.height); }, 50);
                     }
                     else {
-                        gridSetting.colHeaders.push(columnName + '_코드');
-                        columnInfo.columnText = columnName + '_코드';
+                        setTimeout(() => { AUIGrid.resize(gridID); }, 50);
                     }
-                    gridSetting.columns.push(hiddenColumnInfo);
-                    gridSetting.colWidths.push(width);
+
+                    if (syn.$w.setTabContentHeight) {
+                        syn.$w.setTabContentHeight();
+                    }
                 }
-
-                gridSetting.colHeaders.push(columnName);
-                columnInfo.columnText = columnName;
-                gridSetting.columns.push(columnInfo);
-                gridSetting.colWidths.push(width);
-            }
-
-            var headerLength = gridSetting.colHeaders.length;
-            for (var i = 0; i < headerLength; i++) {
-                var colHeader = gridSetting.colHeaders[i];
-                if (colHeader.indexOf('_$HIDDEN') > -1) {
-                    gridSetting.hiddenColumns.columns.push((i + 1));
-                }
-            }
-
-            for (var i = 0; i < headerLength; i++) {
-                var columnInfo = gridSetting.columns[i];
-                if (columnInfo.isHidden == true) {
-                    gridSetting.hiddenColumns.columns.push((i + 1));
-                }
-            }
-
-            return gridSetting;
-        },
-
-        merge(elID, startRow, startColumn, endRow, endColumn) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var mergePlugin = hot.getPlugin('mergeCells');
-
-                if (mergePlugin.isEnabled() == false) {
-                    mergePlugin.enablePlugin();
-                }
-
-                mergePlugin.merge(startRow, startColumn, endRow, endColumn);
             }
         },
 
-        unmerge(elID, startRow, startColumn, endRow, endColumn) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var mergePlugin = hot.getPlugin('mergeCells');
-
-                if (mergePlugin.isEnabled() == false) {
-                    mergePlugin.enablePlugin();
-                }
-
-                mergePlugin.unmerge(startRow, startColumn, endRow, endColumn);
+        // sortInfos = [{ dataField: 'country', sortType: 1 }, { dataField: 'name', sortType: -1 }]
+        setSorting(elID, sortInfos) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.setSorting(gridID, sortInfos);
             }
         },
 
-        addCondition(elID, col, name, args) {
-            /*
-            name에 들어갈수 있는 조건
-            begins_with: 로 시작
-            between: 사이
-            by_value: 값
-            contains: 포함
-            empty: 비우기
-            ends_with: 로 끝나다
-            eq: 같음
-            gt:  보다 큰
-            gte: 크거나 같음
-            lt: 이하
-            lte: 이하거나 같음
-            none: 없음 (필터 없음)
-            not_between: 사이가 아님
-            not_contains: 포함하지 않음
-            not_empty: 비우지 않음
-            neq: 같지 않다
-             */
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var filtersPlugin = hot.getPlugin('filters');
-
-                if (filtersPlugin.isEnabled() == false) {
-                    filtersPlugin.enablePlugin();
-                }
-
-                if ($object.isString(col) == true) {
-                    col = hot.propToCol(col);
-                }
-
-                if ($object.isString(args) == true) {
-                    args = [args];
-                }
-
-                filtersPlugin.addCondition(col, name, args);
-                filtersPlugin.filter();
+        clearSorting(elID) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.clearSortingAll(gridID);
             }
         },
 
-        removeCondition(elID, col) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var filtersPlugin = hot.getPlugin('filters');
+        getColumnWidth(elID, dataField) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+                var columnItem = AUIGrid.getColumnItemByDataField(gridID, dataField);
+                if ($object.isNullOrUndefined(columnItem) == false) {
+                    result = columnItem.width;
+                }
+            }
 
-                if (filtersPlugin.isEnabled() == false) {
-                    filtersPlugin.enablePlugin();
+            return result;
+        },
+
+        getColumnWidths(elID, isKeyValue) {
+            var result = [];
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var dataFields = AUIGrid.getColumnInfoList(gridID);
+                for (var i = 0, length = dataFields.length; i < length; i++) {
+                    var dataField = dataFields[i];
+
+                    if ($string.toBoolean(isKeyValue) == true) {
+                        result.push({
+                            dataField: dataField.dataField,
+                            width: dataField.width,
+                        });
+                    }
+                    else {
+                        result.push(dataField.width);
+                    }
+                }
+            }
+
+            return result;
+        },
+
+        setColumnWidth(elID, dataField, width) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var columnWidths = $auigrid.getColumnWidths(elID);
+
+                if ($object.isString(dataField) == true) {
+                    dataField = AUIGrid.getColumnIndexByDataField(gridID, dataField);
                 }
 
-                if ($object.isString(col) == true) {
-                    col = hot.propToCol(col);
+                var colIndex = columnWidths[dataField];
+                if ($object.isNullOrUndefined(colIndex) == false) {
+                    columnWidths[dataField] = width;
+                    AUIGrid.setColumnSizeList(gridID, columnWidths);
+                }
+            }
+        },
+
+        setColumnWidths(elID, columnWidths) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isArray(columnWidths) == true) {
+                    AUIGrid.setColumnSizeList(gridID, columnWidths);
+                }
+            }
+        },
+
+        getColumnSize(elID, dataField) {
+            var result = -1;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getColumnIndexByDataField(gridID, dataField);
+            }
+
+            return result;
+        },
+
+        setFitColumnSize(elID, maxWidth, fitToGrid) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                maxWidth = maxWidth || 300;
+                var colSizeList = AUIGrid.getFitColumnSizeList(gridID, $string.toBoolean(fitToGrid));
+                for (var i = 0, length = colSizeList.length; i < length; i++) {
+                    colSizeList[i] = colSizeList[i] + 14;
+                    if (colSizeList[i] > maxWidth) {
+                        colSizeList[i] = maxWidth;
+                    }
                 }
 
-                filtersPlugin.removeConditions(col);
-                filtersPlugin.filter();
+                AUIGrid.setColumnSizeList(gridID, colSizeList);
+            }
+        },
+
+        setCellMerge(elID, isMerged) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.setCellMerge(gridID, $string.toBoolean(isMerged));
+            }
+        },
+
+        setFixedColumnCount(elID, fixedCount) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var fixedCount = $string.toNumber(fixedCount);
+                AUIGrid.setFixedColumnCount(gridID, (fixedCount < 0 ? 0 : fixedCount));
+            }
+        },
+
+        setFixedRowCount(elID, fixedCount) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var fixedCount = $string.toNumber(fixedCount);
+                AUIGrid.setFixedRowCount(gridID, (fixedCount < 0 ? 0 : fixedCount));
+            }
+        },
+
+        getSelectedIndex(elID) {
+            var result = [-1, -1];
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getSelectedIndex(gridID);
+            }
+            return result;
+        },
+
+        getActiveRowIndex(elID) {
+            var result = -1;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getSelectedIndex(gridID)[0];
+            }
+            return result;
+        },
+
+        getActiveColIndex(elID) {
+            var result = -1;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getSelectedIndex(gridID)[1];
+            }
+            return result;
+        },
+
+        selectCell(elID, rowIndex, dataField) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var colIndex = 0;
+                if ($object.isString(dataField) == true) {
+                    colIndex = AUIGrid.getColumnIndexByDataField(gridID, dataField);
+                }
+                else {
+                    colIndex = dataField;
+                }
+
+                AUIGrid.setSelectionByIndex(gridID, $string.toNumber(rowIndex), $string.toNumber(colIndex));
+            }
+        },
+
+        clearSelection(elID) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.clearSelection(gridID);
+            }
+        },
+
+        propToCol(elID, dataField) {
+            var result = -1;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getColumnIndexByDataField(gridID, dataField);
+            }
+            return result;
+        },
+
+
+        colToProp(elID, colIndex) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getDataFieldByColumnIndex(gridID, $string.toNumber(colIndex));
+            }
+            return result;
+        },
+
+        // func = (dataField, value, item) => {}
+        setFilter(elID, dataField, func) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+
+                if ($string.isNullOrEmpty(dataField) == false) {
+                    AUIGrid.setFilter(gridID, dataField, func);
+                }
+            }
+        },
+
+        addFilterCache(elID, dataField, value) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+
+                if ($string.isNullOrEmpty(dataField) == false) {
+                    var filterCache = AUIGrid.getFilterCache(gridID);
+                    filterCache[dataField] = value;
+                    AUIGrid.setFilterCache(gridID, filterCache);
+                }
+            }
+        },
+
+        /*
+        name에 들어갈수 있는 조건
+        begins_with: 로 시작
+        between: 사이
+        by_value: 값
+        contains: 포함
+        empty: 비우기
+        ends_with: 로 끝나다
+        eq: 같음
+        gt:  보다 큰
+        gte: 크거나 같음
+        lt: 이하
+        lte: 이하거나 같음
+        not_between: 사이가 아님
+        not_contains: 포함하지 않음
+        not_empty: 비우지 않음
+        neq: 같지 않다
+         */
+        addCondition(elID, dataField, name, args, args2) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+
+                if ($string.isNullOrEmpty(dataField) == false) {
+                    AUIGrid.setFilter(gridID, dataField, (dataField, value, item) => {
+                        var result = false;
+                        if (value) {
+                            switch (name) {
+                                case 'begins_with':
+                                    result = value.startsWith(args);
+                                    break;
+                                case 'between':
+                                    result = (args <= value && value <= args2);
+                                    break;
+                                case 'ends_with':
+                                    result = value.endsWith(args);
+                                    break;
+                                case 'contains':
+                                case 'by_value':
+                                case 'eq':
+                                    result = value == args;
+                                    break;
+                                case 'not_contains':
+                                case 'neq':
+                                    result = value != args;
+                                    break;
+                                case 'gt':
+                                    result = value > args;
+                                    break;
+                                case 'gte':
+                                    result = value >= args;
+                                    break;
+                                case 'lt':
+                                    result = value < args;
+                                    break;
+                                case 'lte':
+                                    result = value <= args;
+                                    break;
+                                case 'not_between':
+                                    result = !(args <= value && value <= args2);
+                                    break;
+                                case 'not_empty':
+                                    result = $string.isNullOrEmpty(value) == false;
+                                    break;
+                                default:
+                                    result = value == args;
+                                    break;
+                            }
+                        }
+                        else {
+                            if (name == 'empty') {
+                                result = true;
+                            }
+                        }
+                        return result;
+                    });
+                }
+            }
+        },
+
+        removeCondition(elID, dataField) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+
+                if ($string.isNullOrEmpty(dataField) == false) {
+                    AUIGrid.clearFilter(gridID, dataField);
+                }
             }
         },
 
         clearConditions(elID) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var filtersPlugin = hot.getPlugin('filters');
-
-                if (filtersPlugin.isEnabled() == false) {
-                    filtersPlugin.enablePlugin();
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if (AUIGrid.isFilteredGrid(gridID) == true) {
+                    AUIGrid.clearFilterAll(gridID);
                 }
-
-                filtersPlugin.clearConditions();
-                filtersPlugin.filter();
             }
-        },
-
-        countRows(elID, isIncludeHidden) {
-            var result = 0;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var hiddenRowCount = 0;
-                if (isIncludeHidden === true) {
-                    var hiddenRowsPlugin = hot.getPlugin('hiddenRows');
-
-                    if (hiddenRowsPlugin.isEnabled() == false) {
-                        hiddenRowsPlugin.enablePlugin();
-                    }
-                    hiddenRowCount = hiddenRowsPlugin ? hiddenRowsPlugin.getHiddenRows().length : 0;
-                }
-                var sourceRowCount = hot.countSourceRows();
-                result = (sourceRowCount - hiddenRowCount);
-            }
-
-            return result;
-        },
-
-        countRenderedRows(elID) {
-            var result = -1;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.countRenderedRows();
-            }
-
-            return result;
-        },
-
-        countRenderedCols(elID) {
-            var result = -1;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.countRenderedCols();
-            }
-
-            return result;
         },
 
         render(elID) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                hot.render();
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.refresh(gridID);
             }
         },
 
         insertRow(elID, setting, callback) {
-            var hot = $grid.getGridControl(elID);
-            setting = syn.$w.argumentsExtend({
-                index: hot.countRows(),
-                amount: 1
-            }, setting);
-
-            hot.alter('insert_row_below', setting.index, setting.amount);
-            hot.render();
-
-            hot.suspendRender();
-            var gridValue = $grid.getGridValue(elID);
-            gridValue.eventName = 'insertRow';
-
-            var row = (setting && setting.index) ? setting.index : 0;
-            var amount = (setting && setting.amount) ? setting.amount : 1;
-            var gridSetting = hot.getSettings();
-            if (gridSetting) {
-                var checkboxDefaultValues = [];
-                var columns = gridSetting.columns;
-                var length = columns.length;
-                for (var col = 0; col < length; col++) {
-                    var column = columns[col];
-                    if (col >= 0 && (column.type == 'checkbox' || column.type == 'checkbox2')) {
-                        var defaultValue = false;
-                        if (column.uncheckedTemplate != undefined || column.uncheckedTemplate != null) {
-                            defaultValue = column.uncheckedTemplate;
-                        }
-
-                        if (amount == 1) {
-                            checkboxDefaultValues.push([row, col, defaultValue]);
-                        }
-                        else if (amount > 1) {
-                            for (var i = 0; i < amount; i++) {
-                                var rowAmount = row + i;
-                                checkboxDefaultValues.push([rowAmount, col, defaultValue]);
-                            }
-                        }
-                    }
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isObject(setting) == false || $object.isArray(setting) == true) {
+                    setting = {};
                 }
 
-                if (checkboxDefaultValues.length > 0) {
-                    hot.setDataAtCell(checkboxDefaultValues);
-                }
-            }
+                setting = syn.$w.argumentsExtend({
+                    values: {},
+                    index: 'last',
+                    amount: 1
+                }, setting);
 
-            var triggerOptions = syn.$w.getTriggerOptions(elID);
-            if (triggerOptions) {
-                if (triggerOptions.focusColumnID) {
-                    setting.focusColumnID = triggerOptions.focusColumnID;
-                }
+                var values = [];
+                var defaultValue = {};
+                var columns = AUIGrid.getColumnInfoList(gridID);
+                for (var i = 0, length = columns.length; i < length; i++) {
+                    var column = columns[i];
+                    var dataField = column.dataField;
+                    var dataType = column.dataType;
+                    var value = null;
 
-                if (triggerOptions.sourceValueID && triggerOptions.targetColumnID) {
-                    var mod = window[syn.$w.pageScript];
-                    if (mod) {
-                        var synControls = mod.context.synControls;
-                        if (synControls && synControls.length > 0) {
-                            if ($object.isString(triggerOptions.sourceValueID) == true && $object.isString(triggerOptions.targetColumnID) == true) {
-                                var keyValues = triggerOptions.sourceValueID.split('@');
-                                var dataFieldID = keyValues[0];
-                                var dataColumnID = keyValues[1];
-                                var items = synControls.filter(function (item) {
-                                    return item.field == dataFieldID;
-                                });
-
-                                if (items.length == 1) {
-                                    var controlInfo = items[0];
-
-                                    if (controlInfo.type == 'grid') {
-                                        var targetCol = hot.propToCol(triggerOptions.targetColumnID);
-                                        var sourceGridID = controlInfo.id;
-                                        var sourceRow = $grid.getActiveRowIndex(sourceGridID);
-                                        var sourceCol = $grid.propToCol(sourceGridID, dataColumnID);
-                                        var sourceValue = $grid.getDataAtCell(sourceGridID, sourceRow, sourceCol);
-
-                                        if (amount == 1) {
-                                            hot.setDataAtCell(row, targetCol, sourceValue);
-                                        }
-                                        else if (amount > 1) {
-                                            for (var i = 0; i < amount; i++) {
-                                                var rowAmount = row + i;
-                                                hot.setDataAtCell(rowAmount, targetCol, sourceValue);
-                                            }
-                                        }
-                                    }
-                                    else {
-                                        var col = hot.propToCol(triggerOptions.targetColumnID);
-                                        var el = syn.$l.querySelector('[syn-datafield="{0}"] #{1}'.format(dataFieldID, dataColumnID));
-                                        if ($object.isNullOrUndefined(el) == false) {
-                                            if (amount == 1) {
-                                                hot.setDataAtCell(row, col, el.value);
-                                            }
-                                            else if (amount > 1) {
-                                                for (var i = 0; i < amount; i++) {
-                                                    var rowAmount = row + i;
-                                                    hot.setDataAtCell(rowAmount, col, el.value);
-                                                }
-                                            }
-                                        }
-                                    }
+                    var val = setting.values[dataField];
+                    if (val === undefined) {
+                        switch (dataType) {
+                            case 'string':
+                            case 'date':
+                                value = '';
+                                break;
+                            case 'numeric':
+                                value = 0;
+                                break;
+                            case 'boolean':
+                                if (column.renderer && $string.isNullOrEmpty(column.renderer.unCheckValue) == false) {
+                                    value = column.renderer.unCheckValue;
                                 }
                                 else {
-                                    syn.$l.eventLog('insertRow', '{0} 컬럼 ID 중복 또는 존재여부 확인 필요'.format(dataFieldID), 'Debug');
+                                    value = false;
                                 }
-                            }
-                            else if ($object.isArray(triggerOptions.sourceValueID) == true && $object.isArray(triggerOptions.targetColumnID) == true) {
-                                var length = triggerOptions.sourceValueID.length;
-                                for (var i = 0; i < length; i++) {
-                                    var sourceValueID = triggerOptions.sourceValueID[i];
-                                    var keyValues = sourceValueID.split('@');
-                                    var dataFieldID = keyValues[0];
-                                    var dataColumnID = keyValues[1];
-                                    var items = synControls.filter(function (item) {
-                                        return item.field == dataFieldID;
-                                    });
+                                break;
+                        }
+                    }
+                    else {
+                        value = val;
+                    }
 
-                                    if (items.length == 1) {
-                                        var controlInfo = items[0];
+                    defaultValue[dataField] = value;
+                }
 
-                                        if (controlInfo.type == 'grid') {
-                                            var targetCol = hot.propToCol(triggerOptions.targetColumnID[i]);
-                                            var sourceGridID = controlInfo.id;
-                                            var sourceRow = $grid.getActiveRowIndex(sourceGridID);
-                                            var sourceCol = $grid.propToCol(sourceGridID, dataColumnID);
-                                            var sourceValue = $grid.getDataAtCell(sourceGridID, sourceRow, sourceCol);
+                defaultValue['Flag'] = 'C';
 
-                                            if (amount == 1) {
-                                                hot.setDataAtCell(row, targetCol, sourceValue);
-                                            }
-                                            else if (amount > 1) {
-                                                for (var i = 0; i < amount; i++) {
-                                                    var rowAmount = row + i;
-                                                    hot.setDataAtCell(rowAmount, targetCol, sourceValue);
+                var triggerOptions = syn.$w.getTriggerOptions(elID);
+                if (triggerOptions) {
+                    if (triggerOptions.focusColumnID) {
+                        setting.focusColumnID = triggerOptions.focusColumnID;
+                    }
+
+                    if (triggerOptions.sourceValueID && triggerOptions.targetColumnID) {
+                        var mod = window[syn.$w.pageScript];
+                        if (mod) {
+                            var synControls = mod.context.synControls;
+                            if (synControls && synControls.length > 0) {
+                                if ($object.isArray(triggerOptions.sourceValueID) == true && $object.isArray(triggerOptions.targetColumnID) == true) {
+                                    var length = triggerOptions.sourceValueID.length;
+                                    for (var i = 0; i < length; i++) {
+                                        var sourceValueID = triggerOptions.sourceValueID[i];
+                                        var targetColumnID = triggerOptions.targetColumnID[i];
+                                        var keyValues = sourceValueID.split('@');
+                                        var dataFieldID = keyValues[0];
+                                        var dataColumnID = keyValues[1];
+                                        var items = synControls.filter(function (item) {
+                                            return item.field == dataFieldID;
+                                        });
+
+                                        if (items.length == 1) {
+                                            var controlInfo = items[0];
+
+                                            var targetColumn = columns.find(function (item) { return item.dataField == targetColumnID; });
+                                            if (targetColumn != null) {
+                                                if (controlInfo.type == 'grid') {
+                                                    var sourceGridID = controlInfo.id;
+                                                    var sourceRow = $grid.getActiveRowIndex(sourceGridID);
+                                                    var sourceCol = $grid.propToCol(sourceGridID, dataColumnID);
+                                                    var sourceValue = $grid.getDataAtCell(sourceGridID, sourceRow, sourceCol);
+
+                                                    defaultValue[targetColumnID] = sourceValue;
                                                 }
-                                            }
-                                        }
-                                        else {
-                                            var col = hot.propToCol(triggerOptions.targetColumnID[i]);
-                                            var el = syn.$l.querySelector('[syn-datafield="{0}"] #{1}'.format(dataFieldID, dataColumnID));
-                                            if ($object.isNullOrUndefined(el) == false) {
-                                                if (amount == 1) {
-                                                    hot.setDataAtCell(row, col, el.value);
+                                                else if (controlInfo.type == 'auigrid') {
+                                                    var sourceGridID = controlInfo.id;
+                                                    var auiGridID = $auigrid.getGridID(sourceGridID);
+                                                    var selected = AUIGrid.getSelectedIndex(auiGridID);
+                                                    var sourceRow = selected[0];
+                                                    var sourceValue = AUIGrid.getCellValue(auiGridID, sourceRow, dataColumnID);
+
+                                                    defaultValue[targetColumnID] = sourceValue;
                                                 }
-                                                else if (amount > 1) {
-                                                    for (var i = 0; i < amount; i++) {
-                                                        var rowAmount = row + i;
-                                                        hot.setDataAtCell(rowAmount, col, el.value);
+                                                else {
+                                                    var el = syn.$l.querySelector('[syn-datafield="{0}"] #{1}'.format(dataFieldID, dataColumnID));
+                                                    if ($object.isNullOrUndefined(el) == false) {
+                                                        defaultValue[targetColumnID] = el.value;
                                                     }
                                                 }
                                             }
                                         }
-                                    }
-                                    else {
-                                        syn.$l.eventLog('insertRow', '{0} 컬럼 ID 중복 또는 존재여부 확인 필요'.format(dataFieldID), 'Debug');
+                                        else {
+                                            syn.$l.eventLog('insertRow', '{0} 컬럼 ID 중복 또는 존재여부 확인 필요'.format(dataFieldID), 'Debug');
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
-            else {
-                var values = [];
-                if (amount == 1) {
-                    for (var columnID in setting.values) {
-                        var col = $grid.propToCol(elID, columnID);
-                        if ($object.isNumber(col) == true) {
-                            values.push([row, col, setting.values[columnID]]);
-                        }
-                    }
-                }
-                else if (amount > 1) {
-                    for (var i = 0; i < amount; i++) {
-                        var rowAmount = row + i;
 
-                        for (var columnID in setting.values) {
-                            var col = $grid.propToCol(elID, columnID);
-                            if ($object.isNumber(col) == true) {
-                                values.push([rowAmount, col, setting.values[columnID]]);
-                            }
-                        }
+                for (var i = 0; i < setting.amount; i++) {
+                    var item = $object.clone(defaultValue);
+
+                    values.push(item);
+                }
+
+                var filterCache = AUIGrid.getFilterCache(gridID);
+                // rowIndex = Number or first, last, selectionUp, selectionDown
+                AUIGrid.addRow(gridID, values, setting.rowIndex);
+
+                var isUserFilter = false;
+                for (var item in filterCache) {
+                    if (filterCache[item] == 'userFilter') {
+                        isUserFilter = true;
+                        break;
                     }
                 }
 
-                $grid.setDataAtRow(elID, values);
-            }
+                if (isUserFilter == false) {
+                    AUIGrid.setFilterCache(gridID, filterCache);
+                }
 
-            hot.resumeRender();
-            if (callback) {
-                callback(row, amount);
-            }
+                AUIGrid.setFocus(gridID);
 
-            if (setting.focusColumnID) {
-                var col = hot.propToCol(setting.focusColumnID);
-                hot.selectCell(row + (amount - 1), col);
-            }
+                var rowIndex = AUIGrid.getSelectedIndex(gridID)[0] + (setting.amount - 1);
+                if (setting.focusColumnID) {
+                    var colIndex = AUIGrid.getColumnIndexByDataField(gridID, setting.focusColumnID);
+                    if (colIndex > -1) {
+                        AUIGrid.setSelectionByIndex(gridID, rowIndex, colIndex);
+                    }
+                }
+                else {
+                    AUIGrid.setSelectionByIndex(gridID, rowIndex, 0);
+                }
 
-            gridValue.eventName = '';
+                if (callback) {
+                    callback(rowIndex, setting);
+                }
+            }
         },
 
-        removeRow(elID, focusColumnIndex, rowIndex, callback) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                hot.suspendRender();
-                if ($object.isNullOrUndefined(rowIndex) == true) {
-                    var selected = hot.getSelected();
-                    if (selected) {
-                        rowIndex = selected[0][0];
-                    }
-                    else {
-                        rowIndex = $grid.getActiveRowIndex(elID);
-
-                        if (rowIndex && rowIndex > -1) {
-                            var gridValue = $grid.getGridValue(elID);
-                            gridValue.colHeaderClick = false;
-                            gridValue.previousRow = -1;
-                            gridValue.previousCol = -1;
-                        }
-                    }
+        removeRow(elID, dataField, rowIndex, callback) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                rowIndex = rowIndex || '';
+                var colIndex = 0;
+                if ($string.isNullOrEmpty(rowIndex) == true) {
+                    var selected = AUIGrid.getSelectedIndex(gridID);
+                    rowIndex = selected[0];
+                    colIndex = selected[1];
                 }
 
-                if ($object.isNullOrUndefined(rowIndex) == true) {
-                    rowIndex = $grid.countRows(elID, true) - 1;
-                }
-
-                if ($grid.isRowHidden(elID, rowIndex) == true) {
+                var rowCount = AUIGrid.getRowCount(gridID);
+                if (rowIndex == -1 && rowCount == 0) {
                     return;
+                }
+                else if (rowIndex == -1) {
+                    rowIndex = rowCount - 1;
+                }
+
+                AUIGrid.removeRow(gridID, rowIndex);
+                AUIGrid.setFocus(gridID);
+
+                if ($object.isString(rowIndex) == true) {
+                    rowIndex = AUIGrid.getSelectedIndex(gridID)[0];
+                    dataField = dataField || AUIGrid.getSelectedIndex(gridID)[1];
+                    var lastRowIndex = rowCount - 1;
+                    if (rowIndex > lastRowIndex || (rowIndex == -1 && lastRowIndex > 0)) {
+                        rowIndex = lastRowIndex;
+                    }
+                }
+                else {
+                    rowIndex = (rowIndex || rowCount) - 1;
+                }
+
+                if ($object.isString(dataField) == true) {
+                    colIndex = AUIGrid.getColumnIndexByDataField(gridID, dataField);
+                }
+                else {
+                    colIndex = dataField;
                 }
 
                 if (rowIndex > -1) {
-                    var gridValue = $grid.getGridValue(elID);
-                    gridValue.eventName = 'removeRow';
-
-                    var physicalRowIndex = hot.toPhysicalRow(rowIndex);
-
-                    var rowData = hot.getSourceDataAtRow(physicalRowIndex);
-                    var rowFlag = rowData && rowData.Flag ? rowData.Flag : 'C';
-
-                    if (rowFlag == 'D') {
-                        rowFlag = 'U';
-                        hot.setDataAtCell(rowIndex, 0, rowFlag);
-
-                        for (var i = 0; i < hot.countCols(); i++) {
-                            var cellMeta = hot.getCellMeta(rowIndex, i)['className'];
-                            cellMeta = cellMeta.replace(' removeRow', '');
-                            hot.setCellMeta(rowIndex, i, 'className', cellMeta);
-                        }
+                    if (colIndex > -1) {
+                        AUIGrid.setSelectionByIndex(gridID, rowIndex, colIndex);
                     }
                     else {
-                        if (rowFlag == 'R' || rowFlag == 'U') {
-                            rowFlag = 'D';
-                        }
-
-                        if (rowFlag == 'C' || rowFlag == 'S') {
-                        } else {
-                            hot.setDataAtCell(rowIndex, 0, rowFlag);
-                        }
-
-                        if (rowFlag == 'C') {
-                            hot.alter('remove_row', rowIndex);
-
-                            var countRows = hot.countSourceRows();
-                            var triggerOptions = syn.$w.getTriggerOptions(elID);
-                            if (triggerOptions && triggerOptions.focusColumnID) {
-                                var col = hot.propToCol(triggerOptions.focusColumnID);
-                                if (rowIndex > 0 && rowIndex >= countRows) {
-                                    rowIndex = countRows - 1;
-                                    hot.selectCell(rowIndex, col);
-                                }
-                                else {
-                                    hot.selectCell(rowIndex - 1, col);
-                                }
-                            }
-                        } else if (rowFlag != 'S') {
-                            var gridSettings = hot.getSettings();
-                            if (gridSettings.isRemoveRowHidden === true) {
-                                $grid.visibleRows(elID, rowIndex, false);
-                            }
-                            else {
-                                for (var i = 0; i < hot.countCols(); i++) {
-                                    hot.setCellMeta(rowIndex, i, 'className', hot.getCellMeta(rowIndex, i)['className'] + ' removeRow');
-                                }
-                            }
-                        }
+                        AUIGrid.setSelectionByIndex(gridID, rowIndex, 0);
                     }
-
-                    if (callback) {
-                        callback(rowIndex);
-                    }
-                    else {
-                        if ($string.isNullOrEmpty(focusColumnIndex) == true) {
-                            var firstCol = $grid.getFirstShowColIndex(elID);
-                            if (firstCol > 0) {
-                                focusColumnIndex = firstCol;
-                            }
-                        }
-
-                        if (focusColumnIndex > 0) {
-                            var focusRowIndex = rowIndex - 1;
-                            if (focusRowIndex >= 0) {
-                                $grid.selectCell(elID, rowIndex - 1, focusColumnIndex);
-                            }
-                        }
-                    }
-
-                    gridValue.eventName = '';
                 }
 
-                hot.resumeRender();
+                if (callback) {
+                    callback(rowIndex, colIndex);
+                }
             }
         },
 
-        loadData(elID, objectData, callback) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-
-                var gridValue = $grid.getGridValue(elID);
-                gridValue.applyCells = false;
-
-                hot.deselectCell();
-                $grid.clearConditions(elID);
-                $grid.unHiddenRows(elID);
-
-                var checkELs = syn.$l.querySelectorAll('div.handsontable > div table input[type=checkbox][columnSelectAll]');
-                for (var i = 0; i < checkELs.length; i++) {
-                    var checkEL = checkELs[i];
-                    checkEL.checked = false;
-                }
-
-                var length = objectData.length;
-                for (var i = 0; i < length; i++) {
-                    objectData[i].Flag = 'R';
-                }
-
-                hot.loadData(objectData);
-
-                var setting = hot.getSettings();
-                for (var i = 0; i < setting.columns.length; i++) {
-                    var column = setting.columns[i];
-                    if (column.toogleChecked) {
-                        column.toogleChecked = 0;
-                    }
-                }
-
-                gridValue.colHeaderClick = false;
-                gridValue.previousRow = -1;
-                gridValue.previousCol = -1;
-
-                if (setting.columnSorting != false) {
-                    var columnSortingPlugin = hot.getPlugin('columnSorting');
-
-                    if (columnSortingPlugin.isEnabled() == false) {
-                        columnSortingPlugin.enablePlugin();
-                    }
-
-                    if (columnSortingPlugin.isSorted() == true) {
-                        columnSortingPlugin.sort(columnSortingPlugin.sortColumn, columnSortingPlugin.sortOrder);
-                    }
-                }
-
-                gridValue.applyCells = true;
-            }
-
-            if (callback) {
-                callback();
+        removeRowByRowId(elID, rowIDs) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.removeRowByRowId(gridID, rowIDs);
             }
         },
+
+        countRows(elID) {
+            var result = 0;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getRowCount(gridID);
+            }
+            return result;
+        },
+
+        countCols(elID) {
+            var result = 0;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getColumnCount(gridID);
+            }
+            return result;
+        },
+
 
         getFirstShowColIndex(elID) {
-            var result = 0;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var settings = hot.getSettings();
-                if (settings.firstShowColIndex) {
-                    result = settings.firstShowColIndex;
-                }
-                else {
-                    var countCols = (hot.countCols() - 1);
-                    var cols = [];
-                    for (var i = 0; i <= countCols; i++) {
-                        cols.push(i);
-                    }
+            var result = -1;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var source = AUIGrid.getColumnInfoList(gridID).map((item) => { return item.columnIndex });
+                var target = AUIGrid.getHiddenColumnIndexes(gridID);
 
-                    if (settings.hiddenColumns && settings.hiddenColumns.columns && settings.hiddenColumns.columns.length > 0) {
-                        var length = settings.hiddenColumns.columns.length;
-                        for (var i = 0; i < length; i++) {
-                            var hiddenCol = settings.hiddenColumns.columns[i];
-                            for (var j = (cols.length - 1); j > -1; j--) {
-                                if (hiddenCol == cols[j]) {
-                                    $array.removeAt(cols, j);
-                                    break;
-                                }
-                            }
-                        }
+                var arr = source.filter(function (item) {
+                    return !target.includes(item);
+                });
 
-                        result = cols[0];
-                    }
+                if (arr.length > 0) {
+                    result = arr[0];
                 }
             }
-
             return result;
         },
 
         getLastShowColIndex(elID) {
-            var result = 0;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var settings = hot.getSettings();
-                if (settings.lastShowColIndex) {
-                    result = settings.lastShowColIndex;
-                }
-                else {
-                    result = (hot.countCols() - 1);
-                    var cols = [];
-                    for (var i = 0; i <= result; i++) {
-                        cols.push(i);
-                    }
+            var result = -1;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var source = AUIGrid.getColumnInfoList(gridID).map((item) => { return item.columnIndex });
+                var target = AUIGrid.getHiddenColumnIndexes(gridID);
 
-                    if (settings.hiddenColumns && settings.hiddenColumns.columns && settings.hiddenColumns.columns.length > 0) {
-                        var length = settings.hiddenColumns.columns.length;
-                        for (var i = 0; i < length; i++) {
-                            var hiddenCol = settings.hiddenColumns.columns[i];
-                            for (var j = (cols.length - 1); j > -1; j--) {
-                                if (hiddenCol == cols[j]) {
-                                    $array.removeAt(cols, i);
-                                    break;
+                var arr = source.filter(function (item) {
+                    return !target.includes(item);
+                });
+
+                if (arr.length > 0) {
+                    result = arr[arr.length - 1];
+                }
+            }
+            return result;
+        },
+
+        getSelected(elID) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getSelectedItems(gridID);
+            }
+            return result;
+        },
+
+        getMergeItems(elID, rowIndex, dataField) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isString(dataField) == true) {
+                    dataField = AUIGrid.getColumnIndexByDataField(gridID, dataField);
+                }
+                result = AUIGrid.getMergeItems(gridID, rowIndex, dataField);
+            }
+            return result;
+        },
+
+        getRangeSelected(elID, rowID, colID) {
+            const data = $auigrid.getSelected(elID);
+            if (!data || data.length === 0) {
+                return null;
+            }
+
+            rowID = rowID || 'rowIndex';
+            colID = colID || 'columnIndex';
+
+            return $auigrid.getRangeIndices(data, rowID, colID);
+        },
+
+        getRangeIndices(data, rowID, colID) {
+            if (!data || data.length === 0) {
+                return null;
+            }
+
+            rowID = rowID || 'rowIndex';
+            colID = colID || 'columnIndex';
+
+            return data.reduce((range, cell, index) => {
+                if (index === 0) {
+                    return {
+                        startRowIndex: cell[rowID],
+                        endRowIndex: cell[rowID],
+                        startColIndex: cell[colID],
+                        endColIndex: cell[colID]
+                    };
+                }
+
+                return {
+                    startRowIndex: Math.min(range.startRowIndex, cell[rowID]),
+                    endRowIndex: Math.max(range.endRowIndex, cell[rowID]),
+                    startColIndex: Math.min(range.startColIndex, cell[colID]),
+                    endColIndex: Math.max(range.endColIndex, cell[colID])
+                };
+            }, {});
+        },
+
+        hasMerge(elID, startRowIndex, startDataField, endRowIndex, endDataField) {
+            endRowIndex = endRowIndex || startRowIndex;
+
+            if ($object.isString(startDataField) == true) {
+                startDataField = AUIGrid.getColumnIndexByDataField(gridID, startDataField);
+            }
+
+            endDataField = endDataField || startDataField;
+
+            if ($object.isString(endDataField) == true) {
+                endDataField = AUIGrid.getColumnIndexByDataField(gridID, endDataField);
+            }
+
+            if (($object.isNullOrUndefined(startRowIndex) == true || $object.isNullOrUndefined(startDataField) == true)
+                || (startRowIndex == -1 || startDataField == -1 || endRowIndex == -1 || endDataField == -1)
+                || startRowIndex > endRowIndex) {
+                return false;
+            }
+
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                for (var rowIndex = startRowIndex; rowIndex <= endRowIndex; rowIndex++) {
+                    for (var colIndex = startDataField; colIndex <= endDataField; colIndex++) {
+                        let mergeItems = AUIGrid.getMergeItems(gridID, rowIndex, colIndex);
+                        if (mergeItems && mergeItems.length > 1) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        },
+
+        getRowPosition(elID) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getRowPosition(gridID);
+            }
+            return result;
+        },
+
+        setRowPosition(elID, rowIndex) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.setRowPosition(gridID, rowIndex);
+            }
+        },
+
+        setColumnPosition(elID, dataField) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isString(dataField) == true) {
+                    dataField = AUIGrid.getColumnIndexByDataField(gridID, dataField);
+                }
+                AUIGrid.setHScrollPosition(gridID, dataField);
+            }
+        },
+
+        isCreated(elID) {
+            var result = false;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.isCreated(gridID);
+            }
+
+            return result;
+        },
+
+        getPhysicalColText(elID, columnText) {
+            var result = -1;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var columnInfoList = AUIGrid.getColumnInfoList(gridID);
+                if (columnInfoList.length > 0) {
+                    var columnInfo = columnInfoList.find(item => item.headerText == columnText);
+                    if (columnInfo) {
+                        result = columnInfo.columnIndex;
+                    }
+                }
+            }
+
+            return result;
+        },
+
+        unHiddenColumns(elID) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var dataFields = AUIGrid.getHiddenColumnDataFields(gridID);
+                for (var i = 0, length = dataFields.length; i < length; i++) {
+                    var dataField = dataFields[i];
+                    AUIGrid.showColumnByDataField(gridID, dataField);
+                }
+            }
+        },
+
+        isColumnHidden(elID, dataField) {
+            var result = false;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var colIndexs = AUIGrid.getHiddenColumnIndexes(gridID);
+
+                if ($object.isString(dataField) == true) {
+                    dataField = AUIGrid.getColumnIndexByDataField(gridID, dataField);
+                }
+                result = colIndexs.indexOf($string.toNumber(dataField)) >= 0;
+            }
+
+            return result;
+        },
+
+        visibleColumns(elID, columns, isShow) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                isShow = $string.toBoolean(isShow);
+                if (isShow == true) {
+                    if ($object.isNumber(columns) == true) {
+                        var dataField = AUIGrid.getDataFieldByColumnIndex(gridID, columns);
+                        if ($string.isNullOrEmpty(dataField) == false) {
+                            AUIGrid.showColumnByDataField(gridID, dataField);
+                        }
+                    }
+                    else if ($object.isString(columns) == true) {
+                        var columnIndex = AUIGrid.getColumnIndexByDataField(gridID, columns);
+                        if (columnIndex > -1) {
+                            AUIGrid.showColumnByDataField(gridID, columns);
+                        }
+                    }
+                    else {
+                        for (var i = 0, length = columns.length; i < length; i++) {
+                            var column = columns[i];
+                            if ($object.isNumber(column) == true) {
+                                var dataField = AUIGrid.getDataFieldByColumnIndex(gridID, column);
+                                if ($string.isNullOrEmpty(dataField) == false) {
+                                    AUIGrid.showColumnByDataField(gridID, dataField);
+                                }
+                            }
+                            else if ($object.isString(column) == true) {
+                                var columnIndex = AUIGrid.getColumnIndexByDataField(gridID, column);
+                                if (columnIndex > -1) {
+                                    AUIGrid.showColumnByDataField(gridID, column);
                                 }
                             }
                         }
-
-                        result = cols[(cols.length - 1)];
+                    }
+                } else {
+                    if ($object.isNumber(columns) == true) {
+                        var dataField = AUIGrid.getDataFieldByColumnIndex(gridID, columns);
+                        if ($string.isNullOrEmpty(dataField) == false) {
+                            AUIGrid.hideColumnByDataField(gridID, dataField);
+                        }
+                    }
+                    else if ($object.isString(columns) == true) {
+                        var columnIndex = AUIGrid.getColumnIndexByDataField(gridID, columns);
+                        if (columnIndex > -1) {
+                            AUIGrid.hideColumnByDataField(gridID, columns);
+                        }
+                    }
+                    else {
+                        for (var i = 0, length = columns.length; i < length; i++) {
+                            var column = columns[i];
+                            if ($object.isNumber(column) == true) {
+                                var dataField = AUIGrid.getDataFieldByColumnIndex(gridID, column);
+                                if ($string.isNullOrEmpty(dataField) == false) {
+                                    AUIGrid.hideColumnByDataField(gridID, dataField);
+                                }
+                            }
+                            else if ($object.isString(column) == true) {
+                                var columnIndex = AUIGrid.getColumnIndexByDataField(gridID, column);
+                                if (columnIndex > -1) {
+                                    AUIGrid.hideColumnByDataField(gridID, column);
+                                }
+                            }
+                        }
                     }
                 }
             }
-
-            return result;
-        },
-
-        updateSettings(elID, settings, isDataClear) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                if (isDataClear && isDataClear == true) {
-                    $grid.clear(elID);
-                }
-
-                hot.updateSettings(settings);
-                hot.render();
-            }
-        },
-
-        getSettings(elID) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.getSettings();
-            }
-
-            return result;
         },
 
         isUpdateData(elID) {
-            var result = false;
-            var gridSettings = $grid.getSettings(elID);
-            if (gridSettings) {
-                if (gridSettings.data && gridSettings.data.length > 0) {
-                    var length = gridSettings.data.length;
-                    for (var i = 0; i < length; i++) {
-                        var flag = gridSettings.data[i]['Flag'];
-                        if ($string.isNullOrEmpty(flag) == true || flag == 'R' || flag == 'S') {
-                            continue;
-                        }
-                        else {
-                            result = true;
-                            break;
-                        }
-                    }
-                }
+            var result = '';
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = !$object.isEmpty(AUIGrid.getStateCache(gridID).cache);
             }
 
             return result;
         },
 
         getFlag(elID, row) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                return hot.getDataAtCell(row, 'Flag');
-            }
-        },
-
-        setFlag(elID, row, flagValue) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var col = hot.propToCol('Flag');
-                var flag = hot.getDataAtCell(row, col);
-                if (flag != 'S') {
-                    hot.setDataAtCell(row, col, flagValue);
+            var result = '';
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var isAdded = false;
+                var isEdited = false;
+                var isRemoved = false;
+                if ($object.isNumber(row) == true) {
+                    isAdded = AUIGrid.isAddedByRowIndex(gridID, row);
+                    isEdited = AUIGrid.isEditedByRowIndex(gridID, row);
+                    isRemoved = AUIGrid.isRemovedByRowIndex(gridID, row);
                 }
-            }
-        },
-
-        getDataAtCell(elID, row, col) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                return hot.getDataAtCell(row, col);
-            }
-        },
-
-        scrollViewportTo(elID, row, column, snapToBottom, snapToRight) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.scrollViewportTo(row, column, snapToBottom, snapToRight);
-            }
-
-            return result;
-        },
-
-        isEmptyRow(elID, row) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.isEmptyRow(row);
-            }
-
-            return result;
-        },
-
-        isEmptyCol(elID, col) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                if ($object.isString(col) == true) {
-                    col = hot.propToCol(col);
-                }
-                result = hot.isEmptyCol(col);
-            }
-
-            return result;
-        },
-
-        getDataAtRow(elID, row) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.getDataAtRow(row);
-            }
-
-            return result;
-        },
-
-        getSourceDataAtRow(elID, row) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.getSourceDataAtRow(row);
-            }
-
-            return result;
-        },
-
-        getDataAtCol(elID, col) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                if ($object.isString(col) == true) {
-                    col = hot.propToCol(col);
-                }
-                result = hot.getDataAtCol(col);
-            }
-
-            return result;
-        },
-
-        getSourceDataAtCol(elID, col) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                if ($object.isString(col) == true) {
-                    col = hot.propToCol(col);
-                }
-                result = hot.getSourceDataAtCol(col);
-            }
-
-            return result;
-        },
-
-        getRowHeader(elID, row) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.getRowHeader(row);
-            }
-
-            return result;
-        },
-
-        setDataAtCell(elID, row, col, value, source) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                if ($object.isString(col) == true) {
-                    col = hot.propToCol(col);
-                }
-                hot.setDataAtCell(row, col, value, source);
-            }
-        },
-
-        setDataAtRow(elID, values) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                hot.setDataAtCell(values);
-            }
-        },
-
-        isCellClassName(elID, row, col, className) {
-            var result = false;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                if ($object.isString(col) == true) {
-                    col = hot.propToCol(col);
+                else {
+                    isAdded = AUIGrid.isAddedById(gridID, row);
+                    isEdited = AUIGrid.isEditedById(gridID, row);
+                    isRemoved = AUIGrid.isRemovedById(gridID, row);
                 }
 
-                var meta = hot.getCellMeta(row, col)['className'];
-                result = (meta != null && meta.indexOf(className) > -1);
+                if (isRemoved == true) {
+                    result = 'D';
+                }
+                else if (isEdited == true && isAdded == false) {
+                    result = 'U';
+                }
+                else if (isAdded == true) {
+                    result = 'C';
+                }
             }
 
             return result;
         },
 
-        // className: .handsontable .my-class {background: #fea!important;}
-        setCellClassName(elID, row, col, className, isApply) {
-            if ($object.isNullOrUndefined(className) == true) {
-                syn.$l.eventLog('$grid.setCellClassName', 'className 확인 필요', 'Warning');
-            }
-            else {
-                var hot = $grid.getGridControl(elID);
-                if (hot) {
-                    if ($object.isString(col) == true) {
-                        col = hot.propToCol(col);
+        setFlag(elID, rowIndex, flagValue) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var colIndex = $auigrid.propToCol(elID, 'Flag');
+                if (rowIndex > -1 && colIndex > -1) {
+                    var flag = $auigrid.getDataAtCell(elID, rowIndex, colIndex);
+                    if (flag != 'S') {
+                        $auigrid.setDataAtCell(elID, rowIndex, colIndex, flagValue);
                     }
+                }
+            }
+        },
 
-                    if ($object.isNullOrUndefined(isApply) == true) {
-                        isApply = false;
+        exportToObject(elID, keyValueMode) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.exportToObject(gridID, $object.isNullOrUndefined(keyValueMode) == true ? true : $string.toBoolean(keyValueMode));
+            }
+            return result;
+        },
+
+        // syn.uicontrols.$auigrid.exportAsString('grdDataList', { type: 'csv', callback: (data) => { console.log(data)} });
+        exportAsString(elID, options) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var defaultOptions = {
+                    type: 'json',
+                    localControl: true,
+                    localAsText: true
+                };
+
+                options = syn.$w.argumentsExtend(defaultOptions, options);
+
+                if ($object.isFunction(options.callback) == true) {
+                    options.localControlFunc = options.callback;
+                    switch (options.type) {
+                        case 'csv':
+                            AUIGrid.exportToCsv(gridID, options);
+                            break;
+                        case 'txt':
+                            AUIGrid.exportToTxt(gridID, options);
+                            break;
+                        case 'xml':
+                            AUIGrid.exportToXml(gridID, options);
+                            break;
+                        case 'json':
+                            AUIGrid.exportToJson(gridID, options);
+                            break;
                     }
+                }
+            }
+        },
 
-                    var execute = function (row, col, className, isApply) {
-                        var meta = hot.getCellMeta(row, col)['className'];
-                        if (meta) {
-                            if (isApply === true) {
-                                if (meta.indexOf(className) == -1) {
-                                    hot.setCellMeta(row, col, 'className', hot.getCellMeta(row, col)['className'] + ' ' + className);
+        // options = { type: 'xlsx', fileName: 'export.xlsx' }
+        exportFile(elID, options) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var defaultOptions = {
+                    type: 'xlsx',
+                    localControl: true
+                };
+
+                options = syn.$w.argumentsExtend(defaultOptions, options);
+
+                if ($object.isNullOrUndefined(options.fileName) == true) {
+                    options.fileName = `export_${$date.toString(new Date(), 'f')}.${options.type}`;
+                }
+
+                if ($object.isNullOrUndefined(options.localControlFunc) == true) {
+                    options.localControlFunc = (data) => {
+                        window.saveAs(data, options.fileName);
+                    }
+                }
+
+                switch (options.type) {
+                    case 'xlsx':
+                        if ($string.toBoolean(options.exceptHiddenColumn) == true) {
+                            options.exceptColumnFields = AUIGrid.getHiddenColumnDataFields(gridID);
+                        }
+
+                        AUIGrid.exportToXlsx(gridID, options);
+                        break;
+                    case 'csv':
+                        AUIGrid.exportToCsv(gridID, options);
+                        break;
+                    case 'txt':
+                        AUIGrid.exportToTxt(gridID, options);
+                        break;
+                    case 'xml':
+                        AUIGrid.exportToXml(gridID, options);
+                        break;
+                    case 'json':
+                        AUIGrid.exportToJson(gridID, options);
+                        break;
+                }
+            }
+        },
+
+        importFile(elID, callback) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var fileEL = syn.$l.get('{0}_ImportFile'.format(elID));
+                fileEL.callback = callback;
+                fileEL.click();
+            }
+        },
+
+        importFileLoad(evt) {
+            var el = evt.srcElement || evt.target;
+            var elID = el.id.split('_')[0];
+            var validExts = ['.csv', '.xls', '.xlsx'];
+            var fileName = el.files[0].name;
+            var fileExtension = fileName.substring(fileName.lastIndexOf('.') == -1 ? fileName.length : fileName.lastIndexOf('.'))
+
+            if (fileExtension && validExts.indexOf(fileExtension) < 0) {
+                syn.$w.alert('{0} 확장자를 가진 파일만 가능합니다'.format(validExts.toString()));
+                return false;
+            }
+
+            var reader = new FileReader();
+            reader.onload = function (file) {
+                var columnDelimiter = ',';
+                el.value = '';
+                var data = file.target.result;
+                var gridID = $auigrid.getGridID(elID);
+                if (gridID) {
+                    var columns = AUIGrid.getColumnInfoList(gridID);
+                    if (fileExtension == '.csv') {
+                        var lines = data.split(/\r\n|\n/);
+
+                        if (lines.length == 0) {
+                            $auigrid.clear(elID);
+                        }
+                        else if (lines.length > 0) {
+                            var result = [];
+                            var headers = lines[0].split(columnDelimiter);
+                            var bindColumns = [];
+                            var columnFields = columns.map(function (item) { return item.dataField; });
+                            var columnTexts = columns.map(function (item) { return item.headerText; })
+                            var columnTypes = columns.map(function (item) { return item.dataType; });
+                            for (var i = 0; i < headers.length; i++) {
+                                var value = headers[i];
+                                value = value.replace(/^["]/, '');
+                                value = value.replace(/["]$/, '');
+                                headers[i] = value;
+
+                                var colIndex = columnTexts.indexOf(columnText);
+                                if (columnText !== 'No.' && colIndex == -1) {
+                                    syn.$w.alert('올바른 형식의 파일이 아닙니다.\n파일을 확인해주세요.');
+                                    return false;
+                                }
+
+                                var columnIndex = AUIGrid.getColumnIndexByDataField(gridID, columnFields[colIndex]);
+
+                                bindColumns.push({
+                                    headerIndex: i,
+                                    columnID: columnFields[colIndex],
+                                    columnIndex: columnIndex,
+                                    columnType: columnTypes[colIndex]
+                                });
+                            }
+
+                            var line = lines[1];
+                            var values = line.split(columnDelimiter);
+                            for (var i = 0; i < bindColumns.length; i++) {
+                                var bindColumn = bindColumns[i];
+                                var value = values[i];
+                                value = value.replace(/^["]/, '');
+                                value = value.replace(/["]$/, '');
+
+                                var isTypeCheck = true;
+                                switch (bindColumn.columnType) {
+                                    case 'checkbox':
+                                        isTypeCheck = $string.toBoolean(value);
+                                        break;
+                                    case 'numeric':
+                                        if (value == null) {
+                                            value = 0;
+                                        }
+
+                                        isTypeCheck = $object.isNumber(value) == true ? true : $string.isNumber(value);
+                                        break;
+                                    case 'date':
+                                        if (value == null) {
+                                            isTypeCheck = true;
+                                        } else {
+                                            isTypeCheck = $date.isDate(value);
+                                        }
+                                        break;
+                                    default:
+                                        if (value == null) {
+                                            value = '';
+                                        }
+
+                                        isTypeCheck = $object.isString(value);
+                                        break;
+                                }
+
+                                if (isTypeCheck == false) {
+                                    syn.$w.alert('올바른 형식의 파일이 아닙니다.\n파일을 확인해주세요.');
+                                    return false;
                                 }
                             }
-                            else {
-                                if (meta.indexOf(className) > -1) {
-                                    meta = meta.replace(' ' + className, '');
-                                    hot.setCellMeta(row, col, 'className', meta);
+
+                            for (var i = 1; i < lines.length; i++) {
+                                line = lines[i];
+                                if ($string.isNullOrEmpty(line) == false) {
+                                    var obj = {};
+                                    var values = lines[i].split(columnDelimiter);
+                                    for (var j = 0; j < bindColumns.length; j++) {
+                                        var bindColumn = bindColumns[j];
+                                        var value = values[j];
+                                        if ($object.isNullOrUndefined(value) == true) {
+                                            value = '';
+                                        }
+                                        else {
+                                            value = value.replace(/^["]/, '');
+                                            value = value.replace(/["]$/, '');
+                                        }
+
+                                        if (bindColumn.columnType == 'numeric') {
+                                            if (value != null) {
+                                                value = $object.isNumber(value) == true ? value : Number(value);
+                                            }
+                                        }
+
+                                        obj[bindColumn.columnID] = value;
+                                    }
+
+                                    result.push(obj);
                                 }
                             }
-                        }
-                        else {
-                            hot.setCellMeta(row, col, 'className', className);
-                        }
-                    }
-
-                    if (row == -1 && col == -1) {
-                        var rowCount = hot.countRows();
-                        var colCount = hot.countCols();
-                        for (var i = 0; i < rowCount; i++) {
-                            for (var j = 0; j < colCount; j++) {
-                                execute(i, j, className, isApply);
-                            }
-                        }
-                    }
-                    else if (row == -1 && col > -1) {
-                        var rowCount = hot.countRows();
-                        for (var i = 0; i < rowCount; i++) {
-                            execute(i, col, className, isApply);
-                        }
-                    }
-                    else if (row > -1 && col == -1) {
-                        var colCount = hot.countCols();
-                        for (var i = 0; i < colCount; i++) {
-                            execute(row, i, className, isApply);
                         }
                     }
                     else {
-                        execute(row, col, className, isApply);
-                    }
-
-                    hot.render();
-                }
-            }
-        },
-
-        setCellMeta(elID, row, col, key, value) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                if ($object.isString(col) == true) {
-                    col = hot.propToCol(col);
-                }
-                hot.setCellMeta(row, col, key, value);
-            }
-        },
-
-        setDataAtRowProp(elID, row, col, value, source) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                if ($object.isString(col) == true) {
-                    col = hot.propToCol(col);
-                }
-                hot.setDataAtRowProp(row, col, value, source);
-            }
-        },
-
-        getCellMeta(elID, row, col) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                if ($object.isString(col) == true) {
-                    col = hot.propToCol(col);
-                }
-                result = hot.getCellMeta(row, col);
-            }
-            return result;
-        },
-
-        getCellMetaAtRow(elID, row) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.getCellMetaAtRow(row);
-            }
-            return result;
-        },
-
-        getUpdateData(elID, requestType, metaColumns) {
-            var result = [];
-            var hot = $grid.getGridControl(elID);
-            if (metaColumns) {
-                if (requestType == 'Row') {
-                    var physicalRowIndex = hot.toPhysicalRow($grid.getActiveRowIndex(elID));
-
-                    if (physicalRowIndex != null && physicalRowIndex > -1) {
-                        var rowData = hot.getSourceDataAtRow(physicalRowIndex);
-                        var rowFlag = rowData.Flag ? rowData.Flag : 'C';
-                        var rowMeta = hot.getCellMetaAtRow(physicalRowIndex);
-                        if (rowFlag && rowFlag != 'S') {
-                            rowData = $object.clone(rowData);
-
-                            var data = {};
-                            data.Flag = rowFlag;
-
-                            for (var key in metaColumns) {
-                                var column = metaColumns[key];
-                                var rowValue = rowData[key];
-
-                                data[column.fieldID] = rowValue;
-                                if (rowValue === undefined) {
-                                    data[column.fieldID] = column.dataType == 'number' ? null : $object.defaultValue(column.dataType);
-                                } else {
-                                    data[column.fieldID] = rowValue;
-                                }
+                        var columnFields = columns.map(function (item) { return item.dataField; });
+                        var columnTexts = columns.map(function (item) { return item.headerText; })
+                        var workbook = XLSX.read(data, { type: 'binary' });
+                        var sheet = workbook.Sheets[workbook.SheetNames[0]];
+                        var range = XLSX.utils.decode_range(sheet['!ref']);
+                        for (var C = range.s.c; C <= range.e.c; ++C) {
+                            var cellref = XLSX.utils.encode_cell({ c: C, r: 0 });
+                            var cell = sheet[cellref];
+                            if (cell == undefined) {
+                                break;
                             }
 
-                            result.push(data);
+                            var columnText = cell.v;
+                            var colIndex = columnTexts.indexOf(columnText);
+                            if (columnText !== 'No.' && colIndex == -1) {
+                                syn.$w.alert('올바른 형식의 파일이 아닙니다.\n파일을 확인해주세요.');
+                                return false;
+                            }
+
+                            var columnID = columnFields[colIndex] || 'No.';
+                            cell.v = columnID;
+                            cell.h = columnID;
+                            cell.w = columnID;
+                        }
+
+                        result = XLSX.utils.sheet_to_json(sheet);
+                    }
+
+                    var metaColumns = {};
+                    for (var k = 0; k < columns.length; k++) {
+                        var column = columns[k];
+
+                        metaColumns[column.dataField] = {
+                            fieldID: column.dataField,
+                            dataType: column.dataType
+                        };
+                    }
+
+                    result = result.filter(function (item) {
+                        return typeof item['No.'] === 'number';
+                    });
+
+                    AUIGrid.clearGridData(gridID);
+                    $auigrid.setValue(elID, result, metaColumns);
+
+                    if (el.callback) {
+                        el.callback(result, fileName);
+                    }
+                }
+            };
+
+            if (fileExtension == '.csv') {
+                reader.readAsText(el.files[0]);
+            }
+            else {
+                reader.readAsBinaryString(el.files[0]);
+            }
+        },
+
+        getGridID(elID) {
+            var result = null;
+            elID = elID.replace('_hidden', '');
+            var length = $auigrid.gridControls.length;
+            for (var i = 0; i < length; i++) {
+                var item = $auigrid.gridControls[i];
+                if (item.id == elID) {
+                    result = item.gridID;
+                    break;
+                }
+            }
+
+            return result;
+        },
+
+        getColumnInfoList(elID) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getColumnInfoList(gridID);
+            }
+
+            return result;
+        },
+
+        getColumnInfo(elID, dataField) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+
+                var columns = AUIGrid.getColumnInfoList(gridID);
+                result = columns.find((item) => { return item.dataField == dataField });
+            }
+
+            return result;
+        },
+
+        getColumnLayout(elID) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getColumnLayout(gridID);
+            }
+
+            return result;
+        },
+
+        getDataAtCol(elID, dataField, total) {
+            return $auigrid.getColumnValues(elID, dataField, total);
+        },
+
+        getColumnValues(elID, dataField, total) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = $auigrid.colToProp(elID, dataField);
+                }
+
+                result = AUIGrid.getColumnValues(gridID, dataField, $string.toBoolean(total));
+            }
+
+            return result;
+        },
+
+        getGridSetting(elID) {
+            var result = null;
+
+            var length = $auigrid.gridControls.length;
+            for (var i = 0; i < length; i++) {
+                var item = $auigrid.gridControls[i];
+                if (item.id == elID) {
+                    result = item.setting;
+                    break;
+                }
+            }
+
+            return result;
+        },
+
+        getSelectedItem(elID) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var selectedItems = AUIGrid.getSelectedItems(gridID);
+                if (result.length > 0) {
+                    result = selectedItems[0];
+                }
+            }
+
+            return result;
+        },
+
+        getSelectedItems(elID) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getSelectedItems(gridID);
+            }
+
+            return result;
+        },
+
+        getSelectedText(elID) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getSelectedText(gridID);
+            }
+
+            return result;
+        },
+
+        forceEditingComplete(elID, value, cancel) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.forceEditingComplete(gridID, value, cancel);
+            }
+        },
+
+        getCellFormatValue(elID, rowIndex, dataField) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+
+                result = AUIGrid.getCellFormatValue(gridID, rowIndex, dataField);
+            }
+            return result;
+        },
+
+        getDataAtCell(elID, rowIndex, dataField) {
+            if ($string.isNullOrEmpty(rowIndex) == true) {
+                return null;
+            }
+
+            return $auigrid.getCellValue(elID, rowIndex, dataField);
+        },
+
+        getCellValue(elID, rowIndex, dataField) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+
+                result = AUIGrid.getCellValue(gridID, rowIndex, dataField);
+            }
+            return result;
+        },
+
+        getColumnDistinctValues(elID, rowIndex, dataField) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getColumnDistinctValues(gridID, rowIndex, dataField);
+            }
+            return result;
+        },
+
+        validateGridData(elID, dataField) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.validateGridData(gridID, dataField);
+            }
+            return result;
+        },
+
+        setDataAtCell(elID, rowIndex, dataField, value) {
+            $auigrid.setCellValue(elID, rowIndex, dataField, value);
+        },
+
+        setDataAtRow(elID, values) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID && $object.isArray(values) == true && values.length > 0) {
+                var items = [];
+                var rowIndexes = [];
+
+                for (var i = 0, length = values.length; i < length; i++) {
+                    var item = values[i];
+                    var row = item[0];
+                    var col = item[1];
+                    var value = item[2];
+
+                    var dataField = null;
+                    if ($object.isString(col) == true) {
+                        if ($auigrid.propToCol(elID, col) > -1) {
+                            dataField = col;
                         }
                     }
-                } else if (requestType == 'List') {
-                    var length = hot.countSourceRows();
+                    else if ($object.isNumber(col) == true) {
+                        dataField = $auigrid.colToProp(elID, col);
+                    }
 
-                    for (var rowIndex = 0; rowIndex < length; rowIndex++) {
-                        var physicalRowIndex = hot.toPhysicalRow(rowIndex);
+                    if ($string.isNullOrEmpty(dataField) == false) {
+                        var data = {};
+                        data[dataField] = value;
 
-                        if (physicalRowIndex == null) {
-                            continue;
+                        items.push(data);
+                        rowIndexes.push(row);
+                    }
+                }
+
+                if (rowIndexes.length > 0) {
+                    AUIGrid.updateRows(gridID, items, rowIndexes);
+                }
+            }
+        },
+
+        setCellValue(elID, rowIndex, dataField, value) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.setCellValue(gridID, rowIndex, dataField, value);
+            }
+        },
+
+        setRowPosition(elID, rowIndex) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.setRowPosition(gridID, rowIndex);
+            }
+        },
+
+        resetUpdatedItems(elID, option) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                option = option || 'a';
+                AUIGrid.resetUpdatedItems(gridID, option);
+            }
+        },
+
+        updateRow(elID, value, rowIndex) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.updateRow(gridID, value, rowIndex);
+            }
+        },
+
+        updateRows(elID, values, rowIndexs) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.updateRows(gridID, values, rowIndexs);
+            }
+        },
+
+        updateRowBlockToValue(elID, startRowIndex, endRowIndex, dataFields, values) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.updateRowBlockToValue(gridID, startRowIndex, endRowIndex, dataFields, values);
+            }
+        },
+
+        updateRowsById(elID, values) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.updateRowsById(gridID, values);
+            }
+        },
+
+        updateAllToValue(elID, dataField, value) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+                AUIGrid.updateAllToValue(gridID, dataField, value);
+            }
+        },
+
+        indexToRowID(elID, rowIndex) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.indexToRowId(gridID, rowIndex);
+            }
+
+            return result;
+        },
+
+        isUniqueValue(elID, dataField, value) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+                result = AUIGrid.isUniqueValue(gridID, dataField, value);
+            }
+
+            return result;
+        },
+
+        getCheckedRowItems(elID) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getCheckedRowItems(gridID);
+            }
+
+            return result;
+        },
+
+        getRowIndexByValue(elID, dataField, value) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+
+                result = AUIGrid.getRowIndexesByValue(gridID, dataField, value);
+                if (result && result.length > 0) {
+                    result = result[0];
+                }
+                else if (result && result.length == 0) {
+                    result = -1;
+                }
+            }
+
+            return result;
+        },
+
+        getRowIndexesByValue(elID, dataField, value) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+                result = AUIGrid.getRowIndexesByValue(gridID, dataField, value);
+            }
+
+            return result;
+        },
+
+        getRowsByValue(elID, dataField, value) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+                result = AUIGrid.getRowsByValue(gridID, dataField, value);
+            }
+
+            return result;
+        },
+
+        getInitValueItem(elID, RowID) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getInitValueItem(gridID, RowID);
+            }
+
+            return result;
+        },
+
+        getSourceDataAtRow(elID, rowIndex) {
+            return $auigrid.getItemByRowIndex(elID, rowIndex);
+        },
+
+        getItemByRowIndex(elID, rowIndex) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getItemByRowIndex(gridID, rowIndex);
+            }
+
+            return result;
+        },
+
+        getItemByRowID(elID, rowID) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                result = AUIGrid.getItemByRowId(gridID, rowID);
+            }
+
+            return result;
+        },
+
+        getItemsByValue(elID, dataField, value) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = AUIGrid.getDataFieldByColumnIndex(gridID, dataField);
+                }
+                result = AUIGrid.getItemsByValue(gridID, dataField, value);
+            }
+
+            return result;
+        },
+
+        getGridData(elID, options) {
+            var result = null;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var defaultOptions = {
+                    stateField: null,
+                    added: 'C',
+                    removed: 'D',
+                    edited: 'U',
+                }
+
+                options = syn.$w.argumentsExtend(defaultOptions, options);
+
+                if ($string.isNullOrEmpty(options.stateField) == true) {
+                    options.stateField = 'Flag';
+                }
+
+                result = AUIGrid.getGridDataWithState(gridID, options.stateField, options);
+
+                var removedRowItems = AUIGrid.getRemovedItems(gridID);
+                for (var i = 0, length = removedRowItems.length; i < length; i++) {
+                    removedRowItems[i].Flag = 'D';
+                }
+
+                var result = result.concat(removedRowItems);
+
+                for (var i = 0, length = result.length; i < length; i++) {
+                    var item = result[i];
+                    var flagField = item[options.stateField];
+                    if ($object.isNullOrUndefined(flagField) == true) {
+                        item[options.stateField] = '';
+                    }
+                }
+            }
+
+            return result;
+        },
+
+        changeColumnLayout(elID, columnLayout) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.changeColumnLayout(gridID, columnLayout);
+            }
+        },
+
+        checkEditValue(elID) {
+            var result = false;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var removedRowItems = AUIGrid.getRemovedItems(gridID);
+                var editedRowItems = AUIGrid.getEditedRowItems(gridID);
+                var addedRowItems = AUIGrid.getAddedRowItems(gridID);
+                result = (removedRowItems.length + editedRowItems.length + addedRowItems.length) > 0;
+            }
+
+            return result;
+        },
+
+        checkUniqueValueCol(elID, dataField, total) {
+            var result = true;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = $auigrid.colToProp(elID, dataField);
+                }
+                total = total || true;
+                var columnValues = AUIGrid.getColumnValues(gridID, dataField, $string.toBoolean(total));
+                result = !columnValues.filter(function (row, index) { return (columnValues.indexOf(row) !== index) }).length > 0
+            }
+
+            return result;
+        },
+
+        checkValueCountCol(elID, dataField, checkValue, total) {
+            var result = 0;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = $auigrid.colToProp(elID, dataField);
+                }
+
+                var columnValues = AUIGrid.getColumnValues(gridID, dataField, $string.toBoolean(total));
+                result = columnValues.filter((item) => { return item === checkValue }).length;
+            }
+
+            return result;
+        },
+
+        checkEmptyValueCol(elID, dataField, checkValue, total) {
+            var result = false;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if ($object.isNumber(dataField) == true) {
+                    dataField = $auigrid.colToProp(elID, dataField);
+                }
+
+                var columnValues = AUIGrid.getColumnValues(gridID, dataField, $string.toBoolean(total));
+                if ($object.isNullOrUndefined(checkValue) == true) {
+                    if ($auigrid.countRows(elID) == 0) {
+                        result = false;
+                    }
+                    else {
+                        result = columnValues.filter((item) => { return $string.isNullOrEmpty(item) == true }).length > 0;
+                    }
+                }
+                else {
+                    result = columnValues.filter((item) => { return item === checkValue }).length > 0;
+                }
+            }
+
+            return result;
+        },
+
+        checkEmptyValueCols(elID, columns, checkValue) {
+            var result = false;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var items = AUIGrid.getOrgGridData(gridID);
+                for (var i = 0, length = items.length; i < length; i++) {
+                    var item = items[i];
+
+                    var checkResult = false;
+                    for (var j = 0; j < columns.length; j++) {
+                        var column = columns[j];
+
+                        if ($object.isNullOrUndefined(checkValue) == true) {
+                            if ($string.isNullOrEmpty(item[column]) == true) {
+                                checkResult = true;
+                            }
+                            else {
+                                checkResult = false;
+                                break;
+                            }
+                        }
+                        else {
+                            if ($string.isNullOrEmpty(item[column]) == true || item[column] === checkValue) {
+                                checkResult = true;
+                            }
+                            else {
+                                checkResult = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (checkResult == true) {
+                        return checkResult;
+                    }
+                }
+                return false;
+            }
+
+            return result;
+        },
+
+        setTransactionBelongID(elID, belongFlow, transactConfig) {
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                var columns = AUIGrid.getColumnInfoList(gridID);
+                for (var i = 0; i < columns.length; i++) {
+                    var column = columns[i];
+                    var dataType = 'string'
+                    switch (column.columnType) {
+                        case 'checkbox':
+                            dataType = 'bool';
+                            break;
+                        case 'numeric':
+                            dataType = 'numeric';
+                            break;
+                        case 'number':
+                            dataType = 'number';
+                            break;
+                        case 'date':
+                            dataType = 'date';
+                            break;
+                    }
+
+                    if ($object.isNullOrUndefined(transactConfig) == true) {
+                        belongFlow.items[column.dataField] = {
+                            fieldID: column.dataField,
+                            dataType: dataType
+                        };
+                    }
+                    else {
+                        var isBelong = false;
+                        if (column.dataField == 'Flag') {
+                            isBelong = true;
+                        }
+                        else if ($object.isNullOrUndefined(column.belongID) == false) {
+                            if (column.belongID.indexOf(',') > -1) {
+                                var columnBelongIDs = column.belongID.split(',');
+                                isBelong = columnBelongIDs.indexOf(transactConfig.functionID) > -1;
+                            }
+                            else if ($object.isString(column.belongID) == true) {
+                                isBelong = transactConfig.functionID == column.belongID;
+                            }
                         }
 
-                        var rowData = hot.getSourceDataAtRow(physicalRowIndex);
-                        var rowFlag = rowData.Flag ? rowData.Flag : 'C';
-                        var rowMeta = hot.getCellMetaAtRow(physicalRowIndex);
-                        if (rowFlag && rowFlag != 'S') {
-                            if (rowFlag != 'R') {
+                        if (isBelong == true) {
+                            belongFlow.items[column.dataField] = {
+                                fieldID: column.dataField,
+                                dataType: dataType
+                            };
+                        }
+                    }
+                }
+            }
+        },
+
+        getValue(elID, requestType, metaColumns) {
+            var result = [];
+            var items = [];
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                if (metaColumns) {
+                    if (requestType == 'Row') {
+                        var rowIndex = AUIGrid.getSelectedIndex(gridID)[0];
+
+                        if (rowIndex != null && rowIndex > -1) {
+                            var rowData = AUIGrid.getItemByRowIndex(gridID, rowIndex);
+                            var rowFlag = $auigrid.getFlag(gridID, rowIndex) || 'C';
+                            if (rowFlag && rowFlag != 'S') {
                                 rowData = $object.clone(rowData);
 
                                 var data = {};
@@ -12347,1140 +13912,137 @@
                                     }
                                 }
 
-                                result.push(data);
+                                items.push(data);
                             }
                         }
                     }
-
-                    var order = ['D', 'U', 'C'];
-                    result = result.sort(function (a, b) {
-                        var indexA = order.indexOf(a.Flag);
-                        var indexB = order.indexOf(b.Flag);
-
-                        if (indexA === -1) return 1;
-                        if (indexB === -1) return -1;
-
-                        return indexA - indexB;
-                    });
-                }
-            } else {
-                syn.$l.eventLog('getUpdateData', 'Input Mapping 설정 없음', 'Debug');
-            }
-
-            return result;
-        },
-
-        validateColumns(elID, columns, callback) {
-            var result = false;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.validateColumns(columns, callback);
-            }
-            return result;
-        },
-
-        validateRows(elID, rows, callback) {
-            var result = false;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.validateRows(rows, callback);
-            }
-            return result;
-        },
-
-        getPhysicalRowIndex(elID, logicalRowIndex) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.toPhysicalRow(logicalRowIndex);
-            }
-            return result;
-        },
-
-        getPhysicalColIndex(elID, logicalColIndex) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.toPhysicalColumn(logicalColIndex);
-            }
-            return result;
-        },
-
-        getPhysicalColText(elID, columnText) {
-            var result = -1;
-            var head = syn.$l.querySelector(`#${elID} .handsontable thead tr`);
-            if (head) {
-                var childNodes = head.childNodes;
-                for (var i = 0; i < childNodes.length; i++) {
-                    var childNode = childNodes[i];
-                    if (childNode.innerHTML.indexOf(`>${columnText}<`) > -1) {
-                        result = i;
-                        break;
-                    }
-                }
-            }
-            return result;
-        },
-
-        getLogicalRowIndex(elID, physicalRowIndex) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.toVisualRow(physicalRowIndex);
-            }
-            return result;
-        },
-
-        getLogicalColIndex(elID, physicalColIndex) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.toVisualColumn(physicalColIndex);
-            }
-            return result;
-        },
-
-        unHiddenColumns(elID) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var hiddenPlugin = hot.getPlugin('hiddenColumns');
-
-                if (hiddenPlugin.isEnabled() == false) {
-                    hiddenPlugin.enablePlugin();
-                }
-
-                var colCount = hot.countCols();
-                var columns = [];
-                for (var i = 0; i < colCount; i++) {
-                    if (hot.colToProp(i) == 'Flag') {
-                        continue;
-                    }
-
-                    if (hiddenPlugin.isHidden(i) == true) {
-                        columns.push(i);
-                    }
-                }
-
-                $grid.visibleColumns(elID, columns, true);
-            }
-        },
-
-        isColumnHidden(elID, colIndex, isPhysicalIndex) {
-            var result = false;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var hiddenPlugin = hot.getPlugin('hiddenColumns');
-
-                if (hiddenPlugin.isEnabled() == false) {
-                    hiddenPlugin.enablePlugin();
-                }
-
-                result = hiddenPlugin.isHidden(colIndex, isPhysicalIndex);
-            }
-
-            return result;
-        },
-
-        visibleColumns(elID, columns, isShow) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var hiddenPlugin = hot.getPlugin('hiddenColumns');
-
-                if (hiddenPlugin.isEnabled() == false) {
-                    hiddenPlugin.enablePlugin();
-                }
-
-                var gridSettings = hot.getSettings();
-                var gridColumns = gridSettings.columns;
-
-                if (isShow == true) {
-                    if ($object.isNumber(columns) == true) {
-                        gridColumns[columns].isHidden = false;
-                        hiddenPlugin.showColumn(columns);
-                    } else {
-                        for (var i = 0; i < columns.length; i++) {
-                            var column = gridColumns[columns[i]];
-                            column.isHidden = false;
-                        }
-                        hiddenPlugin.showColumns(columns);
-                    }
-                } else {
-                    if ($object.isNumber(columns) == true) {
-                        gridColumns[columns].isHidden = true;
-                        hiddenPlugin.hideColumn(columns);
-                    } else {
-                        for (var i = 0; i < columns.length; i++) {
-                            var column = gridColumns[columns[i]];
-                            column.isHidden = true;
-                        }
-                        hiddenPlugin.hideColumns(columns);
-                    }
-                }
-                hot.render();
-            }
-        },
-
-        unHiddenRows(elID) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var hiddenPlugin = hot.getPlugin('hiddenRows');
-
-                if (hiddenPlugin.isEnabled() == false) {
-                    hiddenPlugin.enablePlugin();
-                }
-
-                var rowCount = hot.countRows();
-                var rows = [];
-                for (var i = 0; i < rowCount; i++) {
-                    if (hiddenPlugin.isHidden(i) == true) {
-                        rows.push(i);
-                    }
-                }
-
-                $grid.visibleRows(elID, rows, true);
-            }
-        },
-
-        isRowHidden(elID, rowIndex, isPhysicalIndex) {
-            var result = false;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var hiddenPlugin = hot.getPlugin('hiddenRows');
-
-                if (hiddenPlugin.isEnabled() == false) {
-                    hiddenPlugin.enablePlugin();
-                }
-
-                result = hiddenPlugin.isHidden(rowIndex, isPhysicalIndex);
-            }
-
-            return result;
-        },
-
-        visibleRows(elID, rows, isShow) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var hiddenRowsPlugin = hot.getPlugin('hiddenRows');
-
-                if (hiddenRowsPlugin.isEnabled() == false) {
-                    hiddenRowsPlugin.enablePlugin();
-                }
-
-                if (isShow == true) {
-                    if ($object.isNumber(rows) == true) {
-                        hiddenRowsPlugin.showRow(rows);
-                    } else {
-                        hiddenRowsPlugin.showRows(rows);
-                    }
-                } else {
-                    if ($object.isNumber(rows) == true) {
-                        hiddenRowsPlugin.hideRow(rows);
-                    } else {
-                        hiddenRowsPlugin.hideRows(rows);
-                    }
-                }
-                hot.render();
-            }
-        },
-
-        propToCol(elID, columnName) {
-            var result = -1;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.propToCol(columnName);
-            }
-
-            return result;
-        },
-
-        getColHeader(elID, col) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.getColHeader(col);
-            }
-
-            return result;
-        },
-
-        colToProp(elID, col) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.colToProp(col);
-            }
-
-            return result;
-        },
-
-        countCols(elID) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.countCols();
-            }
-
-            return result;
-        },
-
-        getSelected(elID) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.getSelected();
-            }
-
-            return result;
-        },
-
-        getActiveRowIndex(elID) {
-            var result = -1;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var selected = hot.getSelected();
-                if (selected && selected.length > 0) {
-                    result = hot.getSelected()[0][0];
-                }
-                else {
-                    var gridValue = $grid.getGridValue(elID);
-                    result = gridValue.previousRow;
-                }
-            }
-
-            return result;
-        },
-
-        getActiveColIndex(elID) {
-            var result = -1;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var selected = hot.getSelected();
-                if (selected && selected.length > 0) {
-                    result = hot.getSelected()[0][1];
-                }
-                else {
-                    var gridValue = $grid.getGridValue(elID);
-                    result = gridValue.previousCol;
-                }
-            }
-
-            return result;
-        },
-
-        selectCell(elID, row, column, endRow, endColumn, scrollToCell, changeListener) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                if (row === -1) {
-                    var hiddenRowCount = 0;
-                    var hiddenRowsPlugin = hot.getPlugin('hiddenRows');
-
-                    if (hiddenRowsPlugin.isEnabled() == false) {
-                        hiddenRowsPlugin.enablePlugin();
-                    }
-                    hiddenRowCount = hiddenRowsPlugin ? hiddenRowsPlugin.hiddenRows.length : 0;
-                    var sourceRowCount = hot.countSourceRows();
-                    row = (sourceRowCount - hiddenRowCount) - 1;
-                }
-
-                hot.selectCell(row, column, endRow, endColumn, scrollToCell, changeListener);
-            }
-        },
-
-        getExportPlugin(elID, options) {
-            var result = null;
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                result = hot.getPlugin('exportFile');
-                if (result.isEnabled() == false) {
-                    result.enablePlugin();
-                }
-            }
-
-            return result;
-        },
-
-        exportAsString(elID, options) {
-            var result = null;
-
-            var exportPlugin = $grid.getExportPlugin(elID, options);
-            if (exportPlugin) {
-                if ($object.isNullOrUndefined(options) == true) {
-                    options = {};
-                }
-
-                var hot = $grid.getGridControl(elID);
-                options = syn.$w.argumentsExtend({
-                    exportHiddenRows: false,
-                    exportHiddenColumns: false,
-                    rowHeaders: false,
-                    bom: false,
-                    columnDelimiter: ',',
-                    range: options.range ? options.range : [0, 1, hot.countRows(), hot.countCols() - 1],
-                    filename: '{0}_{1}_{2}'.format(syn.$w.pageScript, elID, $date.toTicks(new Date()))
-                }, options);
-
-                options.columnHeaders = false;
-
-                var gridColumns = hot.getSettings().columns;
-                var exportColumns = [];
-                var lowEnd = options.range ? options.range[1] : 1;
-                var highEnd = options.range ? options.range[3] : hot.countCols() - 1;
-                for (var i = lowEnd; i <= highEnd; i++) {
-                    exportColumns.push(gridColumns[i]);
-                }
-
-                var columnIDs = exportColumns
-                    .filter(function (item) { return options.exportHiddenColumns == true || item.isHidden == false; })
-                    .map(function (item) { return item.columnText; });
-
-                var exportString = exportPlugin.exportAsString('csv', options);
-                result = columnIDs.join(',') + '\r\n' + exportString;
-            }
-
-            return result;
-        },
-
-        exportFile(elID, options) {
-            var exportPlugin = $grid.getExportPlugin(elID, options);
-            if (exportPlugin) {
-                if ($object.isNullOrUndefined(options) == true) {
-                    options = {};
-                }
-
-                options = syn.$w.argumentsExtend({
-                    fileType: 'excel',
-                    exportHiddenRows: false,
-                    exportHiddenColumns: false,
-                    columnHeaders: true,
-                    rowHeaders: false,
-                    bom: false,
-                    columnDelimiter: ','
-                }, options);
-
-                if (options.fileType == 'excel') {
-                    var hot = $grid.getGridControl(elID);
-                    var gridSettings = hot.getSettings();
-
-                    var gridColumns = gridSettings.columns;
-                    var exportColumns = [];
-                    var lowEnd = options.range ? options.range[1] : 1;
-                    var highEnd = options.range ? options.range[3] : hot.countCols() - 1;
-                    for (var i = lowEnd; i <= highEnd; i++) {
-                        exportColumns.push(gridColumns[i]);
-                    }
-
-                    var columnIndexs = exportColumns
-                        .filter(function (item) { return options.exportHiddenColumns == true || item.isHidden == false; })
-                        .map(function (item, index) {
-                            return {
-                                index: hot.propToCol(item.data),
-                                type: item.type
-                            }
-                        });
-
-                    var defaultExportColumns = gridSettings.exportColumns
-                        .map(function (item, index) {
-                            return {
-                                index: hot.propToCol(item.columnID),
-                                type: item.type
-                            }
-                        });
-
-                    columnIndexs = $object.extend(columnIndexs, defaultExportColumns);
-
-                    var columnLength = columnIndexs.length;
-                    var colWidths = gridSettings.colWidths;
-                    var wsCols = [];
-                    for (var i = 0; i < columnLength; i++) {
-                        var columnIndex = columnIndexs[i].index;
-                        wsCols.push({ wpx: colWidths[columnIndex] });
-                    }
-
-                    var value = $grid.exportAsString(elID, options);
-                    var data = Papa.parse(value).data;
-                    var dataLength = data.length;
-                    var div = document.createElement("DIV");
-                    for (var i = 0; i < columnLength; i++) {
-                        if (columnIndexs[i].type == 'numeric') {
-                            for (var j = 1; j < dataLength; j++) {
-                                data[j][i] = $string.toParseType(data[j][i], 'number');
-                            }
-                        }
-                        else if (columnIndexs[i].type.indexOf('html') > -1) {
-                            for (var j = 1; j < dataLength; j++) {
-                                div.innerHTML = data[j][i];
-                                data[j][i] = div.textContent || div.innerText || '';
-                            }
-                        }
-                    }
-                    div = null;
-
-                    var wb = XLSX.utils.book_new();
-                    var newWorksheet = XLSX.utils.aoa_to_sheet(data);
-                    newWorksheet['!cols'] = wsCols;
-                    XLSX.utils.book_append_sheet(wb, newWorksheet, 'Sheet1');
-                    var wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-                    syn.$l.blobToDownload(new Blob([syn.$l.stringToArrayBuffer(wbout)], { type: "application/octet-stream" }), options.filename + '.xlsx');
-                }
-                else if (options.fileType == 'csv') {
-                    var hot = $grid.getGridControl(elID);
-                    options = syn.$w.argumentsExtend({
-                        range: options.range ? options.range : [0, 1, hot.countRows(), hot.countCols()],
-                        filename: '{0}_{1}_{2}'.format(syn.$w.pageScript, elID, $date.toTicks(new Date()))
-                    }, options);
-
-                    exportPlugin.downloadFile('csv', options);
-                }
-            }
-        },
-
-        importFile(elID, callback) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var fileEL = syn.$l.get('{0}_ImportFile'.format(elID));
-                fileEL.callback = callback;
-                fileEL.click();
-            }
-        },
-
-        importFileLoad(evt) {
-            var el = evt.srcElement || evt.target;
-            var elID = el.id.split('_')[0];
-            var gridSettings = $grid.getSettings(elID);
-
-            var validExts = ['.csv', '.xls', '.xlsx'];
-            var fileName = el.files[0].name;
-            var fileExtension = fileName.substring(fileName.lastIndexOf('.') == -1 ? fileName.length : fileName.lastIndexOf('.'))
-
-            if (fileExtension && validExts.indexOf(fileExtension) < 0) {
-                syn.$w.alert('{0} 확장자를 가진 파일만 가능합니다'.format(validExts.toString()));
-                return false;
-            }
-
-            var reader = new FileReader();
-            reader.onload = function (file) {
-                var columnDelimiter = ',';
-                el.value = '';
-                var data = file.target.result;
-                var hot = $grid.getGridControl(elID);
-                if (fileExtension == '.csv') {
-                    var lines = data.split(/\r\n|\n/);
-
-                    if (lines.length == 0) {
-                        $grid.clear(elID);
-                    }
-                    else if (lines.length > 0) {
-                        var result = [];
-                        var headers = lines[0].split(columnDelimiter);
-                        var bindColumns = [];
-                        var columns = gridSettings.columns.map(function (item) { return item.data; });
-                        var columnTypes = gridSettings.columns.map(function (item) { return item.type; });
-                        for (var i = 0; i < headers.length; i++) {
-                            var value = headers[i];
-                            value = value.replace(/^["]/, '');
-                            value = value.replace(/["]$/, '');
-                            headers[i] = value;
-
-                            var colIndex = gridSettings.colHeaders.indexOf(value);
-                            if (colIndex == -1) {
-                                syn.$w.alert('올바른 형식의 파일이 아닙니다.\n파일을 확인해주세요.');
-                                return false;
-                            }
-
-                            var columnIndex = hot.propToCol(columns[colIndex]);
-                            bindColumns.push({
-                                headerIndex: i,
-                                columnID: columns[colIndex],
-                                columnIndex: columnIndex,
-                                columnType: columnTypes[colIndex]
-                            });
+                    else if (requestType == 'List') {
+                        var removedRowItems = AUIGrid.getRemovedItems(gridID);
+                        for (var i = 0, length = removedRowItems.length; i < length; i++) {
+                            removedRowItems[i].Flag = 'D';
                         }
 
-                        var line = lines[1];
-                        var values = line.split(columnDelimiter);
-                        for (var i = 0; i < bindColumns.length; i++) {
-                            var bindColumn = bindColumns[i];
-                            var value = values[i];
-                            value = value.replace(/^["]/, '');
-                            value = value.replace(/["]$/, '');
-
-                            var isTypeCheck = true;
-                            switch (bindColumn.columnType) {
-                                case 'checkbox':
-                                case 'checkbox2':
-                                    isTypeCheck = $string.toBoolean(value);
-                                    break;
-                                case 'numeric':
-                                    if (value == null) {
-                                        value = 0;
-                                    }
-
-                                    isTypeCheck = $object.isNumber(value) == true ? true : $string.isNumber(value);
-                                    break;
-                                case 'date':
-                                    if (value == null) {
-                                        isTypeCheck = true;
-                                    } else {
-                                        isTypeCheck = $object.isDate(value);
-                                    }
-                                    break;
-                                default:
-                                    if (value == null) {
-                                        value = '';
-                                    }
-
-                                    isTypeCheck = $object.isString(value);
-                                    break;
-                            }
-
-                            if (isTypeCheck == false) {
-                                syn.$w.alert('올바른 형식의 파일이 아닙니다.\n파일을 확인해주세요.');
-                                return false;
-                            }
+                        var editedRowItems = AUIGrid.getEditedRowItems(gridID);
+                        for (var i = 0, length = editedRowItems.length; i < length; i++) {
+                            editedRowItems[i].Flag = 'U';
                         }
 
-                        for (var i = 1; i < lines.length; i++) {
-                            line = lines[i];
-                            if ($string.isNullOrEmpty(line) == false) {
-                                var obj = {};
-                                var values = lines[i].split(columnDelimiter);
-                                for (var j = 0; j < bindColumns.length; j++) {
-                                    var bindColumn = bindColumns[j];
-                                    var value = values[j];
-                                    if ($object.isNullOrUndefined(value) == true) {
-                                        value = '';
-                                    }
-                                    else {
-                                        value = value.replace(/^["]/, '');
-                                        value = value.replace(/["]$/, '');
-                                    }
+                        var addedRowItems = AUIGrid.getAddedRowItems(gridID);
+                        for (var i = 0, length = addedRowItems.length; i < length; i++) {
+                            addedRowItems[i].Flag = 'C';
+                        }
 
-                                    if (bindColumn.columnType == 'numeric') {
-                                        if (value != null) {
-                                            value = $object.isNumber(value) == true ? value : Number(value);
+                        var rowDatas = items.concat(removedRowItems, editedRowItems, addedRowItems);
+                        var length = rowDatas.length;
+
+                        for (var rowIndex = 0; rowIndex < length; rowIndex++) {
+                            var rowData = rowDatas[rowIndex];
+                            var rowFlag = rowData.Flag || 'C';
+                            if (rowFlag && rowFlag != 'S') {
+                                if (rowFlag != 'R') {
+                                    rowData = $object.clone(rowData);
+
+                                    var data = {};
+                                    data.Flag = rowFlag;
+
+                                    for (var key in metaColumns) {
+                                        var column = metaColumns[key];
+                                        var rowValue = rowData[key];
+
+                                        data[column.fieldID] = rowValue;
+                                        if (rowValue === undefined) {
+                                            data[column.fieldID] = column.dataType == 'number' ? null : $object.defaultValue(column.dataType);
+                                        } else {
+                                            data[column.fieldID] = rowValue;
                                         }
                                     }
 
-                                    obj[bindColumn.columnID] = value;
+                                    items.push(data);
                                 }
-
-                                result.push(obj);
                             }
                         }
                     }
-                }
-                else {
-                    var columns = gridSettings.columns.map(function (item) { return item.data; });
-                    var workbook = XLSX.read(data, { type: 'binary' });
-                    var sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    var range = XLSX.utils.decode_range(sheet['!ref']);
-                    for (var C = range.s.c; C <= range.e.c; ++C) {
-                        var cellref = XLSX.utils.encode_cell({ c: C, r: 0 });
-                        var cell = sheet[cellref];
-                        if (cell == undefined) {
-                            break;
+
+                    var length = items.length;
+                    for (var i = 0; i < length; i++) {
+                        var item = items[i];
+
+                        var row = [];
+                        for (var key in item) {
+                            var serviceObject = { prop: key, val: item[key] };
+                            row.push(serviceObject);
                         }
-
-                        var columnText = cell.v;
-                        var colIndex = gridSettings.colHeaders.indexOf(columnText);
-                        if (colIndex == -1) {
-                            syn.$w.alert('올바른 형식의 파일이 아닙니다.\n파일을 확인해주세요.');
-                            return false;
-                        }
-
-                        var columnID = columns[colIndex];
-                        cell.v = columnID;
-                        cell.h = columnID;
-                        cell.w = columnID;
+                        result.push(row);
                     }
-
-                    result = XLSX.utils.sheet_to_json(sheet);
-                }
-
-                var metaColumns = {};
-                for (var k = 0; k < gridSettings.columns.length; k++) {
-                    var column = gridSettings.columns[k];
-                    var dataType = 'string'
-                    switch (column.type) {
-                        case 'radio':
-                        case 'checkbox':
-                        case 'checkbox2':
-                            dataType = 'bool';
-                            break;
-                        case 'numeric':
-                            dataType = 'numeric';
-                            break;
-                        case 'date':
-                            dataType = 'string';
-                            break;
-                    }
-
-                    metaColumns[column.data] = {
-                        fieldID: column.data,
-                        dataType: dataType
-                    };
-                }
-
-                $grid.clear(elID);
-                $grid.setValue(elID, result, metaColumns);
-                var col = hot.propToCol('Flag');
-
-                var rowCount = hot.countRows(elID);
-                var flags = [];
-                for (var i = 0; i < rowCount; i++) {
-                    flags.push([i, col, 'C']);
-                }
-                hot.setDataAtCell(flags);
-
-                if (el.callback) {
-                    el.callback(fileName);
-                }
-            };
-
-            if (fileExtension == '.csv') {
-                reader.readAsText(el.files[0]);
-            }
-            else {
-                reader.readAsBinaryString(el.files[0]);
-            }
-        },
-
-        getGridControl(elID) {
-            var result = null;
-
-            var length = $grid.gridControls.length;
-            for (var i = 0; i < length; i++) {
-                var item = $grid.gridControls[i];
-                if (item.id == elID) {
-                    result = item.hot;
-                    break;
+                } else {
+                    syn.$l.eventLog('getUpdateData', 'Input Mapping 설정 없음', 'Debug');
                 }
             }
 
-            return result;
-        },
-
-        getGridValue(elID) {
-            var result = null;
-
-            var length = $grid.gridControls.length;
-            for (var i = 0; i < length; i++) {
-                var item = $grid.gridControls[i];
-                if (item.id == elID) {
-                    result = item.value;
-                    break;
-                }
-            }
-
-            return result;
-        },
-
-        getGridSetting(elID) {
-            var result = null;
-
-            var length = $grid.gridControls.length;
-            for (var i = 0; i < length; i++) {
-                var item = $grid.gridControls[i];
-                if (item.id == elID) {
-                    result = item.setting;
-                    break;
-                }
-            }
-
-            return result;
-        },
-
-        getColumnWidths(elID) {
-            var result = [];
-
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var colCount = hot.countCols();
-
-                for (var i = 0; i < colCount; i++) {
-                    result.push(hot.getColWidth(i));
-                }
-            }
-
-            return result;
-        },
-
-        setColumnWidth(elID, col, width) {
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var columnResizePlugin = hot.getPlugin('manualColumnResize');
-
-                if (columnResizePlugin.isEnabled() == false) {
-                    columnResizePlugin.enablePlugin();
-                }
-
-                if ($object.isString(col) == true) {
-                    col = hot.propToCol(col);
-                }
-
-                if ($object.isNumber(width) == true) {
-                    columnResizePlugin.setManualSize(col, width);
-                }
-            }
-        },
-
-        setControlSize(elID, size) {
-            var el = syn.$l.get(elID);
-            if (el && size) {
-                if (size.width) {
-                    el.style.width = size.width;
-                }
-
-                if (size.height) {
-                    el.style.height = size.height;
-                }
-
-                $grid.getGridControl(elID).render();
-            }
-        },
-
-        getValue(elID, requestType, metaColumns) {
-            var result = [];
-            var items = $grid.getUpdateData(elID, requestType, metaColumns);
-            var length = items.length;
-            for (var i = 0; i < length; i++) {
-                var item = items[i];
-
-                var row = [];
-                for (var key in item) {
-                    var serviceObject = { prop: key, val: item[key] };
-                    row.push(serviceObject);
-                }
-                result.push(row);
-            }
             return result;
         },
 
         setValue(elID, value, metaColumns) {
-            var error = '';
-            var hot = $grid.getGridControl(elID);
-            if (hot) {
-                var gridSettings = hot.getSettings();
-                if (gridSettings && value && value.length > 0) {
-                    if ($object.isNullOrUndefined(metaColumns) == false) {
-                        var item = value[0];
-                        for (var column in item) {
-                            var isTypeCheck = false;
-                            var metaColumn = metaColumns[column];
-                            if (metaColumn) {
-                                switch (metaColumn.dataType.toLowerCase()) {
-                                    case 'string':
-                                        isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $object.isString(item[column]) || $string.isNumber(item[column]);
-                                        break;
-                                    case 'bool':
-                                        isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $object.isBoolean(item[column]);
-                                        break;
-                                    case 'number':
-                                    case 'numeric':
-                                        isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $string.isNumber(item[column]) || $object.isNumber(item[column]);
-                                        break;
-                                    case 'date':
-                                        isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $object.isDate(item[column]);
-                                        break;
-                                    default:
-                                        isTypeCheck = false;
-                                        break;
-                                }
-
-                                if (isTypeCheck == false) {
-                                    syn.$l.eventLog('syn.uicontrols.$grid', '바인딩 데이터 타입과 매핑 정의가 다름, 바인딩 ID - "{0}", 타입 - "{1}"'.format(column, metaColumn.dataType), 'Warning');
-                                    return;
-                                }
-                            } else {
-                                continue;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID && value && value.length > 0) {
+                if ($object.isNullOrUndefined(metaColumns) == false) {
+                    var item = value[0];
+                    for (var column in item) {
+                        var isTypeCheck = false;
+                        var metaColumn = metaColumns[column];
+                        if (metaColumn) {
+                            switch (metaColumn.dataType.toLowerCase()) {
+                                case 'string':
+                                    isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $object.isString(item[column]) || $string.isNumber(item[column]);
+                                    break;
+                                case 'bool':
+                                    isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $object.isBoolean(item[column]);
+                                    break;
+                                case 'number':
+                                case 'numeric':
+                                    isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $string.isNumber(item[column]) || $object.isNumber(item[column]);
+                                    break;
+                                case 'date':
+                                    isTypeCheck = $string.isNullOrEmpty(item[column]) == true || $date.isDate(item[column]);
+                                    break;
+                                default:
+                                    isTypeCheck = false;
+                                    break;
                             }
-                        }
 
-                        var columnInfos = gridSettings.columns;
-                        var dropdownColumns = [];
-
-                        for (var i = 0; i < columnInfos.length; i++) {
-                            var columnInfo = columnInfos[i];
-                            if (columnInfo.type == 'dropdown') {
-                                dropdownColumns.push(columnInfo);
+                            if (isTypeCheck == false) {
+                                syn.$l.eventLog('syn.uicontrols.$auigrid', '바인딩 데이터 타입과 매핑 정의가 다름, 바인딩 ID - "{0}", 타입 - "{1}"'.format(column, metaColumn.dataType), 'Warning');
+                                return;
                             }
-                        }
-
-                        if (dropdownColumns.length > 0) {
-                            for (var i = 0; i < dropdownColumns.length; i++) {
-                                var columnInfo = dropdownColumns[i];
-                                var dataSource = columnInfo.dataSource;
-                                if (dataSource) {
-                                    for (var j = 0; j < value.length; j++) {
-                                        var code = value[j][columnInfo.codeColumnID];
-                                        for (var k = 0; k < dataSource.DataSource.length; k++) {
-                                            var item = dataSource.DataSource[k];
-                                            if (item[dataSource.CodeColumnID] == code) {
-                                                value[j][columnInfo.data] = item[dataSource.ValueColumnID];
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                        } else {
+                            continue;
                         }
                     }
-
-                    $grid.loadData(elID, value);
-                    $grid.renderSummary(hot);
-                } else {
-                    $grid.loadData(elID, []);
-                    $grid.renderSummary(hot);
                 }
             }
-        },
 
-        renderSummary(hot) {
-            var gridSettings = hot.getSettings();
-            if (gridSettings.summarys && gridSettings.summarys.length > 0) {
-                var setting = {
-                    index: hot.countRows(),
-                    amount: 1
-                };
-
-                hot.alter('insert_row_below', setting.index, setting.amount);
-                hot.render();
-
-                var gridValue = $grid.getGridValue(hot.elID);
-                gridValue.applyCells = true;
-
-                $grid.refreshSummary(hot.elID);
+            AUIGrid.clearSelection(gridID);
+            $auigrid.clearConditions(elID);
+            const length = value.length;
+            for (let i = 0; i < length; i++) {
+                value[i].Flag = 'R';
             }
-        },
 
-        refreshSummary(elID) {
-            var hot = $grid.getGridControl(elID);
-            var gridSettings = hot.getSettings();
-            if (gridSettings.summarys && gridSettings.summarys.length > 0) {
-                var lastRowIndex = gridSettings.data.length - 1;
-                var rowValue = [];
-                var length = gridSettings.summarys.length;
-                var calcFunction = function (val) {
-                    return ($string.isNullOrEmpty(val) == true || $string.isNumber(val) == false) ? 0 : parseFloat($object.isNumber(val) ? val : $string.toNumber(val));
-                };
-
-                for (var i = 0; i < length; i++) {
-                    var summary = 0;
-                    var summaryColumn = gridSettings.summarys[i];
-                    var col = hot.propToCol(summaryColumn.columnID);
-                    var columnMap = gridSettings.data.map(function (item) { return item.Flag && item.Flag != 'S' && item[summaryColumn.columnID]; });
-                    if (columnMap.length > 0) {
-                        var columnData = JSON.parse(JSON.stringify(columnMap));
-                        switch (summaryColumn.type) {
-                            case 'min':
-                                $array.sort(columnData, true);
-                                var val = columnData[0];
-                                summary = calcFunction(val);
-                                break;
-                            case 'max':
-                                $array.sort(columnData, false);
-                                var val = columnData[0];
-                                summary = calcFunction(val);
-                                break;
-                            case 'avg':
-                                for (var j = 0; j < columnData.length; j++) {
-                                    var val = columnData[j];
-                                    summary += calcFunction(val);
-                                }
-
-                                summary = summary / columnData.length;
-                                break;
-                            case 'sum':
-                                for (var j = 0; j < columnData.length; j++) {
-                                    var val = columnData[j];
-                                    summary += calcFunction(val);
-                                }
-                                break;
-                            case 'count':
-                                summary = columnData.length - 1;
-                                break;
-                            case 'custom':
-                                var mod = window[syn.$w.pageScript];
-                                if (mod) {
-                                    var eventHandler = mod.event['{0}_customSummary'.format(hot.elID)];
-                                    if (eventHandler) {
-                                        summary = eventHandler.apply(hot, [hot.elID, summaryColumn.columnID, col, columnData]);
-                                    }
-                                }
-                                break;
-                        }
-
-                        if (summaryColumn.type != 'custom') {
-                            if ($object.isNullOrUndefined(summaryColumn.fixed) == true) {
-                                summary = summary.toFixed(summaryColumn.type == 'avg' ? '1' : '0');
-                            }
-                            else {
-                                summary = summary.toFixed(summaryColumn.fixed);
-                            }
-
-                            if ($object.isNullOrUndefined(summaryColumn.format) == true) {
-                                summary = $string.toCurrency(summary);
-                            }
-                            else {
-                                if (summaryColumn.format === true) {
-                                    summary = $string.toCurrency(summary);
-                                }
-                                else {
-                                    summary = summary.toString();
-                                }
-                            }
-                        }
-
-                        rowValue.push([lastRowIndex, col, summary]);
-                    }
-                }
-
-                rowValue.push([lastRowIndex, 0, 'S']);
-                hot.setDataAtCell(rowValue);
-            }
+            AUIGrid.setGridData(gridID, value);
         },
 
         clear(elID, isControlLoad) {
-            $grid.loadData(elID, []);
-        },
-
-        setTransactionBelongID(elID, belongFlow, transactConfig) {
-            var el = syn.$l.get(elID + '_hidden') || syn.$l.get(elID);
-            var synOptions = JSON.parse(el.getAttribute('syn-options'));
-
-            if (synOptions == null) {
-                return;
+            var gridID = $auigrid.getGridID(elID);
+            if (gridID) {
+                AUIGrid.clearGridData(gridID);
             }
-
-            for (var i = 0; i < synOptions.columns.length; i++) {
-                var column = synOptions.columns[i];
-                var dataType = 'string'
-                switch (column.columnType) {
-                    case 'checkbox':
-                        dataType = 'bool';
-                        break;
-                    case 'numeric':
-                        dataType = 'numeric';
-                        break;
-                    case 'number':
-                        dataType = 'number';
-                        break;
-                    case 'date':
-                        dataType = 'date';
-                        break;
-                }
-
-                if ($object.isNullOrUndefined(transactConfig) == true) {
-                    belongFlow.items[column.data] = {
-                        fieldID: column.data,
-                        dataType: dataType
-                    };
-                }
-                else {
-                    var isBelong = false;
-                    if (column.data == 'Flag') {
-                        isBelong = true;
-                    }
-                    else if (column.belongID) {
-                        if ($object.isString(column.belongID) == true) {
-                            isBelong = transactConfig.functionID == column.belongID;
-                        }
-                        else if ($object.isArray(column.belongID) == true) {
-                            isBelong = column.belongID.indexOf(transactConfig.functionID) > -1;
-                        }
-                    }
-
-                    if (isBelong == true) {
-                        belongFlow.items[column.data] = {
-                            fieldID: column.data,
-                            dataType: dataType
-                        };
-                    }
-                }
-            }
-        },
-
-        checkEditValue(elID) {
-            return $grid.getDataAtCol(elID, 'Flag').filter((item) => { return $string.isNullOrEmpty(item) == false && item != 'R' }).length > 0;
-        },
-
-        checkUniqueValueCol(elID, column) {
-            var result = false;
-            var vaildateData = $grid.getSourceDataAtCol(elID, column);
-            result = !vaildateData.filter(function (row, index) { return (vaildateData.indexOf(row) !== index) }).length > 0
-            return result;
-        },
-
-        checkValueCountCol(elID, column, checkValue) {
-            return $grid.getDataAtCol(elID, column).filter((item) => { return item === checkValue }).length;
-        },
-
-        checkEmptyValueCol(elID, column, checkValue) {
-            var result = false;
-            if ($object.isNullOrUndefined(checkValue) == true) {
-                if ($grid.countRows(elID) == 0) {
-                    result = false;
-                }
-                else {
-                    result = $grid.getDataAtCol(elID, column).filter((item) => { return $string.isNullOrEmpty(item) == true }).length > 0;
-                }
-            }
-            else {
-                result = $grid.getDataAtCol(elID, column).filter((item) => { return item === checkValue }).length > 0;
-            }
-            return result;
-        },
-
-        checkEmptyValueCols(elID, columns, checkValue) {
-            var items = $grid.getSettings(elID).data;
-
-            for (var i = 0, length = items.length; i < length; i++) {
-                var item = items[i];
-
-                var checkResult = false;
-                for (var j = 0; j < columns.length; j++) {
-                    var column = columns[j];
-
-                    if ($object.isNullOrUndefined(checkValue) == true) {
-                        if ($string.isNullOrEmpty(item[column]) == true) {
-                            checkResult = true;
-                        }
-                        else {
-                            checkResult = false;
-                            break;
-                        }
-                    }
-                    else {
-                        if ($string.isNullOrEmpty(item[column]) == true || item[column] === checkValue) {
-                            checkResult = true;
-                        }
-                        else {
-                            checkResult = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (checkResult == true) {
-                    return checkResult;
-                }
-            }
-            return false;
         },
 
         setLocale(elID, translations, control, options) {
-            var el = syn.$l.get(elID);
-            var bind = $resource.getBindSource(control);
-            if (bind != null) {
-                // var value = $resource.translateText(control, options);
-                // if (value) {
-                //     el[bind] = value;
-                // }
-            }
-            // debugger;
         }
     });
-    syn.uicontrols.$grid = $grid;
+    syn.uicontrols.$auigrid = $auigrid;
+
 })(window);
 
 /// <reference path="/js/syn.js" />
@@ -13492,14 +14054,17 @@
 
     $element.extend({
         name: 'syn.uicontrols.$element',
-        version: 'v2025.3.1',
+        version: 'v2025.12.25',
         defaultSetting: {
-            contents: '',
             disabled: false,
+            checkedValue: '1',
+            uncheckedValue: '0',
             dataType: 'string',
             belongID: null,
+            getter: false,
+            setter: false,
             controlText: null,
-            content: 'value', // value, text, html
+            content: null,
             validators: null,
             transactConfig: null,
             triggerConfig: null
@@ -13549,14 +14114,36 @@
                         case 'value':
                             result = el.value;
                             break;
-                        case 'text':
-                            result = el.innerText;
-                            break;
                         case 'html':
-                            result = el.innerHTML;
+                            if ('innerHTML' in el) {
+                                result = el.innerHTML;
+                            }
+                            break;
+                        case 'content':
+                            if ('textContent' in el) {
+                                result = el.textContent;
+                            }
                             break;
                         default:
-                            result = el.value;
+                            if ('innerText' in el) {
+                                result = el.innerText;
+                            }
+                            break;
+                    }
+
+                    switch (options.dataType) {
+                        case 'number':
+                        case 'numeric':
+                            result = $string.toNumberString(result);
+                            break;
+                        case 'bool':
+                        case 'boolean':
+                            if ($string.toBoolean(result) == true) {
+                                result = $object.isNullOrUndefined(options.checkedValue) == true ? '1' : options.checkedValue;
+                            }
+                            else {
+                                result = $object.isNullOrUndefined(options.uncheckedValue) == true ? '0' : options.uncheckedValue;
+                            }
                             break;
                     }
                 }
@@ -13573,27 +14160,36 @@
 
         setValue(elID, value, meta) {
             var el = syn.$l.get(elID);
-            if (value) {
+            if ($object.isNullOrUndefined(value) == false) {
                 if ($object.isNullOrUndefined(el) == false) {
                     var synOptions = el.getAttribute('syn-options');
                     if (synOptions) {
                         var options = JSON.parse(synOptions);
+                        switch (options.dataType) {
+                            case 'number':
+                            case 'numeric':
+                                value = $string.isNumber(value) == true ? $string.toCurrency(value) : value;
+                                break;
+                        }
+
                         switch (options.content) {
                             case 'value':
                                 el.value = value;
-                                break;
-                            case 'text':
-                                if ('innerText' in el) {
-                                    el.innerText = value;
-                                }
                                 break;
                             case 'html':
                                 if ('innerHTML' in el) {
                                     el.innerHTML = value;
                                 }
                                 break;
+                            case 'content':
+                                if ('textContent' in el) {
+                                    el.textContent = value;
+                                }
+                                break;
                             default:
-                                el.value = value;
+                                if ('innerText' in el) {
+                                    el.innerText = value;
+                                }
                                 break;
                         }
                     }
@@ -13603,7 +14199,7 @@
                 }
             }
         },
-        
+
         clear(elID, isControlLoad) {
             var el = syn.$l.get(elID);
             if ($object.isNullOrUndefined(el) == false) {
@@ -13615,14 +14211,14 @@
                         case 'value':
                             el.value = value;
                             break;
-                        case 'text':
-                            if ('innerText' in el) {
-                                el.innerText = value;
-                            }
-                            break;
                         case 'html':
                             if ('innerHTML' in el) {
                                 el.innerHTML = value;
+                            }
+                            break;
+                        case 'content':
+                            if ('textContent' in el) {
+                                el.textContent = value;
                             }
                             break;
                         default:

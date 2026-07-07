@@ -1,0 +1,110 @@
+---
+sidebar_position: 20
+---
+
+# iframe 자식 화면 사용법 (syn.$n)
+
+## 개요
+`iframe_child.html`은 `$network` 모듈(`syn.$n`)의 "rooms" 채널 기능을 자식(iframe) 화면 관점에서 보여주는 예제입니다. 자식 화면이 로드되는 시점에 `window.parent`를 대상으로 채널을 연결하고, 부모가 `call`로 호출하는 메서드(`bind`)에 응답하거나, 부모에게 이벤트를 통보(`emit`)하는 흐름을 다룹니다. `iframe_main.html`과 한 쌍으로 동작합니다.
+
+이 문서는 `rooms.connect` / 채널 객체의 `bind` · `emit`만 다룹니다. SSE·WebSocket 클라이언트 기능과 전역 편의 메서드 `syn.$n.call` · `syn.$n.broadCast` · `syn.$n.emit` · `syn.$n.findChannel`는 [network](network)에서 다룹니다.
+
+## 로드 방법
+`iframe_main.html`이 `<iframe id="ifmChildren">`의 `src`에 `iframe_child.html`을 지정하면서 로드됩니다(직접 브라우저 주소로 열면 `window == window.parent`이므로 채널이 생성되지 않습니다).
+```html
+<script src="/js/syn.loader.js"></script>
+```
+
+## 빠른 시작
+1. 부모 화면에서 iframe이 로드되면, `$iframe_child.hook.pageLoad()`가 실행되어 `window != window.parent`를 확인하고 `syn.$n.rooms.connect({ window: window.parent, origin: '*', scope: channelID })`로 채널을 생성합니다.
+2. 같은 시점에 `request` 메서드를 `bind`로 등록해, 부모가 `connection.call({ method: 'request', ... })`을 호출하면 응답 값을 반환합니다.
+3. `부모 화면 호출하기` 버튼 클릭 → 채널의 `emit({ method: 'response', params })`으로 부모에게 결과를 통보합니다(응답을 기다리지 않는 단방향 전송).
+
+## 주요 시나리오
+- 자식 쪽 채널 연결: 자식은 항상 `window: window.parent`로 연결합니다. `scope`(channelID)는 부모와 반드시 동일해야 서로의 채널이 매칭됩니다.
+- 부모 요청에 응답하기: `bind('request', function (transaction, params) { ... })`로 등록한 콜백은 부모가 `call()`로 호출할 때 `(transaction, params)` 형태로 실행됩니다. 콜백이 반환하는 값이 `transaction.complete()`를 통해 자동으로 부모의 `success` 콜백에 전달됩니다. 응답을 지연하려면 `transaction.delayReturn(true)` 후 필요한 시점에 `transaction.complete(value)` 또는 `transaction.error(name, message)`를 직접 호출합니다.
+- 부모에게 이벤트 통보하기: `emit({ method, params })`은 응답을 요구하지 않는 단방향 메시지입니다. `call()`과 달리 `success`/`error` 콜백을 지원하지 않으므로 지정해도 무시됩니다.
+
+## 실전 예제 페이지
+- `/sample/syn/iframe_child.html` + `iframe_child.js`
+  - `hook.pageLoad()`: `syn.$n.rooms.connect({ window: window.parent, ... })`로 연결 후 `request` 메서드 바인딩(응답 값을 `return`)
+  - `btnChildren2Parent_click()`: 연결된 채널의 `emit({ method: 'response', params: ['response data'] })` 호출
+
+## 주의 사항
+- `emit()`에는 `success`/`error` 콜백이 없습니다. 요청-응답이 필요하면 반드시 `call()`을 사용하세요(부모 쪽 예제는 [iframe-main](iframe-main) 참고).
+- `bind('request', ...)` 콜백의 첫 번째 인자는 DOM 이벤트가 아니라 트랜잭션 객체(`transaction`)입니다. `emit`으로 수신되는 메시지의 콜백 첫 번째 인자는 `origin` 정보 객체입니다. 메서드 등록 방식(`call`/`emit`)에 따라 첫 번째 인자의 의미가 다르므로 주의하세요.
+- 채널의 `scope`는 부모/자식 양쪽에서 동일한 문자열이어야 합니다.
+
+## 관련 모듈
+- API 상세는 아래 API 참조 섹션을 확인하세요.
+- 짝이 되는 부모 화면 예제: [iframe-main](iframe-main)
+- SSE, WebSocket, 전역 `call`/`broadCast`/`emit`/`findChannel` 편의 메서드: [network](network)
+
+## API 참조
+
+## 모듈 정보
+| 항목 | 내용 |
+|---|---|
+| 전역 별칭 | `syn.$n` |
+| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 6056~6919번째 줄) |
+| 예제 페이지 | `/sample/syn/iframe_child.html` |
+
+## 메서드
+
+### 채널 객체 `.bind(method, callback)`
+- 설명: 상대(부모) 창이 `call()` 또는 `emit()`으로 보내는 `method` 이름에 대한 처리 함수를 등록합니다. 소스 위치: 약 6474~6489번째 줄.
+- 매개변수
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `method` | `string` | Y | 등록할 메서드 이름(예: `'request'`) |
+| `callback` | `function` | Y | `call()`로 수신 시 `(transaction, params)`, `emit()`으로 수신 시 `(origin, params)` 형태로 호출됨 |
+
+- 반환값: 채널 객체 자신(`this`, 체이닝 가능). 이미 등록된 `method`면 경고 로그 후 그대로 반환.
+- 예시 (`iframe_child.js`)
+```javascript
+$this.prop.childrenChannel.bind('request', function (transaction, params) {
+    alert('iframe_child request 수신: ' + JSON.stringify(params));
+    return 'iframe_child 응답: ' + JSON.stringify(params); // 부모의 success(val)로 전달됨
+});
+```
+
+### 트랜잭션 객체 (`bind`의 `call` 콜백 1번째 인자)
+- 설명: `call()`로 수신된 요청 처리 중 응답을 제어하는 객체입니다. 소스 위치: 약 6269~6314번째 줄.
+- 멤버
+
+| 이름 | 설명 |
+|---|---|
+| `invoke(callbackName, value)` | 요청 측이 `params`에 넘긴 콜백 함수(`callbacks`)를 실행 |
+| `error(error, message)` | 실패 응답 전송(요청 측 `error` 콜백 호출) |
+| `complete(value)` | 성공 응답 전송(요청 측 `success` 콜백 호출) |
+| `delayReturn(delay)` | `true`로 설정 시 콜백 반환값으로 자동 `complete()`하지 않고 비동기로 직접 `complete`/`error` 호출 가능 |
+| `completed()` | 이미 응답을 보냈는지 여부 |
+
+- 예시: 비동기 응답이 필요한 경우
+```javascript
+channel.bind('longRequest', function (transaction, params) {
+    transaction.delayReturn(true);
+    setTimeout(function () {
+        transaction.complete('지연된 응답: ' + JSON.stringify(params));
+    }, 1000);
+});
+```
+
+### 채널 객체 `.emit({ method, params })`
+- 설명: 상대에게 응답을 기대하지 않는 단방향 메시지를 전송합니다. 소스 위치: 약 6555~6561번째 줄.
+- 매개변수
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `method` | `string` | Y | 상대에서 `bind`로 등록한 메서드 이름 |
+| `params` | `any` | N | 전달할 데이터 |
+
+- 반환값: 없음. `success`/`error` 콜백을 지정해도 무시됩니다(응답을 추적하지 않음).
+- 예시 (`iframe_child.js`)
+```javascript
+$this.prop.childrenChannel.emit({
+    method: 'response',
+    params: ['response data']
+});
+```

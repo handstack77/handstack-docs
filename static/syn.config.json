@@ -6,25 +6,33 @@
     "TransactionTimeout": 180000,
     "HostName": "WebClient",
     "UIEventLogLevel": "Verbose",
+    "IsLocaleTranslations": false,
+    "LocaleAssetUrl": "/assets/shared/language/",
+    "AssetsCachingID": "cache-id",
     "IsClientCaching": true,
     "IsDebugMode": false,
-    "AppHostRequestPath": "app",
+    "IsBundleLoad": false,
+    "ContractRequestPath": "view",
+    "TenantAppRequestPath": "app",
     "SharedAssetUrl": "/assets/shared/",
     "IsApiFindServer": false,
-    "DiscoveryApiServerUrl": "http://localhost:8000/api/find",
-    "FileManagerServer": "http://localhost:8000",
+    "DiscoveryApiServerUrl": "",
+    "ReportServer": "",
+    "FileManagerServer": "http://localhost:8421",
     "FindClientIPServer": "/checkip",
-    "FindGlobalIDServer": "/wwwroot/api/index/create-id",
+    "FindGlobalIDServer": "",
     "FileServerType": "L",
+    "FileBusinessIDSource": "None",
     "CookiePrefixName": "HandStack",
     "Environment": "Development",
+    "DomainBaseUrl": "https://handstack.kr",
     "DomainAPIServer": {
         "ServerID": "SERVERD01",
         "ServerType": "D",
         "Protocol": "http",
         "IP": "localhost",
-        "Port": "8000",
-        "Path": "/api/transaction",
+        "Port": "8421",
+        "Path": "/transact/api/transaction/execute",
         "ClientIP": "localhost"
     },
     "Program": {
@@ -45,30 +53,7 @@
     },
     "EnvironmentSetting": {
         "Application": {
-            "LoaderPath": "/js/syn.domain.min.js",
-            "CodeHelpID": "SYS|SYS010|LD01"
-        },
-        "Cookie": {
-            "CustomCookie1": "ValueCookie1",
-            "CustomCookie2": "ValueCookie2",
-            "CustomCookie3": "ValueCookie3"
-        },
-        "Header": {
-            "CustomHeader1": "ValueHeader1",
-            "CustomHeader2": "ValueHeader2",
-            "CustomHeader3": "ValueHeader3"
-        },
-        "Definition": {
-            "Styles": [
-                "/css/syn.bundle.min.css",
-                "/css/tabler-icons.css"
-            ],
-            "Scripts": [
-                "/js/syn.scripts.min.js",
-                "/js/syn.js",
-                "/js/syn.controls.min.js"
-            ],
-            "Controls": []
+            "LoaderPath": "/js/syn.domain.js"
         }
     }
 }

@@ -2,1205 +2,439 @@
 sidebar_position: 16
 ---
 
-# $string
+# $string 사용법 ($string)
 
 ## 개요
-$string은 HandStack에서 JavaScript의 String 객체를 확장하여 문자열 처리와 변환을 더욱 편리하게 만들어주는 유틸리티 함수 모음입니다. 타입 변환, HTML 처리, 템플릿 보간, 유효성 검사 등 다양한 문자열 관련 기능을 제공합니다.
+`$string`는 자바스크립트 `String` 객체를 대상으로 하는 확장 함수 모음입니다. null/undefined 안전 처리, HTML 이스케이프, 문자열 템플릿 치환(interpolate), 타입 변환(Boolean/Number/Date 추론), CSV류 문자열 파싱과 검증, 통화/패딩 포맷팅까지 문자열을 다루는 대부분의 상용구 작업을 대체합니다. `syn.js`가 로드되면 전역 객체로 즉시 사용할 수 있으며, `syn.$string`과 같은 별도의 `syn.` 접두 별칭은 없습니다.
 
-## 주요 기능
+## 로드 방법
+`syn.js`가 로드되면 전역에 `$string`로 즉시 사용할 수 있습니다. 별도의 초기화나 `new` 호출이 필요하지 않습니다.
 
-### 기본 변환 및 검사
-
-#### toValue(value, defaultValue?)
-다양한 타입의 값을 문자열로 변환합니다.
-
-**구문**
-```javascript
-$string.toValue(value, defaultValue?)
+## 빠른 시작
+```js
+$string.toValue(null, '기본값'); // "기본값"
+$string.interpolate('<span>#{name}</span>', { name: 'HandStack' });
 ```
 
-**매개변수**
-- `value` (Any): 변환할 값
-- `defaultValue` (String, 선택사항): 기본값
+## 주요 시나리오
 
-**반환값**
-- `String`: 변환된 문자열
-
-**예제**
-```javascript
-// 다양한 타입 변환
-console.log($string.toValue('hello'));          // 'hello'
-console.log($string.toValue(12345));            // '12345'
-console.log($string.toValue(true));             // 'true'
-console.log($string.toValue(new Date()));       // 날짜 문자열
-console.log($string.toValue({}));               // '[object Object]'
-console.log($string.toValue(null, 'default'));  // 'default'
-console.log($string.toValue(undefined, 'N/A')); // 'N/A'
-
-// 객체나 배열을 JSON 문자열로
-var obj = { name: 'John', age: 30 };
-console.log($string.toValue(obj)); // JSON 문자열로 변환
+### null-safe 문자열 처리
+값이 null/undefined일 수 있는 상황에서 안전하게 문자열로 변환하거나 빈 값 여부를 확인합니다.
+```js
+$string.toValue(undefined, '-');      // "-"
+$string.isNullOrEmpty('');            // true
+$string.isNullOrWhiteSpace('   ');    // true
 ```
 
-#### isNullOrEmpty(value)
-값이 null, undefined 또는 빈 문자열인지 확인합니다.
-
-**구문**
-```javascript
-$string.isNullOrEmpty(value)
+### 템플릿 문자열 치환
+`#{key}` 형태의 플레이스홀더가 포함된 템플릿 문자열을 JSON 객체(또는 객체 배열)로 치환합니다.
+```js
+const json = { symbol: 'HandStack', price: 12345 };
+$string.interpolate('<span>#{symbol}</span> <span>#{price}</span>', json);
 ```
 
-**반환값**
-- `Boolean`: null, undefined, 빈 문자열이면 true
-
-**예제**
-```javascript
-console.log($string.isNullOrEmpty(''));         // true
-console.log($string.isNullOrEmpty(null));       // true
-console.log($string.isNullOrEmpty(undefined));  // true
-console.log($string.isNullOrEmpty('hello'));    // false
-console.log($string.isNullOrEmpty(0));          // false
-console.log($string.isNullOrEmpty(false));      // false
-
-// 폼 유효성 검사에 활용
-function validateForm() {
-    var name = document.getElementById('txtName').value;
-    if ($string.isNullOrEmpty(name)) {
-        alert('이름을 입력해주세요.');
-        return false;
-    }
-    return true;
-}
+### HTML 문자열 안전 처리
+사용자 입력을 화면에 출력하기 전 태그를 제거하거나 특수문자를 이스케이프합니다.
+```js
+$string.sanitizeHTML('<b>hello</b>');      // "hello"
+$string.toHtmlChar('<b>hello</b>');        // 특수문자가 HTML 엔티티로 치환된 문자열
 ```
 
-#### length(value)
-문자열의 실제 길이를 반환합니다 (한글 고려).
-
-**구문**
-```javascript
-$string.length(value)
+### 값 타입 변환
+문자열 값을 의도한 타입(Boolean/Number/Date) 또는 자동 추론된 타입으로 변환합니다.
+```js
+$string.toBoolean('Y');                    // true
+$string.toNumber('-12,345.123');           // -12345.123
+$string.toDynamic('2023-12-11T04:45:56.558Z'); // Date 객체로 추론
+$string.toParseType('100', 'number');      // 100 (의도한 타입으로 강제 변환)
 ```
 
-**예제**
-```javascript
-console.log($string.length('hello'));           // 5
-console.log($string.length('안녕하세요'));      // 5 (한글도 정확히 계산)
-console.log($string.length('hello 안녕'));     // 8
-console.log('hello 안녕'.length);              // 8 (네이티브 length와 동일)
-
-// 바이트 길이가 아닌 실제 문자 개수 반환
-var mixedText = 'Hello 안녕하세요 123';
-console.log($string.length(mixedText));         // 실제 문자 수
+### CSV류 문자열 파싱과 검증
+클립보드에서 붙여넣은 구분자 문자열을 JSON 배열/2차원 배열로 변환하고, 규칙(rules) 기반으로 검증합니다.
+```js
+const rows = $string.toJsv('System;Progress\nERP;80%', { delimiter: ';' });
+const validate = $string.validateJsv(rows, {
+    0: { name: 'System', required: true, enum: ['ERP', 'MES'] },
+    1: { name: 'Progress', required: true, pattern: '^\\d+%$' }
+}, { validateAll: true });
 ```
 
-### HTML 처리
-
-#### br(value)
-줄바꿈 문자를 `<br>` 태그로 변환합니다.
-
-**구문**
-```javascript
-$string.br(value)
+### 통화/자릿수 포맷팅
+숫자를 통화 형식 문자열로, 문자열을 원하는 자릿수로 패딩합니다.
+```js
+$string.toCurrency(1234567.891);      // "1,234,567.891"
+$string.pad('7', 5);                  // "00007"
 ```
 
-**예제**
-```javascript
-var multilineText = 'First line\nSecond line\nThird line';
-var htmlText = $string.br(multilineText);
-console.log(htmlText); // 'First line<br>Second line<br>Third line'
-
-// 텍스트 영역의 내용을 HTML에 표시
-var textareaContent = document.getElementById('comment').value;
-var htmlContent = $string.br(textareaContent);
-document.getElementById('preview').innerHTML = htmlContent;
-```
-
-#### sanitizeHTML(html)
-HTML 문자열을 안전하게 처리합니다 (XSS 방지).
-
-**구문**
-```javascript
-$string.sanitizeHTML(html)
-```
-
-**예제**
-```javascript
-var userInput = '<script>alert("XSS")</script><p>Safe content</p>';
-var safeHTML = $string.sanitizeHTML(userInput);
-console.log(safeHTML); // script 태그 제거된 안전한 HTML
-
-// 사용자 입력을 안전하게 처리
-function displayUserContent(content) {
-    var safeContent = $string.sanitizeHTML(content);
-    document.getElementById('userContent').innerHTML = safeContent;
-}
-```
-
-#### cleanHTML(html)
-HTML 태그를 모두 제거하여 순수한 텍스트만 반환합니다.
-
-**구문**
-```javascript
-$string.cleanHTML(html)
-```
-
-**예제**
-```javascript
-var htmlContent = '<div class="content"><p>Hello <b>World</b></p></div>';
-var plainText = $string.cleanHTML(htmlContent);
-console.log(plainText); // 'Hello World'
-
-// 미리보기 텍스트 생성
-function createPreviewText(htmlContent, maxLength = 100) {
-    var plainText = $string.cleanHTML(htmlContent);
-    return plainText.length > maxLength ? 
-           plainText.substring(0, maxLength) + '...' : 
-           plainText;
-}
-```
-
-#### toHtmlChar(value) / toCharHtml(value)
-HTML 특수 문자와 일반 문자 간 변환합니다.
-
-**구문**
-```javascript
-$string.toHtmlChar(value)  // 특수문자를 HTML 엔티티로
-$string.toCharHtml(value)  // HTML 엔티티를 특수문자로
-```
-
-**예제**
-```javascript
-// 특수문자를 HTML 엔티티로 변환
-var userInput = '<div>Hello & "World"</div>';
-var encoded = $string.toHtmlChar(userInput);
-console.log(encoded); // '&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;'
-
-// HTML 엔티티를 특수문자로 변환
-var htmlEntity = '&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;';
-var decoded = $string.toCharHtml(htmlEntity);
-console.log(decoded); // '<div>Hello & "World"</div>'
-
-// 안전한 HTML 표시
-function safeDisplay(userText) {
-    return $string.toHtmlChar(userText);
-}
-```
-
-### 템플릿 및 보간
-
-#### interpolate(template, data)
-템플릿 문자열에 데이터를 보간합니다.
-
-**구문**
-```javascript
-$string.interpolate(template, data)
-```
-
-**매개변수**
-- `template` (String): `#{property}` 형식의 템플릿 문자열
-- `data` (Object|Array): 보간할 데이터
-
-**반환값**
-- `String|Array`: 보간된 결과
-
-**예제**
-```javascript
-// 단일 객체 보간
-var user = {
-    name: '홍길동',
-    age: 30,
-    email: 'hong@example.com'
-};
-
-var template = '이름: #{name}, 나이: #{age}세, 이메일: #{email}';
-var result = $string.interpolate(template, user);
-console.log(result); // '이름: 홍길동, 나이: 30세, 이메일: hong@example.com'
-
-// HTML 템플릿 보간
-var htmlTemplate = `
-<div class="user-card">
-    <h3>#{name}</h3>
-    <p>나이: #{age}세</p>
-    <p>이메일: #{email}</p>
-</div>`;
-
-var userCard = $string.interpolate(htmlTemplate, user);
-
-// 배열 데이터로 여러 결과 생성
-var users = [
-    { name: '김철수', age: 25 },
-    { name: '이영희', age: 28 },
-    { name: '박민수', age: 32 }
-];
-
-var userTemplate = '<li>#{name} (#{age}세)</li>';
-var userList = $string.interpolate(userTemplate, users);
-console.log(userList); // ['<li>김철수 (25세)</li>', '<li>이영희 (28세)</li>', ...]
-
-// 이메일 템플릿 생성
-var emailTemplate = `
-안녕하세요 #{name}님,
-
-#{product} 주문이 완료되었습니다.
-주문번호: #{orderNumber}
-결제금액: #{amount}원
-
-감사합니다.
-`;
-
-var orderData = {
-    name: '홍길동',
-    product: 'iPhone 15',
-    orderNumber: 'ORD-123456',
-    amount: 1200000
-};
-
-var personalizedEmail = $string.interpolate(emailTemplate, orderData);
-```
-
-### 타입 변환
-
-#### isNumber(value)
-문자열이 유효한 숫자인지 확인합니다.
-
-**구문**
-```javascript
-$string.isNumber(value)
-```
-
-**예제**
-```javascript
-console.log($string.isNumber('123'));       // true
-console.log($string.isNumber('-456.789'));  // true
-console.log($string.isNumber('12,345'));    // true (쉼표 포함 숫자)
-console.log($string.isNumber('abc'));       // false
-console.log($string.isNumber(''));          // false
-
-// 사용자 입력 검증
-function validateNumberInput(input) {
-    if (!$string.isNumber(input)) {
-        alert('숫자를 입력해주세요.');
-        return false;
-    }
-    return true;
-}
-```
-
-#### toNumber(value)
-문자열을 숫자로 변환합니다.
-
-**구문**
-```javascript
-$string.toNumber(value)
-```
-
-**예제**
-```javascript
-console.log($string.toNumber('123'));        // 123
-console.log($string.toNumber('-456.789'));   // -456.789
-console.log($string.toNumber('12,345'));     // 12345 (쉼표 제거)
-console.log($string.toNumber('$1,234.56'));  // 1234.56 (통화 기호 제거)
-
-// 금액 계산
-function calculateTotal(priceStrings) {
-    return priceStrings
-        .map(price => $string.toNumber(price))
-        .reduce((total, price) => total + price, 0);
-}
-
-var prices = ['$1,200', '₩500,000', '¥300'];
-var total = calculateTotal(prices);
-```
-
-#### toNumberString(value)
-문자열에서 숫자만 추출합니다.
-
-**구문**
-```javascript
-$string.toNumberString(value)
-```
-
-**예제**
-```javascript
-console.log($string.toNumberString('abc123def'));     // '123'
-console.log($string.toNumberString('가격: 1,234원'));  // '1234'
-console.log($string.toNumberString('Tel: 010-1234-5678')); // '01012345678'
-
-// 전화번호에서 숫자만 추출
-function extractPhoneNumber(phoneInput) {
-    return $string.toNumberString(phoneInput);
-}
-
-var formattedPhone = '010-1234-5678';
-var cleanPhone = extractPhoneNumber(formattedPhone); // '01012345678'
-```
-
-#### toBoolean(value)
-문자열을 Boolean으로 변환합니다.
-
-**구문**
-```javascript
-$string.toBoolean(value)
-```
-
-**예제**
-```javascript
-// 다양한 true 값들
-console.log($string.toBoolean('true'));   // true
-console.log($string.toBoolean('True'));   // true
-console.log($string.toBoolean('TRUE'));   // true
-console.log($string.toBoolean('Y'));      // true
-console.log($string.toBoolean('1'));      // true
-
-// 다양한 false 값들
-console.log($string.toBoolean('false'));  // false
-console.log($string.toBoolean('False'));  // false
-console.log($string.toBoolean('N'));      // false
-console.log($string.toBoolean('0'));      // false
-console.log($string.toBoolean(''));       // false
-
-// 설정 값 처리
-function loadSettings(configString) {
-    var config = JSON.parse(configString);
-    return {
-        notifications: $string.toBoolean(config.notifications),
-        darkMode: $string.toBoolean(config.darkMode),
-        autoSave: $string.toBoolean(config.autoSave)
-    };
-}
-```
-
-#### toDynamic(value, emptyIsNull?)
-값을 적절한 타입으로 자동 변환합니다.
-
-**구문**
-```javascript
-$string.toDynamic(value, emptyIsNull?)
-```
-
-**매개변수**
-- `value` (String): 변환할 값
-- `emptyIsNull` (Boolean): 빈 문자열을 null로 처리할지 여부
-
-**예제**
-```javascript
-console.log($string.toDynamic('true'));          // true (Boolean)
-console.log($string.toDynamic('123'));           // 123 (Number)
-console.log($string.toDynamic('123.45'));        // 123.45 (Number)
-console.log($string.toDynamic('2023-12-25'));    // Date 객체
-console.log($string.toDynamic('hello'));         // 'hello' (String)
-console.log($string.toDynamic(''));              // '' (빈 문자열)
-console.log($string.toDynamic('', true));        // null
-
-// CSV 데이터 처리
-function parseCSVRow(csvRow) {
-    return csvRow.split(',').map(cell => $string.toDynamic(cell.trim()));
-}
-
-var csvData = 'John Doe,30,true,2023-01-15,50000.00';
-var parsedData = parseCSVRow(csvData);
-// ['John Doe', 30, true, Date, 50000.00]
-```
-
-#### toParseType(value, type)
-값을 특정 타입으로 변환합니다.
-
-**구문**
-```javascript
-$string.toParseType(value, type)
-```
-
-**매개변수**
-- `value` (String): 변환할 값
-- `type` (String): 목표 타입 ('string', 'number', 'boolean', 'date')
-
-**예제**
-```javascript
-console.log($string.toParseType('123', 'number'));     // 123
-console.log($string.toParseType('true', 'boolean'));   // true
-console.log($string.toParseType('2023-12-25', 'date'));// Date 객체
-console.log($string.toParseType(123, 'string'));       // '123'
-
-// API 응답 데이터 타입 변환
-function convertApiResponse(response, schema) {
-    var converted = {};
-    
-    Object.keys(schema).forEach(key => {
-        if (response[key] !== undefined) {
-            converted[key] = $string.toParseType(response[key], schema[key]);
-        }
-    });
-    
-    return converted;
-}
-
-var apiResponse = {
-    id: '123',
-    name: 'Product',
-    price: '99.99',
-    active: 'true',
-    createdAt: '2023-12-25T10:30:00Z'
-};
-
-var schema = {
-    id: 'number',
-    name: 'string',
-    price: 'number',
-    active: 'boolean',
-    createdAt: 'date'
-};
-
-var typedData = convertApiResponse(apiResponse, schema);
-```
-
-### 문자열 조작
-
-#### split(value, separator)
-향상된 문자열 분할 기능을 제공합니다.
-
-**구문**
-```javascript
-$string.split(value, separator)
-```
-
-**예제**
-```javascript
-// 기본 분할
-var result = $string.split('a,b,c,d', ',');
-console.log(result); // ['a', 'b', 'c', 'd']
-
-// 빈 문자열 처리
-var result2 = $string.split('a,,c,d', ',');
-console.log(result2); // ['a', '', 'c', 'd']
-
-// 다양한 구분자
-var csvLine = 'name;age;city;country';
-var fields = $string.split(csvLine, ';');
-console.log(fields); // ['name', 'age', 'city', 'country']
-```
-
-#### capitalize(value)
-문자열의 첫 글자를 대문자로 변환합니다.
-
-**구문**
-```javascript
-$string.capitalize(value)
-```
-
-**예제**
-```javascript
-console.log($string.capitalize('hello world'));      // 'Hello world'
-console.log($string.capitalize('HELLO WORLD'));      // 'Hello world'
-console.log($string.capitalize('hELLO wORLD'));      // 'Hello world'
-
-// 여러 단어의 첫 글자를 모두 대문자로
-function titleCase(text) {
-    return text.split(' ')
-               .map(word => $string.capitalize(word))
-               .join(' ');
-}
-
-console.log(titleCase('hello world javascript')); // 'Hello World Javascript'
-```
-
-### 데이터 변환
-
-#### toJson(csvText, options?)
-CSV 텍스트를 JSON 배열로 변환합니다.
-
-**구문**
-```javascript
-$string.toJson(csvText, options?)
-```
-
-**매개변수**
-- `csvText` (String): CSV 형식의 텍스트
-- `options` (Object, 선택사항): 변환 옵션
-  - `delimiter`: 구분자 (기본값: ',')
-  - `hasHeader`: 헤더 행 여부 (기본값: true)
-
-**예제**
-```javascript
-// 기본 CSV 변환
-var csvData = 'name,age,city\nJohn,30,New York\nJane,25,Los Angeles';
-var jsonArray = $string.toJson(csvData);
-console.log(jsonArray);
-// [
-//   { name: 'John', age: '30', city: 'New York' },
-//   { name: 'Jane', age: '25', city: 'Los Angeles' }
-// ]
-
-// 세미콜론 구분자 사용
-var csvData2 = 'name;age;city\nJohn;30;New York\nJane;25;Los Angeles';
-var jsonArray2 = $string.toJson(csvData2, { delimiter: ';' });
-
-// 헤더 없는 CSV
-var csvData3 = 'John,30,New York\nJane,25,Los Angeles';
-var jsonArray3 = $string.toJson(csvData3, { hasHeader: false });
-// [
-//   { col0: 'John', col1: '30', col2: 'New York' },
-//   { col0: 'Jane', col1: '25', col2: 'Los Angeles' }
-// ]
-
-// 파일 업로드 처리
-function handleCSVUpload(file) {
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var csvContent = e.target.result;
-        var jsonData = $string.toJson(csvContent);
-        
-        // JSON 데이터로 테이블 생성
-        createTable(jsonData);
-    };
-    reader.readAsText(file);
-}
-```
-
-#### toParameterObject(paramString)
-매개변수 문자열을 객체로 변환합니다.
-
-**구문**
-```javascript
-$string.toParameterObject(paramString)
-```
-
-**매개변수**
-- `paramString` (String): `@Name:Value;` 형식의 매개변수 문자열
-
-**예제**
-```javascript
-var paramString = '@Name:홍길동;@Age:30;@City:서울;@Active:true';
-var paramObject = $string.toParameterObject(paramString);
-console.log(paramObject);
-// {
-//   Name: '홍길동',
-//   Age: '30',
-//   City: '서울',
-//   Active: 'true'
-// }
-
-// URL 쿼리 스트링과 유사한 처리
-var queryString = '@filter:active;@page:2;@size:10;@sort:name';
-var queryParams = $string.toParameterObject(queryString);
-
-// API 호출 매개변수 생성
-function buildApiParams(paramString) {
-    var params = $string.toParameterObject(paramString);
-    var queryString = Object.keys(params)
-        .map(key => `${key}=${encodeURIComponent(params[key])}`)
-        .join('&');
-    
-    return queryString;
-}
-
-var apiParams = buildApiParams('@userId:123;@status:active;@date:2023-12-25');
-// 'userId=123&status=active&date=2023-12-25'
-```
-
-## 실전 활용 예제
-
-### 1. 템플릿 엔진 구현
-```javascript
-function TemplateEngine() {
-    var templates = {};
-    
-    // 템플릿 등록
-    function register(name, template) {
-        templates[name] = template;
-    }
-    
-    // 템플릿 렌더링
-    function render(templateName, data, options = {}) {
-        var template = templates[templateName];
-        if (!template) {
-            throw new Error(`템플릿을 찾을 수 없습니다: ${templateName}`);
-        }
-        
-        var result = $string.interpolate(template, data);
-        
-        // 옵션 처리
-        if (options.escapeHtml) {
-            result = Array.isArray(result) ? 
-                result.map(r => $string.toHtmlChar(r)) : 
-                $string.toHtmlChar(result);
-        }
-        
-        if (options.nl2br) {
-            result = Array.isArray(result) ? 
-                result.map(r => $string.br(r)) : 
-                $string.br(result);
-        }
-        
-        return result;
-    }
-    
-    // 조건부 템플릿
-    function renderWithCondition(templateName, data, condition) {
-        if (typeof condition === 'function') {
-            return condition(data) ? render(templateName, data) : '';
-        }
-        
-        return condition ? render(templateName, data) : '';
-    }
-    
-    // 루프 템플릿
-    function renderLoop(templateName, dataArray, options = {}) {
-        if (!Array.isArray(dataArray)) {
-            return '';
-        }
-        
-        var results = dataArray.map((item, index) => {
-            var extendedData = {
-                ...item,
-                _index: index,
-                _isFirst: index === 0,
-                _isLast: index === dataArray.length - 1,
-                _isEven: index % 2 === 0,
-                _isOdd: index % 2 === 1
-            };
-            
-            return render(templateName, extendedData);
-        });
-        
-        return options.join !== undefined ? results.join(options.join) : results;
-    }
-    
-    return {
-        register,
-        render,
-        renderWithCondition,
-        renderLoop
-    };
-}
-
-// 사용 예제
-var templateEngine = TemplateEngine();
-
-// 템플릿 등록
-templateEngine.register('userCard', `
-<div class="user-card">
-    <img src="#{avatar}" alt="#{name}">
-    <h3>#{name}</h3>
-    <p>#{email}</p>
-    <span class="badge">#{role}</span>
-</div>
-`);
-
-templateEngine.register('userListItem', `
-<li class="#{_isEven ? 'even' : 'odd'}">
-    #{_index + 1}. #{name} (#{email})
-</li>
-`);
-
-// 단일 사용자 카드
-var user = {
-    name: '홍길동',
-    email: 'hong@example.com',
-    avatar: '/images/avatar1.jpg',
-    role: 'Admin'
-};
-
-var userCard = templateEngine.render('userCard', user, { escapeHtml: true });
-
-// 사용자 목록
-var users = [
-    { name: '김철수', email: 'kim@example.com' },
-    { name: '이영희', email: 'lee@example.com' },
-    { name: '박민수', email: 'park@example.com' }
-];
-
-var userList = templateEngine.renderLoop('userListItem', users, { join: '\n' });
-console.log(`<ul>${userList}</ul>`);
-```
-
-### 2. 데이터 변환 유틸리티
-```javascript
-function DataConverter() {
-    // CSV를 다양한 형태로 변환
-    function convertCSV(csvText, outputFormat = 'json', options = {}) {
-        var jsonData = $string.toJson(csvText, options);
-        
-        switch (outputFormat) {
-            case 'json':
-                return jsonData;
-                
-            case 'xml':
-                return convertToXML(jsonData);
-                
-            case 'table':
-                return generateHTMLTable(jsonData);
-                
-            case 'typescript':
-                return generateTypeScript(jsonData);
-                
-            default:
-                return jsonData;
-        }
-    }
-    
-    function convertToXML(jsonData) {
-        var xml = '<?xml version="1.0" encoding="UTF-8"?>\n<root>\n';
-        
-        jsonData.forEach(item => {
-            xml += '  <item>\n';
-            Object.keys(item).forEach(key => {
-                var value = $string.toHtmlChar($string.toValue(item[key]));
-                xml += `    <${key}>${value}</${key}>\n`;
-            });
-            xml += '  </item>\n';
-        });
-        
-        xml += '</root>';
-        return xml;
-    }
-    
-    function generateHTMLTable(jsonData) {
-        if (jsonData.length === 0) return '<table></table>';
-        
-        var headers = Object.keys(jsonData[0]);
-        
-        var html = '<table class="table">\n';
-        html += '  <thead>\n    <tr>\n';
-        
-        headers.forEach(header => {
-            html += `      <th>${$string.toHtmlChar(header)}</th>\n`;
-        });
-        
-        html += '    </tr>\n  </thead>\n  <tbody>\n';
-        
-        jsonData.forEach(row => {
-            html += '    <tr>\n';
-            headers.forEach(header => {
-                var value = $string.toHtmlChar($string.toValue(row[header]));
-                html += `      <td>${value}</td>\n`;
-            });
-            html += '    </tr>\n';
-        });
-        
-        html += '  </tbody>\n</table>';
-        return html;
-    }
-    
-    function generateTypeScript(jsonData) {
-        if (jsonData.length === 0) return 'interface DataItem {}';
-        
-        var sample = jsonData[0];
-        var typescript = 'interface DataItem {\n';
-        
-        Object.keys(sample).forEach(key => {
-            var value = sample[key];
-            var type = 'string';
-            
-            if ($string.isNumber(value)) {
-                type = 'number';
-            } else if ($string.toBoolean(value) !== null) {
-                type = 'boolean';
-            } else if ($date.isISOString(value)) {
-                type = 'Date';
-            }
-            
-            typescript += `  ${key}: ${type};\n`;
-        });
-        
-        typescript += '}';
-        return typescript;
-    }
-    
-    // URL 매개변수 문자열 변환
-    function parseURLParams(url) {
-        var paramString = url.split('?')[1] || '';
-        var params = {};
-        
-        if (paramString) {
-            paramString.split('&').forEach(param => {
-                var [key, value] = param.split('=');
-                if (key) {
-                    params[decodeURIComponent(key)] = decodeURIComponent(value || '');
-                }
-            });
-        }
-        
-        return params;
-    }
-    
-    // 폼 데이터를 다양한 형태로 직렬화
-    function serializeFormData(formElement, format = 'json') {
-        var formData = new FormData(formElement);
-        var data = {};
-        
-        for (let [key, value] of formData.entries()) {
-            // 동적 타입 변환 적용
-            data[key] = $string.toDynamic(value);
-        }
-        
-        switch (format) {
-            case 'json':
-                return JSON.stringify(data, null, 2);
-                
-            case 'xml':
-                return convertToXML([data]);
-                
-            case 'query':
-                return Object.keys(data)
-                    .map(key => `${key}=${encodeURIComponent($string.toValue(data[key]))}`)
-                    .join('&');
-                    
-            case 'handstack':
-                return Object.keys(data)
-                    .map(key => `@${key}:${$string.toValue(data[key])}`)
-                    .join(';');
-                    
-            default:
-                return data;
-        }
-    }
-    
-    return {
-        convertCSV,
-        parseURLParams,
-        serializeFormData
-    };
-}
-
-// 사용 예제
-var converter = DataConverter();
-
-// CSV 데이터 변환
-var csvData = `name,age,email,active
-John Doe,30,john@example.com,true
-Jane Smith,25,jane@example.com,false
-Mike Johnson,35,mike@example.com,true`;
-
-var htmlTable = converter.convertCSV(csvData, 'table');
-var xmlData = converter.convertCSV(csvData, 'xml');
-var typescript = converter.convertCSV(csvData, 'typescript');
-
-console.log('HTML 테이블:', htmlTable);
-console.log('TypeScript 인터페이스:', typescript);
-
-// URL 매개변수 파싱
-var url = 'https://example.com/api?page=2&size=10&filter=active&sort=name';
-var params = converter.parseURLParams(url);
-console.log('URL 매개변수:', params);
-```
-
-### 3. 텍스트 분석 도구
-```javascript
-function TextAnalyzer() {
-    // 텍스트 통계 분석
-    function analyzeText(text) {
-        if ($string.isNullOrEmpty(text)) {
-            return null;
-        }
-        
-        var cleanText = $string.cleanHTML(text);
-        var words = cleanText.split(/\s+/).filter(word => word.length > 0);
-        var sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 0);
-        var paragraphs = cleanText.split(/\n\s*\n/).filter(p => p.trim().length > 0);
-        
-        // 단어 빈도 계산
-        var wordFrequency = {};
-        words.forEach(word => {
-            var cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
-            if (cleanWord) {
-                wordFrequency[cleanWord] = (wordFrequency[cleanWord] || 0) + 1;
-            }
-        });
-        
-        // 가장 자주 사용된 단어들
-        var sortedWords = Object.entries(wordFrequency)
-            .sort(([,a], [,b]) => b - a)
-            .slice(0, 10);
-        
-        return {
-            characterCount: $string.length(cleanText),
-            characterCountWithSpaces: $string.length(text),
-            wordCount: words.length,
-            sentenceCount: sentences.length,
-            paragraphCount: paragraphs.length,
-            averageWordsPerSentence: Math.round(words.length / sentences.length * 100) / 100,
-            averageSentencesPerParagraph: Math.round(sentences.length / paragraphs.length * 100) / 100,
-            mostFrequentWords: sortedWords,
-            readingTimeMinutes: Math.ceil(words.length / 200) // 평균 읽기 속도 200단어/분
-        };
-    }
-    
-    // 키워드 추출
-    function extractKeywords(text, maxKeywords = 10) {
-        var cleanText = $string.cleanHTML(text).toLowerCase();
-        
-        // 불용어 목록 (간단한 예시)
-        var stopWords = new Set([
-            '그리고', '그런데', '하지만', '그러나', '따라서', '그래서', '그러므로',
-            '또한', '또는', '그것', '이것', '저것', '여기서', '거기서', '이곳',
-            '저곳', '지금', '그때', '이때', '저때', '오늘', '어제', '내일',
-            'and', 'the', 'is', 'in', 'to', 'of', 'a', 'an', 'as', 'at',
-            'be', 'or', 'an', 'are', 'by', 'for', 'from', 'has', 'he', 'in'
-        ]);
-        
-        var words = cleanText.split(/\s+/)
-            .map(word => word.replace(/[^\w가-힣]/g, ''))
-            .filter(word => word.length > 1 && !stopWords.has(word));
-        
-        // 단어 빈도 계산
-        var frequency = {};
-        words.forEach(word => {
-            frequency[word] = (frequency[word] || 0) + 1;
-        });
-        
-        return Object.entries(frequency)
-            .sort(([,a], [,b]) => b - a)
-            .slice(0, maxKeywords)
-            .map(([word, count]) => ({ word, count }));
-    }
-    
-    // 텍스트 요약 (단순한 추출식 요약)
-    function summarizeText(text, maxSentences = 3) {
-        var sentences = $string.cleanHTML(text)
-            .split(/[.!?]+/)
-            .filter(s => s.trim().length > 10);
-        
-        if (sentences.length <= maxSentences) {
-            return sentences.join('. ') + '.';
-        }
-        
-        // 각 문장의 점수 계산 (단순히 길이와 위치 기반)
-        var scoredSentences = sentences.map((sentence, index) => {
-            var words = sentence.split(/\s+/).length;
-            var positionScore = 1 - (index / sentences.length); // 앞쪽 문장에 높은 점수
-            var lengthScore = words / 20; // 적절한 길이의 문장에 높은 점수
-            
-            return {
-                sentence: sentence.trim(),
-                score: positionScore * 0.3 + lengthScore * 0.7,
-                index: index
-            };
-        });
-        
-        // 상위 문장들을 원래 순서대로 정렬
-        var topSentences = scoredSentences
-            .sort((a, b) => b.score - a.score)
-            .slice(0, maxSentences)
-            .sort((a, b) => a.index - b.index);
-        
-        return topSentences.map(s => s.sentence).join('. ') + '.';
-    }
-    
-    // 감성 분석 (매우 단순한 버전)
-    function analyzeSentiment(text) {
-        var cleanText = $string.cleanHTML(text).toLowerCase();
-        
-        var positiveWords = [
-            '좋은', '훌륭한', '멋진', '최고', '행복', '즐거운', '기쁜', '만족',
-            'good', 'great', 'excellent', 'amazing', 'happy', 'joy', 'love', 'best'
-        ];
-        
-        var negativeWords = [
-            '나쁜', '최악', '슬픈', '화난', '실망', '끔찍한', '싫은', '미워',
-            'bad', 'worst', 'sad', 'angry', 'hate', 'terrible', 'awful', 'disappointed'
-        ];
-        
-        var positiveCount = 0;
-        var negativeCount = 0;
-        
-        positiveWords.forEach(word => {
-            var regex = new RegExp(word, 'g');
-            var matches = cleanText.match(regex);
-            if (matches) positiveCount += matches.length;
-        });
-        
-        negativeWords.forEach(word => {
-            var regex = new RegExp(word, 'g');
-            var matches = cleanText.match(regex);
-            if (matches) negativeCount += matches.length;
-        });
-        
-        var total = positiveCount + negativeCount;
-        if (total === 0) {
-            return { sentiment: 'neutral', confidence: 0 };
-        }
-        
-        var positiveRatio = positiveCount / total;
-        var sentiment;
-        
-        if (positiveRatio > 0.6) sentiment = 'positive';
-        else if (positiveRatio < 0.4) sentiment = 'negative';
-        else sentiment = 'neutral';
-        
-        return {
-            sentiment: sentiment,
-            confidence: Math.abs(positiveRatio - 0.5) * 2,
-            positiveWords: positiveCount,
-            negativeWords: negativeCount
-        };
-    }
-    
-    return {
-        analyzeText,
-        extractKeywords,
-        summarizeText,
-        analyzeSentiment
-    };
-}
-
-// 사용 예제
-var analyzer = TextAnalyzer();
-
-var sampleText = `
-인공지능과 기계학습은 현대 기술의 가장 흥미로운 분야 중 하나입니다.
-이러한 기술들은 우리의 일상생활을 변화시키고 있으며, 미래에는 더욱 
-중요한 역할을 할 것으로 예상됩니다. 하지만 동시에 여러 도전과제도 
-존재합니다. 우리는 이러한 기술을 현명하게 활용해야 합니다.
-`;
-
-var analysis = analyzer.analyzeText(sampleText);
-console.log('텍스트 분석 결과:', analysis);
-
-var keywords = analyzer.extractKeywords(sampleText);
-console.log('추출된 키워드:', keywords);
-
-var summary = analyzer.summarizeText(sampleText, 2);
-console.log('요약:', summary);
-
-var sentiment = analyzer.analyzeSentiment(sampleText);
-console.log('감성 분석:', sentiment);
-```
-
-## 주의사항
-
-1. **인코딩 처리**: 다양한 언어와 문자 인코딩을 처리할 때 주의가 필요합니다.
-2. **성능 고려**: 대용량 텍스트 처리 시에는 성능을 고려해야 합니다.
-3. **보안**: HTML 처리 시 XSS 공격을 방지하기 위한 적절한 처리가 필요합니다.
-4. **정규표현식**: 복잡한 패턴 매칭 시에는 정규표현식의 성능과 정확성을 고려해야 합니다.
-5. **다국어 지원**: 한글, 영어 외의 언어 처리 시에는 추가적인 고려사항이 있을 수 있습니다.
-
-
-## 데모
-
-<iframe src="/sample/syn/extension_string.html" className="w:100% h:100vh"></iframe>
-
-## Javascript 예제
-
-```javascript
-'use strict';
-let $extension_string = {
-    extends: [
-        'parsehtml'
-    ],
-
-    event: {
-        btn_toValue_click() {
-            syn.$l.get('txt_toValue').value = `${$string.toValue('hello world')}, ${$string.toValue(new Date())}, ${$string.toValue({})}, ${$string.toValue(true)}, ${$string.toValue(null, 'default')}`;
-        },
-
-        btn_br_click() {
-            syn.$l.get('txt_br').value = $string.br('hello\nworld');
-        },
-
-        btn_interpolate_click() {
-            var json = {
-                symbol: 'hello world',
-                price: 12345,
-                date: new Date(),
-                boolean: true
-            };
-
-            syn.$l.get('txt_interpolate').value = $string.interpolate(`<span>#{symbol}</span> <span>#{price}</span> <span>#{date}</span> <span>#{boolean}</span>`, json);
-        },
-
-        btn_interpolates_click() {
-            var json = [
-                {
-                    symbol: 'hello world1',
-                    price: 12345,
-                    date: new Date(),
-                    boolean: true
-                },
-                {
-                    symbol: 'hello world2',
-                    price: 12345,
-                    date: new Date(),
-                    boolean: true
-                },
-                {
-                    symbol: 'hello world3',
-                    price: 12345,
-                    date: new Date(),
-                    boolean: true
-                }
-            ];
-
-            syn.$l.get('txt_interpolate').value = $string.interpolate(`<span>#{symbol}</span> <span>#{price}</span> <span>#{date}</span> <span>#{boolean}</span>`, json);
-        },
-
-        btn_isNullOrEmpty_click() {
-            syn.$l.get('txt_isNullOrEmpty').value = `${$string.isNullOrEmpty('')}, ${$string.isNullOrEmpty(undefined)}, ${$string.isNullOrEmpty(null)}, ${$string.isNullOrEmpty({})}`;
-        },
-
-        btn_sanitizeHTML_click() {
-            syn.$l.get('txt_sanitizeHTML').value = $string.sanitizeHTML('<label class="form-label">$string.isNullOrEmpty()</label>');
-        },
-
-        btn_cleanHTML_click() {
-            syn.$l.get('txt_cleanHTML').value = $string.cleanHTML('<label class="form-label">$string.isNullOrEmpty()</label>');
-        },
-
-        btn_toHtmlChar_click() {
-            syn.$l.get('txt_toHtmlChar').value = $string.toHtmlChar('<label class="form-label">$string.isNullOrEmpty()</label>');
-        },
-
-        btn_toCharHtml_click() {
-            syn.$l.get('txt_toCharHtml').value = $string.toCharHtml('&lt;label class="form-label"&gt;$string.isNullOrEmpty()&lt;/label&gt;');
-        },
-
-        btn_length_click() {
-            syn.$l.get('txt_length').value = $string.length('안녕하세요 hello world');
-        },
-
-        btn_split_click() {
-            syn.$l.get('txt_split').value = JSON.stringify($string.split('1,2,3,4,5', ','));
-        },
-
-        btn_isNumber_click() {
-            syn.$l.get('txt_isNumber').value = $string.isNumber('-12,345.123');
-        },
-
-        btn_toNumber_click() {
-            syn.$l.get('txt_toNumber').value = $string.toNumber('-12,345.123');
-        },
-
-        btn_capitalize_click() {
-            syn.$l.get('txt_capitalize').value = $string.capitalize('aaa bbb ccc');
-        },
-
-        btn_toJson_click() {
-            var json = $string.toJson('col1;col2\na;b\nc;d', {
-                delimeter: ';'
-            });
-            syn.$l.get('txt_toJson').value = JSON.stringify(json);
-        },
-
-        btn_toParameterObject_click() {
-            var json = $string.toParameterObject('@Name1:Value1;@Name2:Value2;@Name3:Value3');
-            syn.$l.get('txt_toParameterObject').value = JSON.stringify(json);
-        },
-
-        btn_toBoolean_click() {
-            syn.$l.get('txt_toBoolean').value = `${$string.toBoolean('true')}, ${$string.toBoolean('True')}, ${$string.toBoolean('TRUE')}, ${$string.toBoolean('Y')}, ${$string.toBoolean('1')}, ${$string.toBoolean(true)}`;
-        },
-
-        btn_toDynamic_click() {
-            syn.$l.get('txt_toDynamic').value = `${$string.toDynamic('true')}, ${$string.toDynamic('')}, ${$string.toDynamic('', true)}, ${$string.toDynamic('12345')}, ${$string.toDynamic('2023-12-11T04:45:56.558Z')}`;
-        },
-
-        btn_toParseType_click() {
-            syn.$l.get('txt_toParseType').value = `${$string.toParseType('true', 'bool')}, ${$string.toParseType('')}, ${$string.toParseType('12345', 'number')}, ${$string.toParseType('2023-12-11T04:45:56.558Z', 'date')}`;
-        },
-
-        btn_toNumberString_click() {
-            syn.$l.get('txt_toNumberString').value = $string.toNumberString('f-1,234.12');
-        },
-    }
-};
-```
-소스) string Javascript 예제
+## 실전 예제 페이지
+`/sample/syn/extension_string.html` 예제에서 다음 항목을 실습할 수 있습니다.
+- `$string.toValue()` - null/undefined 안전 문자열 변환
+- `$string.br()` - 줄바꿈을 `<br />`로 변환
+- `$string.interpolate()` - 템플릿 치환(단일 객체/배열 지원)
+- `$string.isNullOrEmpty()` / `$string.isNullOrWhiteSpace()` - 공백/빈 값 확인
+- `$string.sanitizeHTML()` / `$string.cleanHTML()` - HTML 태그 제거
+- `$string.toHtmlChar()` / `$string.toCharHtml()` - HTML 문자 엔티티 상호 변환
+- `$string.length()` - 바이트 기준 길이 계산
+- `$string.split()` - 구분자 기준 배열 변환
+- `$string.isNumber()` / `$string.toNumber()` - 숫자 판별/변환
+- `$string.capitalize()` - 단어 첫 글자 대문자화
+- `$string.toJson()` / `$string.toJsv()` / `$string.validateJsv()` - CSV류 문자열 파싱과 검증
+- `$string.toParameterObject()` - `key:value` 문자열을 객체로 변환
+- `$string.toBoolean()` / `$string.toDynamic()` / `$string.toParseType()` - 타입 변환
+- `$string.toNumberString()` - 숫자 관련 문자만 추출
+- `$string.toStringCounts()` - 글자수/단어수/문장수 계산
+- `$string.toCurrency()` - 통화 형식 변환
+- `$string.pad()` - 자릿수 패딩
+
+## 주의 사항
+- `toJson()`/`toJsv()`의 옵션 속성명은 `delimiter`(구분자), `newline`(줄바꿈), `meta`(컬럼별 타입 지정)입니다. `delimeter`처럼 오탈자로 전달하면 옵션이 무시되고 기본 구분자(`,`)가 사용되므로 주의하세요.
+- `toStringCounts()`는 `Intl.Segmenter`를 사용할 수 있는 최신 브라우저에서 정확한 글자/단어/문장 수를 계산하며, 지원하지 않는 환경에서는 정규식 기반의 근사치를 반환합니다.
+- `length()`는 문자열의 `.length`가 아니라 숫자/영어 1바이트, 그 외 문자 다바이트로 계산한 바이트 길이를 반환하므로 화면 폭 계산 등에 사용할 수 있습니다.
+- 예제 페이지의 "속성" 카드에 있는 `$string.version` 값은 다른 syn.js 샘플 페이지와 동일하게 `syn.$m.version`(라이브러리 공용 버전 표시 관례)을 그대로 사용합니다.
+- 문자열 조합/포맷팅에는 `$string.interpolate()`나 템플릿 리터럴을 사용하세요.
+
+## 관련 모듈
+- API 상세는 아래 API 참조 섹션을 확인하세요.
+
+## API 참조
+
+## 모듈 정보
+| 항목 | 내용 |
+|---|---|
+| 전역 별칭 | `$string` (전역, `syn.$string` 별칭 없음) |
+| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 3286~3873번째 줄) |
+| 예제 페이지 | `/sample/syn/extension_string.html` |
+| 의존 모듈 | `$object`(`isNullOrUndefined`), `$date`(`toString`, `isDate`) |
+
+## 메서드
+
+### `$string.toValue(value, defaultValue = '')`
+- 설명: 값이 `undefined`/`null`이 아니면 문자열로 변환하고, 그렇지 않으면 `defaultValue`를 문자열로 변환해 반환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | value | any | Y | 변환할 값 |
+  | defaultValue | any | N | value가 없을 때 사용할 기본값(기본값 `''`) |
+- 반환값: `string`
+- 예시
+  ```js
+  const result = $string.toValue(null, '기본값');
+  ```
+
+### `$string.br(val)`
+- 설명: 문자열의 줄바꿈 문자(`\r\n`, `\r`, `\n`)를 `<br />` 태그로 치환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | any | Y | 변환할 값(내부에서 문자열로 변환) |
+- 반환값: `string`
+- 예시
+  ```js
+  const result = $string.br('hello\nworld');
+  ```
+
+### `$string.interpolate(text, json, options = {})`
+- 설명: `#{key}` 형태의 플레이스홀더가 포함된 템플릿 문자열을 JSON 객체(또는 객체 배열)의 값으로 치환합니다. 배열이면 각 항목별로 치환한 결과를 `separator`로 연결합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | text | string | Y | `#{key}` 플레이스홀더가 포함된 템플릿 문자열 |
+  | json | Object \| Array\<Object\> | Y | 치환에 사용할 값 |
+  | options.defaultValue | any | N | 값이 없을 때 사용할 기본값(기본값 `null`이면 플레이스홀더 유지) |
+  | options.separator | string | N | 배열 치환 시 결과 연결 구분자(기본값 `\n`) |
+- 반환값: `string`
+- 예시
+  ```js
+  const result = $string.interpolate('<span>#{name}</span>', { name: 'HandStack' });
+  ```
+
+### `$string.isNullOrEmpty(val)`
+- 설명: 값이 `undefined`, `null`이거나 빈 문자열(`''`)인지 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | any | Y | 확인할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $string.isNullOrEmpty('');
+  ```
+
+### `$string.isNullOrWhiteSpace(val)`
+- 설명: 값이 `undefined`, `null`이거나 공백 문자만으로 이루어져 있는지(`trim()` 결과가 빈 문자열인지) 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | any | Y | 확인할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $string.isNullOrWhiteSpace('   ');
+  ```
+
+### `$string.sanitizeHTML(val, removeSpecialChars = false)`
+- 설명: 문자열에서 HTML 태그와 `&nbsp;`를 제거하고 앞뒤 공백을 트리밍합니다. `removeSpecialChars`가 true면 일부 특수문자도 함께 제거합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | string | Y | 대상 문자열(문자열이 아니면 빈 문자열 반환) |
+  | removeSpecialChars | boolean | N | 특수문자 제거 여부(기본값 false) |
+- 반환값: `string`
+- 예시
+  ```js
+  const result = $string.sanitizeHTML('<b>hello</b>');
+  ```
+
+### `$string.cleanHTML(val)`
+- 설명: 브라우저 환경에서 문자열의 HTML을 DOM으로 파싱해 텍스트만 추출하고, 연속 공백을 하나로 축약합니다(Node 환경에서는 원본을 그대로 반환).
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | string | Y | 대상 문자열 |
+- 반환값: `string`
+- 예시
+  ```js
+  const result = $string.cleanHTML('<b>hello</b>   world');
+  ```
+
+### `$string.toHtmlChar(val, charStrings)`
+- 설명: 문자열에 포함된 지정 특수문자를 HTML 문자 엔티티(`&#nn;` 등)로 치환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | string | Y | 대상 문자열(문자열이 아니면 빈 문자열 반환) |
+  | charStrings | string | N | 치환 대상 문자 목록(기본값은 소스 참고) |
+- 반환값: `string`
+- 예시
+  ```js
+  const result = $string.toHtmlChar('<b>hello</b>');
+  ```
+
+### `$string.toCharHtml(val, escapedChars = '&(amp|#39|lt|gt|...);')`
+- 설명: `toHtmlChar()`로 치환된 HTML 엔티티 문자열을 원래 특수문자로 되돌립니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | string | Y | 대상 문자열(문자열이 아니면 빈 문자열 반환) |
+  | escapedChars | string | N | 엔티티 매칭 정규식 패턴(기본값은 소스 참고) |
+- 반환값: `string`
+- 예시
+  ```js
+  const result = $string.toCharHtml('&lt;b&gt;hello&lt;/b&gt;');
+  ```
+
+### `$string.length(val)`
+- 설명: 문자열 길이를 UTF-8 바이트 기준으로 계산합니다(ASCII 1바이트, 한글 등은 다바이트).
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | string | Y | 대상 문자열(문자열이 아니면 0 반환) |
+- 반환값: `number`
+- 예시
+  ```js
+  const result = $string.length('안녕 hello');
+  ```
+
+### `$string.split(val, char = ',')`
+- 설명: 문자열을 구분자로 분리하고, 트리밍 후 빈 문자열 항목을 제거한 배열을 반환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | string | Y | 대상 문자열(문자열이 아니면 빈 배열 반환) |
+  | char | string | N | 구분자(기본값 `,`) |
+- 반환값: `Array<string>`
+- 예시
+  ```js
+  const result = $string.split('1,2,3');
+  ```
+
+### `$string.isNumber(num)`
+- 설명: 값이 숫자(천단위 구분 기호, 소수점, 음수 부호 포함)로 변환 가능한 형식인지 확인합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | num | any | Y | 확인할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $string.isNumber('-12,345.123');
+  ```
+
+### `$string.toNumber(val)`
+- 설명: 문자열(천단위 구분 기호 포함 가능)을 숫자로 변환합니다. 변환에 실패하면 경고 로그를 남기고 0을 반환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | any | Y | 변환할 값 |
+- 반환값: `number`
+- 예시
+  ```js
+  const result = $string.toNumber('-12,345.123');
+  ```
+
+### `$string.capitalize(val)`
+- 설명: 문자열 내 각 단어의 첫 글자(영문 소문자)를 대문자로 변환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | string | Y | 대상 문자열(문자열이 아니면 빈 문자열 반환) |
+- 반환값: `string`
+- 예시
+  ```js
+  const result = $string.capitalize('aaa bbb ccc');
+  ```
+
+### `$string.toJson(val, options = {})`
+- 설명: 구분자와 줄바꿈으로 구성된 문자열(CSV류)을 첫 줄을 헤더로 사용하는 JSON 객체 배열로 변환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | string | Y | 대상 문자열(문자열이 아니면 빈 배열 반환) |
+  | options.delimiter | string | N | 열 구분자(기본값 `,`) |
+  | options.newline | string | N | 줄 구분자(기본값 `\n`) |
+  | options.meta | Object | N | 컬럼명별 타입 지정(`toParseType`에 사용) |
+- 반환값: `Array<Object>`
+- 예시
+  ```js
+  const result = $string.toJson('col1;col2\na;b', { delimiter: ';' });
+  ```
+
+### `$string.toJsv(val, options = {})`
+- 설명: 구분자와 줄바꿈으로 구성된 문자열을 헤더 없이 행 단위 값 배열(2차원 배열)로 변환합니다. `toJson()`과 달리 첫 줄도 데이터 행으로 포함됩니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | string | Y | 대상 문자열(문자열이 아니면 빈 배열 반환) |
+  | options.delimiter | string | N | 열 구분자(기본값 `,`) |
+  | options.newline | string | N | 줄 구분자(기본값 `\n`) |
+  | options.meta | Object | N | 컬럼 인덱스별 타입 지정(`toParseType`에 사용) |
+- 반환값: `Array<Array<any>>`
+- 예시
+  ```js
+  const result = $string.toJsv('ERP;80%\nMES;120%', { delimiter: ';' });
+  ```
+
+### `$string.validateJsv(data, rules, options = {})`
+- 설명: `toJsv()` 등으로 만들어진 2차원 배열 데이터를 컬럼 인덱스 기준 규칙(rules)으로 검증합니다. 필수값, 최소/최대 길이, 최소/최대값, 정규식 패턴, enum, 커스텀 validator 함수를 지원합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | data | `Array<Array<any>>` | Y | 검증할 2차원 배열 데이터 |
+  | rules | Object \| Array | Y | 컬럼 인덱스를 키로 하는 규칙 객체(또는 배열) |
+  | options.throwError | boolean | N | 검증 실패 시 예외를 던질지 여부(기본값 false) |
+  | options.returnDetails | boolean | N | 상세 결과 객체 반환 여부(기본값 true) |
+  | options.validateAll | boolean | N | 모든 행을 검증할지, 첫 행만 검증할지(기본값 false → 첫 행만) |
+- 반환값: `Object` — `{ result, errorCount, errors, validatedRows, validatedColumns }` (또는 `returnDetails: false`이면 `{ result }`)
+- 예시
+  ```js
+  const rows = $string.toJsv('ERP;80%', { delimiter: ';' });
+  const result = $string.validateJsv(rows, {
+      0: { name: 'System', required: true, enum: ['ERP', 'MES'] },
+      1: { name: 'Progress', required: true, pattern: '^\\d+%$' }
+  }, { validateAll: true });
+  ```
+
+### `$string.toParameterObject(parameters)`
+- 설명: `@Name1:Value1;@Name2:Value2` 형태의 문자열을 `{ Name1: 'Value1', Name2: 'Value2' }` 형태의 객체로 변환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | parameters | string | Y | `@이름:값;` 형식의 문자열 |
+- 반환값: `Object`
+- 예시
+  ```js
+  const result = $string.toParameterObject('@Name1:Value1;@Name2:Value2');
+  ```
+
+### `$string.toBoolean(val)`
+- 설명: 문자열(또는 값)이 `true`, `y`, `1`, `ok`, `yes`, `on`(대소문자 무관) 중 하나인지 확인해 boolean으로 변환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | any | Y | 변환할 값 |
+- 반환값: `boolean`
+- 예시
+  ```js
+  const result = $string.toBoolean('Y');
+  ```
+
+### `$string.toDynamic(val, emptyIsNull = false)`
+- 설명: 문자열 값을 boolean/number/Date/string 중 알맞은 타입으로 자동 추론하여 변환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | any | Y | 변환할 값 |
+  | emptyIsNull | boolean | N | 빈 문자열을 `null`로 취급할지 여부(기본값 false → 빈 문자열 반환) |
+- 반환값: `boolean \| number \| Date \| string \| null`
+- 예시
+  ```js
+  const result = $string.toDynamic('2023-12-11T04:45:56.558Z');
+  ```
+
+### `$string.toParseType(val, metaType = 'string', emptyIsNull = false)`
+- 설명: 문자열 값을 지정한 타입(`string`/`bool`/`boolean`/`number`/`numeric`/`int`/`date`/`datetime`)에 맞게 강제 변환합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | any | Y | 변환할 값 |
+  | metaType | string | N | 변환할 타입(기본값 `string`) |
+  | emptyIsNull | boolean | N | 빈 문자열을 `null`로 취급할지 여부(기본값 false) |
+- 반환값: `string \| boolean \| number \| Date \| null`
+- 예시
+  ```js
+  const result = $string.toParseType('100', 'number');
+  ```
+
+### `$string.toNumberString(val)`
+- 설명: 문자열에서 숫자, 소수점(`.`), 마이너스 부호(`-`) 이외의 문자를 제거합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | string | Y | 대상 문자열(문자열이 아니면 빈 문자열 반환) |
+- 반환값: `string`
+- 예시
+  ```js
+  const result = $string.toNumberString('f-1,234.12');
+  ```
+
+### `$string.toStringCounts(text, locale)`
+- 설명: 문자열의 글자수, 단어수, 문장수를 계산합니다. `Intl.Segmenter`를 지원하는 환경에서는 grapheme/word/sentence 단위로 정확히 계산하고, 지원하지 않으면 정규식 기반 근사치를 계산합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | text | string | Y | 대상 문자열 |
+  | locale | string | N | `Intl.Segmenter`에 사용할 로케일(기본값 `syn.$b?.language` 또는 `ko-KR`) |
+- 반환값: `{ characters: number, words: number, sentences: number }`
+- 예시
+  ```js
+  const result = $string.toStringCounts('안녕하세요. hello world!');
+  ```
+
+### `$string.toCurrency(val, localeID, options = {})`
+- 설명: 값을 숫자로 변환한 뒤 천단위 구분 기호가 포함된 통화 형식의 문자열로 변환합니다. `localeID`가 지정되고 `Intl.NumberFormat`을 사용할 수 있으면 해당 로케일 형식을 우선 사용합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | any | Y | 변환할 값 |
+  | localeID | string | N | `Intl.NumberFormat`에 사용할 로케일(생략 시 수동 포맷 사용) |
+  | options | Object | N | `Intl.NumberFormat` 옵션(기본값 `{ style: 'decimal', currency: 'KRW' }`과 병합) |
+- 반환값: `string \| null` — 변환에 실패하면 `null`
+- 예시
+  ```js
+  const result = $string.toCurrency(1234567.891, 'ko-KR');
+  ```
+
+### `$string.pad(val, length, fix = '0', isLeft = true)`
+- 설명: 문자열을 지정한 길이가 될 때까지 지정한 문자로 좌측 또는 우측을 채웁니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | val | any | Y | 대상 값(내부에서 문자열로 변환) |
+  | length | number | Y | 목표 길이 |
+  | fix | string | N | 채울 문자(기본값 `0`) |
+  | isLeft | boolean | N | true면 좌측 패딩, false면 우측 패딩(기본값 true) |
+- 반환값: `string`
+- 예시
+  ```js
+  const result = $string.pad('7', 5); // "00007"
+  ```
