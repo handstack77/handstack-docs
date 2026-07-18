@@ -53,12 +53,16 @@ syn.uicontrols.$textbox.clear('txtName');
 | `syn.uicontrols.$textbox` | [TextBox](text-box) | `/uicontrols/TextBox/example/` |
 | `syn.uicontrols.$button` | [TextButton](text-button) | `/uicontrols/TextButton/example/` |
 | `syn.uicontrols.$tree` | [TreeView](tree-view) | `/uicontrols/TreeView/example/` |
-| `syn.uicontrols.$grid` | [WebGrid](web-grid) | `/uicontrols/WebGrid/example/` |
+| `syn.uicontrols.$grid` | [WebGrid](web-grid) | `/uicontrols/WebGrid/example/`(Handsontable 기반) |
+| `syn.uicontrols.$auigrid` | [AUIGrid](aui-grid) | `/uicontrols/AUIGrid/example/`(상용, 실무 표준 그리드) |
+| `syn.uicontrols.$auipivot` | [AUIPivot](aui-pivot) | `/uicontrols/AUIPivot/example/`(피벗 테이블 전용) |
+| `syn.uicontrols.$jqgrid` | [JQGrid](jq-grid) | `/uicontrols/JQGrid/example/`(레거시 유지보수용) |
+| `syn.uicontrols.$opengrid` | [OpenGrid](open-grid) | `/uicontrols/OpenGrid/example/`(오픈소스, 상용 라이선스 불필요) |
 
 ## 실무 사용 기준
 
 - 폼 입력은 [TextBox](text-box), [TextArea](text-area), [CheckBox](check-box), [RadioButton](radio-button)을 우선 사용합니다.
 - 코드/목록 선택은 [DropDownList](drop-down-list), [DropDownCheckList](drop-down-check-list), [CodePicker](code-picker)를 사용합니다.
 - 날짜 범위와 단일 날짜는 [DatePicker](date-picker), [DatePeriodPicker](date-period-picker), [Calendar](calendar)를 구분해서 사용합니다.
-- 표/트리/조직도/차트 같은 복합 표시는 [GridList](grid-list), [WebGrid](web-grid), [TreeView](tree-view), [OrganizationView](organization-view), [Chart](chart) 문서를 확인합니다.
+- 표/트리/조직도/차트 같은 복합 표시는 [GridList](grid-list), [TreeView](tree-view), [OrganizationView](organization-view), [Chart](chart) 문서를 확인합니다. 그리드는 신규 화면이면 [AUIGrid](aui-grid)(상용, 실무 표준)나 [OpenGrid](open-grid)(오픈소스, 라이선스 불필요)를, 피벗 리포트는 [AUIPivot](aui-pivot)을, 레거시 화면 유지보수는 [JQGrid](jq-grid)를 사용합니다.
 - 공통 값 처리, 리소스 바인딩, 거래 연동은 각 컨트롤의 `getValue`, `setValue`, `clear`, `setLocale`, `addModuleList` API와 `syn.$w` 화면 개발 흐름을 함께 사용합니다.
