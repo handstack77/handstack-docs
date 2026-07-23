@@ -1,0 +1,136 @@
+---
+sidebar_position: 3
+---
+
+# syn.$bind 양방향 바인딩
+
+`syn.$bind`는 Proxy 모델과 표준 HTML 요소 또는 HandStack UI 컨트롤을 가볍게 연결하는 바인딩 API입니다. 기존 `syn-datafield`/`bindingID` 기반 거래 바인딩과 별개이며, 두 방식을 같은 화면에서 함께 사용할 수 있습니다.
+
+## 기본 패턴
+
+표준 입력 요소는 `syn-bind`만으로 연결할 수 있습니다.
+
+```html
+<div id="bindingRoot">
+  <input type="text" syn-bind="value:user.name">
+  <span syn-bind="text:user.name"></span>
+</div>
+```
+
+```js
+var mounted = syn.$bind.mount(
+  document.getElementById('bindingRoot'),
+  {user: {name: '홍길동'}}
+);
+
+mounted.store.data.user.name = '이영희';
+```
+
+HandStack UI 컨트롤은 컨트롤별 `getValue`/`setValue`와 변경 이벤트를 어댑터로 연결합니다.
+
+```js
+syn.$bind.registerAdapter('textbox', {
+  get: function () {
+    return syn.uicontrols.$textbox.getValue('txtName');
+  },
+  set: function (el, value) {
+    syn.uicontrols.$textbox.setValue('txtName', value);
+  },
+  on: function (el, handler) {
+    el.bindingHandler = handler;
+  },
+  off: function (el) {
+    el.bindingHandler = null;
+  }
+});
+```
+
+```html
+<div syn-bind="adapter(textbox):value"></div>
+```
+
+컨트롤 변경 이벤트에서 어댑터의 `handler()`를 호출하면 컨트롤 값이 Proxy 모델로 올라가고, `mounted.store.data.value`를 바꾸면 어댑터의 `set`이 호출되어 컨트롤에 반영됩니다. 각 예제는 이 등록·마운트·이벤트 연결을 공통 자산인 `/uicontrols/binding-example.js`로 묶고, 컨트롤별 `binding.js`에는 실제 값 API, 이벤트, 업무 검증과 저장 payload 변환을 남겼습니다.
+
+컨트롤에서 올라온 값을 다시 같은 컨트롤에 즉시 `setValue`하면 그리드의 편집 상태나 커서가 초기화될 수 있습니다. 공통 예제는 컨트롤에서 시작된 한 번의 모델 변경을 해당 어댑터에 되돌려 쓰지 않습니다. 다른 모델 구독자와 JSON 미리보기에는 변경이 전파되므로 양방향 바인딩은 유지하면서 컨트롤 내부 상태도 보존합니다.
+
+## 컨트롤별 실행 예제
+
+모든 컨트롤의 `example/binding.html`에서 같은 두 방향을 확인할 수 있습니다.
+
+| 컨트롤 | 바인딩 값 | 예제 |
+|---|---|---|
+| AUIGrid | 행 배열 | [열기](pathname:///uicontrols/AUIGrid/example/binding.html) |
+| AUIPivot | 원본 행 배열 | [열기](pathname:///uicontrols/AUIPivot/example/binding.html) |
+| Calendar | 일정 배열 | [열기](pathname:///uicontrols/Calendar/example/binding.html) |
+| Chart | Highcharts 시리즈 배열 | [열기](pathname:///uicontrols/Chart/example/binding.html) |
+| CheckBox | 체크 업무값 `Y/N` | [열기](pathname:///uicontrols/CheckBox/example/binding.html) |
+| CodePicker | 코드값 | [열기](pathname:///uicontrols/CodePicker/example/binding.html) |
+| ColorPicker | 색상 문자열 | [열기](pathname:///uicontrols/ColorPicker/example/binding.html) |
+| ContextMenu | 마지막 선택 명령 | [열기](pathname:///uicontrols/ContextMenu/example/binding.html) |
+| DataSource | Form 객체 | [열기](pathname:///uicontrols/DataSource/example/binding.html) |
+| DatePeriodPicker | `시작일,종료일` | [열기](pathname:///uicontrols/DatePeriodPicker/example/binding.html) |
+| DatePicker | 날짜 문자열 | [열기](pathname:///uicontrols/DatePicker/example/binding.html) |
+| DropDownCheckList | 쉼표 구분 다중 선택값 | [열기](pathname:///uicontrols/DropDownCheckList/example/binding.html) |
+| DropDownList | 선택값 | [열기](pathname:///uicontrols/DropDownList/example/binding.html) |
+| Element | 편집 가능한 텍스트 | [열기](pathname:///uicontrols/Element/example/binding.html) |
+| FileClient | ItemID | [열기](pathname:///uicontrols/FileClient/example/binding.html) |
+| GridList | 행 배열 | [열기](pathname:///uicontrols/GridList/example/binding.html) |
+| Guide | 완료/종료 상태 | [열기](pathname:///uicontrols/Guide/example/binding.html) |
+| HtmlEditor | HTML 문자열 | [열기](pathname:///uicontrols/HtmlEditor/example/binding.html) |
+| JQGrid | 행 배열 | [열기](pathname:///uicontrols/JQGrid/example/binding.html) |
+| OpenGrid | 행 배열 | [열기](pathname:///uicontrols/OpenGrid/example/binding.html) |
+| OrganizationView | 선택 노드 ID | [열기](pathname:///uicontrols/OrganizationView/example/binding.html) |
+| PropertyGrid | 속성 객체 | [열기](pathname:///uicontrols/PropertyGrid/example/binding.html) |
+| RadioButton | 그룹 선택값 | [열기](pathname:///uicontrols/RadioButton/example/binding.html) |
+| SourceEditor | 소스 문자열 | [열기](pathname:///uicontrols/SourceEditor/example/binding.html) |
+| TextArea | 여러 줄 문자열 | [열기](pathname:///uicontrols/TextArea/example/binding.html) |
+| TextBox | 문자열 | [열기](pathname:///uicontrols/TextBox/example/binding.html) |
+| TextButton | 버튼 표시값 | [열기](pathname:///uicontrols/TextButton/example/binding.html) |
+| TreeView | 활성 노드 key | [열기](pathname:///uicontrols/TreeView/example/binding.html) |
+| WebGrid | 행 배열 | [열기](pathname:///uicontrols/WebGrid/example/binding.html) |
+
+값 API가 없는 ContextMenu나 선택 상태가 더 자연스러운 TreeView·OrganizationView는 어댑터가 바인딩할 상태를 예제 안에서 명시적으로 정의합니다.
+
+AUIPivot과 JQGrid는 필요한 벤더 엔진이 저장소에 포함되어 있지 않습니다. 두 예제는 기본 상태에서 Proxy 모델의 등록·마운트·변경 흐름을 오류 없이 보여주며, 실제 컨트롤까지 연결하려면 라이선스에 맞는 벤더 자산을 먼저 로드해야 합니다.
+
+## 실무형 예제 확인 순서
+
+1. 컨트롤을 직접 편집하거나 컨트롤 API 변경 버튼을 누릅니다.
+2. 상태 문구가 `컨트롤 → 모델`로 바뀌고 아래 JSON 모델이 갱신되는지 확인합니다.
+3. `Proxy 모델 ... 변경` 버튼을 누릅니다.
+4. 상태 문구가 `모델 → 컨트롤`로 바뀌고 컨트롤 표시가 갱신되는지 확인합니다.
+5. `업무 규칙 검증`으로 필수값, 허용값, 기간, 중복 등 컨트롤별 규칙을 확인합니다.
+6. `저장 payload 만들기`로 화면값이 `Row` 또는 `List` 거래 입력으로 변환되는지 확인합니다.
+7. `조회 원본으로 초기화`로 최초 조회값과 컨트롤 상태가 함께 복구되는지 확인합니다.
+
+예제의 payload는 브라우저에서 서버를 호출하지 않는 구조 예시입니다. 실제 화면에서는 검증이 끝난 뒤 `syn.$w.transactionAction(...)`이 같은 입력을 계약에 맞춰 전송하도록 연결합니다.
+
+## AUIGrid 조회·편집·저장 수명주기
+
+[AUIGrid 예제](pathname:///uicontrols/AUIGrid/example/binding.html)는 `checkup/view/HDM/HDM010.js`, `checkup/view/CHP/CHP010.js`와 기존 `AUIGrid/example/auigridevents.js`의 업무 패턴을 한 화면에서 재현합니다.
+
+1. 조회 결과를 `setValue`로 바인딩합니다. 조회 행은 저장 대상이 아닌 기준선으로 시작합니다.
+2. 바인딩 직후 `countRows`로 결과를 확인하고 첫 셀을 `selectCell`로 선택한 다음 `setFitColumnSize`로 컬럼 폭을 정리합니다.
+3. 행 추가는 필드 기본값과 `focusColumnID`를 지정해 `insertRow`를 호출합니다. 셀 수정 시에는 업무 필드와 수정자 필드를 함께 바꿉니다.
+4. `getGridData`가 반환하는 전체 행에는 `Flag`가 포함됩니다. 신규·수정·삭제 행은 각각 `C`, `U`, `D`이며 삭제 행도 저장 전까지 모델에서 버리지 않습니다.
+5. 저장 전에 `checkEditValue`, `checkEmptyValueCol`, `checkUniqueValueCol`과 허용값 검증을 수행합니다.
+6. 검증을 통과하면 `C/U/D` 행만 `MD01`의 `List` 입력으로 구성합니다. 저장 성공 후에는 보통 서버를 재조회해 기준선과 변경 추적 상태를 초기화합니다.
+
+특히 컨트롤 → 모델 반영 시 그리드에 즉시 `setValue`를 되돌려 호출하지 않는 점이 중요합니다. 되돌려 쓰면 AUIGrid가 유지하던 추가·수정·삭제 추적 정보가 조회 상태로 재기반될 수 있습니다.
+
+## AUIPivot·WebGrid·OpenGrid·JQGrid 적용 차이
+
+네 예제도 `조회 기준선 → 바인딩 직후 화면 정리 → 추가·수정·삭제 → 업무 검증 → 변경분 payload` 순서를 따릅니다. 다만 변경 추적과 바인딩 이후 API는 엔진마다 다르므로 같은 코드를 기계적으로 재사용하지 않습니다.
+
+| 컨트롤 | 바인딩 직후 처리 | 변경 상태와 저장 대상 |
+|---|---|---|
+| AUIPivot | 행·열 필드를 펼치고 행 필드와 값 컬럼 폭을 정리하며 원본 상세를 조회합니다. 이미 구성한 피벗 필드를 유지하려고 `setValue` 대신 `setGridData`로 원본 행만 교체합니다. | 피벗 엔진은 편집용 그리드가 아니므로 Proxy 모델이 `C/U/D`를 관리합니다. `D` 행은 피벗 집계에서 제외하되 저장 payload까지 보존합니다. |
+| WebGrid | 첫 업무 셀을 선택하고 코드·명칭 컬럼 폭을 업무 화면 기준으로 지정합니다. | 엔진이 `Flag`의 `C/U/D`와 삭제 행을 관리합니다. 전체 상태는 그리드 데이터에서 읽고, 저장 변경분은 `getUpdateData`와 메타 컬럼을 사용해 구성합니다. |
+| OpenGrid | 첫 셀을 선택하고 `setColumnWidths`로 업무 컬럼 폭을 지정합니다. OpenGrid는 내용 기준 자동 맞춤을 지원하지 않으므로 경고가 발생하는 `setFitColumnSize`를 반복 호출하지 않습니다. | 엔진의 `getGridData`에는 삭제 행까지 남고, `getUpdateItems`가 `C/U/D` 변경분을 제공합니다. 일부 엔진 버전에서 전체 행과 변경 스냅샷의 객체 참조가 달라 같은 변경 행이 중복 합쳐질 수 있어, 예제는 변경 스냅샷 건수를 기준으로 모델을 정규화합니다. |
+| JQGrid | 비동기 컨트롤 생성이 끝난 뒤 첫 행에 포커스를 두고 컬럼 폭을 자동 조정합니다. | 엔진의 행 상태 `I/U/D`를 읽고 거래 입력에서는 `I`를 공통 생성 상태 `C`로 변환합니다. 벤더 자산이 없을 때도 같은 상태 수명주기를 확인할 수 있도록 Proxy 모델 대체 경로를 제공합니다. |
+
+각 예제의 `행 추가`, `선택 행 수정`, `선택 행 삭제` 버튼은 실제 컨트롤 API를 호출합니다. 저장 전에는 변경 여부, 필수값, 코드 중복, 허용값, 정렬 순서를 검증하고 삭제 행을 포함한 변경분만 `MD01`의 `List`로 만듭니다. 조회 원본으로 초기화하거나 재조회하면 `C/U/D` 또는 `I/U/D` 상태를 제거해 새 기준선을 만듭니다.
+
+WebGrid, OpenGrid, JQGrid도 AUIGrid와 마찬가지로 컨트롤에서 모델로 전달된 값을 즉시 컨트롤에 다시 쓰지 않습니다. 이 왕복 쓰기를 생략해야 엔진 내부의 선택 위치, 삭제 스냅샷, 편집 상태를 저장 시점까지 유지할 수 있습니다.
+
+실제 구현은 각 컨트롤의 `example/binding.js`와 공통 `/uicontrols/binding-example.js`에서 확인할 수 있습니다.
