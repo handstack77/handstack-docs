@@ -253,25 +253,22 @@
 <h2 id="handstack%EC%97%90%EC%84%9C-%EB%B2%88%EB%93%A4%EB%A7%81-%EC%A0%81%EC%9A%A9%ED%95%98%EA%B8%B0">HandStack에서 번들링 적용하기</h2>
 <ul>
 <li>
-<p>HandStack의 프론트엔드 빌드 도구는 자동으로 코드 분할을 지원합니다.</p>
+<p><code>wwwroot</code> 모듈은 <code>gulpfile.js</code>(<code>scripts</code>, <code>styles</code>, <code>bundle</code> task)로 다수의 JS/CSS 파일을 <code>syn.bundle.js</code>, <code>syn.bundle.css</code>(및 압축된 <code>.min.*</code>)로 병합합니다.</p>
 </li>
 <li>
-<p>배포용 빌드 시, 코드를 최적화하고 여러 개의 작은 파일(chunk)로 나누어줍니다.</p>
-</li>
-<li>
-<p><code>bundling</code> CLI 명령어를 통해 이 과정을 수동으로 실행하고 확인할 수 있습니다.</p>
+<p>배포 시점에는 <code>bundling</code> CLI(.NET 10 도구)로 대상 파일/디렉터리를 압축(<code>compress</code>, <code>compresspath</code>)하거나 <code>bundleconfig.json</code> 기준으로 일괄 처리(<code>artifact</code>)할 수 있습니다.</p>
 </li>
 <li>
 <p>핸즈온</p>
 <ul>
 <li>
 <ol>
-<li>터미널에서 <code>npx bundling</code> 명령어 실행</li>
+<li>터미널에서 <code>dotnet run --project 4.Tool/CLI/bundling -- compresspath --path=wwwroot --keep=true</code> 실행</li>
 </ol>
 </li>
 <li>
 <ol start="2">
-<li><code>dist</code> 폴더에 생성된 최적화된 파일 확인</li>
+<li>대상 디렉터리에 생성된 <code>.min.*</code> 파일 확인</li>
 </ol>
 </li>
 <li>
@@ -282,11 +279,11 @@
 </ul>
 </li>
 </ul>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># 프로젝트 루트 디렉터리에서 실행</span>
-npx bundling
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># 저장소 루트에서 실행</span>
+dotnet run --project 4.Tool/CLI/bundling -- compresspath --path=wwwroot --keep=<span class="hljs-literal">true</span>
 </code></pre>
 <ul>
-<li>위 명령을 실행하면 <code>dist</code> 폴더에 배포용으로 최적화된 파일들이 생성됩니다.</li>
+<li>위 명령을 실행하면 대상 경로의 HTML/JS/CSS가 압축된 <code>.min.*</code> 파일로 생성됩니다.</li>
 </ul>
 <footer>QCN</footer>
 </section>

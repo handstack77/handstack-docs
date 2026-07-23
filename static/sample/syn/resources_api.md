@@ -4,7 +4,7 @@
 | 항목 | 내용 |
 |---|---|
 | 전역 별칭 | `syn.$res` (원본: `context.$resource`) |
-| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 11618~11939번째 줄) |
+| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 11924~12247번째 줄) |
 | 예제 페이지 | `/sample/syn/resources.html` |
 | 의존 모듈 | `syn.$l`(get, querySelector), `syn.$object`(isString, isNullOrUndefined, isObject, isArray), `syn.$string`(isNullOrEmpty, toBoolean), `syn.$w`(pageScript, argumentsExtend, fetchJson, getSSOInfo — `getSSOInfo`는 `syn.domain.js`에서만 정의됨), `syn.uicontrols`(모듈 컨트롤 번역 시) |
 

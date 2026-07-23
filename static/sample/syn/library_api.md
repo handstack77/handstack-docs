@@ -3,7 +3,7 @@
 ## 모듈 정보
 | 항목 | 내용 |
 |---|---|
-| 별칭 | `syn.$l`, `syn.$library`, `context.$library` |
+| 별칭 | `syn.$l`, `context.$library`(전역 변수 `$library`). `syn.$library`라는 별도 별칭은 없음 |
 | 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 4385 ~ 5553 줄) |
 | 예제 경로 | `2.Modules/wwwroot/wwwroot/sample/syn/library.html`, `library.js` |
 | 의존 모듈 | `$object`(존재/타입 판별), `$string`(TSD 파싱, Boolean 변환), `$date`(파일명 타임스탬프), `syn.$r`(내부 `urlToBase64`가 `httpFetch` 사용), `syn.getModuleLibrary`(`moduleEventLog`) |

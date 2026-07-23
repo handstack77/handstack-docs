@@ -11,12 +11,12 @@
 
 두 컨트롤 모두 다른 syn.uicontrols와 동일하게 `defaultSetting` / `controlLoad` / `getValue` / `setValue` / `clear` / `setLocale` 형태의 싱글턴 패턴을 따르지만, 옵션 형식과 내부 동작은 각자 사용하는 차트 라이브러리를 그대로 반영합니다. 즉 "옵션을 얼마나 아느냐"가 곧 "Highcharts를, 또는 Chart.js를 얼마나 아느냐"와 같습니다.
 
-주의: 이 문서는 두 파일의 실제 소스 코드를 직접 읽고 확인한 내용을 바탕으로 작성되었습니다. `$chart`(Highcharts 기반)는 qcn.groupware 등에서 실사용 예시를 찾지 못해 소스 코드만으로 문서화했고, 몇 가지 미완성/버그로 보이는 부분이 있습니다. 자세한 내용은 `API.md`의 "참고" 절과 각 메서드 설명을 꼭 확인하세요.
+주의: 이 문서는 두 파일의 실제 소스 코드를 직접 읽고 확인한 내용을 바탕으로 작성되었습니다. `$chart`(Highcharts 기반)는 qcn.groupware 등에서 실사용 예시를 찾지 못해 소스 코드만으로 문서화했고, `toImage`에 실행 시 항상 예외가 발생하는 버그가 있습니다. 자세한 내용은 `API.md`의 "알려진 이슈" 절과 각 메서드 설명을 꼭 확인하세요.
 
 ## 언제 사용하나요?
 
 - `$chartjs` (Chart.js 기반)를 우선 고려하세요. 실사용 샘플(`sample/uicontrol/chartjs.html`)이 있고, DB 조회 결과처럼 "행(row) 배열 + 컬럼 메타데이터" 형태의 데이터를 막대/선 그래프로 바로 그리는 `setValue(elID, value, metaColumns)` 기능이 갖춰져 있습니다. 다크모드 대응(`localStorage.isDarkMode`)도 자동으로 처리됩니다.
-- `$chart` (Highcharts 기반)는 Highcharts의 다양한 차트 타입(파이, 게이지, 영역 등)이나 Highcharts 고유 옵션이 꼭 필요할 때만 사용하세요. `setValue`가 완전히 구현되어 있지 않아(아래 API.md 참고), 초기 렌더링 이후 데이터를 동적으로 갱신하는 용도로는 아직 신뢰하기 어렵습니다. 초기 옵션(`syn-options`)만으로 고정된 차트를 보여주는 용도에는 문제없이 쓸 수 있습니다.
+- `$chart` (Highcharts 기반)는 Highcharts의 다양한 차트 타입(파이, 게이지, 영역 등)이나 Highcharts 고유 옵션이 꼭 필요할 때만 사용하세요. `setValue`로 시리즈를 교체하는 것은 정상 동작하지만, `toImage`(PNG 내보내기)는 현재 구현에 버그가 있어 호출 시 항상 예외가 발생합니다(아래 API.md "알려진 이슈" 참고).
 - 두 엔진 모두 `<script src="/js/syn.loader.js"></script>` 한 줄이면 각자 필요한 CSS/JS(Highcharts 또는 Chart.js 본체 포함)가 자동으로 로드되므로, 페이지에 별도의 `<script>` 태그를 추가할 필요가 없습니다.
 
 ## 빠른 시작

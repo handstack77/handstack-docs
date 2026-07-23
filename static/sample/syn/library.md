@@ -1,7 +1,7 @@
 # 공통 라이브러리 사용법 (syn.$l)
 
 ## 개요
-`syn.$l`(별칭: `syn.$library`)은 HandStack 클라이언트 스크립트(`syn.js`) 전반에서 사용하는 공통 유틸리티 모듈입니다. GUID/난수 생성, DOM 엘리먼트 조회 및 이벤트 바인딩, CSV·TSD·트리 형태의 데이터 변환, Blob/DataURI/Base64/File 상호 변환, 그리고 syn.js 내부 로깅(`eventLog`)까지 폭넓은 범용 기능을 제공합니다.
+`syn.$l`(전역 변수 `$library`로도 접근 가능하며, `syn.$library`라는 별도 별칭은 없습니다)은 HandStack 클라이언트 스크립트(`syn.js`) 전반에서 사용하는 공통 유틸리티 모듈입니다. GUID/난수 생성, DOM 엘리먼트 조회 및 이벤트 바인딩, CSV·TSD·트리 형태의 데이터 변환, Blob/DataURI/Base64/File 상호 변환, 그리고 syn.js 내부 로깅(`eventLog`)까지 폭넓은 범용 기능을 제공합니다.
 
 이 모듈은 브라우저와 Node.js 두 실행 환경을 모두 지원합니다. 다만 `addEvent`, `get`, `querySelector` 등 DOM 관련 메서드는 Node.js 환경에서 제거되며, 반대로 `getBasePath`, `moduleEventLog`는 Node.js 전용 메서드로 브라우저 환경에서는 제공되지 않습니다.
 

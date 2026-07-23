@@ -13,7 +13,7 @@ let $webforms = {
 
     hook: {
         pageLoad() {
-            syn.$l.get('txt_version').value = syn.$m.version;
+            syn.$l.get('txt_version').value = syn.module.version;
         },
 
         // transactionAction()/transaction()이 완료되면 결과를 데모 화면에 표시합니다.

@@ -44,7 +44,7 @@ CheckBox는 커스텀 태그가 아니라 네이티브 `<input type="checkbox">`
 |---|---|---|
 | controlLoad | `controlLoad(elID, setting)` | 컨트롤 초기화(생성자 역할). `syn.loader.js`가 화면 스캔 시 자동으로 호출하며, 개발자가 직접 호출할 일은 없습니다. |
 | getValue | `getValue(elID, meta)` | 체크 상태에 따라 `checkedValue` 또는 `uncheckedValue`를 반환합니다. `syn-options`가 없으면 `checked` 여부에 따라 `'1'`/`'0'`을 반환합니다. |
-| setValue | `setValue(elID, value, meta)` | `value`를 대문자 문자열로 변환한 뒤, `checkedValue`와 일치하는지(또는 `true`/`'TRUE'`/`'Y'`/`'1'`인지) 비교해 `checked` 상태를 설정합니다. `value`가 falsy(빈 문자열, `null` 등)면 무조건 체크 해제합니다. |
+| setValue | `setValue(elID, value, meta)` | `value`가 falsy(빈 문자열, `null`, `false` 등)면 무조건 체크 해제합니다. truthy면 `value.toString().toUpperCase()`가 `checkedValue`와 정확히 일치할 때만 체크 상태로 설정합니다. ⚠ `checkedValue`는 `controlLoad` 이후 항상 정의되어 있으므로(기본값 `'1'`), `setValue(elID, true)`처럼 JS 불리언 `true`를 넘기면 `'TRUE'`로 변환되어 `checkedValue`(예: `'1'`)와 일치하지 않아 오히려 체크가 해제됩니다. 체크시키려면 `setValue(elID, checkedValue와 같은 문자열)`(예: `checkedValue`가 `'1'`이면 `setValue(elID, '1')`)을 넘기세요. |
 | toggleValue | `toggleValue(elID)` | 현재 체크 상태를 반전시킵니다(체크→해제, 해제→체크). |
 | clear | `clear(elID, isControlLoad)` | 체크 상태를 `false`(미체크)로 초기화합니다. |
 | getGroupNames | `getGroupNames()` | 현재 화면(document) 안의 모든 `input[type='checkbox']`가 가진 `name` 속성 값을 중복 제거해서 배열로 반환합니다. |

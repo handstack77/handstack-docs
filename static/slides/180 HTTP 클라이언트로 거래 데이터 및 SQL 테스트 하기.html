@@ -38,7 +38,7 @@
 <h2 id="transact-%EB%AA%A8%EB%93%88-%ED%85%8C%EC%8A%A4%ED%8A%B8-12"><code>transact</code> 모듈 테스트 (1/2)</h2>
 <p><code>transact</code> 모듈의 비즈니스 거래를 테스트합니다.</p>
 <ul>
-<li>사전 설정: <code>transact</code> 모듈의 <code>syn.config.json</code> 에서 <code>IsValidationRequest</code> 값을 <code>false</code>로 변경합니다.</li>
+<li>사전 설정: <code>transact</code> 모듈의 <code>module.json</code> 에서 <code>IsValidationRequest</code> 값을 <code>false</code>로 변경합니다.</li>
 <li>Method: <code>POST</code></li>
 <li>URL: <code>http://localhost:8421/transact/api/transaction/execute</code></li>
 <li>Headers: <code>Content-Type: application/json</code></li>
@@ -82,7 +82,7 @@
 <h2 id="dbclient-%EB%AA%A8%EB%93%88-%ED%85%8C%EC%8A%A4%ED%8A%B8-12"><code>dbclient</code> 모듈 테스트 (1/2)</h2>
 <p><code>dbclient</code> 모듈을 통해 직접 SQL을 실행하고 테스트합니다.</p>
 <ul>
-<li>사전 설정: <code>dbclient</code> 모듈의 <code>syn.config.json</code> 에서 <code>AuthorizationKey</code> 값을 <code>HANDSTACKDHOSTNAME</code>으로 설정합니다.</li>
+<li>사전 설정: <code>dbclient</code> 모듈의 <code>module.json</code> 에서 <code>AuthorizationKey</code> 값을 <code>HANDSTACKDHOSTNAME</code>으로 설정합니다.</li>
 <li>Method: <code>POST</code></li>
 <li>URL: <code>http://localhost:8421/dbclient/api/query</code></li>
 <li>Headers: <code>Content-Type: application/json</code></li>
@@ -131,7 +131,7 @@
 <h2 id="function-%EB%AA%A8%EB%93%88-%ED%85%8C%EC%8A%A4%ED%8A%B8-12"><code>function</code> 모듈 테스트 (1/2)</h2>
 <p><code>function</code> 모듈을 통해 직접 Function 을 실행하고 테스트합니다.</p>
 <ul>
-<li>사전 설정: <code>function</code> 모듈의 <code>syn.config.json</code> 에서 <code>AuthorizationKey</code> 값을 <code>HANDSTACKDHOSTNAME</code>으로 설정합니다.</li>
+<li>사전 설정: <code>function</code> 모듈의 <code>module.json</code> 에서 <code>AuthorizationKey</code> 값을 <code>HANDSTACKDHOSTNAME</code>으로 설정합니다.</li>
 <li>Method: <code>POST</code></li>
 <li>URL: <code>http://localhost:8421/function/api/execution</code></li>
 <li>Headers: <code>Content-Type: application/json</code></li>

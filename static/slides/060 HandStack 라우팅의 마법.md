@@ -132,10 +132,10 @@ section.tinytext>blockquote {
 
 - HandStack은 C# Controller의 이름과 메서드(Action) 이름을 조합하여 API 주소를 자동으로 만듭니다.
 
-- 예시:
-  - Controller 클래스 이름: `UserManagementController`
-  - Action 메서드 이름: `GetUserProfile`
-  - 변환된 URL: `/user-management/get-user-profile`
+- 예시 (`transact` 모듈 기준):
+  - Controller 클래스 이름: `TransactionController` (Area: `transact`)
+  - Action 메서드 이름: `Execute`
+  - 변환된 URL: `/transact/api/transaction/execute`
 
 - 코드에서는 다음과 같은 속성(Attribute)으로 정의됩니다.
   ```csharp

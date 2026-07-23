@@ -524,7 +524,7 @@ txtMaxLength - <input id="txtMaxLength" maxlengthB="10" type="text" syn-options=
 <div id="divElement1" syn-datafield="Element1" 
 syn-options="{belongID: 'LD01', content: 'value'}" value="div value 1"></div>
 <span id="lblElement2" syn-datafield="Element2" 
-syn-options="{belongID: 'LD01', content: 'text'}">span value 1</span>
+syn-options="{belongID: 'LD01', content: 'content'}">span value 1</span>
 <label id="lblElement3" syn-datafield="Element3" 
 syn-options="{belongID: 'LD01', content: 'html'}">blabla</label>
 ```
@@ -637,7 +637,7 @@ JSON 데이터를 직관적으로 편집하는 기능을 제공합니다.
 - `uicontrols` 사용 현황 분석 명령어
 
 ```bash
-%HANDSTACK_HOME%\app\cli\handstack synusage --directory="%HANDSTACK_HOME%\contracts\wwwroot\HDS" --value=uicontrols
+%HANDSTACK_HOME%\tools\handstack\handstack synusage --directory="%HANDSTACK_HOME%\contracts\wwwroot\HDS" --value=uicontrols
 ```
 
 - 참고 자료 및 실습 페이지

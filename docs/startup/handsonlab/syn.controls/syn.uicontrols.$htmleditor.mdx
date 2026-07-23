@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # syn.uicontrols.$htmleditor
 
-syn_chartjs 컨트롤은 TinyMCE 5를 이용하여 개발됩니다. 에디터내 이미지 업로드 및 저장소 연동을 위해 repository 모듈을 지원합니다.
+syn_htmleditor 컨트롤은 TinyMCE 5를 이용하여 개발됩니다. 에디터내 이미지 업로드 및 저장소 연동을 위해 repository 모듈을 지원합니다.
 
 ```html
 <div>
@@ -46,11 +46,11 @@ let $htmleditor = {
 
         btnExecCommand_click() {
             syn.uicontrols.$htmleditor.execCommand('txtHtmlEditor', 'bold');
-            syn.uicontrols.$htmleditor.execCommand('txtHtmlEditor', 'backColor', '#0000FF');
+            syn.uicontrols.$htmleditor.execCommand('txtHtmlEditor', 'backColor', false, '#0000FF');
         },
 
         btnInsertImage_click() {
-            syn.uicontrols.$htmleditor.execCommand('txtHtmlEditor', 'insertimage', 'https://avatars.githubusercontent.com/u/151638920?s=400&u=ff661f97b0777bc7a58f3d972909fe63e9e93d37&v=4');
+            syn.uicontrols.$htmleditor.execCommand('txtHtmlEditor', 'insertimage', false, 'https://avatars.githubusercontent.com/u/151638920?s=400&u=ff661f97b0777bc7a58f3d972909fe63e9e93d37&v=4');
         },
 
         txtHtmlEditor_documentReady(elID, editor) {

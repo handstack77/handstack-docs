@@ -42,7 +42,7 @@ $number.aggregate('AVG', '10,20,30');     // 20
 
 ## 실전 예제 페이지
 `/sample/syn/extension_number.html` 예제에서 다음 항목을 실습할 수 있습니다.
-- `$number.version` 속성 조회
+- `syn.module.version` 속성 조회
 - `duration()`, `toByteString()`
 - `random()`, `isRange()`, `limit()`
 - `percent()`, `amount()`

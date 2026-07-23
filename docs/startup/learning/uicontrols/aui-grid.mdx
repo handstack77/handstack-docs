@@ -42,7 +42,7 @@ syn.uicontrols.$auigrid.setValue('grdMain', [
 `example/` 폴더의 각 HTML 파일을 handstack의 wwwroot 정적 서버(rdy 프로젝트) 경로 아래에 두고 브라우저로 열면 바로 동작을 확인할 수 있습니다.
 
 - `auigridbasic.html` / `.js` : `$auigrid` 기본 사용법 — text/dropdown/checkbox/date 등 다양한 `editType` 컬럼 구성
-- `auigridevents.html` / `.js` : `$auigrid`의 `insertRow`/`removeRow`/`getFlag`/`setFlag`와 이벤트(`afterSelectionEnd`, `cellEditEnd`) 연동 데모
+- `auigridevents.html` / `.js` : `$auigrid`의 `insertRow`/`removeRow`/`getFlag`와 이벤트(`afterSelectionEnd`, `afterChange`, `filtering`) 연동 데모
 
 각 예제는 화면 하단 로그 영역(`syn.$l.eventLog` 출력)에서 이벤트 발생 순서와 전달값을 확인할 수 있습니다.
 
@@ -171,7 +171,7 @@ syn.uicontrols.$auigrid.setValue('grdMain', [
 | `getValue(elID, requestType, metaColumns)` | 변경분(`'Row'`/`'List'`)을 `metaColumns` 매핑대로 전송용 배열로 변환 |
 | `setValue(elID, value, metaColumns)` | 원본 배열을 그리드에 채움(Flag는 자동 `'R'`) |
 | `clear(elID, isControlLoad)` | 데이터 초기화 |
-| `getGridData(elID, options)` / `setGridData` | 원본 AUIGrid API 수준의 데이터 조회/설정 |
+| `getGridData(elID, options)` | 원본 AUIGrid API 수준의 데이터 조회(`setGridData`는 `$auigrid`에 별도 래핑되어 있지 않고 `setValue` 내부에서만 원본 `AUIGrid.setGridData`를 호출) |
 | `getFlag(elID, row)` / `setFlag(elID, row, flagValue)` | CRUD 상태 조회/설정 |
 | `isUpdateData(elID)` | 변경 여부 조회 |
 | `insertRow(elID, setting, callback)` | 행 추가. `setting = { values, index, amount }`(`index`는 숫자 또는 `'last'`/`'first'`/`'selectionUp'`/`'selectionDown'`) |

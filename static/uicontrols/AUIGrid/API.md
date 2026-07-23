@@ -86,7 +86,7 @@ qcn.groupware 실사용 기준 300회 이상 쓰이는, 이 저장소의 실무 
 | `getValue(elID, requestType, metaColumns)` | 변경분(`'Row'`/`'List'`)을 `metaColumns` 매핑대로 전송용 배열로 변환 |
 | `setValue(elID, value, metaColumns)` | 원본 배열을 그리드에 채움(Flag는 자동 `'R'`) |
 | `clear(elID, isControlLoad)` | 데이터 초기화 |
-| `getGridData(elID, options)` / `setGridData` | 원본 AUIGrid API 수준의 데이터 조회/설정 |
+| `getGridData(elID, options)` | 원본 AUIGrid API 수준의 데이터 조회(`setGridData`는 `$auigrid`에 별도 래핑되어 있지 않고 `setValue` 내부에서만 원본 `AUIGrid.setGridData`를 호출) |
 | `getUpdateData` 계열: `getFlag(elID, row)` / `setFlag(elID, row, flagValue)` | CRUD 상태 조회/설정 |
 | `isUpdateData(elID)` | 변경 여부 조회 |
 | `insertRow(elID, setting, callback)` | 행 추가. `setting = { values, index, amount }`(`index`는 숫자 또는 `'last'`/`'first'`/`'selectionUp'`/`'selectionDown'`) |

@@ -142,7 +142,7 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
 
 `transact` 모듈의 비즈니스 거래를 테스트합니다.
 
-- 사전 설정: `transact` 모듈의 `syn.config.json` 에서 `IsValidationRequest` 값을 `false`로 변경합니다.
+- 사전 설정: `transact` 모듈의 `module.json` 에서 `IsValidationRequest` 값을 `false`로 변경합니다.
 - Method: `POST`
 - URL: `http://localhost:8421/transact/api/transaction/execute`
 - Headers: `Content-Type: application/json`
@@ -189,7 +189,7 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
 
 `dbclient` 모듈을 통해 직접 SQL을 실행하고 테스트합니다.
 
-- 사전 설정: `dbclient` 모듈의 `syn.config.json` 에서 `AuthorizationKey` 값을 `HANDSTACKDHOSTNAME`으로 설정합니다.
+- 사전 설정: `dbclient` 모듈의 `module.json` 에서 `AuthorizationKey` 값을 `HANDSTACKDHOSTNAME`으로 설정합니다.
 - Method: `POST`
 - URL: `http://localhost:8421/dbclient/api/query`
 - Headers: `Content-Type: application/json`
@@ -241,7 +241,7 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
 
 `function` 모듈을 통해 직접 Function 을 실행하고 테스트합니다.
 
-- 사전 설정: `function` 모듈의 `syn.config.json` 에서 `AuthorizationKey` 값을 `HANDSTACKDHOSTNAME`으로 설정합니다.
+- 사전 설정: `function` 모듈의 `module.json` 에서 `AuthorizationKey` 값을 `HANDSTACKDHOSTNAME`으로 설정합니다.
 - Method: `POST`
 - URL: `http://localhost:8421/function/api/execution`
 - Headers: `Content-Type: application/json`

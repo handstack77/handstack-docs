@@ -167,7 +167,7 @@ section.tinytext>blockquote {
 | `start`| PM2를 이용해 서버를 백그라운드로 실행합니다. | 개발이 끝나고 서버를 켜둘 때 |
 | `stop` | 실행 중인 서버를 중지합니다. | 서버를 잠시 꺼야 할 때 |
 | `purge`| 계약(Contracts) 캐시를 삭제합니다. | API 규칙 변경이 반영되지 않을 때 |
-| `config`| 각 환경에 맞는 설정 정보를 유연하게 관리할 수 있습니다. | 실행 환경에 따라 설정이 분리해서 관리할 때 |
+| `app`| ack 실행 명령어를 로그로 출력합니다. | 실제 실행되는 명령어를 확인하고 싶을 때 |
 
 ---
 
@@ -188,7 +188,7 @@ if "%TASK_COMMAND%"=="run" (
 
 if "%TASK_COMMAND%"=="copy" (
     REM 'task copy' 라고 입력하면 파일들이 복사됩니다.
-    robocopy %WORKING_PATH%/Contracts %HANDSTACK_SRC%/../build/handstack/contracts /e /copy:dat
+    robocopy %WORKING_PATH%/Contracts %HANDSTACK_HOME%/contracts /e /copy:dat
     ...
 )
 ```
@@ -211,7 +211,7 @@ fi
 
 if [ "$TASK_COMMAND" == "copy" ]; then
     # './task.sh copy' 라고 입력하면 파일들이 복사됩니다.
-    rsync -av $WORKING_PATH/Contracts/ $HANDSTACK_SRC/../build/handstack/contracts/
+    rsync -av $WORKING_PATH/Contracts/ $HANDSTACK_HOME/contracts/
     ...
 fi
 ```

@@ -15,7 +15,7 @@ let $getset = {
         },
 
         btnSetValueAttempt_click() {
-            // srcForm의 columns에 등록된 필드(Name, Age)를 한 번에 설정합니다.
+            // setValue(elID, value)로 srcForm의 columns에 등록된 필드(Name, Age)를 한 번에 설정합니다.
             // 필드에 bindingID로 연결된 화면 컨트롤이 있으면 그 컨트롤의 setValue까지 자동으로 호출되어 화면에도 반영됩니다(양방향 바인딩).
             syn.uicontrols.$data.setValue('srcForm', { Name: '홍길동', Age: 30 });
             var record = syn.uicontrols.$data.getValue('srcForm', true);

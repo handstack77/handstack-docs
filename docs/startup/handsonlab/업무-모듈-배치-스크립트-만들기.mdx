@@ -167,7 +167,7 @@ task.bat run
 
 HandStack 의 ack 프로그램이 실행 전에 "지금 어떤 설정으로 뜰지"를 맞춰 주는 과정이 필요하며 영향을 주는 환경 설정은 다음과 같이 4개가 있습니다.
 
-- ack.settings.json
+- appsettings.json
 - module.json
 - node.config.json
 - syn.config.json
@@ -210,8 +210,8 @@ Settings/
 예를 들어 ack 실행 파일이 있는 전체 경로가 'C:\projects\ack-runtimes\domain_business\handstack\app\ack.exe' 이렇게 되어 있으면 다음과 같이 복사 됩니다.
 
 ```txt
-# ack.settings.json
-ack.localhost.json > C:\projects\ack-runtimes\domain_business\handstack\app\ack.settings.json
+# appsettings.json
+ack.localhost.json > C:\projects\ack-runtimes\domain_business\handstack\app\appsettings.json
 
 # module.json
 modules/ack.dbclient.localhost.json > C:\projects\ack-runtimes\domain_business\handstack\modules\dbclient\module.json

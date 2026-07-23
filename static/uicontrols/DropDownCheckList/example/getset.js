@@ -18,9 +18,7 @@ let $getset = {
         },
 
         btnSetValue_click() {
-            // setValue는 기존 선택 위에 값을 더하는 것처럼 동작할 수 있으므로,
-            // 완전히 새로 선택하고 싶을 때는 clear를 먼저 호출합니다.
-            syn.uicontrols.$multiselect.clear('ddlGrade');
+            // setValue는 호출 시 기존 선택을 모두 해제한 뒤 지정한 값만 다시 선택합니다.
             syn.uicontrols.$multiselect.setValue('ddlGrade', ['A', 'C']);
         },
 

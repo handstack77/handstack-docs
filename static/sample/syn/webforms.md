@@ -84,7 +84,7 @@ syn.$w.stopAllIntersections();
 
 ## 실전 예제 페이지
 `/sample/syn/webforms.html` 예제에서 다음 항목을 실습할 수 있습니다.
-- 속성: version
+- 속성: syn.module.version(syn.js Module 프레임워크 버전 — syn.$w/syn.$m 등 개별 모듈에는 자체 version 속성이 없습니다)
 - 메서드: setStorage(), getStorage(), removeStorage(), getStorageKeys(), activeControl(), argumentsExtend(), contentLoaded(), getTriggerOptions(), triggerAction(), getControlModule(), tryAddFunction(), getterValue(), setterValue(), transactionAction(), transaction(), transactionDirect(), transactionObject(), scrollToTop(), scrollToElement(), setFavicon(), fileDownload(), sleep(), purge(), setServiceObject(), setServiceClientHeader(), xmlHttp(), xmlParser(), apiHttp(), loadScript(), loadStyle(), getDynamicStyle(), addCssRule(), removeCssRule(), pseudoStyle(), pseudoStyles(), fetchText(), fetchJson(), loadJson(), fetchImage(), startIntersection(), stopIntersection(), stopAllIntersections()
 
 ## 주의 사항

@@ -227,7 +227,7 @@ dbclient 모듈은 데이터베이스 연동 (SQL Server, Oracle, MySQL & MariaD
 
 logger 모듈은 module 요청/응답 구간 주요 이벤트 로그 수집 관리 기능을 담당합니다. 수집된 데이터는 SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite 중 하나의 데이터베이스에 저장됩니다.
 
-`handstack\2.Modules\logger\Areas\logger\Controllers\LogController.cs` 파일의 `public ActionResult Insert(LogMessage logMessage)` 메서드가 진입점입니다.
+`handstack\2.Modules\logger\Areas\logger\Controllers\LogController.cs` 파일의 `public async Task<ActionResult> Insert()` 메서드가 진입점입니다.
 
 ![](img/module-debugging-logger.png)
 

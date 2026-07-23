@@ -196,9 +196,9 @@ Ctrl + C
 ## 핸즈온: 첫 프로젝트 실행
 
 1. `cd %HANDSTACK_SRC%`
-2. `dotnet build`
+2. `build.bat`
 3. `publish.bat win build Debug x64`
-4. `cd %HANDSTACK_HOME%`
+4. `cd %HANDSTACK_SRC%/../publish/win-x64/handstack/app`
 5. `ack.exe`
 6. 브라우저에서 `http://localhost:8421` 접속
 7. `Ctrl+C` 로 종료

@@ -60,9 +60,9 @@ var record = syn.uicontrols.$data.getValue('srcForm', true);
 syn.uicontrols.$data.clear('srcForm');
 ```
 
-> DataSource는 `setValue`를 지원하지 않습니다("지원 안함"으로 구현되어 있음). 값을 바꾸려면 바인딩된 화면 컨트롤(TextBox.setValue, Grid.setValue 등)을 사용해야 DataSource에도 값이 반영됩니다.
+> `setValue(elID, value)`로 저장소 값을 한 번에 설정할 수도 있습니다. `columns`에 선언된 필드에 `bindingID`로 연결된 화면 컨트롤이 있으면 그 컨트롤의 `setValue`가 자동으로 호출되어 화면에도 반영됩니다(양방향 바인딩). 반대로 화면 컨트롤의 `setValue`를 직접 호출해도 DataSource 저장소 값이 갱신됩니다.
 >
-> 반대로 `clear()`는 내부 저장소 값만 초기화할 뿐, 이미 화면에 바인딩된 입력 컨트롤의 표시 값까지 자동으로 지워주지는 않습니다.
+> `clear()`는 내부 저장소 값만 초기화할 뿐, 이미 화면에 바인딩된 입력 컨트롤의 표시 값까지 자동으로 지워주지는 않습니다.
 
 ## 예제 실행하기
 
@@ -70,7 +70,7 @@ syn.uicontrols.$data.clear('srcForm');
 
 - `form.html` - `storeType: 'Form'`, 입력 컨트롤과 1:1 필드 바인딩, getValue/clear 예제
 - `grid.html` - `storeType: 'Grid'`, 배열 데이터 바인딩과 행 추가/삭제에 따른 `Flag`(R/C/U/D) 변화 예제
-- `getset.html` - `getValue(elID, isAll)`의 기본/전체 조회 차이, `setValue` 미지원, `clear` 동작 데모
+- `getset.html` - `getValue(elID, isAll)`의 기본/전체 조회 차이, `setValue`로 저장소 값을 일괄 설정하는 방법, `clear` 동작 데모
 - `exception.html` - 실무에서 가장 흔한 패턴: 저장 트랜잭션 실패 시 오류 내용을 담아두는 `Exception` 저장소와, 확인 후 `clear`로 비우는 흐름
 - `worklist.html` - 그리드 컨트롤 없이 `storeType: 'Grid'` 배열만 `push`/`splice`로 직접 다루는 업무 목록(전자결재 결재선 등) 패턴
 

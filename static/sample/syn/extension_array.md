@@ -78,7 +78,7 @@ $array.ranks([79, 5, 18, 5, 32], false); // 내림차순 기준 순위 배열
 - `$array.split()`은 배열이 아니라 문자열을 입력으로 받아 배열로 변환하는 메서드입니다. 이미 배열인 값에는 사용하지 마세요.
 - `groupBy`의 두 번째 인자는 속성명(문자열) 또는 `(item) => key` 형태의 함수 모두 사용할 수 있습니다.
 - `merge`의 predicate 기본값은 `(a, b) => a === b`이며, 객체 배열을 병합할 때는 적절한 predicate를 지정해야 중복 판정이 올바르게 동작합니다.
-- 예제 페이지의 "속성" 카드에 있는 `$array.version` 값은 다른 syn.js 샘플 페이지와 동일하게 `syn.$m.version`(라이브러리 공용 버전 표시 관례)을 그대로 사용합니다.
+- 예제 페이지의 "속성" 카드에 있는 버전 값은 `syn.module.version`(syn.js Module 프레임워크 버전)을 그대로 사용합니다. `$array` 등 개별 모듈에는 자체 version 속성이 없습니다.
 
 ## 관련 모듈
 - API 상세: [`extension_array_api.md`](./extension_array_api.md)

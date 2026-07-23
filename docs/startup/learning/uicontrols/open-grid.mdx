@@ -397,25 +397,27 @@ syn.uicontrols.$opengrid.exportFile('grdBasic', { fileName: 'basic.csv' });
 
 `OpenGrid.js`는 `eventHooks` 배열(`rowClick`, `rowDoubleClick`, `selectionChange`, `cellEditEnd`, `sortChange`, `filterChange`, `dataChange`)에 정의된 이벤트만 `syn-events`로 연결합니다. 핸들러 이름은 `{elID}_{이벤트명}` 규칙입니다.
 
-| 이벤트명 | 발생 시점 |
-|---|---|
-| `rowClick` / `rowDoubleClick` | 행 클릭/더블클릭 시 |
-| `selectionChange` | 셀/행 선택이 바뀌었을 때 |
-| `cellEditEnd` | 셀 편집이 끝났을 때(Flag 갱신에도 사용됨) |
-| `sortChange` | 정렬이 바뀌었을 때 |
-| `filterChange` | 필터 조건이 바뀌었을 때 |
-| `dataChange` | 데이터가 변경되었을 때 |
+open-grid 원본 이벤트 옵션(`onXxx`)과 이름·콜백 인자 구성이 다르기 때문에, `OpenGrid.js`는 훅 이름 → 실제 옵션명 매핑과 인자 어댑터를 내부에 두고 핸들러를 아래 위치 인자로 호출합니다.
+
+| 이벤트명 | 발생 시점 | 핸들러 인자 |
+|---|---|---|
+| `rowClick` / `rowDoubleClick` | 행 클릭/더블클릭 시 | `(elID, rowIndex, row, undefined)` |
+| `selectionChange` | 셀/행 선택이 바뀌었을 때 | `(elID, rowIndex, row)` — `rowIndex`는 선택 범위의 첫 행 인덱스(없으면 `-1`), `row`는 해당 행 데이터 |
+| `cellEditEnd` | 셀 편집이 끝났을 때(Flag 갱신에도 사용됨) | `(elID, rowIndex, dataField, oldValue, newValue, row)` |
+| `sortChange` | 정렬이 바뀌었을 때 | `(elID, dataField, sortDirection)` |
+| `filterChange` | 필터 조건이 바뀌었을 때 | `(elID, dataField, filterItems)` |
+| `dataChange` | 데이터가 변경되었을 때 | `(elID, data)` |
 
 핸들러 등록 예:
 
 ```js
 let $samplePage = {
     event: {
-        grdGrid_selectionChange(elID, rowIndex, dataField) {
-            syn.$l.eventLog('grdGrid_selectionChange', '{0},{1}'.format(rowIndex, dataField));
+        grdGrid_selectionChange(elID, rowIndex, row) {
+            syn.$l.eventLog('grdGrid_selectionChange', '{0},{1}'.format(rowIndex, JSON.stringify(row)));
         },
-        grdGrid_cellEditEnd(elID, evt) {
-            syn.$l.eventLog('grdGrid_cellEditEnd', JSON.stringify(evt));
+        grdGrid_cellEditEnd(elID, rowIndex, dataField, oldValue, newValue, row) {
+            syn.$l.eventLog('grdGrid_cellEditEnd', '{0}.{1}: {2} -> {3}'.format(rowIndex, dataField, oldValue, newValue));
         }
     }
 }

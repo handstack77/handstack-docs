@@ -57,18 +57,18 @@ let $codepicker = {
         },
 
         btnToParameterString_click() {
-            var parameterObject = syn.uicontrols.$codepicker.toParameterObject('@ApplicationID:1;@ApplicationName:HELLO WORLD;');
-            syn.$l.eventLog('btnToParameterString_click', JSON.stringify(parameterObject));
+            var parameterObject = { ApplicationID: '1', ApplicationName: 'HELLO WORLD' };
+            var parameterString = syn.uicontrols.$codepicker.toParameterString(parameterObject);
+            syn.$l.eventLog('btnToParameterString_click', parameterString);
         },
 
         btnToParameterObject_click() {
             var parameterObject = syn.uicontrols.$codepicker.toParameterObject('@ApplicationID:1;@ApplicationName:HELLO WORLD;');
-            parameterObject.ApplicationID = '0';
-            var parameterString = syn.uicontrols.$codepicker.toParameterString(parameterObject);
-            syn.$l.eventLog('btnToParameterObject_click', parameterString);
+            syn.$l.eventLog('btnToParameterObject_click', JSON.stringify(parameterObject));
         },
 
-        chpSubjectID_change(previousValue, previousText, changeValue) {
+        // 실제 시그니처: (elID, inputValue, inputText, result) - elID가 첫 인자로 온다.
+        chpSubjectID_change(elID, inputValue, inputText, result) {
         }
     }
 }

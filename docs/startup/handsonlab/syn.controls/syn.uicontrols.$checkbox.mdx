@@ -29,7 +29,10 @@ let $checkbox = {
         },
 
         btnSetValue_click() {
-            syn.uicontrols.$checkbox.setValue('chkUseYN1', true);
+            // 주의: checkedValue(기본값 '1')는 controlLoad 이후 항상 정의되어 있어, setValue에 JS 불리언 true를
+            // 넘기면 'TRUE'로 변환되어 checkedValue('1')와 일치하지 않아 오히려 체크가 해제됩니다.
+            // 체크시키려면 checkedValue와 같은 문자열('1')을 그대로 넘겨야 합니다.
+            syn.uicontrols.$checkbox.setValue('chkUseYN1', '1');
         },
 
         btnClear_click() {

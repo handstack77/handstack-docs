@@ -49,7 +49,7 @@ $date.dateConvert(encoded, 'D');
 
 ## 실전 예제 페이지
 `/sample/syn/extension_date.html` 예제에서 다음 항목을 실습할 수 있습니다.
-- `$date.version`, `$date.interval` 속성 조회
+- `syn.module.version`, `$date.interval` 속성 조회
 - `now()`, `clone()`, `isBetween()`, `equals()`, `equalDay()`, `isToday()`
 - `toString()` (다양한 서식 코드)
 - `addSecond()`, `addMinute()`, `addHour()`, `addDay()`, `addWeek()`, `addMonth()`, `addYear()`

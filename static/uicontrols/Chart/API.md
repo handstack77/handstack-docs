@@ -13,7 +13,7 @@
 
 싱글턴 객체: `syn.uicontrols.$chart`
 소스 파일: `wwwroot/uicontrols/Chart/Chart.js`, `wwwroot/uicontrols/Chart/Chart.css`
-버전(소스 내 표기): `v2025.3.1`
+버전(소스 내 표기): `v2026.7.22`
 내부 라이브러리: [Highcharts](https://www.highcharts.com/) (`Highcharts.chart(elID, setting)` 호출)
 CSS 클래스: `.syn-chart`
 
@@ -59,9 +59,9 @@ CSS 클래스: `.syn-chart`
 |---|---|
 | `getChartControl(elID)` | 등록된 Highcharts 차트 인스턴스 자체를 반환합니다(`$chartjs`와 달리 래퍼 객체가 아니라 `Highcharts.Chart` 인스턴스를 바로 반환). 없으면 `null`. |
 | `getValue(elID, meta)` | 각 시리즈의 `{ name, data }`(`data`는 `serie.yData`) 배열을 반환합니다. 차트가 없으면 `null`. |
-| `setValue(elID, value, meta)` | ⚠ 미완성/버그 있음 — 아래 "알려진 이슈" 참고 |
+| `setValue(elID, value, meta)` | 기존 시리즈를 모두 제거한 뒤 `value`(Highcharts 시리즈 객체 배열, `[{ name, data }, ...]`)를 `chart.addSeries(item)`로 하나씩 추가합니다. `getChartControl`이 `null`이면(차트 미등록) 아무 작업도 하지 않고 조용히 반환합니다. |
 | `clear(elID, isControlLoad)` | 차트의 모든 시리즈를 제거합니다(`series[0].remove(true)` 반복). ⚠ `getChartControl`이 `null`을 반환하는 상황(차트 미등록)을 확인하지 않으므로, 존재하지 않는 `elID`로 호출하면 `TypeError`가 발생합니다. |
-| `toImage(elID, fileID)` | 차트를 PNG로 내보냅니다(`chart.toBase64Image()`). ⚠ 아래 "알려진 이슈" 참고 |
+| `toImage(elID, fileID)` | 차트를 PNG로 내보내려고 시도합니다. ⚠ 아래 "알려진 이슈" 참고 — 현재 구현에는 실행 시 항상 예외가 발생하는 버그가 있습니다 |
 | `randomScalingFactor(min, max)` / `rand(min, max)` | 테스트/데모용 난수 생성 유틸리티(시드 기반 의사난수). 실제 통계적 난수가 아닙니다. |
 | `setLocale(elID, translations, control, options)` | 다국어 적용 훅. 본문이 비어 있는 빈 함수이므로 호출해도 아무 효과가 없습니다. |
 
@@ -69,50 +69,34 @@ CSS 클래스: `.syn-chart`
 
 ### 알려진 이슈 (소스 코드로 확인됨)
 
-- `setValue`가 완전히 구현되어 있지 않습니다. 실제 소스:
+- `toImage`가 `getChartControl(elID)`의 반환값을 잘못 다룹니다. 실제 소스:
 
   ```js
-  setValue: function (elID, value, meta) {
-      var chart = $chart.getChartControl(elID);
-      if (chart) {
-          var seriesLength = chart.series.length;
-          for (var i = seriesLength - 1; i > -1; i--) {
-              chart.series[i].remove();
+  toImage: function (elID, fileID) {
+      var control = $chart.getChartControl(elID);
+      if (control) {
+          var fileName = '{0}.png'.format(fileID || elID);
+          var base64Image = control.chart.toBase64Image();   // ← control 자체가 이미 Highcharts.Chart 인스턴스라 control.chart는 undefined
+
+          if (download) {
+              download(base64Image, fileName, 'image/png');
+          }
+          else {
+              var a = document.createElement('a');
+              a.href = base64Image
+              a.download = fileName;
+              a.click();
           }
       }
-
-      var length = value.length;
-      for (var i = 0; i < length; i++) {
-          var item = value[i];
-          chart.addSeries(item);   // value는 Highcharts 시리즈 객체 배열([{ name, data }, ...])이어야 함
-      }
-
-      var columnKeys = [];
-      for (var key in item) {
-          if (control.config.labelID != key) {   // ← control 변수가 이 함수 어디에도 선언되어 있지 않음
-              columnKeys.push(key);
-          }
-      }
-      // (이하 컬럼 매핑 로직은 전부 주석 처리되어 있음, 미완성 상태)
   },
   ```
 
-  - `value`에 담긴 시리즈는 실제로 차트에 반영됩니다(`chart.addSeries(item)`까지는 정상 동작).
-  - 하지만 바로 다음에 나오는 `control.config.labelID` 코드에서 `control`이라는 변수가 함수 안 어디에도 선언되어 있지 않아 `ReferenceError: control is not defined`가 발생합니다. 즉 `setValue`를 호출하면 시리즈 교체 자체는 적용되지만, 그 직후 항상 예외가 던져집니다.
-  - `value`가 빈 배열이면 `addSeries` 루프를 안 도므로 `item`이 `undefined`가 되고, 이어지는 `for (var key in item)`은 그냥 통과하지만 `control`이 없다는 문제는 여전히 남습니다.
-  - 결론: `$chart.setValue`를 호출할 때는 `try/catch`로 감싸서 예외를 흡수하거나, 아예 `getChartControl(elID)`로 Highcharts 인스턴스를 직접 얻어 `chart.addSeries(...)`/`chart.update(...)`를 호출하는 방식을 권장합니다.
+  - `$chart.getChartControl(elID)`는 `$chartjs`와 달리 래퍼 객체가 아니라 `Highcharts.Chart` 인스턴스를 그대로 반환합니다(위 메서드 표 참고). 그런데 `toImage`는 `$chartjs.toImage`의 코드를 그대로 가져다 쓴 것처럼 `control.chart.toBase64Image()`로 호출하고 있어, `control.chart`가 `undefined`가 되고 `TypeError: Cannot read properties of undefined (reading 'toBase64Image')`가 발생합니다.
+  - 이 오류가 먼저 발생하기 때문에, 아래에서 설명하는 정의되지 않은 전역 `download` 참조 문제(`ReferenceError: download is not defined`)까지는 실행이 도달하지 않습니다. `getChartControl(elID)`로 얻은 `Highcharts.Chart` 인스턴스에서 직접 `.toBase64Image()`를 호출하는 방식을 권장합니다.
 
-- `toImage`가 정의되지 않은 전역 `download`를 참조합니다.
+- `toImage`가 정의되지 않은 전역 `download`를 참조합니다(위 코드의 `if (download) { download(...) }` 부분). 이 저장소 어디에도 `download`라는 전역 함수/라이브러리가 포함되어 있지 않습니다(레거시로 함께 쓰이던 [download.js](https://github.com/rndme/download) 라이브러리를 전제로 한 코드로 보이며, 현재 번들에는 빠져 있습니다). `control.chart` 버그가 먼저 수정된다 해도 이 줄에서 다시 `ReferenceError`가 발생합니다. 필요하다면 `getChartControl(elID).toBase64Image()`로 base64 이미지를 직접 얻은 뒤, `<a download>` 방식(같은 함수의 `else` 분기 코드)으로 직접 다운로드를 트리거하세요.
 
-  ```js
-  if (download) {
-      download(base64Image, fileName, 'image/png');
-  }
-  ```
-
-  이 저장소 어디에도 `download`라는 전역 함수/라이브러리가 포함되어 있지 않습니다(레거시로 함께 쓰이던 [download.js](https://github.com/rndme/download) 라이브러리를 전제로 한 코드로 보이며, 현재 번들에는 빠져 있습니다). 따라서 `toImage(elID)`를 그대로 호출하면 `ReferenceError: download is not defined`가 발생할 수 있습니다. 필요하다면 `getChartControl(elID).toBase64Image()`로 base64 이미지를 직접 얻은 뒤, `<a download>` 방식(같은 함수의 `else` 분기 코드)으로 직접 다운로드를 트리거하세요.
-
-- `clear`/`toImage`/`setValue` 모두 `getChartControl(elID)`가 `null`을 반환하는 경우(차트가 없거나 아직 로드되지 않은 경우)를 방어하지 않습니다. 항상 차트가 실제로 로드된 뒤에 호출하세요.
+- `clear`/`toImage` 모두 `getChartControl(elID)`가 `null`을 반환하는 경우(차트가 없거나 아직 로드되지 않은 경우)를 방어하지 않는 부분이 있습니다. `clear`는 `if` 가드 없이 바로 `chart.series`에 접근하므로 존재하지 않는 `elID`로 호출하면 `TypeError`가 발생합니다(`toImage`는 `if (control)`로 가드하지만, 가드를 통과한 뒤에는 위에서 설명한 `control.chart` 버그가 있습니다). `setValue`는 `if (chart)`로 가드되어 있어 차트가 없으면 조용히 아무 일도 하지 않습니다. 항상 차트가 실제로 로드된 뒤에 호출하세요.
 
 - 커스텀 클릭 이벤트가 사실상 동작하지 않습니다. `controlLoad` 안에서 `syn.$l.addEvent(..., 'click', function (evt) {...})`를 등록하지만, 내부 로직 전체가 주석 처리되어 있어 클릭해도 아무 일도 일어나지 않습니다. 클릭 반응이 필요하면 Highcharts 자체의 `plotOptions.series.point.events.click` 옵션을 `syn-options`에 직접 넣어 사용하세요.
 

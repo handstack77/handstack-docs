@@ -134,7 +134,7 @@ HandStack은 HTTP 요청 헤더를 통해 클라이언트를 식별하고 인가
 - API 요청 시 특정 헤더 값을 서버로 전송합니다.
     - `HandStack-MachineID`: 클라이언트 하드웨어 고유 ID
     - `HandStack-IP`: 클라이언트 IP 주소
-    - `HandStack-HostID`: 클라이언트 호스트 이름
+    - `HandStack-HostName`: 클라이언트 호스트 이름
     - `HandStack-Environment`: 실행 환경 (e.g., Development, Production)
 - 서버는 수신된 헤더 값을 `handstack-secrets.json` 파일의 등록 정보와 비교하여 요청을 처리합니다.
 
@@ -186,27 +186,27 @@ HandStack은 HTTP 요청 헤더를 통해 클라이언트를 식별하고 인가
 
 웹 브라우저가 아닌 클라이언트(서버 애플리케이션, CLI 도구 등)에서 다음 API를 사용하여 비밀 데이터를 안전하게 관리할 수 있습니다.
 
-- **키 목록 API** `GET /keys`
+- **키 목록 API** `GET /secrets`
   - 수급 가능한 전체 키 목록을 조회합니다.
 
-- **키 등록 API** `POST /keys`
+- **키 등록 API** `POST /secrets`
   - 새로운 키를 등록하거나 기존 키를 변경합니다.
 
-- **키 삭제 API** `DELETE /keys/{name}`
+- **키 삭제 API** `DELETE /secrets/{name}`
   - 등록된 키를 삭제합니다.
 
-- **키 수급 API** `GET /keys/{name}`
+- **키 수급 API** `GET /secrets/{name}`
   - 특정 키의 값을 가져옵니다.
 
 ---
 
-## 키 목록 API: `GET /keys`
+## 키 목록 API: `GET /secrets`
 
 ManagementHost에 등록된 관리자만 사용 가능합니다. 서버에 등록된 키 목록 전체를 조회합니다.
 
 - **요청 예제**
 ```bash
-curl --location "http://localhost:8421/keys" \
+curl --location "http://localhost:8421/secrets" \
 --header "HandStack-MachineID: [Current Hardware ID]" \
 --header "HandStack-IP: [LocalIP]" \
 --header "HandStack-HostName: [HostName]" \
@@ -239,13 +239,13 @@ curl --location 'http://localhost:8421/secrets' \
 
 ---
 
-## 키 삭제 API: `DELETE /keys/{name}`
+## 키 삭제 API: `DELETE /secrets/{name}`
 
 ManagementHost에 등록된 관리자만 사용 가능합니다. 지정된 이름의 키를 삭제합니다.
 
 - **요청 예제**
 ```bash
-curl --location --request DELETE "http://localhost:8421/keys/[name]" \
+curl --location --request DELETE "http://localhost:8421/secrets/[name]" \
 --header "HandStack-MachineID: [Current Hardware ID]" \
 --header "HandStack-IP: [LocalIP]" \
 --header "HandStack-HostName: [HostName]" \
@@ -254,13 +254,13 @@ curl --location --request DELETE "http://localhost:8421/keys/[name]" \
 
 ---
 
-## 키 수급 API: `GET /keys/{name}`
+## 키 수급 API: `GET /secrets/{name}`
 
 서버에 등록된 비밀 키를 애플리케이션에서 사용하기 위해 호출합니다.
 
 - **요청 예제**
 ```bash
-curl --location "http://localhost:8421/keys/[name]" \
+curl --location "http://localhost:8421/secrets/[name]" \
 --header "HandStack-MachineID: [Current Hardware ID]" \
 --header "HandStack-IP: [LocalIP]" \
 --header "HandStack-HostName: [HostName]" \

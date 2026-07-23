@@ -23,7 +23,7 @@ sidebar_position: 55
 | `GET` | `/prompter/api/query/retrieve` | 계약 원문 또는 상세 정보를 조회합니다. |
 | `GET` | `/prompter/api/query/meta` | 입력/출력 메타 정보를 반환합니다. |
 | `GET` | `/prompter/api/query/reports` | 계약 기반 보고용 정보를 조회합니다. |
-| `POST` | `/prompter/api/query/execute` | 프롬프트 계약을 실행합니다. |
+| `POST` | `/prompter/api/query` | 프롬프트 계약을 실행합니다. |
 
 ## 핵심 구현
 
@@ -31,7 +31,7 @@ sidebar_position: 55
 - `DataClient/PromptClient.cs`: 프롬프트 계약 실행과 LLM provider 호출을 담당합니다.
 - `Extensions/PromptMapper.cs`: XML 계약 로드와 refresh를 담당합니다.
 - `Entity/ModuleConfigJson.cs`: LLMSource와 도구 allowlist 설정 스키마입니다.
-- `Events/ManagedRequestHandler.cs`: 관리 기능에서 전달되는 설정 변경 요청을 처리합니다.
+- `Events/PrompterRequestHandler.cs`: 모듈 내부 MediatR 실행 요청(`prompter.Events.PrompterRequest`)을 처리합니다.
 
 ## 계약과 식별자
 

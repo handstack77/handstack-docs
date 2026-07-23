@@ -180,7 +180,7 @@ section.tinytext>blockquote {
 </PropertyGroup>
 ```
 
-- 이 설정은 `qcn.qramework\modules\` 내 모든 프로젝트에 기본 적용되어 있습니다.
+- 라이선스로 보호할 신규 모듈의 `.csproj`에 개별적으로 추가합니다.
 
 ---
 

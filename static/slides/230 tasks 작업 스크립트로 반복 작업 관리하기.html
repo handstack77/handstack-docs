@@ -91,9 +91,9 @@
 <td>API 규칙 변경이 반영되지 않을 때</td>
 </tr>
 <tr>
-<td><code>config</code></td>
-<td>각 환경에 맞는 설정 정보를 유연하게 관리할 수 있습니다.</td>
-<td>실행 환경에 따라 설정이 분리해서 관리할 때</td>
+<td><code>app</code></td>
+<td>ack 실행 명령어를 로그로 출력합니다.</td>
+<td>실제 실행되는 명령어를 확인하고 싶을 때</td>
 </tr>
 </tbody>
 </table>
@@ -115,7 +115,7 @@
 
 <span class="hljs-keyword">if</span> &quot;<span class="hljs-variable">%TASK_COMMAND%</span>&quot;==&quot;<span class="hljs-built_in">copy</span>&quot; (
 <span class="hljs-comment">    REM &#x27;task copy&#x27; 라고 입력하면 파일들이 복사됩니다.</span>
-    robocopy <span class="hljs-variable">%WORKING_PATH%</span>/Contracts <span class="hljs-variable">%HANDSTACK_SRC%</span>/../build/handstack/contracts /e /<span class="hljs-built_in">copy</span>:dat
+    robocopy <span class="hljs-variable">%WORKING_PATH%</span>/Contracts <span class="hljs-variable">%HANDSTACK_HOME%</span>/contracts /e /<span class="hljs-built_in">copy</span>:dat
     ...
 )
 </code></pre>
@@ -138,7 +138,7 @@ TASK_COMMAND=<span class="hljs-variable">$1</span>
 
 <span class="hljs-keyword">if</span> [ <span class="hljs-string">&quot;<span class="hljs-variable">$TASK_COMMAND</span>&quot;</span> == <span class="hljs-string">&quot;copy&quot;</span> ]; <span class="hljs-keyword">then</span>
     <span class="hljs-comment"># &#x27;./task.sh copy&#x27; 라고 입력하면 파일들이 복사됩니다.</span>
-    rsync -av <span class="hljs-variable">$WORKING_PATH</span>/Contracts/ <span class="hljs-variable">$HANDSTACK_SRC</span>/../build/handstack/contracts/
+    rsync -av <span class="hljs-variable">$WORKING_PATH</span>/Contracts/ <span class="hljs-variable">$HANDSTACK_HOME</span>/contracts/
     ...
 <span class="hljs-keyword">fi</span>
 </code></pre>

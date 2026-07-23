@@ -6,7 +6,7 @@ let $extension_date = {
 
     hook: {
         pageLoad() {
-            syn.$l.get('txt_version').value = syn.$m.version;
+            syn.$l.get('txt_version').value = syn.module.version;
             syn.$l.get('txt_interval').value = JSON.stringify($date.interval);
 
             setTimeout(() => {

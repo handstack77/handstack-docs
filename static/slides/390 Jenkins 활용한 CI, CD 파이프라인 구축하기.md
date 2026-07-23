@@ -172,7 +172,7 @@ notepad winget-packages.json
         { "PackageIdentifier": "Notepad++.Notepad++" },
         { "PackageIdentifier": "TortoiseGit.TortoiseGit" },
         { "PackageIdentifier": "OpenJS.NodeJS.LTS" },
-        { "PackageIdentifier": "Microsoft.DotNet.SDK.8" },
+        { "PackageIdentifier": "Microsoft.DotNet.SDK.10" },
         { "PackageIdentifier": "WinSCP.WinSCP" },
         { "PackageIdentifier": "Microsoft.VisualStudioCode" },
         { "PackageIdentifier": "Microsoft.WindowsTerminal" }

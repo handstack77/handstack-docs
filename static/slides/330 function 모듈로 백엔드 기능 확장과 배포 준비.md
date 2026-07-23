@@ -172,13 +172,15 @@ section.tinytext>blockquote {
 
 ## 첫 HandStack Function 만들기 (Node.js)
 
-### 1. Function 생성하기
+### 1. Function 계약 만들기
 
-- HandStack CLI를 사용하여 Node.js 기반의 `Function`을 간단하게 생성할 수 있습니다.
-- 국세청 사업자등록정보 진위확인 및 상태조회 API 목록을 조회합니다.
+- `Function`은 CLI로 자동 생성되지 않고, `featureMeta.json`과 `featureMain.js`를 계약 폴더에 직접 둡니다.
+- 계약 경로는 `Contracts/function/{ApplicationID}/{ProjectID}/{TransactionID}/` 형식입니다.
 
-```url
-https://infuser.odcloud.kr/api/stages/28493/api-docs
+```txt
+Contracts/function/HDS/TST/JSF010/
+├─ featureMeta.json   (Header, Commands 메타 정의)
+└─ featureMain.js     (실제 실행 코드)
 ```
 
 ---
@@ -187,86 +189,83 @@ https://infuser.odcloud.kr/api/stages/28493/api-docs
 
 ### 2. 구조 확인 및 로직 구현
 
-- 생성된 `MyNodeUtil.js` 파일에는 `execute` 메서드가 있습니다.
-- 이 `execute` 메서드가 `Function`의 실제 코드가 실행되는 진입점입니다.
+- `featureMain.js`는 `Commands`에 정의한 `ID`(예: `GF01`)를 키로 갖는 콜백 스타일 함수를 내보냅니다.
+- 첫 번째 인자 `callback(error, result)`으로 결과를 반환하는 것이 `Function`의 실행 진입점입니다.
 
 ```javascript
-// server/src/functions/MyNodeUtil.js
+// Contracts/function/HDS/TST/JSF010/featureMain.js
 module.exports = {
-  execute: async (payload, context) => {
-    // payload: Function 호출 시 전달된 데이터
-    // context: 실행 컨텍스트 정보 (로그 등)
-    
-    console.log('MyNodeUtil Function 실행됨');
-    
-    return {
-      message: "Hello from Node.js Function!",
-      input: payload
-    };
-  }
+    GF01: (callback, moduleID, parameters, dataContext) => {
+        // parameters: featureMeta.json Commands.Params로 전달된 값
+        var serverName = $array.getValue(parameters, 'ServerName');
+
+        var result = {
+            DataTable1: [
+                { FunctionResult: `Hello from Node.js Function! serverName: ${serverName}` }
+            ]
+        };
+
+        callback(null, result);
+    }
 };
 ```
-- 지금은 외부에서 직접 호출할 수 없으며, 내부 호출만 가능합니다.
+- `Function`은 그 자체로는 외부에 노출되지 않으며, `transact`의 라우팅을 거쳐 실행됩니다.
 
 ---
 
 ## Function과 API 연동하기
 
-### `Function`을 API로 노출하는 방법
+### `Function`을 거래로 노출하는 방법
 
-- `Function`은 그 자체로 외부에서 접근할 수 없습니다.
-- 외부와 통신하려면 API 컨트롤러가 '창구' 역할을 해야 합니다.
-- API 컨트롤러가 요청을 받아 내부적으로 `Function`을 호출하고, 그 결과를 클라이언트에게 응답하는 구조입니다.
+- `Function`은 직접 URL을 갖지 않고, `transact` 거래 계약의 `CommandType`을 통해 노출됩니다.
+- 클라이언트는 `transact`의 `/transact/api/transaction/execute`만 호출하고, `transact`가 `CommandType=F`인 거래를 `function` 모듈로 라우팅합니다.
 
-Client ↔︎ API Controller ↔︎ Function
+Client ↔︎ transact (`CommandType=F` 라우팅) ↔︎ function
 
-> HandStack은 API와 `Function`을 매끄럽게 연동할 수 있도록 설계되어, 복잡한 비즈니스 로직을 모듈화하고 재사용하기 용이합니다.
+> `transact/module.json`의 `RoutingCommandUri`에 `"HDS|*|F|D": ".../function/api/execution"`처럼 등록되어 있어, 별도의 중계 컨트롤러 코드 없이 계약만으로 연동됩니다.
 
 ---
 
 ## Function과 API 연동하기
 
-### 실습: API 컨트롤러에서 Function 호출
+### 실습: 거래 계약에서 Function 호출
 
-- 기존 API 컨트롤러에 새로운 엔드포인트를 추가합니다.
-- `context.function.execute`를 사용해 `MyNodeUtil` Function을 호출합니다.
+- `transact` 거래 계약에서 `CommandType`을 `F`로 지정하고 `ServiceID`에 `Function`의 `TransactionID`를 연결합니다.
 
-```csharp
-// C# API 컨트롤러 예시
-[HttpPost("call-function")]
-public async Task<object> CallNodeFunction([FromBody] JsonObject payload)
+```json
 {
-    // "MyNodeUtil" Function을 payload와 함께 실행
-    var result = await context.function.execute("MyNodeUtil", payload);
-    return result;
+  "ServiceID": "JSF010",
+  "CommandType": "F",
+  "ReturnType": "Json"
 }
 ```
 
-- 핸즈온: Postman으로 `POST /api/[컨트롤러명]/call-function` 요청을 보내고 `Function`의 결과가 반환되는지 확인합니다.
+- 핸즈온: Postman으로 `POST /transact/api/transaction/execute` 요청을 보내고 `Function`의 `DataTable1` 결과가 반환되는지 확인합니다.
 
 ---
 
 ## 연습: Function으로 간단한 로직 구현
 
-### 1. `PriceChecker` Function 생성 및 구현
+### 1. `PriceChecker` Function 계약 만들기
 
 - 상품 가격을 받아 특정 금액 이상이면 메시지를 로깅하는 `Function`을 만듭니다.
 
-- Step 1: `Function` 생성
-  ```bash
-  handstack generate function PriceChecker
+- Step 1: 계약 폴더 생성
+  ```txt
+  Contracts/function/HDS/TST/PriceChecker/featureMeta.json
+  Contracts/function/HDS/TST/PriceChecker/featureMain.js
   ```
 
-- Step 2: 로직 구현 (`PriceChecker.js`)
+- Step 2: 로직 구현 (`featureMain.js`)
   ```javascript
   module.exports = {
-    execute: async (payload, context) => {
-      const price = payload.price || 0;
+    GF01: (callback, moduleID, parameters, dataContext) => {
+      var price = Number($array.getValue(parameters, 'Price')) || 0;
       if (price >= 1000) {
-        context.log.info(`[PriceChecker] 고가 상품 감지: ${price}원`);
-        return { isExpensive: true };
+        console.log(`[PriceChecker] 고가 상품 감지: ${price}원`);
       }
-      return { isExpensive: false };
+
+      callback(null, { DataTable1: [{ IsExpensive: price >= 1000 }] });
     }
   };
   ```
@@ -275,26 +274,19 @@ public async Task<object> CallNodeFunction([FromBody] JsonObject payload)
 
 ## 연습: Function으로 간단한 로직 구현
 
-### 2. 상품 생성 API에 연동하기
+### 2. 상품 생성 거래에 연동하기
 
-- 상품 정보가 저장될 때, `PriceChecker` `Function`을 호출하여 가격을 검사하도록 `POST /api/products` API를 수정합니다.
+- 상품을 저장하는 `dbclient` 거래 계약의 `BeforeTransaction`에 `PriceChecker` `Function`의 `TransactionID`를 지정하면, 저장 전에 자동으로 가격 검사가 실행됩니다.
 
-```csharp
-// ProductsController.cs 의사 코드
-[HttpPost]
-public async Task<object> CreateProduct([FromBody] Product product)
+```json
 {
-    // 1. PriceChecker Function 호출하여 가격 검사
-    var checkPayload = new JsonObject { ["price"] = product.Price };
-    await context.function.execute("PriceChecker", checkPayload);
-    
-    // 2. 기존 상품 저장 로직 실행
-    // ... repository.execute("saveProduct", product) ...
-    
-    return new { message = "상품이 생성되었습니다." };
+  "ServiceID": "PRD010",
+  "CommandType": "D",
+  "BeforeTransaction": "HDS|TST|PriceChecker|GF01",
+  "ReturnType": "Json"
 }
 ```
-- 핸즈온: 가격이 1000원 이상인 상품을 생성 요청 시, 서버 콘솔에 로깅 메시지가 출력되는지 확인합니다.
+- 핸즈온: 가격이 1000원 이상인 상품을 생성 요청 시, `function` 모듈 로그에 감지 메시지가 남는지 확인합니다.
 
 ---
 
@@ -302,11 +294,11 @@ public async Task<object> CreateProduct([FromBody] Product product)
 
 - `Function`은 재사용 가능한 독립적인 비즈니스 로직 단위입니다.
 - CLI 실행은 `command`, 그래프 쿼리는 `graphclient`, LLM 프롬프트는 `prompter`로 분리할 수 있습니다.
-- `handstack generate function` CLI 명령어로 `Function`을 쉽게 생성할 수 있습니다.
-- API 컨트롤러에서 `context.function.execute`로 `Function`을 호출하여 연동합니다.
+- `Function`은 `featureMeta.json` + `featureMain.js/cs/py` 계약으로 구성하고, `transact`의 `CommandType=F` 라우팅으로 연동합니다.
+- `BeforeTransaction`/`AfterTransaction` 설정으로 다른 거래 앞뒤에 `Function`을 연쇄 호출할 수 있습니다.
 - 이를 통해 API는 '요청/응답 처리'에, `Function`은 '핵심 로직 처리'에 집중하여 코드를 더 깔끔하게 구성할 수 있습니다.
 
-> 이제 API의 핵심 로직을 `Function`으로 분리하고, API가 그 `Function`을 호출하는 형태로 만들 수 있게 되었어요. 이렇게 하면 코드가 더 깔끔하고 관리하기 쉬워집니다.
+> 이제 API의 핵심 로직을 `Function`으로 분리하고, `transact` 계약이 그 `Function`을 라우팅하는 형태로 만들 수 있게 되었어요. 이렇게 하면 코드가 더 깔끔하고 관리하기 쉬워집니다.
 
 ---
 

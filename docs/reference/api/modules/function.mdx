@@ -97,13 +97,13 @@ ApplicationID|ProjectID|TransactionID|FunctionID
 
 ## Python 런타임 메모
 
-Python 함수는 `PythonFunctionConfig.EnablePythonDLL=true`일 때 지정된 Python DLL을 로드합니다. Windows에서는 `python311.dll` 또는 설치 버전에 맞는 DLL 경로를, Linux/macOS에서는 `libpython` 경로를 실제 환경에 맞춰 지정합니다.
+Python 함수는 `PythonFunctionConfig.EnablePythonDLL=true`일 때 지정된 Python DLL을 로드합니다. Windows에서는 `python313.dll` 또는 설치 버전에 맞는 DLL 경로를, Linux/macOS에서는 `libpython` 경로를 실제 환경에 맞춰 지정합니다.
 
 ```json
 {
   "PythonFunctionConfig": {
     "EnablePythonDLL": true,
-    "PythonDLLFilePath": "C:/anaconda3/envs/myenv/python311.dll"
+    "PythonDLLFilePath": "C:/anaconda3/envs/myenv/python313.dll"
   }
 }
 ```

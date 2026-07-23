@@ -36,7 +36,7 @@ syn.uicontrols.$auigrid.setValue('grdMain', [
 `example/` 폴더의 각 HTML 파일을 handstack의 wwwroot 정적 서버(rdy 프로젝트) 경로 아래에 두고 브라우저로 열면 바로 동작을 확인할 수 있습니다.
 
 - `auigridbasic.html` / `.js` : `$auigrid` 기본 사용법 — text/dropdown/checkbox/date 등 다양한 `editType` 컬럼 구성
-- `auigridevents.html` / `.js` : `$auigrid`의 `insertRow`/`removeRow`/`getFlag`/`setFlag`와 이벤트(`afterSelectionEnd`, `cellEditEnd`) 연동 데모
+- `auigridevents.html` / `.js` : `$auigrid`의 `insertRow`/`removeRow`/`getFlag`와 이벤트(`afterSelectionEnd`, `afterChange`, `filtering`) 연동 데모
 
 각 예제는 화면 하단 로그 영역(`syn.$l.eventLog` 출력)에서 이벤트 발생 순서와 전달값을 확인할 수 있습니다.
 

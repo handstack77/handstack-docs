@@ -29,24 +29,20 @@
 <footer>QCN</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="3" data-footer="QCN" data-paginate="true" data-background-color="#fff" data-theme="gaia" lang="ko-KR" data-marpit-pagination="3" style="--footer:QCN;--paginate:true;--background-color:#fff;--theme:gaia;background-color:#fff;background-image:none;" data-marpit-pagination-total="40">
-<h2 id="config-%EB%94%94%EB%A0%89%ED%86%A0%EB%A6%AC-%EA%B5%AC%EC%A1%B0-%EC%82%B4%ED%8E%B4%EB%B3%B4%EA%B8%B0"><code>config</code> 디렉토리 구조 살펴보기</h2>
+<h2 id="%EC%84%A4%EC%A0%95-%ED%8C%8C%EC%9D%BC-%EA%B5%AC%EC%A1%B0-%EC%82%B4%ED%8E%B4%EB%B3%B4%EA%B8%B0">설정 파일 구조 살펴보기</h2>
 <ul>
-<li>프로젝트의 모든 설정은 <code>config</code> 디렉토리에서 중앙 관리됩니다.</li>
-<li>환경별 (localhost, development, production) 설정을 분리하여 관리합니다.</li>
+<li><code>ack</code> 호스트는 기본 <code>appsettings.json</code>과, <code>ACK_ENVIRONMENT</code> 환경 변수 값에 해당하는 <code>appsettings.{ACK_ENVIRONMENT}.json</code>, 환경 변수를 순서대로 병합해 최종 설정을 만듭니다.</li>
+<li>화면(프론트엔드) 쪽 설정은 <code>wwwroot</code> 모듈의 <code>syn.config.json</code>이 담당하며, <code>ack</code>의 <code>appsettings.json</code>과는 별개 파일입니다.</li>
 </ul>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-text">/config
-|   ack.localhost.json            // 현재 환경(localhost)의 ack 프로그램 설정
-|
-+---modules                       // 각 모듈의 환경별 설정
-|       ack.dbclient.localhost.json
-|       ack.logger.localhost.json
-|       ...
-|
-+---nodeconfigs                   // Node.js 서버의 환경별 설정
-|       ack.localhost.json
-|
-\---synconfigs                    // syn.config.json의 환경별 재정의 설정
-        ack.localhost.json
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-text">1.WebHost/ack
+|   appsettings.json               // 기본 ack 설정 (AppSettings:LoadModules, DomainAPIServer 등)
+|   appsettings.Production.json    // ACK_ENVIRONMENT=Production 일 때 병합되는 재정의 설정
+
+2.Modules/&lt;module&gt;
+|   module.json                    // 모듈 ID, 라우팅, Contracts 경로 등
+
+2.Modules/wwwroot/wwwroot
+|   syn.config.json                 // 화면(UI) 런타임 설정 (DomainAPIServer 등)
 </code></pre>
 <footer>QCN</footer>
 </section>
@@ -54,82 +50,76 @@
 <h2 id="%ED%95%B5%EC%8B%AC-%EC%84%A4%EC%A0%95-%ED%8C%8C%EC%9D%BC%EC%9D%98-%EC%97%AD%ED%95%A0">핵심 설정 파일의 역할</h2>
 <ul>
 <li>
-<p><code>syn.config.json</code> (프로젝트 루트)</p>
+<p><code>1.WebHost/ack/appsettings.json</code></p>
 <ul>
-<li>HandStack 프로젝트의 <mark>기본이 되는 핵심 설정 파일</mark>입니다.</li>
-<li>애플리케이션 포트, API 경로 접두사 등 전반적인 설정을 담고 있습니다.</li>
+<li>HandStack 서버의 <mark>기본이 되는 핵심 설정 파일</mark>입니다.</li>
+<li><code>AppSettings:LoadModules</code>로 로드할 모듈 목록을, <code>AppSettings:DomainAPIServer</code>로 거래 API 서버 접속 정보를 담고 있습니다.</li>
 </ul>
 </li>
 <li>
-<p><code>config/synconfigs/ack.localhost.json</code></p>
+<p><code>appsettings.{ACK_ENVIRONMENT}.json</code></p>
 <ul>
-<li><code>localhost</code> 환경에서 <code>syn.config.json</code>의 <mark>설정 값을 재정의(Override)</mark>합니다.</li>
-<li>예를 들어, 개발용 API 경로와 운영용 API 경로를 다르게 설정할 수 있습니다.</li>
+<li><code>ACK_ENVIRONMENT</code> 환경 변수 값에 해당하는 파일이 있으면 기본 <code>appsettings.json</code> 위에 <mark>설정 값을 재정의(Override)</mark>합니다.</li>
 </ul>
 </li>
 <li>
-<p><code>config/modules/*.json</code></p>
+<p><code>2.Modules/wwwroot/wwwroot/syn.config.json</code></p>
 <ul>
-<li><code>dbclient</code>, <code>logger</code> 등 HandStack의 각 기능 모듈에 대한 세부 설정을 정의합니다.</li>
-<li>데이터베이스 접속 정보, 로그 레벨 등을 환경별로 다르게 지정할 수 있습니다.</li>
+<li>화면이 거래를 요청할 서버 정보(<code>DomainAPIServer.Protocol/IP/Port/Path</code>)와 캐싱, 디버그 모드 등 화면 동작을 정의합니다.</li>
 </ul>
 </li>
 </ul>
 <footer>QCN</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="5" data-footer="QCN" data-paginate="true" data-background-color="#fff" data-theme="gaia" lang="ko-KR" data-marpit-pagination="5" style="--footer:QCN;--paginate:true;--background-color:#fff;--theme:gaia;background-color:#fff;background-image:none;" data-marpit-pagination-total="40">
-<h2 id="%ED%95%B8%EC%A6%88%EC%98%A8-api-%EA%B2%BD%EB%A1%9C-%EC%A0%91%EB%91%90%EC%82%AC-%EB%B3%80%EA%B2%BD%ED%95%98%EA%B8%B0">핸즈온: API 경로 접두사 변경하기</h2>
+<h2 id="%ED%95%B8%EC%A6%88%EC%98%A8-ack-%ED%8F%AC%ED%8A%B8-%EB%B3%80%EA%B2%BD%ED%95%98%EA%B3%A0-%ED%99%94%EB%A9%B4-%EC%84%A4%EC%A0%95-%EB%A7%9E%EC%B6%94%EA%B8%B0">핸즈온: ack 포트 변경하고 화면 설정 맞추기</h2>
 <ul>
-<li><code>apiPrefix</code> 값을 변경하여 실제 API 호출 주소가 어떻게 바뀌는지 확인해 봅시다.</li>
+<li><code>ack</code> 호스트의 실행 포트를 바꾸고, 화면(<code>syn.config.json</code>)의 <code>DomainAPIServer.Port</code>를 함께 맞춰야 정상 동작함을 확인해 봅시다.</li>
 <li>이 실습을 통해 설정 파일이 애플리케이션에 어떻게 적용되는지 이해할 수 있습니다.</li>
 </ul>
 <ol>
-<li><mark>설정 파일 열기</mark></li>
-<li><mark><code>apiPrefix</code> 값 수정</mark></li>
-<li><mark>서버 재시작 및 테스트</mark></li>
+<li><mark><code>--port</code> 옵션으로 ack 재실행</mark></li>
+<li><mark><code>syn.config.json</code>의 <code>DomainAPIServer.Port</code> 수정</mark></li>
+<li><mark>화면 재조회 및 테스트</mark></li>
 </ol>
 <footer>QCN</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="6" data-footer="QCN" data-paginate="true" data-background-color="#fff" data-theme="gaia" lang="ko-KR" data-marpit-pagination="6" style="--footer:QCN;--paginate:true;--background-color:#fff;--theme:gaia;background-color:#fff;background-image:none;" data-marpit-pagination-total="40">
-<h3 id="1%EB%8B%A8%EA%B3%84-%EC%84%A4%EC%A0%95-%ED%8C%8C%EC%9D%BC-%EC%88%98%EC%A0%95">1단계: 설정 파일 수정</h3>
+<h3 id="1%EB%8B%A8%EA%B3%84-ack-%ED%8F%AC%ED%8A%B8-%EB%B3%80%EA%B2%BD">1단계: ack 포트 변경</h3>
 <ul>
-<li><code>syn.config.json</code> 파일을 열어 <code>apiPrefix</code> 속성을 찾습니다.</li>
-<li>만약 <code>config/synconfigs/ack.localhost.json</code> 파일에 <code>apiPrefix</code>가 있다면 해당 파일을 수정합니다. (환경별 설정이 우선 적용)</li>
-<li><code>apiPrefix</code> 값을 <code>/api</code>에서 <code>/myapi</code>로 변경하고 저장합니다.</li>
+<li>터미널에서 <code>ack</code>를 다른 포트(예: 8521)로 실행합니다.</li>
 </ul>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-json"><span class="hljs-comment">// syn.config.json 또는 config/synconfigs/ack.localhost.json</span>
-
-<span class="hljs-punctuation">{</span>
-  <span class="hljs-comment">// ... 다른 설정들</span>
-  <span class="hljs-attr">&quot;apiPrefix&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/myapi&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-comment">// 기존 &quot;/api&quot;에서 변경</span>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">dotnet run --project 1.WebHost/ack/ack.csproj -- --port=8521 --modules=wwwroot,transact,dbclient,graphclient,<span class="hljs-keyword">function</span>,<span class="hljs-built_in">command</span>,prompter
+</code></pre>
+<ul>
+<li><code>2.Modules/wwwroot/wwwroot/syn.config.json</code> 파일을 열어 <code>DomainAPIServer.Port</code> 값을 <code>&quot;8421&quot;</code>에서 <code>&quot;8521&quot;</code>로 변경하고 저장합니다.</li>
+</ul>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-json"><span class="hljs-comment">// 2.Modules/wwwroot/wwwroot/syn.config.json</span>
+<span class="hljs-attr">&quot;DomainAPIServer&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;Port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;8521&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-comment">// 기존 &quot;8421&quot;에서 변경</span>
   <span class="hljs-comment">// ... 다른 설정들</span>
 <span class="hljs-punctuation">}</span>
 </code></pre>
 <footer>QCN</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="7" data-footer="QCN" data-paginate="true" data-background-color="#fff" data-theme="gaia" lang="ko-KR" data-marpit-pagination="7" style="--footer:QCN;--paginate:true;--background-color:#fff;--theme:gaia;background-color:#fff;background-image:none;" data-marpit-pagination-total="40">
-<h3 id="2%EB%8B%A8%EA%B3%84-%EC%84%9C%EB%B2%84-%EC%8B%A4%ED%96%89-%EB%B0%8F-%ED%85%8C%EC%8A%A4%ED%8A%B8">2단계: 서버 실행 및 테스트</h3>
+<h3 id="2%EB%8B%A8%EA%B3%84-%EC%84%9C%EB%B2%84-%ED%99%95%EC%9D%B8-%EB%B0%8F-%ED%85%8C%EC%8A%A4%ED%8A%B8">2단계: 서버 확인 및 테스트</h3>
 <ul>
-<li>터미널에서 HandStack 서버를 실행합니다.</li>
+<li>브라우저 또는 curl로 변경된 포트의 상태를 확인합니다.</li>
 </ul>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">handstack serve
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">curl http://localhost:8521/checkip
 </code></pre>
 <ul>
 <li>
-<p>Postman과 같은 API 테스트 도구를 사용하여 변경 전후의 경로를 각각 호출해 봅니다.</p>
-</li>
-<li>
 <p><strong>변경 전 (Before)</strong></p>
 <ul>
-<li><code>GET http://localhost:5000/api/sample/users</code></li>
-<li>(이제 404 Not Found 오류가 발생합니다)</li>
+<li><code>syn.config.json</code>의 <code>DomainAPIServer.Port</code>가 <code>&quot;8421&quot;</code>이면 화면은 계속 8421 포트로 거래를 요청합니다.</li>
 </ul>
 </li>
 <li>
 <p><strong>변경 후 (After)</strong></p>
 <ul>
-<li><code>GET http://localhost:5000/myapi/sample/users</code></li>
-<li>(정상적으로 데이터가 조회됩니다)</li>
+<li><code>DomainAPIServer.Port</code>를 <code>&quot;8521&quot;</code>로 맞추면 화면이 새로 기동한 8521 포트의 <code>ack</code>로 정상적으로 거래를 요청합니다.</li>
 </ul>
 </li>
 </ul>
@@ -138,9 +128,9 @@
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="8" data-footer="QCN" data-paginate="true" data-background-color="#fff" data-theme="gaia" lang="ko-KR" data-marpit-pagination="8" style="--footer:QCN;--paginate:true;--background-color:#fff;--theme:gaia;background-color:#fff;background-image:none;" data-marpit-pagination-total="40">
 <h2 id="%EC%84%A4%EC%A0%95-%ED%8C%8C%EC%9D%BC-%EC%9A%94%EC%95%BD-%EC%A0%95%EB%A6%AC">설정 파일 요약 정리</h2>
 <ul>
-<li>HandStack의 <code>config</code> 디렉토리는 애플리케이션의 모든 동작을 제어하는 <mark>컨트롤 타워</mark>입니다.</li>
-<li><code>syn.config.json</code>에 기본 설정을, <code>config/**/*.[환경].json</code>에 환경별 재정의 설정을 분리하여 관리합니다.</li>
-<li>설정 파일 변경만으로 코드 수정 없이 API 경로, 데이터베이스 연결 등 <mark>핵심 동작을 쉽게 변경</mark>할 수 있습니다.</li>
+<li><code>ack</code>의 <code>appsettings.json</code>/<code>appsettings.{ACK_ENVIRONMENT}.json</code>은 서버 동작(로드 모듈, API 서버 정보 등)을, <code>syn.config.json</code>은 화면 동작을 제어하는 <mark>컨트롤 타워</mark>입니다.</li>
+<li>두 파일은 역할이 분리되어 있으므로, 서버 포트를 바꾸면 화면 설정도 함께 맞춰야 합니다.</li>
+<li>설정 파일 변경만으로 코드 수정 없이 로드 모듈, API 서버 접속 정보 등 <mark>핵심 동작을 쉽게 변경</mark>할 수 있습니다.</li>
 <li>이는 배포 환경에 맞춰 유연하게 애플리케이션을 운영할 수 있는 기반이 됩니다.</li>
 </ul>
 <footer>QCN</footer>
@@ -214,7 +204,7 @@
 <h2 id="handstack-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EA%B0%84%EB%8B%A8-%EB%B0%B0%ED%8F%AC-1">HandStack 프로젝트 간단 배포 (1)</h2>
 <h3 id="%EB%A1%9C%EC%BB%AC-%EC%84%9C%EB%B2%84%EC%97%90-pm2%EB%A1%9C-%EB%B0%B0%ED%8F%AC%ED%95%98%EA%B8%B0-nodejs">로컬 서버에 PM2로 배포하기 (Node.js)</h3>
 <ul>
-<li>목표: 5개월차에 배운 PM2를 활용하여 HandStack Node.js 백엔드 애플리케이션을 로컬 환경에서 안정적으로 실행하고 관리하는 방법을 실습합니다.</li>
+<li>목표: 5개월차에 배운 PM2를 활용하여 HandStack <code>ack</code>(ASP.NET Core) 백엔드 애플리케이션을 로컬 환경에서 안정적으로 실행하고 관리하는 방법을 실습합니다.</li>
 </ul>
 <footer>QCN</footer>
 </section>
@@ -239,8 +229,8 @@
 <li>
 <p>HandStack 빌드 결과물 실행</p>
 <ul>
-<li><code>handstack build</code> 명령으로 <code>dist</code> 디렉토리 생성</li>
-<li><code>pm2 start dist/server/main.js --name my-handstack-app</code></li>
+<li><code>dotnet publish -c Release -o dist</code> 명령으로 <code>dist</code> 디렉토리 생성</li>
+<li><code>pm2 start dist/YourApp.dll --interpreter dotnet --name my-handstack-app</code></li>
 </ul>
 </li>
 <li>
@@ -263,12 +253,13 @@
 <span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
   <span class="hljs-attr">apps</span>: [{
     <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;my-handstack-app&#x27;</span>,
-    <span class="hljs-attr">script</span>: <span class="hljs-string">&#x27;dist/server/main.js&#x27;</span>,
-    <span class="hljs-attr">instances</span>: <span class="hljs-string">&#x27;max&#x27;</span>, <span class="hljs-comment">// or a number</span>
-    <span class="hljs-attr">exec_mode</span>: <span class="hljs-string">&#x27;cluster&#x27;</span>,
+    <span class="hljs-attr">script</span>: <span class="hljs-string">&#x27;dist/YourApp.dll&#x27;</span>,
+    <span class="hljs-attr">interpreter</span>: <span class="hljs-string">&#x27;dotnet&#x27;</span>,
+    <span class="hljs-attr">instances</span>: <span class="hljs-number">1</span>,
+    <span class="hljs-attr">exec_mode</span>: <span class="hljs-string">&#x27;fork&#x27;</span>,
     <span class="hljs-attr">watch</span>: <span class="hljs-literal">false</span>,
     <span class="hljs-attr">env</span>: {
-      <span class="hljs-attr">NODE_ENV</span>: <span class="hljs-string">&#x27;production&#x27;</span>
+      <span class="hljs-attr">ASPNETCORE_ENVIRONMENT</span>: <span class="hljs-string">&#x27;Production&#x27;</span>
     }
   }]
 };
@@ -281,7 +272,7 @@
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="18" data-footer="QCN" data-paginate="true" data-background-color="#fff" data-theme="gaia" lang="ko-KR" data-marpit-pagination="18" style="--footer:QCN;--paginate:true;--background-color:#fff;--theme:gaia;background-color:#fff;background-image:none;" data-marpit-pagination-total="40">
 <h3 id="%ED%95%B8%EC%A6%88%EC%98%A8">핸즈온</h3>
 <ol>
-<li><code>handstack build</code> 명령어로 프로젝트를 빌드합니다.</li>
+<li><code>dotnet publish -c Release -o dist</code> 명령어로 프로젝트를 빌드합니다.</li>
 <li>프로젝트 루트에 <code>ecosystem.config.js</code> 파일을 생성하고 위 예시처럼 설정합니다.</li>
 <li><code>pm2 start ecosystem.config.js</code> 명령어로 앱을 실행합니다.</li>
 <li><code>pm2 logs</code>로 로그를 확인합니다.</li>

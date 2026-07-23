@@ -15,15 +15,9 @@ let $chartbasic = {
         },
 
         btnSetValue_click() {
-            // 주의(API.md "알려진 이슈" 참고): $chart.setValue는 시리즈 교체 자체는 정상 적용하지만,
-            // 내부 구현에 남아있는 참조 오류(control이 어디에도 선언되어 있지 않음) 때문에
-            // 곧바로 ReferenceError를 던집니다. 화면에는 새 시리즈가 반영되는 것을 확인할 수 있습니다.
-            try {
-                syn.uicontrols.$chart.setValue('chtSales', $this.prop.newSeries);
-                syn.$l.eventLog('btnSetValue_click', '예외 없이 완료됨(예상과 다름, 소스 변경 여부 확인 필요)');
-            } catch (error) {
-                syn.$l.eventLog('btnSetValue_click', '알려진 버그로 예외 발생(시리즈 자체는 이미 반영됨): ' + error.message, 'Debug');
-            }
+            // $chart.setValue는 기존 시리즈를 모두 제거한 뒤 newSeries를 addSeries로 반영합니다(예외 없이 정상 동작).
+            syn.uicontrols.$chart.setValue('chtSales', $this.prop.newSeries);
+            syn.$l.eventLog('btnSetValue_click', '새 시리즈로 교체 완료');
         },
 
         btnClear_click() {
@@ -31,12 +25,12 @@ let $chartbasic = {
         },
 
         btnToImage_click() {
-            // 주의(API.md "알려진 이슈" 참고): toImage는 이 저장소에 포함되어 있지 않은
-            // 전역 download 함수를 참조하므로 ReferenceError가 발생할 수 있습니다.
+            // 주의(API.md "알려진 이슈" 참고): toImage 내부에서 getChartControl(elID)가 반환하는
+            // Highcharts.Chart 인스턴스를 control.chart로 다시 감싸 읽으려다 TypeError가 발생합니다.
             try {
                 syn.uicontrols.$chart.toImage('chtSales', 'sales-chart');
             } catch (error) {
-                syn.$l.eventLog('btnToImage_click', 'download 라이브러리 미포함으로 예외 발생: ' + error.message, 'Debug');
+                syn.$l.eventLog('btnToImage_click', '알려진 버그(control.chart 오참조)로 예외 발생: ' + error.message, 'Debug');
             }
         }
     }

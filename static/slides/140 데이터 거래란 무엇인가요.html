@@ -153,14 +153,14 @@ WHERE  C.CertifiedYN = &#x27;N&#x27;
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="9" data-footer="QCN" data-paginate="true" data-background-color="#fff" data-theme="gaia" lang="ko-KR" data-marpit-pagination="9" style="--footer:QCN;--paginate:true;--background-color:#fff;--theme:gaia;background-color:#fff;background-image:none;" data-marpit-pagination-total="14">
 <h2 id="function-%EB%AA%A8%EB%93%88%EC%9D%98-python-%EA%B8%B0%EB%8A%A5-featuremainpy-%ED%8C%8C%EC%9D%BC">function 모듈의 Python 기능 featureMain.py 파일</h2>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-javascript"><span class="hljs-keyword">import</span> json
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-python"><span class="hljs-keyword">import</span> json
 
 <span class="hljs-keyword">class</span> <span class="hljs-title class_">PYF010</span>:
-    def <span class="hljs-title class_">GF01</span>(parameters, dataContext):
-        <span class="hljs-title function_">print</span>(parameters[<span class="hljs-string">&quot;GlobalID&quot;</span>])
-        <span class="hljs-title function_">print</span>(dataContext)
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">GF01</span>(<span class="hljs-params">parameters, dataContext</span>):
+        <span class="hljs-built_in">print</span>(parameters[<span class="hljs-string">&quot;GlobalID&quot;</span>])
+        <span class="hljs-built_in">print</span>(dataContext)
         
-        dataDict = json.<span class="hljs-title function_">loads</span>(dataContext)
+        dataDict = json.loads(dataContext)
 
         result = {
             <span class="hljs-string">&quot;DataTable1&quot;</span>: [
@@ -173,7 +173,7 @@ WHERE  C.CertifiedYN = &#x27;N&#x27;
             ]
         }
 
-        <span class="hljs-keyword">return</span> json.<span class="hljs-title function_">dumps</span>(result, ensure_ascii=<span class="hljs-title class_">False</span>, indent=<span class="hljs-number">4</span>)
+        <span class="hljs-keyword">return</span> json.dumps(result, ensure_ascii=<span class="hljs-literal">False</span>, indent=<span class="hljs-number">4</span>)
 </code></pre>
 <footer>QCN</footer>
 </section>
@@ -192,28 +192,19 @@ WHERE  C.CertifiedYN = &#x27;N&#x27;
 <span class="hljs-tag">&lt;<span class="hljs-name">mapper</span> <span class="hljs-attr">xmlns</span>=<span class="hljs-string">&quot;contract.xsd&quot;</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">header</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">application</span>&gt;</span>HDS<span class="hljs-tag">&lt;/<span class="hljs-name">application</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">project</span>&gt;</span>ZZD<span class="hljs-tag">&lt;/<span class="hljs-name">project</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">project</span>&gt;</span>TST<span class="hljs-tag">&lt;/<span class="hljs-name">project</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">transaction</span>&gt;</span>TST010<span class="hljs-tag">&lt;/<span class="hljs-name">transaction</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">datasource</span>&gt;</span>DB01<span class="hljs-tag">&lt;/<span class="hljs-name">datasource</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">program</span>&gt;</span>TST010<span class="hljs-tag">&lt;/<span class="hljs-name">program</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">use</span>&gt;</span>Y<span class="hljs-tag">&lt;/<span class="hljs-name">use</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">desc</span>&gt;</span>배치 작업 프로그램 테스트<span class="hljs-tag">&lt;/<span class="hljs-name">desc</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">desc</span>&gt;</span>command 모듈 계약 예제<span class="hljs-tag">&lt;/<span class="hljs-name">desc</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">header</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">commands</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">statement</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;GC01&quot;</span> <span class="hljs-attr">seq</span>=<span class="hljs-string">&quot;0&quot;</span> <span class="hljs-attr">use</span>=<span class="hljs-string">&quot;Y&quot;</span> <span class="hljs-attr">timeout</span>=<span class="hljs-string">&quot;0&quot;</span> <span class="hljs-attr">before</span>=<span class="hljs-string">&quot;HDS|SMP|SMP040|GD01&quot;</span> 
-        <span class="hljs-attr">after</span>=<span class="hljs-string">&quot;HDS|SMP|SMP040|MD01&quot;</span> 
-        <span class="hljs-attr">fallback</span>=<span class="hljs-string">&quot;HDS|SMP|SMP040|AF01&quot;</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">beforescript</span>&gt;</span>
-                dotnet --version
-                node -v
-            <span class="hljs-tag">&lt;/<span class="hljs-name">beforescript</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">afterscript</span>&gt;</span>
-                node -v
-            <span class="hljs-tag">&lt;/<span class="hljs-name">afterscript</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">param</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;@ApplicationID&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;Int32&quot;</span> <span class="hljs-attr">length</span>=<span class="hljs-string">&quot;-1&quot;</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;NULL&quot;</span> /&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">param</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;@BusinessID&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;Int32&quot;</span> <span class="hljs-attr">length</span>=<span class="hljs-string">&quot;-1&quot;</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;NULL&quot;</span> /&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">param</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;@CodeGroupID&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;String&quot;</span> <span class="hljs-attr">length</span>=<span class="hljs-string">&quot;36&quot;</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;NULL&quot;</span> /&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-name">statement</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">command</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;GC01&quot;</span> <span class="hljs-attr">seq</span>=<span class="hljs-string">&quot;0&quot;</span> <span class="hljs-attr">use</span>=<span class="hljs-string">&quot;Y&quot;</span> <span class="hljs-attr">timeout</span>=<span class="hljs-string">&quot;30&quot;</span> <span class="hljs-attr">desc</span>=<span class="hljs-string">&quot;dotnet 런타임 정보 조회&quot;</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">executable</span>&gt;</span>dotnet<span class="hljs-tag">&lt;/<span class="hljs-name">executable</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">arguments</span>&gt;</span>--info<span class="hljs-tag">&lt;/<span class="hljs-name">arguments</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">successExitCodes</span>&gt;</span>0<span class="hljs-tag">&lt;/<span class="hljs-name">successExitCodes</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">param</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;@UserID&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;String&quot;</span> <span class="hljs-attr">length</span>=<span class="hljs-string">&quot;255&quot;</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;NULL&quot;</span> /&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">param</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;@RoleID&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;String&quot;</span> <span class="hljs-attr">length</span>=<span class="hljs-string">&quot;100&quot;</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;NULL&quot;</span> /&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">command</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">commands</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">mapper</span>&gt;</span>
 </code></pre>

@@ -89,7 +89,7 @@ jqGrid는 `syn-events` 선언 배열을 사용하지 않고, `window[pageScript]
 | `{elID}_onSelectAll` | 전체 선택(다중 선택 모드) 시 |
 | `{elID}_ondblClickRow` | 행 더블클릭 시 |
 | `{elID}_onRightClickRow` | 행 우클릭 시 |
-| `{elID}_onSortCol` / `{elID}_onSortingCol` | 정렬 컬럼 클릭 전/후 |
+| `{elID}_onSortCol` | 정렬 컬럼 클릭 시 |
 | `{elID}_onHeaderClick` | 헤더 클릭 시 |
 | `{elID}_beforeSelectRow` | 행 선택 직전 |
 | `{elID}_resizeStart` / `{elID}_resizeStop` | 컬럼 리사이즈 시작/종료 |
@@ -118,6 +118,10 @@ let $samplePage = {
 
 - 컬럼 정의 방식: `colModels` 배열에 `{ name, label, width, edittype, ... }` 형태의 객체를 나열합니다(jqGrid 원본 `colModel` 그대로).
 - CRUD 상태 플래그: `getUpdateDatas`가 상태 플래그를 기준으로 "변경된 행만" 추려서 서버 전송용 배열을 만듭니다.
+
+### ⚠️ 참고 — 문서화되었지만 실제로는 호출되지 않는 내부 함수
+
+`webGrid_onSortingCol(index, iCol, sortorder)` 함수는 `mod.event[gridID + '_onSortingCol']` 핸들러를 찾아 호출하는 코드를 담고 있지만, 이 함수 자체가 `gridParams.onSortCol`처럼 jqGrid 콜백 옵션에 연결되는 코드가 소스에 없어 실제로는 호출되지 않습니다(정렬은 `webGrid_onSortCol` → `{elID}_onSortCol` 경로로만 동작). 따라서 `{elID}_onSortingCol` 페이지 핸들러를 정의해도 현재 소스 기준으로는 호출되지 않습니다.
 
 ### 관련 문서
 

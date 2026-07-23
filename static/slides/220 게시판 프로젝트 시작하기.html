@@ -108,7 +108,7 @@
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="7" data-footer="QCN" data-paginate="true" data-background-color="#fff" data-theme="gaia" lang="ko-KR" data-marpit-pagination="7" style="--footer:QCN;--paginate:true;--background-color:#fff;--theme:gaia;background-color:#fff;background-image:none;" data-marpit-pagination-total="18">
 <h2 id="%EB%94%94%EB%A0%89%ED%86%A0%EB%A6%AC-%EB%B0%8F-%ED%8C%8C%EC%9D%BC-%EA%B5%AC%EC%84%B1">디렉토리 및 파일 구성</h2>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-txt">contracts
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-txt">Contracts
 ├─dbclient/HDS/BOD
 │  ├─BOD010.xml
 │  ├─BOD011.xml
@@ -117,7 +117,7 @@
 │  ├─BOD010.json
 │  ├─BOD011.json
 │  └─BOD012.json
-└─wwwroot/BOD
+└─wwwroot/HDS/BOD
    ├─BOD010.html, BOD010.js
    ├─BOD011.html, BOD011.js
    └─BOD012.html, BOD012.js
@@ -126,19 +126,19 @@
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="8" data-footer="QCN" data-paginate="true" data-background-color="#fff" data-theme="gaia" lang="ko-KR" data-marpit-pagination="8" style="--footer:QCN;--paginate:true;--background-color:#fff;--theme:gaia;background-color:#fff;background-image:none;" data-marpit-pagination-total="18">
 <h2 id="4%EB%8B%A8%EA%B3%84-%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B2%A0%EC%9D%B4%EC%8A%A4-%EC%84%A4%EA%B3%84">4단계: 데이터베이스 설계</h2>
-<p>HandStack은 SQL Server, Oracle, PostgreSQL 등 다양한 데이터베이스를 지원합니다.<br />
-게시판 프로젝트에서는 SQL Server를 사용합니다.</p>
+<p>HandStack은 SQL Server, Oracle, MySQL/MariaDB, PostgreSQL, SQLite 등 다양한 데이터베이스를 지원합니다.<br />
+게시판 프로젝트에서는 별도 서버 설치 없이 바로 시작할 수 있는 SQLite를 사용합니다.</p>
 <ul>
 <li>Gemini 에게 테이블 설계 요청하기</li>
 </ul>
 <blockquote>
-<p>간단한 분류 게시판 데이터베이스 테이블 정보 (컬럼명, 데이터 타입, 설명)를 SQL Server 기준으로 MarkDown 문법으로 만들어줘. 그리고 실행 결과에서 테이블을 생성 하는 ddl 문법에서 ID를 자동 증가 키 컬럼으로 구성하고 기존 테이블이 없으면 CREATE 하는 예제를 알려줘</p>
+<p>간단한 분류 게시판 데이터베이스 테이블 정보 (컬럼명, 데이터 타입, 설명)를 SQLite 기준으로 MarkDown 문법으로 만들어줘. 그리고 실행 결과에서 테이블을 생성 하는 ddl 문법에서 ID를 자동 증가 키 컬럼으로 구성하고 기존 테이블이 없으면 CREATE 하는 예제를 알려줘</p>
 </blockquote>
 <footer>QCN</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="9" data-footer="QCN" data-paginate="true" data-background-color="#fff" data-theme="gaia" lang="ko-KR" data-marpit-pagination="9" style="--footer:QCN;--paginate:true;--background-color:#fff;--theme:gaia;background-color:#fff;background-image:none;" data-marpit-pagination-total="18">
 <h2 id="gemini-%EC%9D%98-%EB%8B%B5%EB%B3%80-%ED%85%8C%EC%9D%B4%EB%B8%94-ddl">Gemini 의 답변: 테이블 DDL</h2>
-<p>SQL Server 기준으로 분류 게시판 데이터베이스 테이블을 만들었습니다.</p>
+<p>SQLite 기준으로 분류 게시판 데이터베이스 테이블을 만들었습니다.</p>
 <table>
 <thead>
 <tr>
@@ -150,32 +150,32 @@
 <tbody>
 <tr>
 <td>ID</td>
-<td>INT</td>
+<td>INTEGER</td>
 <td>게시글의 고유 번호 (기본 키)</td>
 </tr>
 <tr>
 <td>Category</td>
-<td>NVARCHAR(50)</td>
+<td>TEXT</td>
 <td>게시글의 카테고리</td>
 </tr>
 <tr>
 <td>Title</td>
-<td>NVARCHAR(200)</td>
+<td>TEXT</td>
 <td>게시글의 제목</td>
 </tr>
 <tr>
 <td>Content</td>
-<td>NVARCHAR(MAX)</td>
+<td>TEXT</td>
 <td>게시글의 내용</td>
 </tr>
 <tr>
 <td>Author</td>
-<td>NVARCHAR(50)</td>
+<td>TEXT</td>
 <td>게시글 작성자의 이름</td>
 </tr>
 <tr>
 <td>DatePosted</td>
-<td>DATETIME</td>
+<td>TEXT</td>
 <td>게시글이 작성된 날짜와 시간</td>
 </tr>
 </tbody>
@@ -184,12 +184,12 @@
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="10" data-footer="QCN" data-paginate="true" data-background-color="#fff" data-theme="gaia" lang="ko-KR" data-marpit-pagination="10" style="--footer:QCN;--paginate:true;--background-color:#fff;--theme:gaia;background-color:#fff;background-image:none;" data-marpit-pagination-total="18">
 <h2 id="gemini-%EC%9D%98-%EB%8B%B5%EB%B3%80-crud-%EC%BF%BC%EB%A6%AC">Gemini 의 답변: CRUD 쿼리</h2>
-<p>위의 Board 테이블 결과에서 SQL Server 기준으로 CRUD 쿼리를 만들어줘</p>
+<p>위의 Board 테이블 결과에서 SQLite 기준으로 CRUD 쿼리를 만들어줘</p>
 <ol>
 <li>Create (생성)</li>
 </ol>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-sql"><span class="hljs-keyword">INSERT INTO</span> Board (Category, Title, Content, Author, DatePosted)
-<span class="hljs-keyword">VALUES</span> (N<span class="hljs-string">&#x27;카테고리&#x27;</span>, N<span class="hljs-string">&#x27;제목&#x27;</span>, N<span class="hljs-string">&#x27;내용&#x27;</span>, N<span class="hljs-string">&#x27;작성자&#x27;</span>, GETDATE());
+<span class="hljs-keyword">VALUES</span> (<span class="hljs-string">&#x27;카테고리&#x27;</span>, <span class="hljs-string">&#x27;제목&#x27;</span>, <span class="hljs-string">&#x27;내용&#x27;</span>, <span class="hljs-string">&#x27;작성자&#x27;</span>, datetime(<span class="hljs-string">&#x27;now&#x27;</span>, <span class="hljs-string">&#x27;localtime&#x27;</span>));
 </code></pre>
 <ol start="2">
 <li>Read (조회)</li>
@@ -199,7 +199,7 @@
 <ol start="3">
 <li>Update (수정)</li>
 </ol>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-sql"><span class="hljs-keyword">UPDATE</span> Board <span class="hljs-keyword">SET</span> Title <span class="hljs-operator">=</span> N<span class="hljs-string">&#x27;새 제목&#x27;</span>, Content <span class="hljs-operator">=</span> N<span class="hljs-string">&#x27;새 내용&#x27;</span> <span class="hljs-keyword">WHERE</span> ID <span class="hljs-operator">=</span> <span class="hljs-number">1</span>;
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-sql"><span class="hljs-keyword">UPDATE</span> Board <span class="hljs-keyword">SET</span> Title <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;새 제목&#x27;</span>, Content <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;새 내용&#x27;</span> <span class="hljs-keyword">WHERE</span> ID <span class="hljs-operator">=</span> <span class="hljs-number">1</span>;
 </code></pre>
 <ol start="4">
 <li>Delete (삭제)</li>

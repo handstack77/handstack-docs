@@ -86,6 +86,6 @@ let $mypage = {
 
 ## 참고
 
-- 원본 소스: `1.WebHost/rdy/modules/wwwroot/wwwroot/uicontrols/RadioButton/RadioButton.js`
-- 스타일 정의: `1.WebHost/rdy/modules/wwwroot/wwwroot/uicontrols/RadioButton/RadioButton.css` (`.syn-radio` 클래스)
+- 원본 소스: `wwwroot/uicontrols/RadioButton/RadioButton.js`
+- 스타일 정의: `wwwroot/uicontrols/RadioButton/RadioButton.css` (`.syn-radio` 클래스)
 - 사용 예제: [`./example`](./example) 폴더, 그리고 [README.md](./README.md)의 "빠른 시작" 절
