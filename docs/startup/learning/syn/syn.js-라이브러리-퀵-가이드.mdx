@@ -90,6 +90,19 @@ syn.$n.start({
 - SSE/WebSocket과 rooms 전역 편의 메서드는 [network](network)를 확인합니다.
 - iframe 부모/자식 화면 메시지 채널은 [iframe-main](iframe-main), [iframe-child](iframe-child)를 확인합니다.
 
+## 선언적 데이터 바인딩
+
+```html
+<input type="text" syn-bind="value:user.name">
+<span syn-bind="text:user.name"></span>
+```
+```javascript
+const mounted = syn.$bind.mount(document.body, { user: { name: '홍길동' } });
+mounted.store.data.user.name = '김철수'; // 표준 JS 문법으로 값 변경 시 화면 자동 반영
+```
+
+`syn-datafield`/`syn-options` 기반 화면 거래 바인딩과는 별개로, 순수 객체/배열을 `syn-bind`/`syn-bind-list` 속성만으로 표준 컨트롤이나 커스텀 컨트롤에 가볍게 양방향 연결하려면 [binding](binding) 문서를 확인합니다.
+
 ## 기본 타입 확장
 
 ```javascript

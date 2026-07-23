@@ -6,6 +6,8 @@ sidebar_position: 4
 
 syn_data 컨트롤은 가상의 데이터 소스를 제공합니다. 이 컨트롤은 데이터를 제공하는 역할을 하며, 데이터를 서버에서 가져오거나, 클라이언트에서 생성하거나, 다른 컨트롤에서 가져오거나 다양한 방법으로 활용할 수 있습니다.
 
+> `syn-datafield`/`syn-options` 메타 설정 없이 표준 HTMLElement나 임의의 커스텀 컨트롤을 순수 객체/배열과 가볍게 양방향 연결하고 싶다면 [syn.$bind](/docs/startup/learning/syn/binding)(`syn-bind`/`syn-bind-list` 속성 기반)를 참고하세요. 서로 다른 HTML 속성을 사용하므로 같은 화면에서 함께 사용해도 충돌하지 않습니다.
+
 ```html
 <div>
     <syn_data id="srcException" syn-options="{

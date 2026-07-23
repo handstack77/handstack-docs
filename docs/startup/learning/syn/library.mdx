@@ -71,7 +71,7 @@ syn.$l.triggerEvent('txt_addEvent', 'change');
 // 이벤트 해제
 syn.$l.removeEvent('txt_addEvent', 'change', handler);
 ```
-내부적으로 `addEvent`/`removeEvent`는 등록된 (엘리먼트, 타입, 핸들러) 조합을 자체 레지스트리에서 관리하므로, 중복 등록을 막고 `unload` 시점에 일괄 해제(flush)할 수 있습니다.
+내부적으로 `addEvent`/`removeEvent`는 등록된 (엘리먼트, 타입, 핸들러) 조합을 자체 레지스트리에서 관리하므로, 중복 등록을 막고 `pagehide` 시점에 일괄 해제(flush)할 수 있습니다. (모바일 브라우저의 BFCache 대응을 위해 `unload` 대신 `pagehide`를 사용합니다.)
 
 ### 3. CSV ↔ JSON 변환
 ```javascript
