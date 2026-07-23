@@ -6,7 +6,7 @@ sidebar_position: 28
 
 ## 이 컨트롤은 무엇인가요?
 
-`AUIGrid.js`는 [AUIGrid](https://www.auisoft.net/)(상용) 라이브러리를 감싼 업무용 그리드 컨트롤입니다. `syn.uicontrols.$auigrid` 싱글턴 객체로 노출되며, 예전에는 `WebGrid` 폴더에 `WebGrid.js`(Handsontable), `jqGrid.js`, `AUIPivot.js`와 함께 들어 있었지만 지금은 `AUIGrid` 폴더로 분리되었습니다.
+`AUIGrid.js`는 [AUIGrid](https://www.auisoft.net/)(상용) 라이브러리를 감싼 업무용 그리드 컨트롤입니다. `syn.uicontrols.$auigrid` 싱글턴 객체로 노출되며, 예전에는 `WebGrid` 폴더에 `WebGrid.js`(Handsontable), `AUIPivot.js`와 함께 들어 있었지만 지금은 `AUIGrid` 폴더로 분리되었습니다.
 
 qcn.groupware 실사용 기준 300회 이상 쓰이는, 이 저장소의 **실무 표준 그리드 엔진**입니다. 컬럼 병합, 그룹핑, 고정 컬럼/행, 코드헬프 팝업, 스파크라인 등 업무 화면에 필요한 기능이 가장 폭넓게 내장되어 있습니다. 상용 라이선스 벤더 라이브러리(`/lib/auigrid/`)가 필요합니다.
 
@@ -235,7 +235,7 @@ let $samplePage = {
 
 ## 참고
 
-- CRUD 상태 플래그(`Flag`)와 `elID`/`metaColumns` 등 그리드 계열 컨트롤 공통 개념은 [WebGrid 문서의 "4개 엔진 공통 concept"](web-grid#4개-엔진-공통-concept)를 참고하세요.
+- CRUD 상태 플래그(`Flag`)와 `elID`/`metaColumns` 등 그리드 계열 컨트롤 공통 개념은 [WebGrid 문서의 "그리드 엔진 공통 concept"](web-grid#그리드-엔진-공통-concept)를 참고하세요.
 - 컬럼 정의 튜플 인덱스가 `$grid`(WebGrid)와 다릅니다 — [컬럼 정의 형식 비교](web-grid#컬럼-정의-형식-비교) 참고.
 - [CodePicker](code-picker) — `codehelp` 컬럼 타입과 함께 쓰이는 코드도움 팝업 컨트롤
 - [DataSource](data-source) — `dropdown`/`codehelp` 컬럼의 코드 목록을 채워주는 공통 데이터 소스 컨트롤

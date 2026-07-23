@@ -8,13 +8,12 @@ sidebar_position: 27
 
 `WebGrid.js`는 [Handsontable](https://handsontable.com/) 기반의 엑셀형 그리드 컨트롤입니다. `syn.uicontrols.$grid` 싱글턴 객체로 노출되며, `syn.uicontrols.$xxx` 공통 패턴(`defaultSetting` 성격의 옵션 객체 + `controlLoad`/`getValue`/`setValue`/`clear`/`setLocale`)을 따릅니다.
 
-과거에는 이 폴더에 `AUIGrid`/`jqGrid`/`AUIPivot`/`OpenGrid`까지 함께 있었지만, 각각 별도 디렉토리(및 별도 문서)로 분리되었습니다.
+과거에는 이 폴더에 `AUIGrid`/`AUIPivot`/`OpenGrid`까지 함께 있었지만, 각각 별도 디렉토리(및 별도 문서)로 분리되었습니다.
 
 | 그리드 | 문서 | 내부 라이브러리 | 성격 |
 |---|---|---|---|
 | `$grid` (WebGrid.js) | 이 문서 | Handsontable | 엑셀형 그리드, 로더 자동주입, 비상용 라이선스 기반 대안 엔진 |
 | `$auigrid` | [AUIGrid](aui-grid) | AUIGrid (상용) | 업무용 그리드, 로더 자동주입, 실무 주력 엔진(300회 이상 실사용) |
-| `$jqgrid` | [JQGrid](jq-grid) | jQuery jqGrid (레거시) | 레거시 화면 유지보수용 |
 | `$auipivot` | [AUIPivot](aui-pivot) | AUIGrid 기반 피벗 테이블 | 다차원 집계/피벗 리포트 |
 | `$opengrid` | [OpenGrid](open-grid) | 자체 구현 오픈소스 그리드 | 상용 라이선스가 필요 없는 그리드 대안, 예제 다수 |
 
@@ -53,7 +52,7 @@ syn.uicontrols.$grid.setValue('grdBasic', [
 
 - API 상세는 같은 폴더의 `API.md`를 참고하세요.
 - 실제 소스: `wwwroot/uicontrols/WebGrid/WebGrid.js`, `WebGrid.css`
-- 다른 엔진: [AUIGrid](aui-grid), [AUIPivot](aui-pivot), [JQGrid](jq-grid), [OpenGrid](open-grid)
+- 다른 엔진: [AUIGrid](aui-grid), [AUIPivot](aui-pivot), [OpenGrid](open-grid)
 - 기존 샘플: `wwwroot/sample/uicontrol/webgrid.html`(`$grid`), `webgrid2.html`(`$auigrid`)
 - 로더 자동주입 정의: `wwwroot/js/syn.loader.js`의 `'grid'` case
 - Handsontable 공식 문서: https://handsontable.com/docs/
@@ -239,11 +238,11 @@ let $samplePage = {
 
 ## 참고
 
-### 4개 엔진 공통 concept
+### 그리드 엔진 공통 concept
 
-- CRUD 상태 플래그(`Flag`): `$grid`/`$auigrid`/`$jqgrid`/`$auipivot` 모두 내부적으로 행 데이터에 `Flag` 컬럼(R=조회/C=생성/U=수정/D=삭제/S=고정)을 유지하며, `getValue`(또는 `$jqgrid`의 `getUpdateDatas`)가 이 플래그를 기준으로 "변경된 행만" 추려서 서버 전송용 배열을 만듭니다.
+- CRUD 상태 플래그(`Flag`): `$grid`/`$auigrid`/`$auipivot`/`$opengrid`는 행 데이터에 `Flag` 컬럼(R=조회/C=생성/U=수정/D=삭제/S=고정)을 유지하며, `getValue` 또는 `getUpdateItems`가 이 플래그를 기준으로 변경된 행만 추려서 서버 전송용 배열을 만듭니다.
 - `elID`(컨트롤 id)를 키로 여러 그리드 인스턴스를 관리: 각 엔진은 `gridControls` 배열에 `{ id, gridID/hot, setting }` 형태로 등록해 두고, 모든 메서드는 첫 번째 인자로 받은 `elID`로 해당 인스턴스를 찾아 동작합니다.
-- `syn.uicontrols.$xxx.controlLoad(elID, setting)`: 프레임워크가 `<syn_grid>`/`<syn_auigrid>`/`<syn_auipivot>` 태그를 파싱해 자동으로 호출하거나(로더 자동주입 엔진), `$jqgrid`처럼 페이지 스크립트에서 직접 호출합니다. 원래 마크업 요소는 항상 `{elID}_hidden`으로 이름이 바뀌고 `syn-options`에 최종 설정이 JSON으로 다시 기록됩니다.
+- `syn.uicontrols.$xxx.controlLoad(elID, setting)`: 프레임워크가 `<syn_grid>`/`<syn_auigrid>`/`<syn_opengrid>` 태그를 파싱해 자동으로 호출합니다. 자동주입을 지원하지 않는 엔진은 페이지의 로딩 훅에서 직접 호출하며, 원래 마크업 요소는 `{elID}_hidden`으로 이름이 바뀌고 `syn-options`에 최종 설정이 JSON으로 다시 기록됩니다.
 - `metaColumns`: `getValue`/`setValue`/`getUpdateData` 호출 시 넘기는 `{ 컬럼명: { fieldID, dataType } }` 형태의 매핑 객체로, 그리드 내부 컬럼명과 서버로 보낼 필드명이 다르거나 타입 검증이 필요할 때 사용합니다. `WebGrid.js`/`AUIGrid.js`/`AUIPivot.js` 모두 동일한 패턴을 사용합니다.
 
 ### 컬럼 정의 형식 비교
@@ -252,7 +251,6 @@ let $samplePage = {
 |---|---|
 | `$grid` | `columns` 배열의 각 원소가 `[data, header, width, isHidden, columnType, readOnly, align, belongID, validators, options]` 튜플 |
 | `$auigrid` | `columns` 배열의 각 원소가 `[dataField, header, width, isHidden, columnType, readOnly, align, belongID, options]` 튜플 (인덱스 순서가 `$grid`와 다름에 주의 — 특히 8번째가 `validators`가 아니라 `options`) |
-| `$jqgrid` | `colModels` 배열에 `객체 설정` 형태의 객체를 나열(jqGrid 원본 `colModel` 그대로) |
 | `$auipivot` | 컬럼이 아니라 `layout.rowFields`/`columnFields`/`valueFields`/`filterFields` 배열에 필드명(또는 `객체 설정` 객체)을 나열 |
 
 `$grid`와 `$auigrid`는 겉모습이 비슷해 보이지만 컬럼 튜플의 인덱스 순서가 다르므로 그대로 복사해서 쓰면 안 됩니다. 특히 8번째 인덱스가 `$grid`는 `validators`, `$auigrid`는 `options`라는 점이 가장 흔한 실수 포인트입니다.
@@ -261,7 +259,6 @@ let $samplePage = {
 
 - [AUIGrid](aui-grid) — 실무 표준 그리드 엔진(상용)
 - [AUIPivot](aui-pivot) — 피벗 테이블 전용
-- [JQGrid](jq-grid) — 레거시 화면 유지보수용
 - [OpenGrid](open-grid) — 상용 라이선스가 필요 없는 자체 구현 그리드
 - [CodePicker](code-picker) — `$auigrid`의 `codehelp` 컬럼 타입과 함께 쓰이는 코드도움 팝업 컨트롤
 - [DataSource](data-source) — `dropdown`/`codehelp` 컬럼의 코드 목록을 채워주는 공통 데이터 소스 컨트롤
