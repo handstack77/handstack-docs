@@ -1,0 +1,7 @@
+:root {
+  --handstack-shared-accent: #206bc4;
+}
+
+.handstack-shared-file-sample {
+  color: var(--handstack-shared-accent);
+}

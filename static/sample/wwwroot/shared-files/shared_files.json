@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "requestPath": "/assets/common.css",
+      "hostFilePath": "../shared-files/common.css"
+    },
+    {
+      "requestPath": "/assets/common.js",
+      "hostFilePath": "../shared-files/common.js"
+    },
+    {
+      "requestPath": "/assets/settings.json",
+      "hostFilePath": "../shared-files/settings.json"
+    },
+    {
+      "requestPath": "/assets/fragment.html",
+      "hostFilePath": "../shared-files/fragment.html"
+    }
+  ]
+}
