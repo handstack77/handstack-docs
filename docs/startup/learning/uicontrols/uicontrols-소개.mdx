@@ -30,7 +30,9 @@ syn.uicontrols.$textbox.clear('txtName');
 | 전역 별칭 | 문서 | 예제 경로 |
 |---|---|---|
 | `syn.uicontrols.$calendar` | [Calendar](calendar) | `/uicontrols/Calendar/example/` |
-| `syn.uicontrols.$chart` | [Chart](chart) | `/uicontrols/Chart/example/` |
+| `syn.uicontrols.$chart` | [Chart](chart) | `/uicontrols/HighChart/example/` |
+| `syn.uicontrols.$chartjs` | [Chart](chart) | `/uicontrols/ChartJS/example/` |
+| `syn.uicontrols.$echarts` | [ECharts](echarts) | `/uicontrols/ECharts/example/` |
 | `syn.uicontrols.$checkbox` | [CheckBox](check-box) | `/uicontrols/CheckBox/example/` |
 | `syn.uicontrols.$codepicker` | [CodePicker](code-picker) | `/uicontrols/CodePicker/example/` |
 | `syn.uicontrols.$colorpicker` | [ColorPicker](color-picker) | `/uicontrols/ColorPicker/example/` |
@@ -63,5 +65,5 @@ syn.uicontrols.$textbox.clear('txtName');
 - 폼 입력은 [TextBox](text-box), [TextArea](text-area), [CheckBox](check-box), [RadioButton](radio-button)을 우선 사용합니다.
 - 코드/목록 선택은 [DropDownList](drop-down-list), [DropDownCheckList](drop-down-check-list), [CodePicker](code-picker)를 사용합니다.
 - 날짜 범위와 단일 날짜는 [DatePicker](date-picker), [DatePeriodPicker](date-period-picker), [Calendar](calendar)를 구분해서 사용합니다.
-- 표/트리/조직도/차트 같은 복합 표시는 [GridList](grid-list), [TreeView](tree-view), [OrganizationView](organization-view), [Chart](chart) 문서를 확인합니다. 편집 가능한 그리드는 [AUIGrid](aui-grid)(상용, 실무 표준), [WebGrid](web-grid)(Handsontable 기반), [OpenGrid](open-grid)(오픈소스, 라이선스 불필요)를 사용하고 피벗 리포트는 [AUIPivot](aui-pivot)을 사용합니다.
+- 표/트리/조직도/차트 같은 복합 표시는 [GridList](grid-list), [TreeView](tree-view), [OrganizationView](organization-view), [Chart](chart), [ECharts](echarts) 문서를 확인합니다. 편집 가능한 그리드는 [AUIGrid](aui-grid)(상용, 실무 표준), [WebGrid](web-grid)(Handsontable 기반), [OpenGrid](open-grid)(오픈소스, 라이선스 불필요)를 사용하고 피벗 리포트는 [AUIPivot](aui-pivot)을 사용합니다.
 - 공통 값 처리, 리소스 바인딩, 거래 연동은 각 컨트롤의 `getValue`, `setValue`, `clear`, `setLocale`, `addModuleList` API와 `syn.$w` 화면 개발 흐름을 함께 사용합니다.

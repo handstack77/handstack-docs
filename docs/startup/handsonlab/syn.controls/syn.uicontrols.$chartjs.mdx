@@ -9,7 +9,7 @@ syn_chartjs 컨트롤은 Chart.js를 이용하여 개발됩니다. Chart.js는 �
 ```html
 <div>
     <div>예시</div>
-    <syn_chartjs id="chtChart" syn-datafield="ChartDetail" style="width:100%; height: 320px;" syn-options="{
+    <syn_chartjs id="chtChart" syn-datafield="ChartDetail" syn-events="['pointClick','selectionChange']" style="width:100%; height: 320px;" syn-options="{
         type: 'bar',
         options: {
             scales: {
@@ -89,6 +89,7 @@ let $chartjs = {
 
     event: {
         btnGetValue_click() {
+            // point를 먼저 선택합니다. single 모드이면 선택한 원본 행 또는 null을 반환합니다.
             syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$chartjs.getValue('chtChart')));
         },
 
@@ -102,3 +103,5 @@ let $chartjs = {
     }
 }
 ```
+
+`setValue`는 `labelID`/`series`를 생략해도 문자열 label 컬럼과 숫자 dataset을 자동 추론합니다. 거래 입력에는 `getValue('chtChart', 'Row'|'List', metaColumns)`를 사용하며 상세 선택 정보는 `getSelection`으로 조회합니다. 전체 옵션과 어댑터는 [Chart](../../learning/uicontrols/chart) 문서를 참고하세요.

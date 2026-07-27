@@ -59,6 +59,7 @@ HandStack 기반 에서는 비즈니스 앱 화면 개발에 필요한 다음과
 |syn.uicontrols.$guide|Guide|화면 내 표시되는 도움말 기능을 제공합니다.|
 |syn.uicontrols.$htmleditor|HtmlEditor|파일 업로드/다운로드 기능이 통합된 HTML 편집기 기능을 제공합니다.|
 |syn.uicontrols.$organization|OrganizationView|조직도 데이터를 직관적으로 편집하는 기능을 제공합니다.|
+|syn.uicontrols.$echarts|ECharts|객체/객체 배열을 다양한 차트로 표현하고 선택한 원본 행을 거래 값으로 제공합니다.|
 |syn.uicontrols.$radio|RadioButton|브라우저마다 다르게 표시되는 라디오버튼을 일관되게 표현합니다.|
 |syn.uicontrols.$sourceeditor|SourceEditor|소스 편집기에 특화된 에디터 기능을 제공합니다.|
 |syn.uicontrols.$textarea|TextArea|여러 텍스트 줄을 관리하기 위한 추가 기능을 제공합니다.|
@@ -388,17 +389,40 @@ txtMaxLength - <input id="txtMaxLength" maxlengthB="10" type="text" syn-options=
 
 ## Chart
 
-데이터 시각화 기능을 제공합니다.
+Highcharts와 Chart.js 기반 데이터 시각화 기능을 제공합니다. 두 컨트롤 모두 객체/객체 배열을 `setValue`로 받고 선택한 point의 원본 행을 Row/List 거래 형식으로 반환합니다.
 
 #### 소스위치
-    /lib/chartjs-4.3.0/chart.js
-    /uicontrols/Chart/ChartJS.css
-    /uicontrols/Chart/ChartJS.js
-#### 다운로드: https://github.com/chartjs/Chart.js
-#### 공식예제: https://www.chartjs.org/
+    /lib/highcharts/highcharts.min.js
+    /uicontrols/HighChart/HighChart.css
+    /uicontrols/HighChart/HighChart.js
+    /lib/chart.js/chart.umd.min.js
+    /uicontrols/ChartJS/ChartJS.css
+    /uicontrols/ChartJS/ChartJS.js
 #### 사용법
 ```html
-<syn_chart id="chtChart" style="width:450px; height: 320px;"></syn_chart>
+<syn_chart id="chtHigh" style="width:450px;height:320px" syn-options="{option:{chart:{type:'column'}}}"></syn_chart>
+<syn_chartjs id="chtJs" style="width:450px;height:320px" syn-options="{type:'bar'}"></syn_chartjs>
+```
+
+상세 데이터 어댑터, 모듈, 선택 API는 [Chart](uicontrols/chart) 문서를 확인하세요.
+
+## ECharts
+
+객체 또는 객체 배열을 ECharts `dataset.source`로 연결하고 선택한 point의 원본 행을 Row/List 거래 형식으로 반환합니다.
+
+#### 소스위치
+    /lib/echarts/echarts.min.js
+    /lib/echarts/i18n/langKO.js
+    /uicontrols/ECharts/ECharts.css
+    /uicontrols/ECharts/ECharts.js
+#### 사용법
+```html
+<syn_echarts id="chtSales" style="width:100%;height:360px" syn-options="{
+  option: {
+    xAxis: { type: 'category' }, yAxis: {},
+    series: [{ type: 'bar', encode: { x: 'YEAR', y: 'AMOUNT' } }]
+  }
+}"></syn_echarts>
 ```
 
 ## GridList

@@ -125,7 +125,7 @@ ID 속성 및 헝가리안 표기법:
 | `txt` | `TEXTAREA` | 여러 줄 텍스트 입력 필드 |
 | `ddl` | `SELECT` | 드롭다운 목록 (단일 또는 다중 선택) |
 | `grd` | `syn_auigrid` (커스텀 태그) | AUIGrid 기반 데이터 그리드 |
-| `cht` | `syn_chart` (커스텀 태그) | Chart.js 기반 차트 |
+| `cht` | `syn_chart` (커스텀 태그) | Highcharts 기반 차트 (`syn_chartjs`는 Chart.js) |
 | `chp` | `syn_codepicker` (커스텀 태그) | 코드 도움 팝업 |
 | `clp` | `syn_colorpicker` (커스텀 태그) | 색상 팔레트 |
 | `dtp` | `syn_datepicker`, `syn_dateperiodpicker` (커스텀 태그) | 날짜/기간 선택 |

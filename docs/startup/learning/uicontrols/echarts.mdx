@@ -1,0 +1,96 @@
+---
+sidebar_position: 5
+---
+
+# ECharts
+
+`syn.uicontrols.$echarts`는 로컬 Apache ECharts 6.1.0 전체 번들의 원시 option과 HandStack 객체 행 거래 방식을 연결합니다.
+
+```html
+<syn_echarts id="chtSales" syn-datafield="Sales" syn-events="['click','selectionChange']"
+  style="width:100%;height:360px" syn-options="{
+    selectionMode: 'multiple',
+    option: {
+      tooltip: {}, xAxis: { type: 'category' }, yAxis: {},
+      series: [{ type: 'bar', encode: { x: 'YEAR', y: 'AMOUNT' } }]
+    }
+  }"></syn_echarts>
+```
+
+```js
+await syn.uicontrols.$echarts.setValue('chtSales', [
+  { YEAR: '2025', AMOUNT: 120 },
+  { YEAR: '2026', AMOUNT: 180 }
+]);
+```
+
+## 데이터와 선택 계약
+
+`setValue`는 단일 객체 `{}` 또는 객체 배열 `[{}]`을 받습니다. 기본 dataset 모드에서는 `dataset.source`를 갱신하고 기존 series, axis, visualMap, transform 옵션을 유지합니다.
+
+tree, graph, sankey, custom처럼 중첩 구조가 필요한 경우 동기 또는 Promise `dataAdapter`를 사용합니다. 비동기 호출이 겹치면 가장 최근 요청만 반영됩니다.
+
+```js
+asyncAdapter(rows) {
+  return fetchDetail(rows).then(data => ({
+    option: { series: [{ type: 'graph', data: data.nodes, links: data.links }] },
+    rowIndexMap: [{ node: data.nodeRows, edge: data.edgeRows }]
+  }));
+}
+```
+
+- `getValue(id)`: single 모드는 선택 원본 행, multiple/native 모드는 원본 행 배열
+- `getValue(id, 'Row'|'List', metaColumns)`: HandStack transaction 형식 `[[{prop,val}]]`
+- `getSelection(id)`: `series`, `point`, `yData`, `rowIndex`, `row`
+- `getRawValue(id)`: 마지막으로 적용된 객체 행 전체
+
+다중 series나 node/edge는 `rowIndexMap`, 업무 키는 `selectionKey`, 복잡한 중첩 point는 `selectionResolver`로 원본 행에 연결합니다.
+
+HandStack 선택은 Row/List 반환 상태만 관리하며 point/series의 시각 상태는 바꾸지 않습니다. `selectedMode`, `select` option, `dispatchAction`을 이용한 선택·강조 효과는 화면 개발자가 명시적으로 작성합니다.
+
+## 공식 예제형 option
+
+`renderChart`는 option 객체·함수·Promise와 원본 행, renderer, theme, locale 및 선택 매핑을 한 번에 적용합니다.
+
+```js
+await syn.uicontrols.$echarts.renderChart('chtDemo', {
+  rows,
+  option,
+  rowIndexMap: [[0, 1, 2]],
+  initOptions: { renderer: 'svg' },
+  group: 'dashboard'
+});
+```
+
+line/bar/pie/scatter/radar/tree/treemap/sunburst/graph/chord/gauge/funnel/parallel/sankey/boxplot/candlestick/heatmap/lines/map/pictorialBar/themeRiver/custom과 ECharts 6 matrix를 포함한 코어 option을 제한하지 않습니다. formatter, `custom.renderItem`, graphic callback도 함수 상태로 보존됩니다.
+
+`getChartInstance`, `getECharts`, `invoke`, `invokeGlobal`로 네이티브 API를 직접 사용할 수 있고 `on/off`, `onZr/offZr`로 runtime 이벤트를 연결할 수 있습니다. `syn-events`에는 native event 이름을 그대로 선언하며 `eventQueries`와 `zrEvents`도 지원합니다.
+
+상세 계약은 <a href="/uicontrols/ECharts/API.md">ECharts API</a>, 전체 예제는 <a href="/uicontrols/ECharts/example/index.html">ECharts 예제 목차</a>에서 확인하세요.
+
+## 실행 예제
+
+### Dataset과 Row/List 선택
+
+<iframe
+  src="/uicontrols/ECharts/example/echartsbasic.html"
+  width="100%"
+  height="620"
+  style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+  title="ECharts dataset 예제">
+</iframe>
+
+### 기능군별 독립 페이지
+
+- <a href="/uicontrols/ECharts/example/echartscartesian.html">Cartesian</a>
+- <a href="/uicontrols/ECharts/example/echartspolar.html">원형·극좌표</a>
+- <a href="/uicontrols/ECharts/example/echartshierarchy.html">계층</a>
+- <a href="/uicontrols/ECharts/example/echartsrelation.html">관계</a>
+- <a href="/uicontrols/ECharts/example/echartsgeo.html">Geo·Map</a>
+- <a href="/uicontrols/ECharts/example/echartsmultidimensional.html">다차원·Matrix</a>
+- <a href="/uicontrols/ECharts/example/echartscustom.html">Custom·Graphic</a>
+- <a href="/uicontrols/ECharts/example/echartsinteraction.html">상호작용</a>
+- <a href="/uicontrols/ECharts/example/echartsdynamic.html">비동기·동적</a>
+- <a href="/uicontrols/ECharts/example/echartsrenderer.html">Canvas/SVG·테마</a>
+
+이번 배포에는 ECharts 코어만 포함됩니다. echarts-gl, wordcloud, liquid-fill 및 외부 지도 SDK는 별도 확장이며 `getECharts()`와 등록 API로 후속 연결합니다.
