@@ -151,6 +151,12 @@ Kestrel 서버 프로그램은 크게 2가지로 웹 서비스를 호스팅 합�
 }
 ```
 
+## 계약 파일 동기화
+
+`AppSettings:UseContractSync`를 `true`로 설정하면 `ack`와 `rdy`의 `POST /contractsync`에서 `handsonapp`이 전송한 계약 및 화면 파일을 동기화할 수 있습니다. 요청은 `hostAccessID` 헤더와 `moduleID`, `contractType`, `destFilePath`, `changeType`, `file` 폼 필드를 사용합니다. 삭제 요청은 `file`을 생략합니다.
+
+허용되는 `contractType`은 `dbclient`, `graphclient`, `function`, `transact`, `command`, `prompter`, `repository`, `wwwroot`입니다. 계약 파일은 `%HANDSTACK_HOME%/modules/<moduleID>/Contracts/<contractType>`와 `%HANDSTACK_HOME%/contracts/<contractType>`에 반영되며, `wwwroot`는 `%HANDSTACK_HOME%/modules/<moduleID>/wwwroot/<moduleID>`에 반영됩니다.
+
 ## Serilog 파일 로그 설정
 
 Serilog에 대한 자세한 정보는 다음 웹사이트에서 확인하실 수 있습니다:
