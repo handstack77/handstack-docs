@@ -53234,13 +53234,13 @@ if (typeof module !== 'undefined' && module.exports) {
     'use strict';
 
     syn.uicontrols = syn.uicontrols || new syn.module();
-    var $propertygrid = syn.uicontrols.$propertygrid || new syn.module();
-    var propertyGridSequence = 0;
+    var $propertypanel = syn.uicontrols.$propertypanel || new syn.module();
+    var propertyPanelSequence = 0;
 
-    $propertygrid.extend({
-        name: 'syn.uicontrols.$propertygrid',
+    $propertypanel.extend({
+        name: 'syn.uicontrols.$propertypanel',
         version: 'v2026.7.3',
-        propertyGridControls: [],
+        propertyPanelControls: [],
         defaultSetting: {
             elID: '',
             data: null,
@@ -53255,7 +53255,7 @@ if (typeof module !== 'undefined' && module.exports) {
             autoMeta: true,
             jsonRows: 5,
             includeFunctions: true,
-            classNames: 'syn-propertygrid',
+            classNames: 'syn-propertypanel',
             callback: null,
             dataType: 'object',
             belongID: null,
@@ -53287,7 +53287,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 return;
             }
 
-            setting = syn.$w.argumentsExtend($propertygrid.defaultSetting, setting || {});
+            setting = syn.$w.argumentsExtend($propertypanel.defaultSetting, setting || {});
 
             var mod = window[syn.$w.pageScript];
             if (mod && mod.hook.controlInit) {
@@ -53299,12 +53299,12 @@ if (typeof module !== 'undefined' && module.exports) {
             setting.meta = setting.meta && typeof setting.meta === 'object' ? setting.meta : {};
             setting.customTypes = setting.customTypes && typeof setting.customTypes === 'object' ? setting.customTypes : {};
             setting.defaultGroupName = setting.defaultGroupName;
-            setting.value = $propertygrid.normalizeSource(setting.data || setting.value || {});
-            setting.callback = $propertygrid.resolveCallback(setting.callback);
+            setting.value = $propertypanel.normalizeSource(setting.data || setting.value || {});
+            setting.callback = $propertypanel.resolveCallback(setting.callback);
 
-            el.setAttribute('syn-options', JSON.stringify($propertygrid.toSerializableSetting(setting)));
-            $propertygrid.addControlSetting(el, setting);
-            $propertygrid.render(elID, setting.value, setting);
+            el.setAttribute('syn-options', JSON.stringify($propertypanel.toSerializableSetting(setting)));
+            $propertypanel.addControlSetting(el, setting);
+            $propertypanel.render(elID, setting.value, setting);
 
             if (setting.bindingID && syn.uicontrols.$data) {
                 // syn.uicontrols.$data.bindingSource(elID, setting.bindingID);
@@ -53312,9 +53312,9 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         addControlSetting(el, setting) {
-            var control = $propertygrid.getControl(el.id);
+            var control = $propertypanel.getControl(el.id);
             if (control) {
-                control.setting = $object.clone($propertygrid.toSerializableSetting(setting));
+                control.setting = $object.clone($propertypanel.toSerializableSetting(setting));
                 control.runtimeSetting = setting;
                 control.valueFuncs = {};
                 control.fields = {};
@@ -53323,14 +53323,14 @@ if (typeof module !== 'undefined' && module.exports) {
 
             control = {
                 id: el.id,
-                sequence: 'pg' + (propertyGridSequence++),
-                setting: $object.clone($propertygrid.toSerializableSetting(setting)),
+                sequence: 'pp' + (propertyPanelSequence++),
+                setting: $object.clone($propertypanel.toSerializableSetting(setting)),
                 runtimeSetting: setting,
                 valueFuncs: {},
                 fields: {}
             };
 
-            $propertygrid.propertyGridControls.push(control);
+            $propertypanel.propertyPanelControls.push(control);
             return control;
         },
 
@@ -53340,16 +53340,16 @@ if (typeof module !== 'undefined' && module.exports) {
                 return;
             }
 
-            setting = syn.$w.argumentsExtend($propertygrid.defaultSetting, setting || {});
+            setting = syn.$w.argumentsExtend($propertypanel.defaultSetting, setting || {});
             setting.elID = elID;
             setting.meta = setting.meta && typeof setting.meta === 'object' ? setting.meta : {};
             setting.customTypes = setting.customTypes && typeof setting.customTypes === 'object' ? setting.customTypes : {};
             setting.defaultGroupName = setting.defaultGroupName;
-            setting.value = $propertygrid.normalizeSource(value || {});
-            setting.callback = $propertygrid.resolveCallback(setting.callback);
+            setting.value = $propertypanel.normalizeSource(value || {});
+            setting.callback = $propertypanel.resolveCallback(setting.callback);
 
-            var control = $propertygrid.getControl(elID) || $propertygrid.addControlSetting(el, setting);
-            control.setting = $object.clone($propertygrid.toSerializableSetting(setting));
+            var control = $propertypanel.getControl(elID) || $propertypanel.addControlSetting(el, setting);
+            control.setting = $object.clone($propertypanel.toSerializableSetting(setting));
             control.runtimeSetting = setting;
             control.valueFuncs = {};
             control.fields = {};
@@ -53360,7 +53360,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
             el.innerHTML = '';
             var table = document.createElement('table');
-            table.className = 'pgTable';
+            table.className = 'ppTable';
             table.setAttribute('role', 'grid');
 
             var groupedRows = {};
@@ -53380,7 +53380,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 var propertyValue = setting.value[propertyName];
                 var propertyMeta = setting.meta[propertyName] || {};
 
-                propertyMeta = $propertygrid.prepareMeta(propertyName, propertyValue, propertyMeta, setting);
+                propertyMeta = $propertypanel.prepareMeta(propertyName, propertyValue, propertyMeta, setting);
 
                 if (propertyMeta.browsable === false || (typeof propertyValue === 'function' && setting.includeFunctions !== true)) {
                     return;
@@ -53392,11 +53392,11 @@ if (typeof module !== 'undefined' && module.exports) {
                     groupOrder.push(groupName);
                 }
 
-                groupedRows[groupName].push($propertygrid.createPropertyRow(control, propertyName, propertyValue, propertyMeta, setting));
+                groupedRows[groupName].push($propertypanel.createPropertyRow(control, propertyName, propertyValue, propertyMeta, setting));
             });
 
             groupOrder.forEach(function (groupName) {
-                table.appendChild($propertygrid.createGroupRow(groupName, setting.isCollapsible));
+                table.appendChild($propertypanel.createGroupRow(groupName, setting.isCollapsible));
                 groupedRows[groupName].forEach(function (row) {
                     table.appendChild(row);
                 });
@@ -53407,10 +53407,10 @@ if (typeof module !== 'undefined' && module.exports) {
 
         createGroupRow(displayName, isCollapsible) {
             var row = document.createElement('tr');
-            row.className = 'pgGroupRow' + (isCollapsible ? ' pgCollapsible' : '');
+            row.className = 'ppGroupRow' + (isCollapsible ? ' ppCollapsible' : '');
 
             var cell = document.createElement('td');
-            cell.className = 'pgGroupCell';
+            cell.className = 'ppGroupCell';
             cell.colSpan = 2;
             cell.textContent = (isCollapsible ? '- ' : '') + displayName;
             row.appendChild(cell);
@@ -53422,7 +53422,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     cell.textContent = (isExpanded ? '+ ' : '- ') + displayName;
 
                     var next = row.nextElementSibling;
-                    while (next && next.classList.contains('pgGroupRow') == false) {
+                    while (next && next.classList.contains('ppGroupRow') == false) {
                         next.hidden = isExpanded;
                         next = next.nextElementSibling;
                     }
@@ -53435,7 +53435,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
         createPropertyRow(control, name, value, meta, setting) {
             var row = document.createElement('tr');
-            row.className = 'pgRow';
+            row.className = 'ppRow';
             row.setAttribute('data-property', name);
 
             var displayName = meta.name || name;
@@ -53443,20 +53443,20 @@ if (typeof module !== 'undefined' && module.exports) {
 
             if (meta.colspan2 == true) {
                 inputCell = document.createElement('td');
-                inputCell.className = 'pgCell pgValueCell';
+                inputCell.className = 'ppCell ppValueCell';
                 inputCell.colSpan = 2;
-                inputCell.appendChild($propertygrid.createValueElement(control, name, value, meta, setting));
+                inputCell.appendChild($propertypanel.createValueElement(control, name, value, meta, setting));
                 row.appendChild(inputCell);
             }
             else {
                 var labelCell = document.createElement('td');
-                labelCell.className = 'pgCell pgNameCell';
-                labelCell.appendChild($propertygrid.createLabelElement(displayName, meta, setting));
+                labelCell.className = 'ppCell ppNameCell';
+                labelCell.appendChild($propertypanel.createLabelElement(displayName, meta, setting));
                 row.appendChild(labelCell);
 
                 inputCell = document.createElement('td');
-                inputCell.className = 'pgCell pgValueCell';
-                inputCell.appendChild($propertygrid.createValueElement(control, name, value, meta, setting));
+                inputCell.className = 'ppCell ppValueCell';
+                inputCell.appendChild($propertypanel.createValueElement(control, name, value, meta, setting));
                 row.appendChild(inputCell);
             }
 
@@ -53466,13 +53466,13 @@ if (typeof module !== 'undefined' && module.exports) {
         createLabelElement(displayName, meta, setting) {
             var fragment = document.createDocumentFragment();
             var text = document.createElement('span');
-            text.className = 'pgLabelText';
+            text.className = 'ppLabelText';
             text.textContent = displayName;
             fragment.appendChild(text);
 
             if (typeof meta.description === 'string' && meta.description && (typeof meta.showHelp === 'undefined' || meta.showHelp)) {
                 var help = document.createElement('span');
-                help.className = 'pgTooltip';
+                help.className = 'ppTooltip';
                 help.title = meta.description;
                 help.innerHTML = setting.helpHtml;
                 fragment.appendChild(help);
@@ -53490,8 +53490,8 @@ if (typeof module !== 'undefined' && module.exports) {
             var element;
 
             if (customType && typeof customType.html === 'function') {
-                element = $propertygrid.createCustomElement(customType.html(elemId, name, value, meta));
-                $propertygrid.registerCustomValue(control, customType, elemId, name, value, meta);
+                element = $propertypanel.createCustomElement(customType.html(elemId, name, value, meta));
+                $propertypanel.registerCustomValue(control, customType, elemId, name, value, meta);
             }
             else if (type === 'boolean' || (type === '' && typeof value === 'boolean')) {
                 element = document.createElement('input');
@@ -53501,16 +53501,16 @@ if (typeof module !== 'undefined' && module.exports) {
                 control.valueFuncs[name] = function () {
                     return element.checked;
                 };
-                $propertygrid.bindChange(element, control, name, setting, function () {
+                $propertypanel.bindChange(element, control, name, setting, function () {
                     return element.checked;
                 });
             }
             else if (type === 'options' && Array.isArray(meta.options)) {
-                element = $propertygrid.createSelectElement(elemId, value, meta.options);
+                element = $propertypanel.createSelectElement(elemId, value, meta.options);
                 control.valueFuncs[name] = function () {
                     return element.value;
                 };
-                $propertygrid.bindChange(element, control, name, setting, function () {
+                $propertypanel.bindChange(element, control, name, setting, function () {
                     return element.value;
                 });
             }
@@ -53519,12 +53519,12 @@ if (typeof module !== 'undefined' && module.exports) {
                 element.type = 'number';
                 element.id = elemId;
                 element.value = $object.isNullOrUndefined(value) == true ? '' : value;
-                $propertygrid.applyNumberOptions(element, meta.options);
+                $propertypanel.applyNumberOptions(element, meta.options);
                 control.valueFuncs[name] = function () {
                     var numberValue = Number(element.value);
                     return element.value === '' || isNaN(numberValue) ? null : numberValue;
                 };
-                $propertygrid.bindChange(element, control, name, setting, function () {
+                $propertypanel.bindChange(element, control, name, setting, function () {
                     var numberValue = Number(element.value);
                     return element.value === '' || isNaN(numberValue) ? null : numberValue;
                 });
@@ -53533,11 +53533,11 @@ if (typeof module !== 'undefined' && module.exports) {
                 element = document.createElement('input');
                 element.type = 'color';
                 element.id = elemId;
-                element.value = $propertygrid.normalizeColor(value);
+                element.value = $propertypanel.normalizeColor(value);
                 control.valueFuncs[name] = function () {
                     return element.value;
                 };
-                $propertygrid.bindChange(element, control, name, setting, function () {
+                $propertypanel.bindChange(element, control, name, setting, function () {
                     return element.value;
                 });
             }
@@ -53553,12 +53553,12 @@ if (typeof module !== 'undefined' && module.exports) {
                 element = document.createElement('textarea');
                 element.id = elemId;
                 element.rows = meta.rows || setting.jsonRows;
-                element.value = $propertygrid.stringifyJsonValue(value);
+                element.value = $propertypanel.stringifyJsonValue(value);
                 control.valueFuncs[name] = function () {
-                    return $propertygrid.parseJsonValue(element, value);
+                    return $propertypanel.parseJsonValue(element, value);
                 };
-                $propertygrid.bindChange(element, control, name, setting, function () {
-                    return $propertygrid.parseJsonValue(element, value);
+                $propertypanel.bindChange(element, control, name, setting, function () {
+                    return $propertypanel.parseJsonValue(element, value);
                 });
             }
             else if (type === 'function') {
@@ -53579,12 +53579,12 @@ if (typeof module !== 'undefined' && module.exports) {
                 control.valueFuncs[name] = function () {
                     return element.value;
                 };
-                $propertygrid.bindChange(element, control, name, setting, function () {
+                $propertypanel.bindChange(element, control, name, setting, function () {
                     return element.value;
                 });
             }
 
-            $propertygrid.applyCommonMeta(element, meta);
+            $propertypanel.applyCommonMeta(element, meta);
             control.fields[name] = element;
             return element;
         },
@@ -53601,15 +53601,15 @@ if (typeof module !== 'undefined' && module.exports) {
             }
 
             if (!result.group && setting.mode === 'defaultSetting') {
-                result.group = $propertygrid.getDefaultSettingGroup(name, value);
+                result.group = $propertypanel.getDefaultSettingGroup(name, value);
             }
 
             if (!result.type && setting.autoMeta === true) {
-                result.type = $propertygrid.inferType(value);
+                result.type = $propertypanel.inferType(value);
             }
 
             if (!result.description && setting.mode === 'defaultSetting') {
-                result.description = $propertygrid.getDefaultSettingDescription(name, value);
+                result.description = $propertypanel.getDefaultSettingDescription(name, value);
             }
 
             return result;
@@ -53693,7 +53693,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
         parseJsonValue(element, previousValue) {
             var text = element.value.trim();
-            element.classList.remove('pgInvalid');
+            element.classList.remove('ppInvalid');
 
             if (text === 'undefined') {
                 return undefined;
@@ -53703,7 +53703,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 return JSON.parse(text);
             }
             catch (error) {
-                element.classList.add('pgInvalid');
+                element.classList.add('ppInvalid');
                 return previousValue;
             }
         },
@@ -53720,7 +53720,7 @@ if (typeof module !== 'undefined' && module.exports) {
             }
 
             var wrapper = document.createElement('span');
-            wrapper.className = 'pgCustomValue';
+            wrapper.className = 'ppCustomValue';
             wrapper.appendChild(template.content);
             return wrapper;
         },
@@ -53787,7 +53787,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 return;
             }
 
-            element.classList.add('pgInput');
+            element.classList.add('ppInput');
 
             if (typeof meta.description === 'string' && meta.description && meta.showHelp === false) {
                 element.title = meta.description;
@@ -53823,7 +53823,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
         getValue(elID, meta) {
             var result = {};
-            var control = $propertygrid.getControl(elID);
+            var control = $propertypanel.getControl(elID);
 
             if (control) {
                 for (var name in control.valueFuncs) {
@@ -53837,19 +53837,19 @@ if (typeof module !== 'undefined' && module.exports) {
         },
 
         setValue(elID, value, meta) {
-            var control = $propertygrid.getControl(elID);
+            var control = $propertypanel.getControl(elID);
             var el = syn.$l.get(elID);
             if (!control || $object.isNullOrUndefined(el) == true) {
                 return;
             }
 
-            var setting = syn.$w.argumentsExtend($propertygrid.defaultSetting, control.runtimeSetting || control.setting || {});
+            var setting = syn.$w.argumentsExtend($propertypanel.defaultSetting, control.runtimeSetting || control.setting || {});
             setting.meta = meta || setting.meta || {};
-            $propertygrid.render(elID, $propertygrid.normalizeSource(value || {}), setting);
+            $propertypanel.render(elID, $propertypanel.normalizeSource(value || {}), setting);
         },
 
         clear(elID, isControlLoad) {
-            var control = $propertygrid.getControl(elID);
+            var control = $propertypanel.getControl(elID);
             var el = syn.$l.get(elID);
 
             if (control) {
@@ -53864,9 +53864,9 @@ if (typeof module !== 'undefined' && module.exports) {
 
         getControl(elID) {
             var result = null;
-            var length = $propertygrid.propertyGridControls.length;
+            var length = $propertypanel.propertyPanelControls.length;
             for (var i = 0; i < length; i++) {
-                var item = $propertygrid.propertyGridControls[i];
+                var item = $propertypanel.propertyPanelControls[i];
                 if (item.id == elID) {
                     result = item;
                     break;
@@ -53878,11 +53878,11 @@ if (typeof module !== 'undefined' && module.exports) {
 
         createDefaultSettingMeta(defaultSetting, meta) {
             var result = {};
-            defaultSetting = $propertygrid.normalizeSource(defaultSetting);
+            defaultSetting = $propertypanel.normalizeSource(defaultSetting);
             meta = meta || {};
 
             Object.keys(defaultSetting).forEach(function (name) {
-                result[name] = $propertygrid.prepareMeta(name, defaultSetting[name], meta[name], {
+                result[name] = $propertypanel.prepareMeta(name, defaultSetting[name], meta[name], {
                     mode: 'defaultSetting',
                     autoMeta: true
                 });
@@ -53943,7 +53943,7 @@ if (typeof module !== 'undefined' && module.exports) {
         }
     });
 
-    syn.uicontrols.$propertygrid = $propertygrid;
+    syn.uicontrols.$propertypanel = $propertypanel;
 })(window);
 
 /// <reference path="/js/syn.js" />
