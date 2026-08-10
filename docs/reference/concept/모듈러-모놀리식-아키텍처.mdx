@@ -85,6 +85,8 @@ HandStack은 이 모든 것을 염두에 두고 모듈러 모놀리식 아키텍
 
 > 이것은 공식적으로 제공되는 모듈들도 동일한 구조를 가지고 있습니다. 공식 모듈에 대한 자세한 설명은 [기본 modules 소개](/docs/startup/learning/기본-modules-소개)을 참고하세요
 
+HandStack 호스트는 두 가지 조립 방식을 제공합니다. `ack`는 `AppSettings.LoadModules`에 지정한 모듈을 `LoadModuleBasePath`에서 동적으로 로드합니다. `rdy`는 `command`, `dbclient`, `function`, `graphclient`, `logger`, `prompter`, `repository`, `transact`, `wwwroot`를 정적으로 결합해 우선 사용하고, 같은 목록에 포함된 그 밖의 모듈은 `module.json`과 DLL을 찾아 동적으로 추가합니다. 따라서 기존 `IModuleInitializer` 기반 업무 모듈은 프로젝트를 수정하지 않고 두 호스트에서 같은 계약으로 실행할 수 있습니다.
+
 ![](img/handstack-modules.png)
 
 그림) 모듈 구성요소 및 이벤트 연계
