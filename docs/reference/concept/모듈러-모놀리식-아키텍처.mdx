@@ -87,6 +87,10 @@ HandStack은 이 모든 것을 염두에 두고 모듈러 모놀리식 아키텍
 
 HandStack 호스트는 두 가지 조립 방식을 제공합니다. `ack`는 `AppSettings.LoadModules`에 지정한 모듈을 `LoadModuleBasePath`에서 동적으로 로드합니다. `rdy`는 `command`, `dbclient`, `function`, `graphclient`, `logger`, `prompter`, `repository`, `transact`, `wwwroot`를 정적으로 결합해 우선 사용하고, 같은 목록에 포함된 그 밖의 모듈은 `module.json`과 DLL을 찾아 동적으로 추가합니다. 따라서 기존 `IModuleInitializer` 기반 업무 모듈은 프로젝트를 수정하지 않고 두 호스트에서 같은 계약으로 실행할 수 있습니다.
 
+`rdy`의 `appsettings.json`과 모듈별 `module.json`에 사용된 포트는 `task.ps1 <현재 포트> <새 포트>`로 일괄 변경할 수 있습니다. 소스 디렉터리에서 실행하면 `rdy.csproj`의 `RdyServerPort`도 바뀌어 다음 빌드의 `modules/wwwroot/wwwroot/syn.config.json`에 적용되고, 빌드 산출물에서 실행하면 이미 생성된 `syn.config.json`을 직접 변경합니다. Windows에서는 `task.bat 8420 9420` 또는 `pwsh ./task.ps1 8420 9420`, macOS와 Ubuntu에서는 PowerShell 7 이상을 설치한 뒤 `sh ./task.sh 8420 9420`을 실행합니다.
+
+Windows x64용 `rdy` Debug 빌드 복사본은 `1.WebHost\rdy\publish.bat [출력 디렉터리]`로 생성합니다. 이 스크립트는 `dotnet build -c Debug -t:Rebuild -r win-x64` 결과인 `bin\Debug\net10.0\win-x64`를 대상 디렉터리에 미러링합니다.
+
 ![](img/handstack-modules.png)
 
 그림) 모듈 구성요소 및 이벤트 연계
