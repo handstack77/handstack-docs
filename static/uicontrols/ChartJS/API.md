@@ -17,7 +17,7 @@
 
 `options.animation`을 지정하지 않으면 `false`(비활성)로 강제됩니다. 애니메이션이 필요하면 `setConfig`/`syn-options`에 `options.animation`을 명시적으로 전달하세요(`example/animations.html` 참고).
 
-`scales.x.type: 'time'`을 쓰려면 `/lib/chart.js/chartjs-adapter-moment.js`(번들된 moment.js용 자체 제작 date adapter)가 Chart.js UMD 다음, `ChartJS.js` 이전에 로드되어 있어야 합니다. `syn.loader.js`의 `case 'chartjs'` 의존성 목록에 이미 포함되어 있어 `<syn_chartjs>`를 쓰는 화면은 별도 조치가 필요 없습니다.
+`scales.x.type: 'time'`을 쓰려면 번들된 moment.js용 date adapter가 필요합니다. `ChartJS.js`가 로드 시점에 Chart.js UMD와 moment.js가 모두 있으면 자체 등록하므로(별도 파일 없음), `syn.loader.js`의 `case 'chartjs'` 의존성 목록(Chart.js UMD, moment.js, `ChartJS.js` 순서)만 지키면 `<syn_chartjs>`를 쓰는 화면은 별도 조치가 필요 없습니다.
 
 ## 데이터와 선택
 

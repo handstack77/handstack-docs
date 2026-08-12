@@ -11,7 +11,7 @@ TextBox는 네이티브 `<input type="text">` 요소에 `syn-options` 속성으�
 ```
 
 - 값 변경 등 이벤트 핸들러를 페이지 스크립트에서 받으려면 `syn-events="['change']"`처럼 이벤트 이름 배열을 지정하고, 페이지 `.js`에 `event.<elID>_<eventName>(evt)` 함수를 정의합니다.
-- 글자 수 제한은 표준 HTML `maxlength` 속성, 또는 한글 등 비영문 문자를 3바이트로 계산하는 UTF-8 바이트 기준 길이 제한이 필요하면 `maxlengthB` 속성을 사용합니다. 둘 중 하나라도 지정하면 blur 시 초과 여부를 검사해 안내창을 띄웁니다.
+- 글자 수 제한은 표준 HTML `maxlength` 속성, 또는 한글 등 2byte 문자를 고려한 길이 제한이 필요하면 `maxlengthB` 속성을 사용합니다. 둘 중 하나라도 지정하면 blur 시 초과 여부를 검사해 안내창을 띄웁니다.
 - 자동완성 목록은 `list` 속성(datalist)이 내부적으로 자동 생성/연결되므로 별도 마크업이 필요 없습니다.
 
 ## Options (defaultSetting)

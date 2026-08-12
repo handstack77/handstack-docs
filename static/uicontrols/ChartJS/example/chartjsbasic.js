@@ -1,17 +1,39 @@
-'use strict';
-
+﻿'use strict';
 let $chartjsbasic = {
     prop: {
-        dataSource: [
-            { YEAR: '2022', AMOUNT1: 12, AMOUNT2: 20 },
-            { YEAR: '2023', AMOUNT1: 35, AMOUNT2: 15 },
-            { YEAR: '2024', AMOUNT1: 18, AMOUNT2: 30 },
-            { YEAR: '2025', AMOUNT1: 42, AMOUNT2: 25 }
-        ],
+        dataSource: [{
+            YEAR: '2022',
+            AMOUNT1: 12,
+            AMOUNT2: 20
+        },
+        {
+            YEAR: '2023',
+            AMOUNT1: 35,
+            AMOUNT2: 15
+        },
+        {
+            YEAR: '2024',
+            AMOUNT1: 18,
+            AMOUNT2: 30
+        },
+        {
+            YEAR: '2025',
+            AMOUNT1: 42,
+            AMOUNT2: 25
+        }],
         metaColumns: {
-            YEAR: { FieldID: 'YEAR', DataType: 'string' },
-            AMOUNT1: { FieldID: 'AMOUNT1', DataType: 'number' },
-            AMOUNT2: { FieldID: 'AMOUNT2', DataType: 'number' }
+            YEAR: {
+                FieldID: 'YEAR',
+                DataType: 'string'
+            },
+            AMOUNT1: {
+                FieldID: 'AMOUNT1',
+                DataType: 'number'
+            },
+            AMOUNT2: {
+                FieldID: 'AMOUNT2',
+                DataType: 'number'
+            }
         }
     },
     hook: {

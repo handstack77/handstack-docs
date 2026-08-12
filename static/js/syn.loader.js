@@ -251,6 +251,21 @@
             document.body.appendChild(script);
         },
 
+        textContentTypeMap: {
+            html: 'text/html',
+            htm: 'text/html',
+            json: 'application/json',
+            xml: 'application/xml',
+            md: 'text/markdown',
+            txt: 'text/plain',
+            csv: 'text/csv'
+        },
+
+        textContentType(url) {
+            var extension = (url.split('?')[0].split('.').pop() || '').toLowerCase();
+            return synLoader.textContentTypeMap[extension] || 'text/plain';
+        },
+
         loadText: async function (id, url) {
             if (synLoader.assetsCachingID != '' && url.indexOf('/view/') == -1) {
                 url = url + (url.indexOf('?') > -1 ? '&' : '?') + synLoader.assetsCachingID;
@@ -272,7 +287,7 @@
 
             var script = document.createElement('script');
             script.id = id;
-            script.type = 'text/html';
+            script.type = synLoader.textContentType(url);
             script.async = 'async';
             script.innerHTML = await response.text();
 
@@ -292,6 +307,37 @@
             return (url.match(/([^?=&]+)(=([^&]*))/g) || []).reduce(function (a, v) {
                 return a[v.slice(0, v.indexOf('='))] = v.slice(v.indexOf('=') + 1), a;
             }, {});
+        },
+
+        loadSharedFiles: async function (styleFiles, jsFiles) {
+            try {
+                var response = await fetch('/shared-files/manifest', { cache: 'no-cache' });
+                if (response.status !== 200) {
+                    return;
+                }
+
+                var manifest = await response.json();
+                for (var i = 0; i < manifest.length; i++) {
+                    var requestPath = manifest[i].requestPath;
+                    if (!requestPath) {
+                        continue;
+                    }
+
+                    if (synLoader.endsWith(requestPath, '.css')) {
+                        styleFiles.push(requestPath);
+                    }
+                    else if (synLoader.endsWith(requestPath, '.js')) {
+                        jsFiles.push(requestPath);
+                    }
+                    else {
+                        var id = 'shared_' + requestPath.split('/').pop().replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9_]/g, '_');
+                        await synLoader.loadText(id, requestPath);
+                    }
+                }
+            }
+            catch (exception) {
+                synLoader.eventLog('loadSharedFiles', 'manifest load error');
+            }
         },
 
         request: async function (resources) {
@@ -504,6 +550,7 @@
                         ];
                         item.js = [
                             '/lib/chart.js/chart.umd.min.js',
+                            '/lib/moment.js/moment-with-locales.min.js',
                             '/uicontrols/ChartJS/ChartJS.js'
                         ];
                         break;
@@ -515,6 +562,34 @@
                             '/lib/echarts/echarts.min.js',
                             '/lib/echarts/i18n/langKO.js',
                             '/uicontrols/ECharts/ECharts.js'
+                        ];
+                        break;
+                    case 'mediaplayer':
+                        item.css = [
+                            '/lib/video.js/dist/video-js.min.css',
+                            '/uicontrols/MediaPlayer/MediaPlayer.css'
+                        ];
+                        item.js = [
+                            '/lib/video.js/dist/video.min.js',
+                            '/lib/video.js/dist/lang/ko.js',
+                            '/lib/videojs-youtube/dist/Youtube.min.js',
+                            '/uicontrols/MediaPlayer/MediaPlayer.js'
+                        ];
+                        break;
+                    case 'navermap':
+                        item.css = [
+                            '/uicontrols/NaverMap/NaverMap.css'
+                        ];
+                        item.js = [
+                            '/uicontrols/NaverMap/NaverMap.js'
+                        ];
+                        break;
+                    case 'googlemap':
+                        item.css = [
+                            '/uicontrols/GoogleMap/GoogleMap.css'
+                        ];
+                        item.js = [
+                            '/uicontrols/GoogleMap/GoogleMap.js'
                         ];
                         break;
                     case 'codepicker':
@@ -973,6 +1048,8 @@
 
         jsFiles.push(loaderPath);
         styleFiles = styleFiles.concat(window.Configuration.Definition?.Styles || []);
+
+        await synLoader.loadSharedFiles(styleFiles, jsFiles);
 
         var pathname = location.pathname;
         var moduleFile = '';

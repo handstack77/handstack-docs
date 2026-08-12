@@ -1,17 +1,39 @@
-'use strict';
-
+﻿'use strict';
 let $echartsbasic = {
     prop: {
-        rows: [
-            { YEAR: '2022', SALES: 120, PROFIT: 32 },
-            { YEAR: '2023', SALES: 180, PROFIT: 61 },
-            { YEAR: '2024', SALES: 150, PROFIT: 48 },
-            { YEAR: '2025', SALES: 230, PROFIT: 84 }
-        ],
+        rows: [{
+            YEAR: '2022',
+            SALES: 120,
+            PROFIT: 32
+        },
+        {
+            YEAR: '2023',
+            SALES: 180,
+            PROFIT: 61
+        },
+        {
+            YEAR: '2024',
+            SALES: 150,
+            PROFIT: 48
+        },
+        {
+            YEAR: '2025',
+            SALES: 230,
+            PROFIT: 84
+        }],
         metaColumns: {
-            YEAR: { FieldID: 'YEAR', DataType: 'string' },
-            SALES: { FieldID: 'SALES', DataType: 'number' },
-            PROFIT: { FieldID: 'PROFIT', DataType: 'number' }
+            YEAR: {
+                FieldID: 'YEAR',
+                DataType: 'string'
+            },
+            SALES: {
+                FieldID: 'SALES',
+                DataType: 'number'
+            },
+            PROFIT: {
+                FieldID: 'PROFIT',
+                DataType: 'number'
+            }
         }
     },
     hook: {
@@ -21,13 +43,23 @@ let $echartsbasic = {
     },
     event: {
         chtSales_click(elID, params, selections) {
-            $this.method.print({ event: 'click', point: params.name, selections: selections });
+            $this.method.print({
+                event: 'click',
+                point: params.name,
+                selections: selections
+            });
         },
         chtSales_selectionChange(elID, params, selections) {
-            $this.method.print({ event: 'selectionChange', selections: selections });
+            $this.method.print({
+                event: 'selectionChange',
+                selections: selections
+            });
         },
         chtSales_dataBound(elID, params) {
-            $this.method.print({ event: 'dataBound', rowCount: params.rows.length });
+            $this.method.print({
+                event: 'dataBound',
+                rowCount: params.rows.length
+            });
         },
         btnGetRow_click() {
             $this.method.print(syn.uicontrols.$echarts.getValue('chtSales', 'Row', $this.prop.metaColumns));

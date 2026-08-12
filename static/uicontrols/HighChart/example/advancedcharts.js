@@ -1,13 +1,26 @@
-'use strict';
-
+﻿'use strict';
 let $advancedcharts = {
     prop: {
-        rows: [
-            { FROM: '영업', TO: '기획', WEIGHT: 8 },
-            { FROM: '기획', TO: '개발', WEIGHT: 6 },
-            { FROM: '개발', TO: '운영', WEIGHT: 5 },
-            { FROM: '영업', TO: '운영', WEIGHT: 2 }
-        ]
+        rows: [{
+            FROM: '영업',
+            TO: '기획',
+            WEIGHT: 8
+        },
+        {
+            FROM: '기획',
+            TO: '개발',
+            WEIGHT: 6
+        },
+        {
+            FROM: '개발',
+            TO: '운영',
+            WEIGHT: 5
+        },
+        {
+            FROM: '영업',
+            TO: '운영',
+            WEIGHT: 2
+        }]
     },
     hook: {
         pageLoad() {
@@ -26,12 +39,20 @@ let $advancedcharts = {
         sankeyAdapter(rows) {
             return {
                 option: {
-                    tooltip: { pointFormat: '<b>{point.fromNode.name} → {point.toNode.name}: {point.weight}</b>' },
+                    tooltip: {
+                        pointFormat: '<b>{point.fromNode.name} → {point.toNode.name}: {point.weight}</b>'
+                    },
                     series: [{
                         type: 'sankey',
                         name: '업무량',
-                        keys: ['from', 'to', 'weight'],
-                        data: rows.map(row => [row.FROM, row.TO, row.WEIGHT])
+                        keys: ['from',
+                            'to',
+                            'weight'
+                        ],
+                        data: rows.map(row => [row.FROM,
+                        row.TO,
+                        row.WEIGHT
+                        ])
                     }]
                 },
                 rowIndexMap: [rows.map((row, index) => index)],

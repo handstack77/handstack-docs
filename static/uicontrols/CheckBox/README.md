@@ -36,13 +36,11 @@ DropDownCheckList처럼 리스트 데이터 바인딩을 지원하는 컨트롤�
 <label for="chkAgree">이용약관에 동의합니다</label>
 ```
 
-체크/미체크 값을 직접 지정하고 라벨을 자동으로 붙이고 싶다면 `syn-options`에 `toSynControl: true`와 `textContent`를
-함께 지정합니다(`toSynControl`이 `false`인 기본값 상태에서는 `textContent`/`disabled` 옵션이 적용되지 않습니다 —
-자세한 내용은 [API.md](./API.md)의 `toSynControl` 설명 참고).
+체크/미체크 값을 직접 지정하고 라벨을 자동으로 붙이고 싶다면 `syn-options`를 추가합니다.
 
 ```html
 <input id="chkUseYN" type="checkbox" syn-datafield="UseYN"
-    syn-options="{toSynControl: true, checkedValue: 'Y', uncheckedValue: 'N', textContent: '사용 여부'}">
+    syn-options="{checkedValue: 'Y', uncheckedValue: 'N', textContent: '사용 여부'}">
 ```
 
 값 변경을 감지하려면 `syn-events`에 `change`를 등록하고, 페이지 스크립트(`<페이지파일명>.js`)에

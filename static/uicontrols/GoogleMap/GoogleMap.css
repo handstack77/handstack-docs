@@ -1,5 +1,4 @@
-.syn-googlemap
-{
+.syn-googlemap {
     position: relative;
     display: block;
     width: 100%;
@@ -7,14 +6,14 @@
     overflow: hidden;
     background: #eef2f6;
 }
-.syn-googlemap-canvas
-{
+
+.syn-googlemap-canvas {
     width: 100%;
     height: 100%;
     min-height: inherit;
 }
-.syn-googlemap-status
-{
+
+.syn-googlemap-status {
     position: absolute;
     inset: 0;
     z-index: 10;
@@ -26,11 +25,11 @@
     background: rgba(248,250,252,.92);
     text-align: center;
 }
-.syn-googlemap.is-loading .syn-googlemap-status, .syn-googlemap.is-error .syn-googlemap-status
-{
+
+.syn-googlemap.is-loading .syn-googlemap-status, .syn-googlemap.is-error .syn-googlemap-status {
     display: flex;
 }
-.syn-googlemap.is-error .syn-googlemap-status
-{
+
+.syn-googlemap.is-error .syn-googlemap-status {
     color: #b42318;
 }

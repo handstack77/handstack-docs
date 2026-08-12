@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 let $googlemapselection = {
-    hook: { pageLoad()
-        {
+    hook: {
+        pageLoad() {
             syn.uicontrols.$googlemap.setValue('mapSelection', [
                 {
                     ID: 'S1',
@@ -28,38 +28,34 @@ let $googlemapselection = {
                     name: '광주'
                 }
             ])
-        } },
+        }
+    },
     event: {
-        mapSelection_selectionChange(elID, detail, selection)
-        {
+        mapSelection_selectionChange(elID, detail, selection) {
             $this.method.print({
                 detail,
                 selection
             })
         },
-        mapSelection_error(elID, error)
-        {
+        mapSelection_error(elID, error) {
             $this.method.print(error)
         },
-        btnSelect_click()
-        {
+        btnSelect_click() {
             syn.uicontrols.$googlemap.setSelection('mapSelection', ['S1', 'S3'])
         },
-        btnClear_click()
-        {
+        btnClear_click() {
             syn.uicontrols.$googlemap.clearSelection('mapSelection')
         },
-        btnRow_click()
-        {
+        btnRow_click() {
             $this.method.print(syn.uicontrols.$googlemap.getValue('mapSelection', 'Row'))
         },
-        btnList_click()
-        {
+        btnList_click() {
             $this.method.print(syn.uicontrols.$googlemap.getValue('mapSelection', 'List'))
         }
     },
-    method: { print(value)
-        {
+    method: {
+        print(value) {
             syn.$l.get('preResult').textContent = JSON.stringify(value, null, 2)
-        } }
+        }
+    }
 };

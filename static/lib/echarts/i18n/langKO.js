@@ -167,5 +167,5 @@ var localeObj = {
 };
 
     echarts.registerLocale('KO', localeObj);
-
+        
 });

@@ -10,7 +10,8 @@ let $basic = {
         },
 
         btnSetValue_click() {
-            // setValue는 호출 시 기존 선택을 모두 해제한 뒤 지정한 값만 다시 선택합니다.
+            // 먼저 clear로 기존 선택을 지운 뒤, 원하는 값들만 다시 선택합니다.
+            syn.uicontrols.$multiselect.clear('ddlFruit');
             syn.uicontrols.$multiselect.setValue('ddlFruit', ['banana', 'grape']);
         },
 

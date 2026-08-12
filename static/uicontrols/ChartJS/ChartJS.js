@@ -308,6 +308,79 @@
         Chart.defaults.plugins.legend.position = 'bottom';
     }
 
+    // Chart.js date adapter backed by the locally bundled moment.js (/lib/moment.js/moment-with-locales.min.js).
+    // Chart.js v4 requires a `_adapters._date` implementation for `scales: { x: { type: 'time' } }`; the npm package
+    // `chartjs-adapter-moment` is not vendored in this repository (CDN/외부 패키지 다운로드 금지), so this reimplements
+    // its small public surface directly against moment.js. Load order: moment.js -> Chart.js(UMD) -> this file.
+    if (window.Chart && typeof moment !== 'undefined') {
+        var DATE_ADAPTER_FORMATS = {
+            datetime: 'MMM D, YYYY, h:mm:ss a',
+            millisecond: 'h:mm:ss.SSS a',
+            second: 'h:mm:ss a',
+            minute: 'h:mm a',
+            hour: 'hA',
+            day: 'MMM D',
+            week: 'll',
+            month: 'MMM YYYY',
+            quarter: '[Q]Q - YYYY',
+            year: 'YYYY'
+        };
+
+        Chart._adapters._date.override({
+            _id: 'moment',
+
+            formats: function () {
+                return DATE_ADAPTER_FORMATS;
+            },
+
+            parse: function (value, format) {
+                if (value === null || typeof value === 'undefined') {
+                    return null;
+                }
+                var type = typeof value;
+                var result;
+                if (type === 'number' || value instanceof Date) {
+                    result = moment(value);
+                }
+                else if (type === 'string' && typeof format === 'string') {
+                    result = moment(value, format);
+                }
+                else if (!(value instanceof moment)) {
+                    result = moment(value);
+                }
+                else {
+                    result = value;
+                }
+                return result.isValid() ? result.valueOf() : null;
+            },
+
+            format: function (time, format) {
+                return moment(time).format(format);
+            },
+
+            add: function (time, amount, unit) {
+                return moment(time).add(amount, unit).valueOf();
+            },
+
+            diff: function (max, min, unit) {
+                return moment(max).diff(moment(min), unit);
+            },
+
+            startOf: function (time, unit, weekday) {
+                var value = moment(time);
+                if (unit === 'isoWeek') {
+                    var isoWeekday = Math.trunc(Math.min(Math.max(0, weekday), 6));
+                    return value.isoWeekday(isoWeekday).startOf('day').valueOf();
+                }
+                return value.startOf(unit).valueOf();
+            },
+
+            endOf: function (time, unit) {
+                return moment(time).endOf(unit).valueOf();
+            }
+        });
+    }
+
     function resolveRow(control, datasetIndex, dataIndex, activeElement, event) {
         var resolver = control.selectionResolver || common.resolveFunction(control.config.selectionResolver);
         if (resolver) {

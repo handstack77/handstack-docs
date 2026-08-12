@@ -30,7 +30,6 @@
 - `emit()`에는 `success`/`error` 콜백이 없습니다. 요청-응답이 필요하면 반드시 `call()`을 사용하세요(부모 쪽 예제는 [`iframe_main.md`](./iframe_main.md) 참고).
 - `bind('request', ...)` 콜백의 첫 번째 인자는 DOM 이벤트가 아니라 트랜잭션 객체(`transaction`)입니다. `emit`으로 수신되는 메시지의 콜백 첫 번째 인자는 `origin` 정보 객체입니다. 메서드 등록 방식(`call`/`emit`)에 따라 첫 번째 인자의 의미가 다르므로 주의하세요.
 - 채널의 `scope`는 부모/자식 양쪽에서 동일한 문자열이어야 합니다.
-- 부모와 자식의 Origin(스킴·호스트·포트)이 다르면 브라우저의 동일 출처 정책상 `parent.$main`, `parent.syn`, 부모 DOM에 직접 접근할 수 없습니다. `syn.domain.js`와 `syn.loader.js`는 이 경우 부모 UI 연동만 건너뛰고 자식 화면은 계속 실행합니다. 교차 출처 창 간 기능 통신은 `syn.$n.rooms` 채널처럼 `postMessage` 기반 API를 사용하세요.
 
 ## 관련 모듈
 - API 상세: [`iframe_child_api.md`](./iframe_child_api.md)

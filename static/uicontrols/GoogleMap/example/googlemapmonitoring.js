@@ -1,23 +1,19 @@
-'use strict';
+﻿'use strict';
 let $googlemapmonitoring = {
     hook: {
-        controlInit(elID)
-        {
+        controlInit(elID) {
             if (elID !== 'mapMonitor')
                 return;
             return {
-                    markerOptionsResolver(row)
-                    {
-                        return { content: `<div class="marker-monitor">${row.CT_NAME}</div>` }
-                    },
-                    infoWindowContentResolver(row)
-                    {
-                        return `<div style="padding:12px"><strong>${row.CT_NAME}</strong><br>${row.CT_ADDRESS}<br>상태: ${row.STATUS}</div>`
-                    }
+                markerOptionsResolver(row) {
+                    return { content: `<div class="marker-monitor">${row.CT_NAME}</div>` }
+                },
+                infoWindowContentResolver(row) {
+                    return `<div style="padding:12px"><strong>${row.CT_NAME}</strong><br>${row.CT_ADDRESS}<br>상태: ${row.STATUS}</div>`
                 }
+            }
         },
-        pageLoad()
-        {
+        pageLoad() {
             syn.uicontrols.$googlemap.setValue('mapMonitor', [
                 {
                     AS_NUM: 'A-100',
@@ -47,39 +43,35 @@ let $googlemapmonitoring = {
         }
     },
     event: {
-        mapMonitor_poiClick(elID, detail, selection)
-        {
+        mapMonitor_poiClick(elID, detail, selection) {
             $this.method.print({
                 event: 'click',
                 poi: detail.selection,
                 selection
             })
         },
-        mapMonitor_poiMouseover(elID, detail)
-        {
+        mapMonitor_poiMouseover(elID, detail) {
             $this.method.print({
                 event: 'mouseover',
                 poi: detail.selection
             })
         },
-        mapMonitor_poiMouseout(elID, detail)
-        {
+        mapMonitor_poiMouseout(elID, detail) {
             $this.method.print({
                 event: 'mouseout',
                 poi: detail.selection
             })
         },
-        mapMonitor_dataBound(elID, detail)
-        {
+        mapMonitor_dataBound(elID, detail) {
             $this.method.print(detail)
         },
-        mapMonitor_error(elID, error)
-        {
+        mapMonitor_error(elID, error) {
             $this.method.print(error)
         }
     },
-    method: { print(value)
-        {
+    method: {
+        print(value) {
             syn.$l.get('preResult').textContent = JSON.stringify(value, null, 2)
-        } }
+        }
+    }
 };

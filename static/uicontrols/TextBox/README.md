@@ -17,7 +17,7 @@ TextBox는 네이티브 `<input type="text">` 요소를 확장(enhancement)해�
 | 커스텀 마스크 | `maskPattern` 옵션(VMasker 패턴, 예: `'999-99-99999'`) | 임의의 입력 마스크 지정 |
 | 자동완성 목록 | `datalistID` / `datalistItems` / `datalistUrl` | HTML `<datalist>` 연동, 정적/원격 데이터소스 로딩 지원 |
 
-이 외에도 `maxlength`(또는 `maxlengthB`, 한글 등 비영문 문자를 3바이트로 계산하는 UTF-8 바이트 기준 길이 제한) 지정 시 blur 시점에 길이 초과 알림을 띄워 줍니다.
+이 외에도 `maxlength`(또는 `maxlengthB`, 한글 등 2byte 문자 기준 길이 제한) 지정 시 blur 시점에 길이 초과 알림을 띄워 줍니다.
 
 ## 언제 사용하나요?
 

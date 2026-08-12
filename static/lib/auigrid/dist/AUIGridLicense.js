@@ -1,6 +1,6 @@
 ﻿/**
- * AUIGrid 3.0.17 License
+ * AUIGrid 3.0.16 License
  * Client ID : AUISoft DEMO
  */
-const AUIGridLicense = "eyJjdCI6IjJlWElFTTdMMlJQaEgwTUJVVUxzcm9ldEQzL09VMWg5UjVVYm8rb3ZhSmxvODhNb1FzSkpqU0puNG5QdG9CbVJJbHhlVTZ1MWd3SlE2a25SSHJFQXN5eVdubC81ZnZHcXF4WnBTV2RHU2RWZG9uUTJOeXlTMUtmYXc2cGpTU2RJIiwiaXYiOiJmMTFkNTcxNWNmMTZmMzgzMzBkZjhlMmRjNjFlMGNmMiIsInMiOiJhODdmMDE2MjU1NjYwOTFhIn0=";
+const AUIGridLicense = "eyJjdCI6ImdvYm9DbzdKMkZjQXJxK0x4TWlVb1RMY09rT0UzMFE3eEJRcml0cFcxajRWUDhsQUxoazgzbHBSeDR2aEJuNFlVeVpkYmUxY29JK0RGTmVkTENDME50cEZZcmkvN2NRdjZhN2NicXZuejh4YU82VXdxS2VFK0srSGx4c1puTEthIiwiaXYiOiJlMDUxYWY0OTlmMzIzYjVhZmE1N2YwNmYzOWFiOTIwYSIsInMiOiI0Zjc2NDRhNDEwZTQyMmNlIn0=";
 if (typeof window !== "undefined") window.AUIGridLicense = AUIGridLicense;

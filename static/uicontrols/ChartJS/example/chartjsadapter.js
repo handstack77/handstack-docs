@@ -1,12 +1,24 @@
-'use strict';
-
+﻿'use strict';
 let $chartjsadapter = {
     prop: {
-        rows: [
-            { TEAM: 'A', SALES: 90, PROFIT: 18, PEOPLE: 8 },
-            { TEAM: 'B', SALES: 140, PROFIT: 31, PEOPLE: 14 },
-            { TEAM: 'C', SALES: 115, PROFIT: 24, PEOPLE: 10 }
-        ]
+        rows: [{
+            TEAM: 'A',
+            SALES: 90,
+            PROFIT: 18,
+            PEOPLE: 8
+        },
+        {
+            TEAM: 'B',
+            SALES: 140,
+            PROFIT: 31,
+            PEOPLE: 14
+        },
+        {
+            TEAM: 'C',
+            SALES: 115,
+            PROFIT: 24,
+            PEOPLE: 10
+        }]
     },
     hook: {
         pageLoad() {
@@ -29,7 +41,11 @@ let $chartjsadapter = {
                     data: {
                         datasets: [{
                             label: '팀 성과',
-                            data: rows.map(row => ({ x: row.SALES, y: row.PROFIT, r: row.PEOPLE }))
+                            data: rows.map(row => ({
+                                x: row.SALES,
+                                y: row.PROFIT,
+                                r: row.PEOPLE
+                            }))
                         }]
                     }
                 },

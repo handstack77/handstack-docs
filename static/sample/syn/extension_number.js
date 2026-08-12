@@ -6,7 +6,7 @@ let $extension_number = {
 
     hook: {
         pageLoad() {
-            syn.$l.get('txt_version').value = syn.module.version;
+            syn.$l.get('txt_version').value = syn.$m.version;
             setTimeout(() => {
                 window.scrollTo(0, document.body.scrollHeight);
             }, 200);
