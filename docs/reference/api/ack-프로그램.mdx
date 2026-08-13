@@ -53,6 +53,7 @@ Kestrel 서버 프로그램은 크게 2가지로 웹 서비스를 호스팅 합�
         "IsConfigurationWatching": false,
         "IsTenantFunction": true,
         "IsExceptionDetailText": true,
+        "IsEnabledDevAutoSignIn": false,
         "ContractRequestPath": "view",
         "TenantAppRequestPath": "app",
         "TenantAppBasePath": "../tenants",
@@ -60,6 +61,7 @@ Kestrel 서버 프로그램은 크게 2가지로 웹 서비스를 호스팅 합�
         "CreateAppTempPath": "../tmp/create_apps",
         "ForbesBasePath": "../forbes",
         "IsModulePurgeContract": true,
+        "IsEnabledCSP": false,
         "LoadModuleBasePath": "../modules",
         "LoadModules": [
             "wwwroot",
@@ -156,6 +158,10 @@ Kestrel 서버 프로그램은 크게 2가지로 웹 서비스를 호스팅 합�
 `AppSettings:UseContractSync`를 `true`로 설정하면 `ack`와 `rdy`의 `POST /contractsync`에서 `handsonapp`이 전송한 계약 및 화면 파일을 동기화할 수 있습니다. 요청은 `hostAccessID` 헤더와 `moduleID`, `contractType`, `destFilePath`, `changeType`, `file` 폼 필드를 사용합니다. 삭제 요청은 `file`을 생략합니다.
 
 허용되는 `contractType`은 `dbclient`, `graphclient`, `function`, `transact`, `command`, `prompter`, `repository`, `wwwroot`입니다. 계약 파일은 `%HANDSTACK_HOME%/modules/<moduleID>/Contracts/<contractType>`와 `%HANDSTACK_HOME%/contracts/<contractType>`에 반영되며, `wwwroot`는 `%HANDSTACK_HOME%/modules/<moduleID>/wwwroot/<moduleID>`에 반영됩니다.
+
+## 개발용 테스트 계정 자동 로그인
+
+`AppSettings:IsEnabledDevAutoSignIn`(기본값 `false`)을 `true`로 설정하고 `RunningEnvironment`가 `D`(개발)인 경우에만, `wwwroot` 모듈의 `GET /wwwroot/api/dev-account/sign-in`이 `module.json`의 `ModuleConfig.DevAutoSignIn`(`UserNo`/`UserID`/`UserName`/`Email`/`Roles`)에 지정한 고정 계정으로 이메일 서명 검증 없이 로그인 쿠키를 발급합니다. 두 조건 중 하나라도 충족하지 않으면 `404 Not Found`를 반환하므로, 운영·스테이징 설정에서는 `IsEnabledDevAutoSignIn`을 켜지 않아야 합니다.
 
 ## Serilog 파일 로그 설정
 

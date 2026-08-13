@@ -23,6 +23,7 @@ sidebar_position: 70
 | `GET` | `/wwwroot/api/sync/refresh` | 대상 모듈 refresh API를 호출합니다. |
 | `GET` | `/wwwroot/api/htmx/*` | HTMX 샘플/보조 API입니다. |
 | `GET` | `/wwwroot/api/index/*` | 화면 보조 API와 거래 직접 호출 래퍼입니다. |
+| `GET` | `/wwwroot/api/dev-account/sign-in` | 개발 목적 테스트 계정 자동 로그인입니다. `AppSettings:IsEnabledDevAutoSignIn`이 `true`이고 `RunningEnvironment`가 `D`일 때만 동작하며, 그 외에는 `404`를 반환합니다. |
 | `GET` | `/shared-files/manifest` | 공통 파일의 공개 요청 경로 목록을 반환합니다. |
 
 ## 핵심 구현
@@ -33,6 +34,7 @@ sidebar_position: 70
 - `wwwroot/js/syn.loader.js`: manifest의 공통 CSS/JS와 기타 텍스트 자산을 브라우저 로딩 과정에 추가합니다.
 - `Areas/wwwroot/Controllers/SyncController.cs`: 파일 업로드와 refresh 동기화 API입니다.
 - `Areas/wwwroot/Controllers/IndexController.cs`: 화면 보조 API와 `transact` 직접 호출을 제공합니다.
+- `Areas/wwwroot/Controllers/DevAccountController.cs`: `checkup`의 `AccountController.SignIn` 쿠키 발급 로직을 재사용한 개발용 테스트 계정 자동 로그인 API입니다.
 - `Extensions/ModuleApiClient.cs`: 화면에서 업무 거래를 직접 호출하는 래퍼입니다.
 - `Contracts/wwwroot`: 계약 기반 화면/자산 매핑입니다.
 
@@ -47,6 +49,7 @@ sidebar_position: 70
 | `FileSyncTokens` | `/wwwroot/api/sync/*` 호출을 허용할 Basic token 목록입니다. |
 | `BusinessServerUrl` | 화면 보조 API가 거래를 실행할 transact URL입니다. |
 | `ModuleLogFilePath` | wwwroot 모듈 로그 파일 경로입니다. |
+| `DevAutoSignIn` | `/wwwroot/api/dev-account/sign-in`이 발급할 고정 테스트 계정입니다. `UserNo`/`UserID`/`UserName`/`Email`/`Roles`와, `HandStack.Web.Entity.UserAccount`의 선택 프로필 필드를 그대로 따르는 `Celluar`/`PositionName`/`DepartmentName`/`CompanyName`/`BirthDate`/`Gender`/`Address`/`ExtendOption`을 설정합니다(빈 문자열은 미설정으로 취급). 호스트의 `AppSettings:IsEnabledDevAutoSignIn`이 `true`이고 `RunningEnvironment`가 `D`일 때만 사용됩니다. |
 
 ## 공통 파일 카탈로그
 
@@ -164,3 +167,6 @@ CSS/JS 분기 비교는 대소문자를 구분하므로 파일 확장자는 소�
 - `ContractRequestPath`와 `WWWRootBasePath`는 요청 경로가 충돌하지 않게 분리합니다.
 - 정적 파일 동기화는 운영 화면에 직접 영향을 주므로 배포 권한과 감사 로그를 함께 관리합니다.
 - 화면에서 직접 거래를 호출하는 경우 `BusinessServerUrl`, 인증 토큰, 공개 거래 범위를 `transact` 설정과 함께 점검합니다.
+- `/wwwroot/api/dev-account/sign-in`은 개발 전용입니다. 운영·스테이징 `appsettings.json`에서 `AppSettings:IsEnabledDevAutoSignIn`을 `true`로 두지 않아야 하며, `RunningEnvironment` 게이트가 2차 방어선 역할을 합니다.
+- 발급된 쿠키/BearerToken에는 `IsDevAutoSignIn` claim이 포함되어 `transact`(`TransactionController`/`WorkflowController`)가 해당 요청을 감지하고 로그로 구분합니다. `transact` 쪽 상세 동작은 [transact 운영 주의사항](/reference/api/modules/transact#운영-주의사항)을 참고합니다.
+- `wwwroot/mainframe.js`의 `hook.pageInit()`은 `HandStack.TokenID` 쿠키가 없으면 `/login.html`로 보내기 전에 `method.tryDevAutoSignIn()`으로 이 API를 먼저 호출합니다. 응답이 성공(`200`)이면 화면을 새로고침해 발급된 쿠키로 계속 진행하고, 비활성(`404`) 또는 오류면 기존처럼 `/login.html`로 이동합니다.

@@ -112,4 +112,5 @@ workflow는 여러 거래 단계를 하나의 요청으로 묶습니다. 각 단
 - `transact`는 모든 업무 요청의 관문이므로 인증, 공개 거래, 라우팅 범위를 가장 먼저 점검합니다.
 - `RoutingCommandUri`가 누락되면 해당 `CommandType` 거래는 실행 모듈을 찾지 못합니다.
 - 거래 로그에는 요청/응답 데이터가 포함될 수 있으므로 `IsDataMasking`과 로그 보관 정책을 함께 설계합니다.
+- `wwwroot`의 개발용 테스트 계정 자동 로그인(`/wwwroot/api/dev-account/sign-in`)이 발급한 요청은 `IsDevAutoSignIn` claim으로 표시됩니다. `TransactionController`/`WorkflowController`는 이 claim을 감지하면 경고 로그를 남기고, `AppSettings:IsEnabledDevAutoSignIn`이 `false`이거나 `RunningEnvironment`가 `D`가 아닌데도 claim이 존재하면(위조 의심) 요청을 거부합니다.
 - workflow는 강력하지만 장애 범위도 넓어집니다. 단계별 timeout, fallback, assertion을 계약에 명시합니다.
