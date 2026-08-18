@@ -1,0 +1,115 @@
+---
+sidebar_position: 6
+---
+
+# 입력 그룹
+
+분류: 폼 요소
+
+## 소스
+```html
+<div class="mb-3">
+    <label class="form-label">입력 그룹</label>
+    <div class="input-group mb-2">
+        <input type="text" class="form-control" placeholder="검색...">
+        <button class="btn" type="button">검색</button>
+    </div>
+    <div class="input-group">
+        <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            액션
+        </button>
+        <div class="dropdown-menu">
+            <a class="dropdown-item" href="#">
+                액션
+            </a>
+            <a class="dropdown-item" href="#">
+                다른 액션
+            </a>
+        </div>
+        <input type="text" class="form-control" aria-label="드롭다운 버튼이 있는 텍스트 입력">
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">입력 그룹 버튼</label>
+    <div class="input-group">
+        <input type="text" class="form-control">
+        <button type="button" class="btn">액션</button>
+        <button data-bs-toggle="dropdown" type="button" class="btn dropdown-toggle dropdown-toggle-split"></button>
+        <div class="dropdown-menu dropdown-menu-end">
+            <a class="dropdown-item" href="#">
+                액션
+            </a>
+            <a class="dropdown-item" href="#">
+                다른 액션
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">아이콘 입력</label>
+    <div class="input-icon mb-3">
+        <input type="text" class="form-control" placeholder="검색…">
+        <span class="input-icon-addon">
+            <i class="f:20 ti ti-search"></i>
+        </span>
+    </div>
+    <div class="input-icon mb-3">
+        <span class="input-icon-addon">
+            <i class="f:20 ti ti-user"></i>
+        </span>
+        <input type="text" class="form-control" placeholder="사용자명">
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">로더 입력</label>
+    <div class="input-icon mb-3">
+        <input type="text" class="form-control" placeholder="로딩 중…">
+        <span class="input-icon-addon">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+        </span>
+    </div>
+    <div class="input-icon mb-3">
+        <span class="input-icon-addon">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+        </span>
+        <input type="text" class="form-control" placeholder="로딩 중…">
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">분리된 입력</label>
+    <div class="row g-2">
+        <div class="col">
+            <input type="text" class="form-control" placeholder="검색...">
+        </div>
+        <div class="col-auto">
+            <a href="#" class="btn btn-icon" aria-label="Button">
+                <i class="f:20 ti ti-search"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">도움말 아이콘이 있는 입력</label>
+    <div class="row g-2">
+        <div class="col">
+            <input type="text" class="form-control" placeholder="검색...">
+        </div>
+        <div class="col-auto align-self-center">
+            <span class="form-help" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="<p>우편번호는 미국 또는 캐나다 형식이어야 합니다. 더 정확한 주소를 위해 확장된 ZIP+4 코드를 사용할 수 있습니다.</p>
+                                  <p class='mb-0'><a href='#'>우편번호 조회 도구</a></p>
+                                  " data-bs-html="true">?</span>
+        </div>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`align-self-center`, `btn`, `btn-icon`, `col`, `col-auto`, `dropdown-item`, `dropdown-menu`, `dropdown-menu-end`, `dropdown-toggle`, `dropdown-toggle-split`, `f:20`, `form-control`, `form-help`, `form-label`, `g-2`, `input-group`, `input-icon`, `input-icon-addon`, `mb-2`, `mb-3`, `row`, `spinner-border`, `spinner-border-sm`, `text-secondary`, `ti`, `ti-search`, `ti-user`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-입력-그룹.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

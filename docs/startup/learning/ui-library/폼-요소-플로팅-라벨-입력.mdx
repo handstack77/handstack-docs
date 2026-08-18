@@ -1,0 +1,37 @@
+---
+sidebar_position: 10
+---
+
+# 플로팅 라벨 입력
+
+분류: 폼 요소
+
+## 소스
+```html
+<div class="mb-3">
+    <label class="form-label">플로팅 라벨 입력</label>
+    <div class="form-floating mb-3">
+        <input type="email" class="form-control" id="floating-input" value="name@example.com" autocomplete="off">
+        <label for="floating-input">이메일 주소</label>
+    </div>
+    <div class="form-floating mb-3">
+        <input type="password" class="form-control" id="floating-password" value="Password" autocomplete="off">
+        <label for="floating-password">비밀번호</label>
+    </div>
+    <div class="form-floating">
+        <select class="form-select" id="floatingSelect" aria-label="Floating label select example">
+            <option selected="">이 선택 메뉴를 여세요</option>
+            <option value="1">옵션 1</option>
+            <option value="2">옵션 2</option>
+            <option value="3">옵션 3</option>
+        </select>
+        <label for="floatingSelect">선택</label>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`form-control`, `form-floating`, `form-label`, `form-select`, `mb-3`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-플로팅-라벨-입력.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

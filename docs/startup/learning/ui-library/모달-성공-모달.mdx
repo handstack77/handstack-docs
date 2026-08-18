@@ -1,0 +1,50 @@
+---
+sidebar_position: 55
+---
+
+# 성공 모달
+
+분류: 모달
+
+## 소스
+```html
+<a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-success">
+    성공 모달
+</a>
+
+<div class="modal modal-blur fade" id="modal-success" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-success"></div>
+            <div class="modal-body text-center py-4">
+                <i class="f:20 ti ti-circle-check"></i>
+                <h3>결제 성공</h3>
+                <div class="text-secondary">290,000원 결제가 성공적으로 제출되었습니다. 인보이스는 support@tabler.io로 발송되었습니다.</div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <a href="#" class="btn w-100" data-bs-dismiss="modal">
+                                대시보드로 이동
+                            </a>
+                        </div>
+                        <div class="col">
+                            <a href="#" class="btn btn-success w-100" data-bs-dismiss="modal">
+                                인보이스 보기
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`bg-success`, `btn`, `btn-close`, `btn-success`, `col`, `f:20`, `fade`, `modal`, `modal-blur`, `modal-body`, `modal-content`, `modal-dialog`, `modal-dialog-centered`, `modal-footer`, `modal-sm`, `modal-status`, `py-4`, `row`, `text-center`, `text-secondary`, `ti`, `ti-circle-check`, `w-100`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/모달-성공-모달.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

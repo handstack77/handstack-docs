@@ -1,0 +1,71 @@
+---
+sidebar_position: 32
+---
+
+# 계정 인증
+
+분류: UI 예제
+
++82 10-1234-5678 로 전송된 인증 코드를 입력하여 계정을 확인하세요.
+
+## 소스
+```html
+<div class="card card-md">
+    <div class="card-body">
+        <h2 class="card-title card-title-lg text-center mb-4">계정 인증</h2>
+        <p class="my-4 text-center"><strong>+82 10-1234-5678</strong>로 전송된 인증 코드를 입력하여 계정을 확인하세요.</p>
+        <div class="my-5">
+            <div class="row g-4">
+                <div class="col">
+                    <div class="row g-2">
+                        <div class="col">
+                            <input type="text" class="form-control form-control-lg text-center py-3" maxlength="1" inputmode="numeric" pattern="[0-9]*" data-code-input="">
+                        </div>
+                        <div class="col">
+                            <input type="text" class="form-control form-control-lg text-center py-3" maxlength="1" inputmode="numeric" pattern="[0-9]*" data-code-input="">
+                        </div>
+                        <div class="col">
+                            <input type="text" class="form-control form-control-lg text-center py-3" maxlength="1" inputmode="numeric" pattern="[0-9]*" data-code-input="">
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="row g-2">
+                        <div class="col">
+                            <input type="text" class="form-control form-control-lg text-center py-3" maxlength="1" inputmode="numeric" pattern="[0-9]*" data-code-input="">
+                        </div>
+                        <div class="col">
+                            <input type="text" class="form-control form-control-lg text-center py-3" maxlength="1" inputmode="numeric" pattern="[0-9]*" data-code-input="">
+                        </div>
+                        <div class="col">
+                            <input type="text" class="form-control form-control-lg text-center py-3" maxlength="1" inputmode="numeric" pattern="[0-9]*" data-code-input="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="my-4">
+            <label class="form-check">
+                <input type="checkbox" class="form-check-input">
+                이 기기에서 다시 코드 묻지 않기
+            </label>
+        </div>
+        <div class="form-footer">
+            <div class="btn-list flex-nowrap">
+                <a href="./2-step-verification.html" class="btn w-100">
+                    취소
+                </a>
+                <a href="#" class="btn btn-primary w-100">
+                    인증
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`btn`, `btn-list`, `btn-primary`, `card-title`, `card-title-lg`, `col`, `flex-nowrap`, `form-check`, `form-check-input`, `form-control`, `form-control-lg`, `form-footer`, `g-2`, `g-4`, `mb-4`, `my-4`, `my-5`, `py-3`, `row`, `text-center`, `w-100`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/ui-예제-계정-인증.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

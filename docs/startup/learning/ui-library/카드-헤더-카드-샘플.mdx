@@ -1,0 +1,39 @@
+---
+sidebar_position: 40
+---
+
+# 카드 샘플
+
+분류: 카드 헤더
+
+## 소스
+```html
+<div class="card overflow-auto">
+    <div class="card-header">
+        <h3 class="card-title">카드 샘플</h3>
+        <div class="card-actions">
+            <div class="input-group">
+                <select id="ddlAddCount" class="form-select mx-2">
+                    <option value="1" selected="selected">1</option>
+                    <option value="3">3</option>
+                    <option value="6">6</option>
+                </select>
+                <div class="btn-group">
+                    <button type="button" id="btnPlus" syn-events="['click']" class="btn btn-icon bg-muted-lt">
+                        <i class="f:20 ti ti-plus"></i>
+                    </button>
+                    <button type="button" id="btnMinus" syn-events="['click']" class="btn btn-icon bg-muted-lt">
+                        <i class="f:20 ti ti-minus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`bg-muted-lt`, `btn`, `btn-group`, `btn-icon`, `card`, `card-actions`, `card-header`, `card-title`, `f:20`, `form-select`, `input-group`, `mx-2`, `overflow-auto`, `ti`, `ti-minus`, `ti-plus`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/카드-헤더-카드-샘플.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

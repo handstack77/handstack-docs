@@ -1,0 +1,29 @@
+---
+sidebar_position: 13
+---
+
+# 유효성 검사 상태
+
+분류: 폼 요소
+
+## 소스
+```html
+<div class="mb-3">
+    <label class="form-label">유효성 검사 상태</label>
+    <input type="text" class="form-control is-valid mb-2" placeholder="유효한 상태..">
+    <input type="text" class="form-control is-invalid" placeholder="유효하지 않은 상태..">
+    <div class="invalid-feedback">잘못된 입력입니다.</div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">유효성 검사 상태 (라이트)</label>
+    <input type="text" class="form-control is-valid is-valid-lite mb-2" placeholder="유효한 상태..">
+    <input type="text" class="form-control is-invalid is-invalid-lite" placeholder="유효하지 않은 상태..">
+</div>
+```
+
+## 사용된 주요 클래스
+`form-control`, `form-label`, `invalid-feedback`, `is-invalid`, `is-invalid-lite`, `is-valid`, `is-valid-lite`, `mb-2`, `mb-3`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-유효성-검사-상태.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

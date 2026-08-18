@@ -1,0 +1,49 @@
+---
+sidebar_position: 60
+---
+
+# 수직 단계
+
+분류: 단계 진행
+
+## 소스
+```html
+<div class="card overflow-auto">
+    <div class="card-body">
+        <h3 class="card-title">수직 단계</h3>
+        <ul class="steps steps-vertical m-0 p-0 border-0">
+            <li class="step-item">
+                <div class="h4 m-0">주문 접수</div>
+                <div class="text-secondary">주문이 성공적으로 접수되었습니다. 확인 이메일이 발송됩니다.</div>
+            </li>
+            <li class="step-item">
+                <div class="h4 m-0">처리 중</div>
+                <div class="text-secondary">주문 상품을 준비하고 있습니다.</div>
+            </li>
+            <li class="step-item active">
+                <div class="h4 m-0">배송 중</div>
+                <div class="text-secondary">상품이 배송을 위해 출발했습니다.</div>
+            </li>
+            <li class="step-item">
+                <div class="h4 m-0">완료</div>
+                <div class="text-secondary">주문이 완료되었습니다.</div>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <ul class="steps steps-counter steps-vertical m-0 p-0 border-0">
+            <li class="step-item">1단계</li>
+            <li class="step-item">2단계</li>
+            <li class="step-item active">3단계</li>
+            <li class="step-item">4단계</li>
+            <li class="step-item">5단계</li>
+        </ul>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`active`, `border-0`, `card`, `card-body`, `card-title`, `h4`, `m-0`, `overflow-auto`, `p-0`, `step-item`, `steps`, `steps-counter`, `steps-vertical`, `text-secondary`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/단계-진행-수직-단계.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

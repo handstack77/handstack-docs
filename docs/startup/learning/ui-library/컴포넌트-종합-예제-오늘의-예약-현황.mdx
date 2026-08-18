@@ -1,0 +1,40 @@
+---
+sidebar_position: 64
+---
+
+# 오늘의 예약 현황
+
+분류: 컴포넌트 종합 예제
+
+## 소스
+```html
+<div class="card card-md">
+    <div class="card-status-start bg-green"></div>
+    <div class="card-header">
+        <h4 class="card-title">오늘의 예약 현황</h4>
+        <div class="card-actions">
+            <span class="badge bg-green-lt text-green">12건</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="d-flex align-items-center">
+            <span class="avatar bg-blue-lt text-blue me-3">
+                <i class="f:20 ti ti-calendar-check"></i>
+            </span>
+            <div class="flex-fill">
+                <div class="font-weight-medium">오후 피팅 예약이 집중되어 있습니다.</div>
+                <div class="text-secondary">오후 2시부터 5시까지 담당자를 추가 배정해 주세요.</div>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer text-end">
+        <button type="button" class="btn btn-primary">예약표 보기</button>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`align-items-center`, `avatar`, `bg-blue-lt`, `d-flex`, `f:20`, `flex-fill`, `font-weight-medium`, `me-3`, `text-blue`, `text-secondary`, `ti`, `ti-calendar-check`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/컴포넌트-종합-예제-오늘의-예약-현황.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

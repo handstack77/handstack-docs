@@ -1,0 +1,42 @@
+---
+sidebar_position: 31
+---
+
+# 계정 잠금
+
+분류: UI 예제
+
+계정을 잠금 해제하려면 비밀번호를 입력 하세요.
+
+## 소스
+```html
+<div class="card card-md">
+    <div class="card-body text-center">
+        <div class="mb-4">
+            <h2 class="card-title">계정 잠금</h2>
+            <p class="text-secondary">계정을 잠금 해제하려면 비밀번호를 입력 하세요.</p>
+        </div>
+        <div class="mb-4">
+            <span class="avatar avatar-xl mb-3" style="background-image: url(../../img/avatars/000m.jpg)"></span>
+            <h3>홍길동</h3>
+        </div>
+        <div class="mb-4">
+            <input type="password" class="form-control" placeholder="비밀번호…">
+        </div>
+        <div>
+            <a href="#" class="btn btn-primary w-100">
+                <i class="f:20 ti ti-lock-open"></i>
+                잠금 해제
+            </a>
+        </div>
+    </div>
+</div>
+```
+
+> 원본 이미지 경로(`img/...`)는 참고용 표시이며 실제 이미지 파일은 포함하지 않았습니다. 미리보기 페이지에서는 자리 표시 이미지로 대체됩니다.
+
+## 사용된 주요 클래스
+`avatar`, `avatar-xl`, `btn`, `btn-primary`, `card-title`, `f:20`, `form-control`, `mb-3`, `mb-4`, `text-secondary`, `ti`, `ti-lock-open`, `w-100`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/ui-예제-계정-잠금.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

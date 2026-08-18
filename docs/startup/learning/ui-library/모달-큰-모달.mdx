@@ -1,0 +1,38 @@
+---
+sidebar_position: 50
+---
+
+# 큰 모달
+
+분류: 모달
+
+## 소스
+```html
+<a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-large">
+    큰 모달
+</a>
+
+<div class="modal modal-blur fade" id="modal-large" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">큰 모달</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                이것은 큰 모달의 예시입니다. 더 많은 내용을 표시해야 할 때 유용합니다.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">변경사항 저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`btn`, `btn-close`, `btn-primary`, `fade`, `me-auto`, `modal`, `modal-blur`, `modal-body`, `modal-content`, `modal-dialog`, `modal-dialog-centered`, `modal-footer`, `modal-header`, `modal-lg`, `modal-title`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/모달-큰-모달.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

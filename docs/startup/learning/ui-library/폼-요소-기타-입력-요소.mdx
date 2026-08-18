@@ -1,0 +1,81 @@
+---
+sidebar_position: 21
+---
+
+# 기타 입력 요소
+
+분류: 폼 요소
+
+## 소스
+```html
+<div class="mb-3">
+    <label class="form-label">데이터 목록 예제</label>
+    <input class="form-control" list="datalistOptions" placeholder="검색하려면 입력...">
+    <datalist id="datalistOptions">
+        <option value="안도라">
+        </option>
+        <option value="아랍에미리트">
+        </option>
+        <option value="아프가니스탄">
+        </option>
+        <option value="앤티가">
+        </option>
+        <option value="앵귈라">
+        </option>
+        <option value="아르메니아">
+        </option>
+        <option value="앙골라">
+        </option>
+        <option value="남극">
+        </option>
+        <option value="아르헨티나">
+        </option>
+        <option value="아메리칸사모아">
+        </option>
+    </datalist>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">범위 입력</label>
+    <input type="range" class="form-range mb-2" value="40" min="0" max="100" step="10">
+    <div class="form-range mb-2 noUi-target noUi-ltr noUi-horizontal noUi-txt-dir-ltr" id="range-simple"><div class="noUi-base"><div class="noUi-connects"><div class="noUi-connect" style="transform: translate(0%, 0px) scale(0.2, 1);"></div></div><div class="noUi-origin" style="transform: translate(-80%, 0px); z-index: 4;"><div class="noUi-handle noUi-handle-lower" data-handle="0" tabindex="0" role="slider" aria-orientation="horizontal" aria-valuemin="0.0" aria-valuemax="100.0" aria-valuenow="20.0" aria-valuetext="20.00"><div class="noUi-touch-area"></div></div></div></div></div>
+    <div class="form-range mb-2 noUi-target noUi-ltr noUi-horizontal noUi-txt-dir-ltr" id="range-connect"><div class="noUi-base"><div class="noUi-connects"><div class="noUi-connect" style="transform: translate(60%, 0px) scale(0.3, 1);"></div></div><div class="noUi-origin" style="transform: translate(-40%, 0px); z-index: 5;"><div class="noUi-handle noUi-handle-lower" data-handle="0" tabindex="0" role="slider" aria-orientation="horizontal" aria-valuemin="0.0" aria-valuemax="90.0" aria-valuenow="60.0" aria-valuetext="60.00"><div class="noUi-touch-area"></div></div></div><div class="noUi-origin" style="transform: translate(-10%, 0px); z-index: 4;"><div class="noUi-handle noUi-handle-upper" data-handle="1" tabindex="0" role="slider" aria-orientation="horizontal" aria-valuemin="60.0" aria-valuemax="100.0" aria-valuenow="90.0" aria-valuetext="90.00"><div class="noUi-touch-area"></div></div></div></div></div>
+    <div class="form-range mb-2 text-green noUi-target noUi-ltr noUi-horizontal noUi-txt-dir-ltr" id="range-color"><div class="noUi-base"><div class="noUi-connects"><div class="noUi-connect" style="transform: translate(0%, 0px) scale(0.4, 1);"></div></div><div class="noUi-origin" style="transform: translate(-60%, 0px); z-index: 4;"><div class="noUi-handle noUi-handle-lower" data-handle="0" tabindex="0" role="slider" aria-orientation="horizontal" aria-valuemin="0.0" aria-valuemax="100.0" aria-valuenow="40.0" aria-valuetext="40.00"><div class="noUi-touch-area"></div></div></div></div></div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">진행률</label>
+    <div class="progress mb-2">
+        <div class="progress-bar" style="width: 38%" role="progressbar" aria-valuenow="38" aria-valuemin="0" aria-valuemax="100" aria-label="38% 완료">
+            <span class="visually-hidden">38% 완료</span>
+        </div>
+    </div>
+    <div class="progress">
+        <div class="progress-bar progress-bar-indeterminate bg-green"></div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">폼 버튼</label>
+    <div class="row">
+        <div class="col">
+            <a href="#" class="btn w-100">
+                <i class="f:20 ti ti-brand-github"></i>
+                Github으로 로그인
+            </a>
+        </div>
+        <div class="col">
+            <a href="#" class="btn w-100">
+                <i class="f:20 ti ti-brand-x"></i>
+                X로 로그인
+            </a>
+        </div>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`bg-green`, `btn`, `col`, `f:20`, `form-control`, `form-label`, `form-range`, `mb-2`, `mb-3`, `noUi-base`, `noUi-connect`, `noUi-connects`, `noUi-handle`, `noUi-handle-lower`, `noUi-handle-upper`, `noUi-horizontal`, `noUi-ltr`, `noUi-origin`, `noUi-target`, `noUi-touch-area`, `noUi-txt-dir-ltr`, `progress`, `progress-bar`, `progress-bar-indeterminate`, `row`, `text-green`, `ti`, `ti-brand-github`, `ti-brand-x`, `visually-hidden`, `w-100`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-기타-입력-요소.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

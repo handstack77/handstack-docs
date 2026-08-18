@@ -1,0 +1,74 @@
+---
+sidebar_position: 9
+---
+
+# 텍스트·아이콘 부가 입력
+
+분류: 폼 요소
+
+## 소스
+```html
+<div class="mb-3">
+    <label class="form-label">앞에 텍스트가 붙는 입력</label>
+    <div class="input-group input-group-flat">
+        <span class="input-group-text">
+            https://tabler.io/users/
+        </span>
+        <input type="text" class="form-control ps-0" value="yourfancyusername" autocomplete="off">
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">뒤에 텍스트가 붙는 입력</label>
+    <div class="input-group input-group-flat">
+        <input type="text" class="form-control text-end pe-0" value="yourfancydomain" autocomplete="off">
+        <span class="input-group-text">
+            .tabler.io
+        </span>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">뒤에 링크가 붙는 입력</label>
+    <div class="input-group input-group-flat">
+        <input type="password" class="form-control" value="ultrastrongpassword" autocomplete="off">
+        <span class="input-group-text">
+            <a href="#" class="input-group-link">비밀번호 보기</a>
+        </span>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">뒤에 키보드 입력이 붙는 입력</label>
+    <div class="input-group input-group-flat">
+        <input type="text" class="form-control" autocomplete="off">
+        <span class="input-group-text">
+            <kbd>ctrl + K</kbd>
+        </span>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">뒤에 아이콘 링크가 붙는 입력</label>
+    <div class="input-group input-group-flat">
+        <input type="text" class="form-control" autocomplete="off">
+        <span class="input-group-text">
+            <a href="#" class="link-secondary" data-bs-toggle="tooltip" aria-label="검색 지우기" data-bs-original-title="검색 지우기">
+                <i class="f:20 ti ti-x"></i>
+            </a>
+            <a href="#" class="link-secondary ms-2" data-bs-toggle="tooltip" aria-label="검색 설정" data-bs-original-title="검색 설정">
+                <i class="f:20 ti ti-adjustments"></i>
+            </a>
+            <a href="#" class="link-secondary ms-2 disabled" data-bs-toggle="tooltip" aria-label="알림 추가" data-bs-original-title="알림 추가">
+                <i class="f:20 ti ti-bell"></i>
+            </a>
+        </span>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`disabled`, `f:20`, `form-control`, `form-label`, `input-group`, `input-group-flat`, `input-group-link`, `input-group-text`, `link-secondary`, `mb-3`, `ms-2`, `pe-0`, `ps-0`, `text-end`, `ti`, `ti-adjustments`, `ti-bell`, `ti-x`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-텍스트-아이콘-부가-입력.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

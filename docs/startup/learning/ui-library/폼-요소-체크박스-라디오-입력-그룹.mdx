@@ -1,0 +1,57 @@
+---
+sidebar_position: 8
+---
+
+# 체크박스·라디오 입력 그룹
+
+분류: 폼 요소
+
+## 소스
+```html
+<div class="mb-3">
+    <label class="form-label">입력 그룹</label>
+    <div class="input-group mb-2">
+        <span class="input-group-text">
+            @
+        </span>
+        <input type="text" class="form-control" placeholder="사용자명" autocomplete="off">
+    </div>
+    <div class="input-group mb-2">
+        <input type="text" class="form-control" placeholder="서브도메인" autocomplete="off">
+        <span class="input-group-text">
+            .tabler.io
+        </span>
+    </div>
+    <div class="input-group">
+        <span class="input-group-text">
+            https://
+        </span>
+        <input type="text" class="form-control" placeholder="서브도메인" autocomplete="off">
+        <span class="input-group-text">
+            .tabler.io
+        </span>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">체크박스 또는 라디오 버튼 입력</label>
+    <div class="input-group mb-2">
+        <span class="input-group-text">
+            <input class="form-check-input m-0" type="checkbox" checked="">
+        </span>
+        <input type="text" class="form-control" autocomplete="off">
+    </div>
+    <div class="input-group">
+        <input type="text" class="form-control" autocomplete="off">
+        <span class="input-group-text">
+            <input class="form-check-input m-0" type="radio" checked="">
+        </span>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`form-check-input`, `form-control`, `form-label`, `input-group`, `input-group-text`, `m-0`, `mb-2`, `mb-3`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-체크박스-라디오-입력-그룹.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

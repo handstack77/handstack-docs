@@ -1,0 +1,148 @@
+---
+sidebar_position: 16
+---
+
+# 버튼 그룹
+
+분류: 폼 요소
+
+## 소스
+```html
+<div class="mb-3">
+    <label class="form-label">버튼 그룹</label>
+    <div class="btn-group w-100" role="group">
+        <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-1" autocomplete="off" checked="">
+        <label for="btn-radio-basic-1" type="button" class="btn">1분</label>
+        <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-2" autocomplete="off">
+        <label for="btn-radio-basic-2" type="button" class="btn">5분</label>
+        <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-3" autocomplete="off">
+        <label for="btn-radio-basic-3" type="button" class="btn">10분</label>
+        <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-4" autocomplete="off">
+        <label for="btn-radio-basic-4" type="button" class="btn">30분</label>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">드롭다운이 있는 버튼 그룹</label>
+    <div class="btn-group w-100" role="group">
+        <input type="radio" class="btn-check" name="btn-radio-dropdown" id="btn-radio-dropdown-1" autocomplete="off" checked="">
+        <label for="btn-radio-dropdown-1" type="button" class="btn">옵션 1</label>
+        <input type="radio" class="btn-check" name="btn-radio-dropdown" id="btn-radio-dropdown-2" autocomplete="off">
+        <label for="btn-radio-dropdown-2" type="button" class="btn">옵션 2</label>
+        <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="btn-radio-dropdown" id="btn-radio-dropdown-dropdown" autocomplete="off">
+            <label for="btn-radio-dropdown-dropdown" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                기타
+            </label>
+            <div class="dropdown-menu">
+                <label class="dropdown-item"><input class="form-check-input m-0 me-2" type="radio"> 옵션 1</label>
+                <label class="dropdown-item"><input class="form-check-input m-0 me-2" type="radio"> 옵션 2</label>
+                <label class="dropdown-item"><input class="form-check-input m-0 me-2" type="radio"> 옵션 3</label>
+            </div>
+            <div class="dropdown-menu dropdown-menu-end">
+                <a class="dropdown-item" href="#">
+                    옵션 4
+                </a>
+                <a class="dropdown-item" href="#">
+                    옵션 5
+                </a>
+                <a class="dropdown-item" href="#">
+                    옵션 6
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">수직 버튼 그룹</label>
+    <div class="btn-group-vertical w-100" role="group">
+        <input type="radio" class="btn-check" name="btn-radio-vertical" id="btn-radio-vertical-1" autocomplete="off" checked="">
+        <label for="btn-radio-vertical-1" type="button" class="btn">버튼 1</label>
+        <input type="radio" class="btn-check" name="btn-radio-vertical" id="btn-radio-vertical-2" autocomplete="off">
+        <label for="btn-radio-vertical-2" type="button" class="btn">버튼 2</label>
+        <input type="radio" class="btn-check" name="btn-radio-vertical" id="btn-radio-vertical-3" autocomplete="off">
+        <label for="btn-radio-vertical-3" type="button" class="btn">버튼 3</label>
+        <input type="radio" class="btn-check" name="btn-radio-vertical" id="btn-radio-vertical-4" autocomplete="off">
+        <label for="btn-radio-vertical-4" type="button" class="btn">버튼 4</label>
+        <input type="radio" class="btn-check" name="btn-radio-vertical" id="btn-radio-vertical-5" autocomplete="off">
+        <label for="btn-radio-vertical-5" type="button" class="btn">버튼 5</label>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">드롭다운이 있는 수직 그룹</label>
+    <div class="btn-group-vertical w-100" role="group">
+        <input type="radio" class="btn-check" name="btn-radio-vertical-dropdown" id="btn-radio-vertical-dropdown-1" autocomplete="off" checked="">
+        <label for="btn-radio-vertical-dropdown-1" type="button" class="btn">버튼 1</label>
+        <input type="radio" class="btn-check" name="btn-radio-vertical-dropdown" id="btn-radio-vertical-dropdown-2" autocomplete="off">
+        <label for="btn-radio-vertical-dropdown-2" type="button" class="btn">버튼 2</label>
+        <input type="radio" class="btn-check" name="btn-radio-vertical-dropdown" id="btn-radio-vertical-dropdown-3" autocomplete="off">
+        <label for="btn-radio-vertical-dropdown-3" type="button" class="btn">버튼 3</label>
+        <input type="radio" class="btn-check" name="btn-radio-vertical-dropdown" id="btn-radio-vertical-dropdown-4" autocomplete="off">
+        <label for="btn-radio-vertical-dropdown-4" type="button" class="btn">버튼 4</label>
+        <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="btn-radio-vertical-dropdown" id="btn-radio-vertical-dropdown-dropdown" autocomplete="off">
+            <label for="btn-radio-vertical-dropdown-dropdown" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                기타
+            </label>
+            <div class="dropdown-menu">
+                <label class="dropdown-item"><input class="form-check-input m-0 me-2" type="radio"> 옵션 1</label>
+                <label class="dropdown-item"><input class="form-check-input m-0 me-2" type="radio"> 옵션 2</label>
+                <label class="dropdown-item"><input class="form-check-input m-0 me-2" type="radio"> 옵션 3</label>
+            </div>
+            <div class="dropdown-menu dropdown-menu-end">
+                <a class="dropdown-item" href="#">
+                    옵션 4
+                </a>
+                <a class="dropdown-item" href="#">
+                    옵션 5
+                </a>
+                <a class="dropdown-item" href="#">
+                    옵션 6
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">툴바</label>
+    <div class="btn-group w-100" role="group">
+        <input type="radio" class="btn-check" name="btn-radio-toolbar" id="btn-radio-toolbar-1" autocomplete="off" checked="">
+        <label for="btn-radio-toolbar-1" class="btn btn-icon">
+            <i class="f:20 ti ti-bold"></i>
+        </label>
+        <input type="radio" class="btn-check" name="btn-radio-toolbar" id="btn-radio-toolbar-2" autocomplete="off">
+        <label for="btn-radio-toolbar-2" class="btn btn-icon">
+            <i class="f:20 ti ti-italic"></i>
+        </label>
+        <input type="radio" class="btn-check" name="btn-radio-toolbar" id="btn-radio-toolbar-3" autocomplete="off">
+        <label for="btn-radio-toolbar-3" class="btn btn-icon">
+            <i class="f:20 ti ti-underline"></i>
+        </label>
+        <input type="radio" class="btn-check" name="btn-radio-toolbar" id="btn-radio-toolbar-4" autocomplete="off">
+        <label for="btn-radio-toolbar-4" class="btn btn-icon">
+            <i class="f:20 ti ti-copy"></i>
+        </label>
+        <input type="radio" class="btn-check" name="btn-radio-toolbar" id="btn-radio-toolbar-5" autocomplete="off">
+        <label for="btn-radio-toolbar-5" class="btn btn-icon">
+            <i class="f:20 ti ti-scissors"></i>
+        </label>
+        <input type="radio" class="btn-check" name="btn-radio-toolbar" id="btn-radio-toolbar-6" autocomplete="off">
+        <label for="btn-radio-toolbar-6" class="btn btn-icon">
+            <i class="f:20 ti ti-file-plus"></i>
+        </label>
+        <input type="radio" class="btn-check" name="btn-radio-toolbar" id="btn-radio-toolbar-7" autocomplete="off">
+        <label for="btn-radio-toolbar-7" class="btn btn-icon">
+            <i class="f:20 ti ti-file-minus"></i>
+        </label>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`btn`, `btn-check`, `btn-group`, `btn-group-vertical`, `btn-icon`, `dropdown-item`, `dropdown-menu`, `dropdown-menu-end`, `dropdown-toggle`, `f:20`, `form-check-input`, `form-label`, `m-0`, `mb-3`, `me-2`, `ti`, `ti-bold`, `ti-copy`, `ti-file-minus`, `ti-file-plus`, `ti-italic`, `ti-scissors`, `ti-underline`, `w-100`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-버튼-그룹.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

@@ -1,0 +1,57 @@
+---
+sidebar_position: 27
+---
+
+# 내 프로필
+
+분류: 서식
+
+## 소스
+```html
+<div class="card overflow-auto">
+    <div class="card-status-top bg-dark-overlay"></div>
+    <div class="card-header">
+        <h3 class="card-title">내 프로필</h3>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <div class="row">
+                <div class="col-auto">
+                    <span class="avatar avatar-md" style="background-image: url(../../img/avatars/002m.jpg)"></span>
+                </div>
+                <div class="col">
+                    <div class="mb-3">
+                        <label class="form-label">이메일 주소</label>
+                        <input class="form-control" placeholder="your-email@domain.com">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">소개</label>
+            <textarea class="form-control" rows="5">간단한 자기소개 예시입니다. 자유롭게 수정하여 사용하세요.</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">이메일 주소</label>
+            <input class="form-control" placeholder="your-email@domain.com">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">비밀번호</label>
+            <input type="password" class="form-control" value="password">
+        </div>
+    </div>
+    <div class="card-footer text-end">
+        <a href="#" class="btn btn-primary">
+            저장
+        </a>
+    </div>
+</div>
+```
+
+> 원본 이미지 경로(`img/...`)는 참고용 표시이며 실제 이미지 파일은 포함하지 않았습니다. 미리보기 페이지에서는 자리 표시 이미지로 대체됩니다.
+
+## 사용된 주요 클래스
+`avatar`, `avatar-md`, `col`, `col-auto`, `form-control`, `form-label`, `mb-3`, `row`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/서식-내-프로필.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

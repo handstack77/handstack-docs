@@ -1,0 +1,68 @@
+---
+sidebar_position: 30
+---
+
+# 계정에 로그인
+
+분류: UI 예제
+
+## 소스
+```html
+<div class="card card-md">
+    <div class="card-body">
+        <h2 class="h2 text-center mb-4">계정에 로그인</h2>
+        <div class="mb-3">
+            <label class="form-label">이메일 주소</label>
+            <input type="email" class="form-control" placeholder="your@email.com" autocomplete="off">
+        </div>
+        <div class="mb-2">
+            <label class="form-label">
+                비밀번호
+                <span class="form-label-description">
+                    <a href="./forgot-password.html">비밀번호를 잊으셨나요?</a>
+                </span>
+            </label>
+            <div class="input-group input-group-flat">
+                <input type="password" class="form-control" placeholder="비밀번호" autocomplete="off">
+                <span class="input-group-text">
+                    <a href="#" class="link-secondary" data-bs-toggle="tooltip" aria-label="비밀번호 보기" data-bs-original-title="비밀번호 보기">
+                        <i class="f:20 ti ti-eye"></i>
+                    </a>
+                </span>
+            </div>
+        </div>
+        <div class="mb-2">
+            <label class="form-check">
+                <input type="checkbox" class="form-check-input">
+                <span class="form-check-label">이 기기에서 로그인 유지</span>
+            </label>
+        </div>
+        <div class="form-footer">
+            <button type="submit" class="btn btn-primary w-100">로그인</button>
+        </div>
+    </div>
+    <div class="hr-text">또는</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col">
+                <a href="#" class="btn w-100">
+                    <i class="f:20 mr:4 ti ti-brand-github"></i>
+                    Github으로 로그인
+                </a>
+            </div>
+            <div class="col">
+                <a href="#" class="btn w-100">
+                    <i class="f:20 ti ti-brand-x"></i>
+                    X로 로그인
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+## 사용된 주요 클래스
+`btn`, `btn-primary`, `card`, `card-body`, `card-md`, `col`, `f:20`, `form-check`, `form-check-input`, `form-check-label`, `form-control`, `form-footer`, `form-label`, `form-label-description`, `h2`, `hr-text`, `input-group`, `input-group-flat`, `input-group-text`, `link-secondary`, `mb-2`, `mb-3`, `mb-4`, `mr:4`, `row`, `text-center`, `ti`, `ti-brand-github`, `ti-brand-x`, `ti-eye`, `w-100`
+
+## 실전 예제 페이지
+HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/ui-예제-계정에-로그인.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
