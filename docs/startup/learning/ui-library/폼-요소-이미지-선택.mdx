@@ -6,6 +6,8 @@ sidebar_position: 11
 
 분류: 폼 요소
 
+썸네일 이미지를 클릭해 선택하는 **이미지 체크/라디오 컨트롤** 예제입니다. `.form-imagecheck`가 실제 `checkbox`/`radio` 입력을 감싸고, 안쪽의 `.form-imagecheck-figure`/`.form-imagecheck-image`가 썸네일을 표시합니다. 선택된 항목에는 자동으로 강조 테두리와 체크 표시가 나타나며, `name` 속성을 같은 값으로 묶으면 라디오처럼 단일 선택으로 동작합니다.
+
 ## 소스
 ```html
 <div class="mb-3">
@@ -120,7 +122,21 @@ sidebar_position: 11
 > 원본 이미지 경로(`img/...`)는 참고용 표시이며 실제 이미지 파일은 포함하지 않았습니다. 미리보기 페이지에서는 자리 표시 이미지로 대체됩니다.
 
 ## 사용된 주요 클래스
-`col-6`, `col-sm-4`, `form-imagecheck`, `form-imagecheck-figure`, `form-imagecheck-image`, `form-imagecheck-input`, `form-label`, `g-2`, `mb-2`, `mb-3`, `row`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `col-6`, `col-sm-4` | 화면 폭에 따라 2열/3열로 배치되는 그리드 열 |
+| `form-imagecheck` | 이미지 체크/라디오 항목 전체를 감싸는 라벨 컨테이너 |
+| `form-imagecheck-figure` | 썸네일 이미지와 선택 표시를 담는 영역 |
+| `form-imagecheck-image` | 실제 썸네일 `<img>`에 적용되는 스타일 |
+| `form-imagecheck-input` | 화면에는 보이지 않는 실제 `checkbox`/`radio` 입력 |
+| `form-label` | 이미지 그룹 위에 붙는 라벨 텍스트 스타일 |
+| `g-2` | 그리드 행의 열 사이 간격(gutter) |
+| `mb-2`, `mb-3` | 요소 사이 아래쪽 여백(margin-bottom) |
+| `row` | Bootstrap 그리드 행 |
+
+## 참고 자료
+- [Form image check](https://docs.tabler.io/ui/forms/form-image-check/)
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-이미지-선택.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

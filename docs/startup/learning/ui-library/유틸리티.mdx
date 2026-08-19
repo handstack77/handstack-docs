@@ -6,6 +6,8 @@ sidebar_position: 67
 
 분류: 유틸리티
 
+**테두리(Border) · 여백(Margin) · 커서(Cursor) · 세로 정렬(Vertical align)** 네 가지 Bootstrap/Tabler 유틸리티 클래스를 한 카드에 모아 값별 차이를 눈으로 비교할 수 있게 만든 참고용 예제입니다. 새 화면을 만들 때 "테두리를 점선으로 하려면 어떤 클래스지?", "세로 가운데 정렬은 무슨 클래스지?" 같은 걸 찾아볼 때 이 문서를 사전처럼 활용하면 됩니다. 왼쪽 열은 테두리(`border-*`)와 바깥 여백(`m-*`), 오른쪽 열은 커서 모양(`cursor-*`)과 표 셀의 세로 정렬(`align-*`)을 다룹니다.
+
 ## 소스
 ```html
 <div class="card overflow-auto mt-3" id="example-utilities">
@@ -72,7 +74,29 @@ sidebar_position: 67
 ```
 
 ## 사용된 주요 클래스
-`align-baseline`, `align-bottom`, `align-items-center`, `align-items-start`, `align-middle`, `align-text-bottom`, `align-text-top`, `align-top`, `badge`, `bg-azure-lt`, `bg-blue`, `bg-blue-lt`, `bg-green-lt`, `bg-purple-lt`, `bg-red-lt`, `bg-white`, `bg-yellow-lt`, `border`, `border-3`, `border-blue`, `border-dashed`, `border-green`, `border-start`, `border-top`, `border-wide`, `col-lg-6`, `cursor-help`, `cursor-move`, `cursor-not-allowed`, `cursor-pointer`, `cursor-wait`, `cursor-zoom-in`, `d-flex`, `flex-wrap`, `gap-2`, `gap-3`, `h:64`, `justify-content-center`, `m-0`, `m-2`, `m-4`, `mb-0`, `mb-4`, `p-2`, `p-3`, `px-3`, `py-2`, `rounded`, `rounded-circle`, `row`, `row-cards`, `table`, `table-bordered`, `table-responsive`, `text-azure`, `text-blue`, `text-green`, `text-purple`, `text-red`, `text-white`, `text-yellow`, `w:64`
+| 클래스 | 역할 |
+| --- | --- |
+| `border` | 기본 테두리(사방) 표시 |
+| `border-top`, `border-start` | 위쪽/시작쪽 한 방향만 테두리 표시 |
+| `border-blue`, `border-green` | 테두리 색을 파랑/초록으로 지정 |
+| `border-3` | 테두리 두께를 3단계로 지정 |
+| `border-dashed` | 테두리를 점선으로 표시 |
+| `border-wide` | 테두리를 두껍게 표시 |
+| `rounded`, `rounded-circle` | 모서리를 둥글게(원형은 완전한 원) 표시 |
+| `m-0`, `m-2`, `m-4` | 바깥 여백을 0/0.5rem/1.5rem 단계로 지정(`.m-{0~5}`) |
+| `cursor-pointer`, `cursor-move`, `cursor-not-allowed`, `cursor-zoom-in`, `cursor-help`, `cursor-wait` | 마우스 커서 모양을 각각 손가락/이동/금지/확대/물음표/대기 아이콘으로 변경 |
+| `align-baseline`, `align-top`, `align-middle`, `align-bottom`, `align-text-top`, `align-text-bottom` | 표 셀(`td`)의 세로 정렬 기준(기준선/위/가운데/아래/텍스트 기준 위·아래) |
+| `d-flex`, `flex-wrap` | 자식 요소를 가로로 배치하고 넘치면 줄바꿈 |
+| `align-items-center`, `align-items-start`, `justify-content-center` | flex 컨테이너의 세로/가로 정렬 |
+| `gap-2`, `gap-3` | flex 자식 요소 사이 간격 |
+| `p-2`, `p-3`, `px-3`, `py-2` | 안쪽 여백(전체/좌우/상하) |
+| `mb-0`, `mb-4` | 아래쪽 바깥 여백 |
+| `badge` | 값 데모용 뱃지 컴포넌트 |
+| `bg-white`, `bg-blue`, `bg-blue-lt`, `bg-green-lt`, `bg-red-lt`, `bg-purple-lt`, `bg-yellow-lt`, `bg-azure-lt` | 배경색(진한/옅은 톤) 지정 |
+| `text-white`, `text-blue`, `text-green`, `text-red`, `text-purple`, `text-yellow`, `text-azure` | 글자색 지정 |
+| `table`, `table-bordered`, `table-responsive` | 세로 정렬 데모용 표와 셀 테두리, 가로 스크롤 래퍼 |
+| `row`, `row-cards`, `col-lg-6` | 좌우 두 열로 나누는 Bootstrap 그리드 |
+| `w:64`, `h:64` | master-css 속성형 클래스, 너비/높이를 64px로 지정 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/유틸리티.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

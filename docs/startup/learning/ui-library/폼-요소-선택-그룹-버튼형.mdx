@@ -6,6 +6,8 @@ sidebar_position: 15
 
 분류: 폼 요소
 
+일반 라디오/체크박스 대신 **클릭 가능한 박스나 필(pill) 형태**로 선택지를 보여주고 싶을 때 쓰는 `form-selectgroup` 패턴입니다. 화면에는 보이지 않는 실제 `input`(`form-selectgroup-input`)이 체크 상태를 가지고, 이를 감싸는 `label.form-selectgroup-item` + `span.form-selectgroup-label`이 선택 여부에 따라 다른 스타일을 보여줍니다. 텍스트만 있는 기본형, 아이콘형, 아이콘+텍스트형, 필 스타일(`form-selectgroup-pills`), 그리고 아바타·결제 카드 아이콘까지 포함한 박스형(`form-selectgroup-boxes`) 선택 카드까지 다양한 변형을 담고 있습니다.
+
 ## 소스
 ```html
 <div class="mb-3">
@@ -246,7 +248,28 @@ sidebar_position: 15
 > 원본 이미지 경로(`img/...`)는 참고용 표시이며 실제 이미지 파일은 포함하지 않았습니다. 미리보기 페이지에서는 자리 표시 이미지로 대체됩니다.
 
 ## 사용된 주요 클래스
-`align-items-center`, `avatar`, `d-flex`, `f:20`, `flex-column`, `flex-fill`, `font-weight-medium`, `form-label`, `form-selectgroup`, `form-selectgroup-boxes`, `form-selectgroup-check`, `form-selectgroup-input`, `form-selectgroup-item`, `form-selectgroup-label`, `form-selectgroup-label-content`, `form-selectgroup-pills`, `mb-3`, `me-2`, `me-3`, `p-3`, `payment`, `payment-provider-mastercard`, `payment-provider-paypal`, `payment-provider-visa`, `payment-xs`, `text-secondary`, `ti`, `ti-circle`, `ti-cloud`, `ti-cloud-rain`, `ti-home`, `ti-moon`, `ti-square`, `ti-sun`, `ti-user`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `form-selectgroup` | 선택 가능한 항목들을 감싸는 최상위 컨테이너 |
+| `form-selectgroup-item` | 항목 하나(숨겨진 input + 보이는 라벨)를 감싸는 `label` |
+| `form-selectgroup-input` | 실제 체크 상태를 가지는(화면엔 숨겨진) `input` |
+| `form-selectgroup-label` | 선택 여부에 따라 배경/테두리가 바뀌는 보이는 라벨 영역 |
+| `form-selectgroup-pills` | 항목을 사각형 대신 필(pill, 둥근 알약) 모양으로 표시 |
+| `form-selectgroup-boxes` | 항목을 카드형 박스로 표시(체크 표시·아바타 등 포함 가능) |
+| `form-selectgroup-check` | 박스형에서 선택 여부를 나타내는 원형 체크 아이콘 자리 |
+| `form-selectgroup-label-content` | 박스형 라벨 안에서 아바타+텍스트를 함께 배치하는 영역 |
+| `payment`, `payment-provider-visa`, `payment-provider-mastercard`, `payment-provider-paypal`, `payment-xs` | 결제 수단 카드사 로고 아이콘과 크기(xs) 지정 |
+| `avatar` | 원형 아바타(사진 또는 이니셜) 스타일 |
+| `d-flex`, `flex-column`, `flex-fill`, `align-items-center` | Bootstrap Flexbox 유틸리티: 가로/세로 배치, 항목이 남은 공간을 채우도록 함, 세로 중앙 정렬 |
+| `font-weight-medium` | 이름 등 텍스트를 중간 굵기로 강조 |
+| `text-secondary` | 보조 설명 텍스트를 회색 계열로 표시 |
+| `form-label` | 선택 그룹 전체의 제목 라벨 |
+| `f:20` / `p-3` / `mb-3` / `me-2` / `me-3` | master-css 속성형 클래스: 아이콘 크기(20px) / 안쪽 여백(1rem) / 아래쪽·오른쪽 여백 |
+| `ti`, `ti-sun`, `ti-moon`, `ti-cloud`, `ti-cloud-rain`, `ti-home`, `ti-user`, `ti-circle`, `ti-square` | Tabler Icons 폰트 아이콘 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-선택-그룹-버튼형.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Form selectboxes](https://docs.tabler.io/ui/forms/form-selectboxes/)

@@ -6,7 +6,7 @@ sidebar_position: 22
 
 분류: 서식
 
-API와 상호 작용할 때 사용됩니다.
+카드 안에 **읽기 전용 입력 필드**와 **복사 버튼 역할의 아이콘**을 붙여, API 키·프로젝트 ID처럼 사용자가 직접 수정할 수는 없지만 값을 확인하고 복사해서 쓰는 정보를 보여줄 때 사용합니다. 입력란은 `readonly` 속성과 `input-icon`/`input-icon-addon` 조합으로 아이콘을 겹쳐 배치하고, 카드 하단에는 안내 링크와 `저장` 버튼을 나란히 배치한 `card-footer`가 이어집니다.
 
 ## 소스
 ```html
@@ -35,7 +35,19 @@ API와 상호 작용할 때 사용됩니다.
 ```
 
 ## 사용된 주요 클래스
-`card-subtitle`, `card-title`, `f:20`, `form-control`, `input-icon`, `input-icon-addon`, `ti`, `ti-files`
+| 클래스 | 역할 |
+| --- | --- |
+| `card-title` | 카드 상단의 제목(`h3`) 스타일 |
+| `card-subtitle` | 제목 아래에 표시하는 회색 보조 설명 텍스트 |
+| `input-icon` | 입력란과 아이콘을 겹쳐 배치하기 위한 래퍼 |
+| `input-icon-addon` | 입력란 우측(기본값)에 겹쳐지는 아이콘 영역 |
+| `form-control` | 텍스트 입력 필드의 기본 스타일 |
+| `f:20` | master-css 속성형 클래스, 글자(아이콘) 크기를 20px로 지정 |
+| `ti` `ti-files` | Tabler 아이콘 폰트 기본 클래스와 "복사(files)" 아이콘 지정 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/서식-프로젝트-id.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Form elements](https://docs.tabler.io/ui/forms/form-elements/)
+- [Cards](https://docs.tabler.io/ui/components/cards/)

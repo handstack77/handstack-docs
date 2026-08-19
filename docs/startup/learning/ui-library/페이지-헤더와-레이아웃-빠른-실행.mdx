@@ -6,6 +6,22 @@ sidebar_position: 63
 
 분류: 페이지 헤더와 레이아웃
 
+자주 쓰는 기능을 **버튼 목록 형태로 모아 바로가기**를 제공하는 카드 패턴입니다. `.card-header`로 제목을 달고, 본문에는 `.card-body` 대신 `.list-group.list-group-flush`를 바로 붙여 구분선이 있는 목록 형태의 버튼(`.list-group-item.list-group-item-action`)을 쌓았습니다. 각 항목 앞의 아이콘에 `text-blue`, `text-green`, `text-orange`처럼 서로 다른 색을 주면 기능별로 시각적 구분이 쉬워집니다.
+
+[주요 업무 영역](페이지-헤더와-레이아웃-주요-업무-영역)과 마찬가지로 `.page-body` 영역에 다른 카드와 나란히(예: 사이드 컬럼) 배치하기 좋은 보조 카드입니다.
+
+```text
+.page-body
+└─ .container-xl
+    └─ .row
+        ├─ .col-* (주요 콘텐츠)
+        └─ .col-* (사이드 컬럼)
+            └─ .card                        ← 이 예제
+                ├─ .card-header (제목)
+                └─ .list-group.list-group-flush
+                    └─ .list-group-item.list-group-item-action × N
+```
+
 ## 소스
 ```html
 <div class="card">
@@ -27,7 +43,21 @@ sidebar_position: 63
 ```
 
 ## 사용된 주요 클래스
-`card`, `card-header`, `card-title`, `f:20`, `list-group`, `list-group-flush`, `list-group-item`, `list-group-item-action`, `mr:4`, `text-blue`, `text-green`, `text-orange`, `ti`, `ti-bell`, `ti-calendar-event`, `ti-report-analytics`
+| 클래스 | 역할 |
+| --- | --- |
+| `card`, `card-header`, `card-title` | 예제를 감싸는 카드 컨테이너와 제목 영역 |
+| `list-group` | 목록형 컨테이너 |
+| `list-group-flush` | 목록 항목의 좌우 테두리를 없애 카드 안에 자연스럽게 붙임 |
+| `list-group-item` | 목록의 각 항목 |
+| `list-group-item-action` | 목록 항목을 클릭/포커스 가능한 버튼처럼 동작하도록 스타일 적용 |
+| `text-blue`, `text-green`, `text-orange` | 항목별 아이콘 색을 다르게 지정 |
+| `ti`, `ti-report-analytics`, `ti-calendar-event`, `ti-bell` | Tabler 아이콘 폰트와 아이콘 종류(보고서/일정/알림) |
+| `f:20` | master-css 속성형 클래스, 아이콘 글자 크기를 20px로 지정 |
+| `mr:4` | master-css 속성형 클래스, 아이콘 오른쪽 여백을 4px로 지정 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/페이지-헤더와-레이아웃-빠른-실행.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Page headers](https://docs.tabler.io/ui/layout/page-headers/)
+- [Page layouts](https://docs.tabler.io/ui/layout/page-layouts/)

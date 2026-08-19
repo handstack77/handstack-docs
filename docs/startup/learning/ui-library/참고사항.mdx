@@ -6,6 +6,8 @@ sidebar_position: 2
 
 분류: 참고사항
 
+업무 화면 상단에서 **작업일자 통제**처럼 사용자가 놓치기 쉬운 규칙을 안내할 때 쓰는 카드입니다. `alert-info` 색상의 정보성 알림(`.alert`) 안에 제목(`.alert-title`)과 여러 줄의 규칙을 목록(`<ul>`)으로 나열하고, `alert-dismissible`로 닫기 버튼을 붙였습니다. 화면 진입 시 한 번만 확인시키고 닫을 수 있는 참고 문구가 필요할 때 이 구조를 그대로 활용하면 됩니다.
+
 ## 소스
 ```html
 <div class="card overflow-auto mt-3">
@@ -37,7 +39,23 @@ sidebar_position: 2
 ```
 
 ## 사용된 주요 클래스
-`alert`, `alert-dismissible`, `alert-info`, `alert-title`, `btn-close`, `d-flex`, `f:20`, `m-0`, `mr-2`, `text-secondary`, `ti`, `ti-check`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `alert` | Bootstrap 알림 박스의 기본 스타일(테두리, 배경, 여백) |
+| `alert-info` | 알림을 파란 계열의 "정보" 색상으로 표시 |
+| `alert-dismissible` | 알림 오른쪽에 닫기 버튼(`btn-close`)이 들어갈 여백을 확보 |
+| `alert-title` | 알림 안에서 굵게 강조되는 제목 텍스트 |
+| `btn-close` | 알림을 닫는 X 버튼. `data-bs-dismiss="alert"`와 함께 사용 |
+| `d-flex` | 아이콘과 본문 텍스트를 가로로 나란히 배치 |
+| `f:20` | master-css 속성형 클래스, 글자(아이콘) 크기를 20px로 지정 |
+| `m-0` | 목록(`ul`)의 기본 여백을 0으로 제거 |
+| `mr-2` | 아이콘과 본문 사이에 오른쪽 여백을 추가 |
+| `text-secondary` | 본문을 보조 텍스트 색상(회색 계열)으로 표시 |
+| `ti`, `ti-check` | Tabler Icons 폰트 아이콘, `ti-check`는 체크 표시 아이콘 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/참고사항.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Alerts](https://docs.tabler.io/ui/components/alerts/)

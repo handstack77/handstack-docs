@@ -6,6 +6,8 @@ sidebar_position: 24
 
 분류: 서식
 
+이메일·비밀번호 같은 **텍스트 입력**, `select`, `checkbox`까지 한 화면에서 자주 쓰는 컨트롤 유형을 세로로 쌓아 보여주는 **기본 폼 레이아웃**입니다. 각 항목은 `label` + 입력 컨트롤 + `form-hint`(보조 설명)를 `.mb-3`으로 묶은 세트를 반복하는 구조이며, 필수 입력 항목은 라벨에 `required` 클래스를 붙여 표시합니다. 항목별 세로 배치가 부담스러운 화면이라면 [수평 폼](서식-수평-폼)을 참고하세요.
+
 ## 소스
 ```html
 <div class="card overflow-auto">
@@ -79,7 +81,20 @@ sidebar_position: 24
 ```
 
 ## 사용된 주요 클래스
-`form-check`, `form-check-input`, `form-check-label`, `form-control`, `form-hint`, `form-label`, `form-select`, `mb-3`, `required`
+| 클래스 | 역할 |
+| --- | --- |
+| `form-label` | 입력 컨트롤 위에 붙는 라벨 스타일 |
+| `required` | `form-label`에 함께 사용해 필수 입력 항목임을 표시(빨간 점/별표 등) |
+| `form-control` | 텍스트·비밀번호 입력 필드의 기본 스타일 |
+| `form-hint` | 입력란 아래에 작게 표시하는 보조 설명 텍스트 |
+| `form-select` | 드롭다운(`<select>`)의 기본 스타일 |
+| `form-check` | 체크박스와 라벨을 한 묶음으로 감싸는 래퍼 |
+| `form-check-input` | 체크박스 입력 요소 자체의 스타일 |
+| `form-check-label` | 체크박스 옆에 표시되는 라벨 텍스트 스타일 |
+| `mb-3` | 각 폼 그룹 사이의 아래쪽 여백(margin-bottom) |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/서식-기본-폼.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Form elements](https://docs.tabler.io/ui/forms/form-elements/)

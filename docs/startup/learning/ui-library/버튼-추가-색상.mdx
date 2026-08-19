@@ -6,6 +6,8 @@ sidebar_position: 38
 
 분류: 버튼
 
+`btn-primary`, `btn-danger`처럼 **의미가 정해진 시맨틱 색상** 대신, Tabler가 제공하는 확장 색상 팔레트(파랑·하늘·남색·보라·분홍 등)를 버튼에 직접 지정하는 예제입니다. `btn-blue`, `btn-azure`처럼 색 이름이 곧 클래스 이름이 되며, 상태 의미와 무관하게 카테고리 구분이나 태그, 차트 범례와 색을 맞춰야 하는 버튼에 사용하기 좋습니다.
+
 ## 소스
 ```html
 <div class="card overflow-auto">
@@ -91,7 +93,19 @@ sidebar_position: 38
 ```
 
 ## 사용된 주요 클래스
-`align-items-center`, `btn`, `btn-azure`, `btn-blue`, `btn-cyan`, `btn-dark`, `btn-green`, `btn-indigo`, `btn-lime`, `btn-muted`, `btn-orange`, `btn-pink`, `btn-purple`, `btn-red`, `btn-teal`, `btn-yellow`, `col-6`, `col-md-2`, `col-sm-4`, `col-xl-auto`, `g-2`, `py-3`, `row`, `w-100`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `btn` | 버튼의 공통 크기·여백·전환 효과를 적용하는 Bootstrap 기본 클래스 |
+| `btn-blue` / `btn-azure` / `btn-indigo` / `btn-purple` / `btn-pink` / `btn-red` / `btn-orange` / `btn-yellow` / `btn-lime` / `btn-green` / `btn-teal` / `btn-cyan` / `btn-dark` / `btn-muted` | Tabler 확장 색상 팔레트를 그대로 버튼 배경/글자색으로 적용(상태 의미가 아닌 고유 색상 지정용) |
+| `row`, `g-2` | Bootstrap 그리드 행과 열 사이 간격(gutter) |
+| `col-6`, `col-sm-4`, `col-md-2`, `col-xl-auto` | 화면 폭 구간별 버튼 열 너비 지정. `col-xl-auto`는 xl 이상에서 콘텐츠 크기만큼만 너비를 차지 |
+| `align-items-center` | 행(row) 안의 항목을 세로 중앙에 정렬 |
+| `py-3` | 버튼 열의 상하 여백을 지정 |
+| `w-100` | 버튼 너비를 부모 열의 100%로 확장 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/버튼-추가-색상.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Buttons](https://docs.tabler.io/ui/components/buttons/)

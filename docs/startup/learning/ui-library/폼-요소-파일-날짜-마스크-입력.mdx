@@ -6,6 +6,8 @@ sidebar_position: 20
 
 분류: 폼 요소
 
+파일 첨부, 생년월일처럼 여러 `<select>`를 조합한 날짜 입력, 정해진 형식으로 입력을 강제하는 **마스크 입력**, 그리고 입력한 줄 수에 맞춰 높이가 자동으로 늘어나는 텍스트 영역까지 다양한 입력 형태를 모은 예제입니다. 마스크 입력은 `form-control`에 `data-mask` 속성(예: `00/00/0000`)을 지정해 구현하며, 자동 크기 조절 텍스트 영역은 `data-bs-toggle="autosize"` 속성으로 동작합니다. 두 속성 모두 별도 클래스가 아니라 자바스크립트가 읽는 데이터 속성입니다.
+
 ## 소스
 ```html
 <div class="mb-3">
@@ -105,7 +107,18 @@ sidebar_position: 20
 ```
 
 ## 사용된 주요 클래스
-`col-3`, `col-4`, `col-5`, `form-control`, `form-label`, `form-select`, `g-2`, `mb-3`, `row`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `form-control` | 파일 입력·텍스트 마스크 입력·자동 크기 조절 텍스트 영역의 기본 스타일 |
+| `form-select` | 월/일/년도를 고르는 `<select>`의 기본 스타일 |
+| `form-label` | 각 입력 위에 표시되는 라벨 텍스트 |
+| `row`, `g-2` | 월/일/년도 `select`를 한 줄에 배치하는 Bootstrap 그리드와 열 사이 간격 |
+| `col-3`, `col-4`, `col-5` | 일/년도/월 `select`가 각각 차지하는 그리드 너비 |
+| `mb-3` | 입력 그룹 사이의 아래쪽 여백 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-파일-날짜-마스크-입력.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Form input mask](https://docs.tabler.io/ui/forms/form-input-mask/)

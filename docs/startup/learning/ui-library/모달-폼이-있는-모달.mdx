@@ -6,6 +6,8 @@ sidebar_position: 54
 
 분류: 모달
 
+**폼이 있는 모달**은 새 보고서 등록처럼 **여러 입력 항목을 한 화면 전환 없이 모달 안에서 입력받아야 할 때** 사용하는 패턴입니다. 입력 항목이 많으므로 [큰 모달](모달-큰-모달)의 `modal-lg`로 너비를 넓혔고, `modal-body`를 두 번 나눠 넣어 시각적으로 섹션을 구분했습니다. 텍스트 입력(`form-control`) 외에도 카드형 라디오 선택(`form-selectgroup-boxes`), URL 접두어가 붙은 입력 그룹(`input-group`), 드롭다운(`form-select`)을 함께 배치해 다양한 입력 컨트롤을 조합하는 예시를 보여줍니다.
+
 ## 소스
 ```html
 <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-report">
@@ -116,7 +118,39 @@ sidebar_position: 54
 ```
 
 ## 사용된 주요 클래스
-`align-items-center`, `btn`, `btn-close`, `btn-link`, `btn-primary`, `col-lg-12`, `col-lg-4`, `col-lg-6`, `col-lg-8`, `d-block`, `d-flex`, `f:20`, `fade`, `form-control`, `form-label`, `form-select`, `form-selectgroup-boxes`, `form-selectgroup-check`, `form-selectgroup-input`, `form-selectgroup-item`, `form-selectgroup-label`, `form-selectgroup-label-content`, `form-selectgroup-title`, `input-group`, `input-group-flat`, `input-group-text`, `link-secondary`, `mb-1`, `mb-3`, `me-3`, `modal`, `modal-blur`, `modal-body`, `modal-content`, `modal-dialog`, `modal-dialog-centered`, `modal-footer`, `modal-header`, `modal-lg`, `modal-title`, `ms-auto`, `p-3`, `ps-0`, `row`, `strong`, `text-secondary`, `ti`, `ti-plus`
+| 클래스 | 역할 |
+| --- | --- |
+| `modal`, `modal-blur`, `fade` | 모달 컨테이너, 배경 흐림, 페이드 애니메이션 |
+| `modal-dialog` / `modal-lg` | 모달 상자 영역 / 넓은 너비 |
+| `modal-dialog-centered` | 화면 세로 중앙 배치 |
+| `modal-content` / `modal-header` / `modal-title` | 콘텐츠 박스 / 상단 제목 영역 / 제목 텍스트 스타일 |
+| `btn-close` | 우측 상단 닫기(×) 아이콘 버튼 |
+| `modal-body` | 본문 영역(이 예제에서는 두 번 나눠 섹션을 구분) |
+| `form-label` / `form-control` | 입력 항목 라벨 / 텍스트·날짜 입력 필드 |
+| `mb-3` | 입력 항목 사이 아래쪽 여백 |
+| `form-selectgroup-boxes` | 카드형 라디오 선택지를 감싸는 컨테이너 |
+| `form-selectgroup-item` / `form-selectgroup-input` | 선택 가능한 카드 항목 / 실제 라디오 입력(화면에는 숨김) |
+| `form-selectgroup-label` | 클릭 가능한 카드 전체 라벨 영역 |
+| `form-selectgroup-check` | 선택 여부를 표시하는 체크 아이콘 자리 |
+| `form-selectgroup-label-content` / `form-selectgroup-title` | 카드 안의 텍스트 묶음 / 카드 제목 |
+| `strong` | 텍스트를 굵게 표시 |
+| `d-block` | 설명 텍스트를 다음 줄로 분리 |
+| `d-flex`, `align-items-center` | 카드 내부 요소를 가로로 배치하고 세로 중앙 정렬 |
+| `input-group`, `input-group-flat`, `input-group-text` | 접두어 텍스트가 붙은 입력 그룹, 테두리 없는 스타일, 접두어 텍스트 영역 |
+| `ps-0` | 입력 필드 왼쪽 안쪽 여백 제거(접두어와 자연스럽게 이어지도록) |
+| `form-select` | 드롭다운 선택 상자 |
+| `row`, `col-lg-4`, `col-lg-6`, `col-lg-8`, `col-lg-12` | 넓은 화면(lg) 기준 열 너비를 나눈 그리드 |
+| `text-secondary` | 보조 설명 텍스트 색상 |
+| `me-3` | 오른쪽 여백(margin-right) |
+| `mb-1` | 아래쪽 여백(margin-bottom) |
+| `f:20` | 아이콘 크기를 20px로 지정(master-css) |
+| `ti`, `ti-plus` | Tabler 아이콘 폰트, 더하기 아이콘 |
+| `btn`, `btn-link`, `link-secondary` | 기본 버튼, 링크 형태 버튼, 보조 색상 링크 |
+| `btn-primary`, `ms-auto` | 강조(주 작업) 버튼, 버튼을 오른쪽으로 밀어 정렬 |
+| `modal-footer` | 버튼 영역 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/모달-폼이-있는-모달.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Modals](https://docs.tabler.io/ui/components/modals/)

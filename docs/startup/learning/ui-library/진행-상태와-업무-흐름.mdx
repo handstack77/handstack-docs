@@ -6,7 +6,17 @@ sidebar_position: 65
 
 분류: 진행 상태와 업무 흐름
 
-고객 요구사항과 희망 납기일을 등록했습니다.
+**진행률(Progress bar) · 세그먼트 컨트롤(Segmented control) · 단계(Steps) · 타임라인(Timeline)** 네 가지 컴포넌트를 한 카드에 모아, 업무가 어디까지 진행됐고 무슨 일이 있었는지를 함께 보여주는 종합 예제입니다. 값이 정해진 진행률은 `.progress-bar`에 `width` 인라인 스타일로 퍼센트를 주고, 아직 완료 시점을 알 수 없는 작업은 `.progress-bar-indeterminate`로 애니메이션 처리합니다. 오른쪽 상단의 `.nav-segmented`는 일간/주간/월간처럼 조회 기간을 전환하는 버튼형 탭이고, 그 아래 `.steps.steps-counter`는 앞서 다룬 [수평 단계](단계-진행-수평-단계)와 같은 구조입니다. 하단의 `.timeline`은 시간순 이벤트를 아이콘·카드로 나열하는 업무 이력 로그입니다.
+
+```text
+.card
+├─ .card-header (제목 + 부제)
+└─ .card-body
+    └─ .row.row-cards
+        ├─ .col-lg-6 → 진행률: .progress / .progress-bar(-indeterminate)
+        ├─ .col-lg-6 → 세그먼트 컨트롤(.nav-segmented) + 단계(.steps)
+        └─ .col-12   → 타임라인: .timeline > .timeline-event × N
+```
 
 ## 소스
 ```html
@@ -116,7 +126,35 @@ sidebar_position: 65
 ```
 
 ## 사용된 주요 클래스
-`active`, `bg-blue`, `bg-blue-lt`, `bg-green`, `bg-green-lt`, `bg-orange-lt`, `bg-purple`, `border-0`, `card`, `card-body`, `col-12`, `col-lg-6`, `d-flex`, `f:20`, `float-end`, `m-0`, `mb-0`, `mb-1`, `mb-3`, `ms-auto`, `mt-2`, `mt-4`, `nav`, `nav-link`, `nav-segmented`, `p-0`, `progress`, `progress-bar`, `progress-bar-indeterminate`, `progress-sm`, `row`, `row-cards`, `step-item`, `steps`, `steps-counter`, `text-blue`, `text-green`, `text-orange`, `text-secondary`, `ti`, `ti-check`, `ti-cut`, `ti-file-plus`, `timeline`, `timeline-event`, `timeline-event-card`, `timeline-event-icon`, `visually-hidden`, `w-100`
+| 클래스 | 역할 |
+| --- | --- |
+| `progress` | 진행률 막대의 트랙(배경) 컨테이너 |
+| `progress-sm` | 진행률 막대 높이를 작게 지정 |
+| `progress-bar` | 실제 진행 정도를 채우는 막대, 인라인 `width`로 퍼센트 지정 |
+| `progress-bar-indeterminate` | 완료 시점을 알 수 없는 작업을 애니메이션으로 표시 |
+| `bg-blue`, `bg-green`, `bg-purple` | 각 진행률 막대의 색상 |
+| `nav`, `nav-segmented` | 버튼 그룹 형태의 세그먼트 컨트롤(탭) |
+| `nav-link` | 세그먼트 컨트롤의 각 선택 버튼 |
+| `active` | 현재 선택된 세그먼트/단계임을 표시 |
+| `steps`, `steps-counter`, `step-item` | 순번이 매겨진 가로 단계 진행 표시줄 ([수평 단계](단계-진행-수평-단계) 참고) |
+| `border-0`, `m-0`, `p-0` | 단계 진행 표시줄의 기본 테두리·여백 제거 |
+| `timeline` | 세로 타임라인 목록 컨테이너 |
+| `timeline-event` | 타임라인의 각 이벤트 항목 |
+| `timeline-event-icon` | 이벤트 아이콘을 담는 원형 배지 |
+| `bg-blue-lt`, `bg-green-lt`, `bg-orange-lt` | 이벤트 아이콘 배경을 옅은 색으로 지정 |
+| `timeline-event-card` | 이벤트 상세 내용을 담는 카드 |
+| `card`, `card-body` | 카드 컨테이너와 본문 영역(공통) |
+| `row`, `row-cards`, `col-12`, `col-lg-6` | Bootstrap 그리드로 진행률/세그먼트/타임라인 영역 배치 |
+| `d-flex`, `ms-auto`, `float-end` | 라벨과 퍼센트, 시간 표기를 좌우로 배치 |
+| `mb-1`, `mb-3`, `mb-0`, `mt-2`, `mt-4` | 각 영역 사이의 위/아래 여백 조정 |
+| `text-blue`, `text-green`, `text-orange`, `text-secondary` | 아이콘/보조 텍스트 색상 |
+| `ti`, `ti-file-plus`, `ti-check`, `ti-cut` | Tabler 아이콘 폰트와 아이콘 종류(접수/완료/재단) |
+| `f:20` | master-css 속성형 클래스, 아이콘 글자 크기를 20px로 지정 |
+| `w-100` | 세그먼트 컨트롤 너비를 100%로 지정 |
+| `visually-hidden` | 화면에는 보이지 않고 스크린 리더에만 전달되는 진행률 텍스트 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/진행-상태와-업무-흐름.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Steps](https://docs.tabler.io/ui/components/steps/)

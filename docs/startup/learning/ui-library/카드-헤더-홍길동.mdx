@@ -6,6 +6,8 @@ sidebar_position: 43
 
 분류: 카드 헤더
 
+**아바타와 이름·직함을 함께 보여주는 사용자 카드 헤더** 예제입니다. `row align-items-center` 안에 아바타(`col-auto`)와 이름/직함(`col`)을 배치해 사람 정보를 한눈에 보여주고, 우측 `card-actions`에 전화·이메일 버튼을 두어 담당자 카드나 연락처 카드에 활용할 수 있습니다.
+
 ## 소스
 ```html
 <div class="card overflow-auto">
@@ -38,7 +40,21 @@ sidebar_position: 43
 > 원본 이미지 경로(`img/...`)는 참고용 표시이며 실제 이미지 파일은 포함하지 않았습니다. 미리보기 페이지에서는 자리 표시 이미지로 대체됩니다.
 
 ## 사용된 주요 클래스
-`align-items-center`, `avatar`, `btn`, `card`, `card-actions`, `card-header`, `card-subtitle`, `card-title`, `col`, `col-auto`, `f:20`, `overflow-auto`, `row`, `ti`, `ti-mail`, `ti-phone`
+| 클래스 | 역할 |
+| --- | --- |
+| `card`, `card-header` | 카드 컨테이너와 헤더 영역 |
+| `overflow-auto` | 카드 내용이 넘칠 때 스크롤을 허용 |
+| `row`, `col`, `col-auto`, `align-items-center` | 아바타(고정 너비)와 이름/직함(남은 너비)을 세로 중앙 정렬로 배치하는 그리드 |
+| `avatar` | 원형 프로필 이미지 표시 |
+| `card-title` | 이름(주 텍스트) 스타일 |
+| `card-subtitle` | 직함(보조 텍스트) 스타일 |
+| `card-actions` | 헤더 우측에 정렬되는 동작 영역 |
+| `btn` | 강조 색상 없는 기본 버튼 스타일 |
+| `f:20` | master-css 속성형 클래스, 아이콘 폰트 크기를 20px로 지정 |
+| `ti`, `ti-phone`, `ti-mail` | Tabler 아이콘 폰트 기본 클래스와 전화/메일 아이콘 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/카드-헤더-홍길동.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Cards](https://docs.tabler.io/ui/components/cards/)

@@ -6,6 +6,8 @@ sidebar_position: 29
 
 분류: 서식
 
+API 테스트 도구처럼 **메서드·URL 입력 + 조건(단언) 목록 테이블**을 한 화면에 구성하는 예제입니다. 상단은 `row row-cards`로 메서드 선택(`col-sm-4 col-md-2`)과 URL 입력(`col-sm-8 col-md-10`)을 좌우로 배치하고, 하단은 `table` 안에 셀마다 `form-select`/`form-control`을 넣어 행 단위로 조건을 추가·비교할 수 있는 형태입니다. 표 형태 안에 입력 컨트롤을 넣는 패턴은 여러 조건을 한 화면에서 편집해야 하는 관리자 화면에 활용할 수 있습니다.
+
 ## 소스
 ```html
 <div class="card overflow-auto">
@@ -178,7 +180,21 @@ sidebar_position: 29
 ```
 
 ## 사용된 주요 클래스
-`col-md-10`, `col-md-2`, `col-sm-4`, `col-sm-8`, `form-control`, `form-label`, `form-select`, `mb-0`, `mb-3`, `required`, `row`, `row-cards`, `table`, `table-responsive`
+| 클래스 | 역할 |
+| --- | --- |
+| `row row-cards` | 메서드/URL 입력 영역을 가로로 배치하는 Bootstrap 그리드 행 |
+| `col-sm-4` `col-md-2` `col-sm-8` `col-md-10` | 화면 폭에 따라 메서드(좁게)와 URL(넓게) 입력 영역이 차지하는 열 너비 지정 |
+| `form-label` | 입력 컨트롤 위에 붙는 라벨 스타일 |
+| `required` | 라벨에 함께 사용해 필수 입력 항목임을 표시 |
+| `form-select` | 메서드/속성/비교 조건을 고르는 드롭다운 스타일 |
+| `form-control` | URL 및 속성/대상 값을 입력하는 텍스트 필드 스타일 |
+| `table-responsive` | 표가 화면보다 넓을 때 가로 스크롤이 생기도록 감싸는 래퍼 |
+| `table` | 단언(조건) 목록을 표 형태로 표시하는 기본 테이블 스타일 |
+| `mb-0` | 표 아래쪽 여백을 제거해 카드 바닥과 간격을 맞춤 |
+| `mb-3` | 상단 메서드/URL 입력 그룹의 아래쪽 여백(margin-bottom) |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/서식-http-요청.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Form elements](https://docs.tabler.io/ui/forms/form-elements/)

@@ -6,6 +6,21 @@ sidebar_position: 66
 
 분류: 폼 구성과 검증
 
+**필드셋 · 선택 그룹 · 유효성 검사 상태**를 한 화면에 조합한 실제 업무 상담 폼 예제입니다. 왼쪽(`col-lg-7`)에는 `fieldset.form-fieldset`으로 고객 정보 입력 필드를 묶고, 필드마다 `is-valid`/`is-invalid`를 붙여 검증 결과를 `valid-feedback`/`invalid-feedback` 문구로 보여줍니다. 오른쪽(`col-lg-5`)에는 상담 유형을 고르는 `form-selectgroup`, 관심 서비스를 고르는 필 스타일 선택 그룹, 그리고 스위치·체크박스 동의 항목을 배치했습니다.
+
+```text
+.card (폼 구성과 검증)
+└── .card-body
+    └── .row.row-cards
+        ├── .col-lg-7
+        │   └── fieldset.form-fieldset (고객 상담 정보)
+        │       └── .row → 고객명(is-valid) · 연락처(is-invalid) · 피팅 희망일 · 담당자 · 요청사항
+        └── .col-lg-5
+            ├── .form-selectgroup (상담 유형: 라디오)
+            ├── .form-selectgroup.form-selectgroup-pills (관심 서비스: 체크박스)
+            └── .form-check.form-switch / .form-check (알림 발송 · 약관 동의)
+```
+
 ## 소스
 ```html
 <div class="card overflow-auto mt-3" id="example-forms">
@@ -107,7 +122,29 @@ sidebar_position: 66
 ```
 
 ## 사용된 주요 클래스
-`col-12`, `col-lg-5`, `col-lg-7`, `col-md-6`, `f:20`, `form-check`, `form-check-input`, `form-check-label`, `form-control`, `form-fieldset`, `form-label`, `form-select`, `form-selectgroup`, `form-selectgroup-input`, `form-selectgroup-item`, `form-selectgroup-label`, `form-selectgroup-pills`, `form-switch`, `h4`, `invalid-feedback`, `is-invalid`, `is-valid`, `mb-3`, `mb-4`, `mr:4`, `mt-3`, `required`, `row`, `row-cards`, `ti`, `ti-building-store`, `ti-phone`, `ti-video`, `valid-feedback`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `form-fieldset` | 관련 필드들을 하나의 테두리 있는 영역으로 묶는 필드셋 스타일 |
+| `h4`(legend에 적용) | 필드셋 상단 제목(`<legend>`)을 4단계 제목 크기로 표시 |
+| `form-control` | 텍스트/전화/날짜/텍스트영역 입력의 기본 스타일 |
+| `form-select` | 담당자를 고르는 `<select>`의 기본 스타일 |
+| `form-label` | 각 입력 위 라벨 텍스트 |
+| `required` | 라벨(`form-label`)이나 텍스트(`form-check-label`)에 붙여 필수 항목 표시 |
+| `is-valid` / `valid-feedback` | 입력값이 유효할 때 초록 테두리와 함께 표시되는 확인 문구 |
+| `is-invalid` / `invalid-feedback` | 입력값이 유효하지 않을 때 빨간 테두리와 함께 표시되는 오류 문구 |
+| `form-selectgroup`, `form-selectgroup-item`, `form-selectgroup-input`, `form-selectgroup-label` | 라디오/체크박스를 클릭 가능한 버튼형 선택지로 바꾸는 선택 그룹 구조 |
+| `form-selectgroup-pills` | 선택 그룹을 사각형 대신 필(pill) 모양으로 표시 |
+| `form-check`, `form-check-input`, `form-check-label` | 스위치·체크박스와 라벨을 묶는 기본 구조 |
+| `form-switch` | 체크박스를 토글 스위치 모양으로 표시(알림 발송 항목) |
+| `row`, `row-cards` | 카드 레이아웃과 좌우 2단 배치를 위한 Bootstrap 그리드 행 |
+| `col-lg-7`, `col-lg-5`, `col-md-6`, `col-12` | 화면 크기별 좌우 컬럼 너비 지정 |
+| `f:20` / `mr:4` | master-css 속성형 클래스, 아이콘 크기(20px) / 오른쪽 여백(4px) |
+| `mb-3`, `mb-4`, `mt-3` | 요소 사이 위/아래쪽 여백 |
+| `ti`, `ti-building-store`, `ti-phone`, `ti-video` | Tabler Icons 폰트 아이콘, 상담 유형(방문/전화/화상)을 나타냄 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-구성과-검증.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Form validation](https://docs.tabler.io/ui/forms/form-validation/)

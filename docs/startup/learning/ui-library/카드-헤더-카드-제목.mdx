@@ -6,6 +6,8 @@ sidebar_position: 42
 
 분류: 카드 헤더
 
+`card-actions` 안에 **여러 개의 보조 버튼**을 나열하는 카드 헤더 예제입니다. 프라이머리 색상 없이 기본 `btn`만 사용해, 강조되지 않는 부가 동작(전화 걸기, 이메일 보내기 등)이 여러 개 있을 때의 배치 방식을 보여줍니다.
+
 ## 소스
 ```html
 <div class="card overflow-auto">
@@ -26,7 +28,17 @@ sidebar_position: 42
 ```
 
 ## 사용된 주요 클래스
-`btn`, `card`, `card-actions`, `card-header`, `card-title`, `f:20`, `overflow-auto`, `ti`, `ti-mail`, `ti-phone`
+| 클래스 | 역할 |
+| --- | --- |
+| `card`, `card-header`, `card-title` | 카드 컨테이너, 헤더 영역, 헤더 안의 제목 텍스트 |
+| `overflow-auto` | 카드 내용이 넘칠 때 스크롤을 허용 |
+| `card-actions` | 헤더 우측에 정렬되는 동작 영역, 버튼 여러 개를 담을 수 있음 |
+| `btn` | 강조 색상 없는 기본 버튼 스타일(보조 동작에 사용) |
+| `f:20` | master-css 속성형 클래스, 아이콘 폰트 크기를 20px로 지정 |
+| `ti`, `ti-phone`, `ti-mail` | Tabler 아이콘 폰트 기본 클래스와 전화/메일 아이콘 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/카드-헤더-카드-제목.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Cards](https://docs.tabler.io/ui/components/cards/)

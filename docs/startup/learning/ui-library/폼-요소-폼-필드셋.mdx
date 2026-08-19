@@ -6,6 +6,8 @@ sidebar_position: 14
 
 분류: 폼 요소
 
+이름·회사·이메일·전화번호처럼 **여러 입력 필드를 하나의 묶음으로 나열**할 때 쓰는 기본 패턴입니다. 각 필드는 `label.form-label` + `input.form-control`을 `mb-3`으로 감싼 동일한 구조를 반복하며, 필수 입력 항목에는 `form-label`에 `required` 클래스를 추가해 라벨 옆에 필수 표시를 붙입니다.
+
 ## 소스
 ```html
 <div class="mb-3">
@@ -30,7 +32,16 @@ sidebar_position: 14
 ```
 
 ## 사용된 주요 클래스
-`form-control`, `form-label`, `mb-3`, `required`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `form-control` | 텍스트/이메일/전화 입력 필드의 기본 스타일 |
+| `form-label` | 입력 필드 위에 표시되는 라벨 텍스트 스타일 |
+| `required` | `form-label`에 추가하면 라벨 옆에 필수 입력 표시가 붙음 |
+| `mb-3` | 필드 그룹 사이에 아래쪽 여백(margin-bottom) 추가 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-폼-필드셋.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Form fieldset](https://docs.tabler.io/ui/forms/form-fieldset/)

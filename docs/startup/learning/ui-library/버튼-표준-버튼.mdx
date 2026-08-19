@@ -6,6 +6,8 @@ sidebar_position: 33
 
 분류: 버튼
 
+Bootstrap 5의 **시맨틱 색상 버튼**(`btn-primary`, `btn-success`, `btn-danger` 등)을 한 화면에서 비교할 수 있는 참고표입니다. 각 색상은 성공/경고/위험처럼 의미가 정해져 있으므로, 디자인 취향이 아니라 **버튼이 수행하는 동작의 성격**에 맞춰 골라 쓰는 것이 좋습니다(예: 삭제 버튼은 `btn-danger`, 저장 버튼은 `btn-primary`). 같은 마크업에 `active`를 더하면 눌린 상태를, `disabled`를 더하면 비활성화 상태를 그대로 재현할 수 있습니다.
+
 ## 소스
 ```html
 <div class="card overflow-auto">
@@ -148,7 +150,23 @@ sidebar_position: 33
 ```
 
 ## 사용된 주요 클래스
-`active`, `align-items-center`, `bg-dark`, `btn`, `btn-danger`, `btn-dark`, `btn-info`, `btn-light`, `btn-primary`, `btn-secondary`, `btn-success`, `btn-warning`, `col-12`, `col-6`, `col-md-2`, `col-sm-4`, `col-xl`, `col-xl-2`, `disabled`, `font-weight-semibold`, `g-2`, `py-3`, `row`, `w-100`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `btn` | 버튼의 공통 크기·여백·전환 효과를 적용하는 Bootstrap 기본 클래스 |
+| `btn-primary` / `btn-secondary` / `btn-success` / `btn-warning` / `btn-danger` / `btn-info` / `btn-dark` / `btn-light` | 버튼의 시맨틱 색상(배경·테두리·글자색)을 지정 |
+| `active` | 버튼을 눌린 상태(활성)로 강제 표시 |
+| `disabled` | 버튼을 비활성화 상태로 표시(클릭 불가, 흐림 처리) |
+| `w-100` | 버튼 너비를 부모 열의 100%로 확장 |
+| `row`, `g-2` | Bootstrap 그리드 행과 열 사이 간격(gutter) |
+| `col-12`, `col-6`, `col-sm-4`, `col-md-2`, `col-xl`, `col-xl-2` | 화면 폭 구간별로 버튼 열의 너비를 다르게 지정하는 반응형 그리드 열 |
+| `align-items-center` | 행(row) 안의 항목을 세로 중앙에 정렬 |
+| `font-weight-semibold` | 상태 구분 라벨("일반", "활성 상태" 등) 글자 굵기를 semibold로 지정 |
+| `py-3` | 버튼 열의 상하 여백을 지정 |
+| `bg-dark` | 라이트 버튼(`btn-light`)이 배경과 구분되도록 어두운 배경을 지정 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/버튼-표준-버튼.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Buttons](https://docs.tabler.io/ui/components/buttons/)

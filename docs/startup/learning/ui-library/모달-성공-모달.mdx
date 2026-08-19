@@ -6,6 +6,8 @@ sidebar_position: 55
 
 분류: 모달
 
+**성공 모달**은 결제 완료, 저장 완료처럼 **작업이 성공적으로 끝났음을 알리는** 전용 모달입니다. `modal-header`/`modal-footer`의 일반 레이아웃 대신 `modal-status bg-success`로 상단에 초록색 상태 바를 표시하고, 본문을 `text-center`로 가운데 정렬해 아이콘(`ti-circle-check`)·제목·설명을 세로로 쌓아 보여줍니다. 이어서 두 개의 버튼(`row` > `col`)을 나란히 배치해 다음 행동(대시보드 이동, 인보이스 확인 등)을 바로 선택하게 합니다. 위험한 작업을 확인할 때는 같은 구조에 색상만 바꾼 [위험 모달](모달-위험-모달)을 사용합니다.
+
 ## 소스
 ```html
 <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-success">
@@ -44,7 +46,27 @@ sidebar_position: 55
 ```
 
 ## 사용된 주요 클래스
-`bg-success`, `btn`, `btn-close`, `btn-success`, `col`, `f:20`, `fade`, `modal`, `modal-blur`, `modal-body`, `modal-content`, `modal-dialog`, `modal-dialog-centered`, `modal-footer`, `modal-sm`, `modal-status`, `py-4`, `row`, `text-center`, `text-secondary`, `ti`, `ti-circle-check`, `w-100`
+| 클래스 | 역할 |
+| --- | --- |
+| `modal`, `modal-blur`, `fade` | 모달 컨테이너, 배경 흐림, 페이드 애니메이션 |
+| `modal-dialog` / `modal-sm` | 모달 상자 영역 / 좁은 너비 |
+| `modal-dialog-centered` | 화면 세로 중앙 배치 |
+| `modal-content` | 콘텐츠 박스(이 예제는 헤더 없이 상태 바로 대체) |
+| `modal-status` | 모달 상단에 좁은 색상 줄을 표시 |
+| `bg-success` | 상태 바와 배경을 성공(초록색)으로 표시 |
+| `btn-close` | 우측 상단 닫기(×) 아이콘 버튼 |
+| `modal-body` | 본문 영역 |
+| `text-center` | 본문 내용을 가운데 정렬 |
+| `py-4` | 위아래 여백(padding)을 넉넉하게 지정 |
+| `f:20` | 아이콘 크기를 20px로 지정(master-css) |
+| `ti`, `ti-circle-check` | Tabler 아이콘 폰트, 체크 원 아이콘 |
+| `text-secondary` | 설명 텍스트를 보조 색상(회색조)으로 표시 |
+| `row`, `col` | 하단 버튼 두 개를 같은 너비로 나란히 배치하는 그리드 |
+| `btn`, `btn-success`, `w-100` | 기본 버튼, 성공(초록) 강조 버튼, 버튼을 열 너비 전체로 확장 |
+| `modal-footer` | 버튼 영역 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/모달-성공-모달.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Modals](https://docs.tabler.io/ui/components/modals/)

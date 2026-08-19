@@ -6,7 +6,7 @@ sidebar_position: 45
 
 분류: 카드 헤더
 
-카드 제목 아래에 간단한 설명을 추가할 수 있습니다.
+[설명 포함](카드-헤더-설명-포함) 예제에 **`card-actions` 버튼을 추가**한 형태입니다. 제목/설명을 담은 `div`와 `card-actions`를 `card-header` 아래 형제 요소로 나란히 두면, 헤더가 좌측(제목+설명)과 우측(액션 버튼)으로 자동 정렬됩니다.
 
 ## 소스
 ```html
@@ -30,7 +30,17 @@ sidebar_position: 45
 ```
 
 ## 사용된 주요 클래스
-`btn`, `btn-primary`, `card`, `card-actions`, `card-header`, `card-subtitle`, `card-title`, `overflow-auto`
+| 클래스 | 역할 |
+| --- | --- |
+| `card`, `card-header` | 카드 컨테이너와 헤더 영역 |
+| `overflow-auto` | 카드 내용이 넘칠 때 스크롤을 허용 |
+| `card-title` | 카드 제목 텍스트 스타일 |
+| `card-subtitle` | 제목 아래에 붙는 보조 설명 텍스트 스타일 |
+| `card-actions` | 헤더 우측에 정렬되는 동작 영역 |
+| `btn`, `btn-primary` | 버튼 기본 스타일과 프라이머리 색상으로 강조하는 주요 동작 버튼 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/카드-헤더-설명-및-액션-포함.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Cards](https://docs.tabler.io/ui/components/cards/)

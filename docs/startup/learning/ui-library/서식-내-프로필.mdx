@@ -6,6 +6,8 @@ sidebar_position: 27
 
 분류: 서식
 
+프로필 사진(`avatar`)을 첫 입력 항목 옆에 나란히 배치하는 **프로필 편집 폼**입니다. `row`/`col-auto`/`col`로 아바타 열과 입력 필드 열을 가로로 묶은 뒤, 나머지 항목(소개, 이메일, 비밀번호)은 세로로 이어 붙입니다. 여러 필드를 격자로 배치하는 예제가 필요하면 [프로필 수정](서식-프로필-수정)을 참고하세요.
+
 ## 소스
 ```html
 <div class="card overflow-auto">
@@ -51,7 +53,17 @@ sidebar_position: 27
 > 원본 이미지 경로(`img/...`)는 참고용 표시이며 실제 이미지 파일은 포함하지 않았습니다. 미리보기 페이지에서는 자리 표시 이미지로 대체됩니다.
 
 ## 사용된 주요 클래스
-`avatar`, `avatar-md`, `col`, `col-auto`, `form-control`, `form-label`, `mb-3`, `row`
+| 클래스 | 역할 |
+| --- | --- |
+| `avatar` | 원형 프로필 이미지를 표시하는 기본 클래스 |
+| `avatar-md` | 아바타 크기를 중간(medium) 사이즈로 지정 |
+| `row` `col` `col-auto` | Bootstrap 그리드로 아바타와 입력란을 가로로 배치(`col-auto`는 내용 크기만큼, `col`은 남은 공간을 차지) |
+| `form-label` | 입력 컨트롤 위에 붙는 라벨 스타일 |
+| `form-control` | 텍스트·비밀번호 입력 필드와 textarea의 기본 스타일 |
+| `mb-3` | 각 폼 그룹 사이의 아래쪽 여백(margin-bottom) |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/서식-내-프로필.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Form elements](https://docs.tabler.io/ui/forms/form-elements/)

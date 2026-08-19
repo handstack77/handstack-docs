@@ -6,6 +6,8 @@ sidebar_position: 16
 
 분류: 폼 요소
 
+여러 버튼 중 **하나(또는 그 이상)를 선택**하게 만드는 세그먼트 컨트롤 형태의 버튼 그룹입니다. 눈에 보이는 것은 버튼이지만 실제로는 화면에서 숨겨진 `input.btn-check`(라디오)에 연결된 `<label class="btn">`이라, 선택 상태가 곧 라디오 값이 됩니다. 가로(`btn-group`)·세로(`btn-group-vertical`) 배치, 더보기용 드롭다운이 붙은 형태, 아이콘만 있는 툴바형까지 함께 담겨 있습니다.
+
 ## 소스
 ```html
 <div class="mb-3">
@@ -142,7 +144,28 @@ sidebar_position: 16
 ```
 
 ## 사용된 주요 클래스
-`btn`, `btn-check`, `btn-group`, `btn-group-vertical`, `btn-icon`, `dropdown-item`, `dropdown-menu`, `dropdown-menu-end`, `dropdown-toggle`, `f:20`, `form-check-input`, `form-label`, `m-0`, `mb-3`, `me-2`, `ti`, `ti-bold`, `ti-copy`, `ti-file-minus`, `ti-file-plus`, `ti-italic`, `ti-scissors`, `ti-underline`, `w-100`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `btn-group` | 버튼들을 테두리가 서로 붙은 하나의 가로 그룹으로 묶음 |
+| `btn-group-vertical` | 버튼들을 세로로 붙여서 배치 |
+| `btn-check` | 화면에 보이지 않는 실제 라디오 입력. 뒤따르는 `label.btn`과 짝을 이뤄 선택 상태를 저장 |
+| `btn` | `label`에 적용해 일반 버튼처럼 보이게 하는 스타일 |
+| `btn-icon` | 텍스트 없이 아이콘만 있는 정사각형 버튼(툴바형) |
+| `dropdown-toggle` | 클릭 시 드롭다운 메뉴를 여는 버튼 표시(화살표 아이콘 포함) |
+| `dropdown-menu` | 드롭다운으로 펼쳐지는 메뉴 박스 |
+| `dropdown-menu-end` | 드롭다운 메뉴를 트리거 오른쪽 끝에 맞춰 정렬 |
+| `dropdown-item` | 드롭다운 메뉴 안의 각 항목 스타일 |
+| `form-check-input` | 드롭다운 메뉴 안 라디오 입력의 체크 아이콘 스타일 |
+| `form-label` | 버튼 그룹 전체의 제목 라벨 |
+| `f:20` | master-css 속성형 클래스, 아이콘 크기를 20px로 지정 |
+| `w-100` | 그룹 너비를 부모 요소 100%로 채움 |
+| `m-0` / `me-2` | master-css 속성형 클래스, 각각 여백 초기화 / 오른쪽 여백 추가 |
+| `mb-3` | 그룹 사이에 아래쪽 여백 추가 |
+| `ti`, `ti-bold`, `ti-italic`, `ti-underline`, `ti-copy`, `ti-scissors`, `ti-file-plus`, `ti-file-minus` | Tabler Icons 폰트 아이콘, 툴바 버튼에 사용하는 서식/편집 아이콘 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-버튼-그룹.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Form selectboxes](https://docs.tabler.io/ui/forms/form-selectboxes/)

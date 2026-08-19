@@ -6,6 +6,8 @@ sidebar_position: 56
 
 분류: 모달
 
+**위험 모달**은 삭제처럼 **되돌릴 수 없는 작업을 실행하기 직전에 한 번 더 확인**받는 모달입니다. [성공 모달](모달-성공-모달)과 같은 구조(`modal-status`로 상단 색상 바 표시, 가운데 정렬된 아이콘·제목·설명, 하단 두 버튼)를 쓰되 상태 바와 경고 아이콘 색상을 빨간색(`bg-danger`)으로 바꾸고, 실행 버튼도 `btn-danger`로 표시해 위험성을 시각적으로 강조합니다.
+
 ## 소스
 ```html
 <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-danger">
@@ -44,7 +46,27 @@ sidebar_position: 56
 ```
 
 ## 사용된 주요 클래스
-`bg-danger`, `btn`, `btn-close`, `btn-danger`, `col`, `f:20`, `fade`, `modal`, `modal-blur`, `modal-body`, `modal-content`, `modal-dialog`, `modal-dialog-centered`, `modal-footer`, `modal-sm`, `modal-status`, `py-4`, `row`, `text-center`, `text-secondary`, `ti`, `ti-alert-triangle`, `w-100`
+| 클래스 | 역할 |
+| --- | --- |
+| `modal`, `modal-blur`, `fade` | 모달 컨테이너, 배경 흐림, 페이드 애니메이션 |
+| `modal-dialog` / `modal-sm` | 모달 상자 영역 / 좁은 너비 |
+| `modal-dialog-centered` | 화면 세로 중앙 배치 |
+| `modal-content` | 콘텐츠 박스(헤더 없이 상태 바로 대체) |
+| `modal-status` | 모달 상단에 좁은 색상 줄을 표시 |
+| `bg-danger` | 상태 바와 배경을 위험(빨간색)으로 표시 |
+| `btn-close` | 우측 상단 닫기(×) 아이콘 버튼 |
+| `modal-body` | 본문 영역 |
+| `text-center` | 본문 내용을 가운데 정렬 |
+| `py-4` | 위아래 여백(padding)을 넉넉하게 지정 |
+| `f:20` | 아이콘 크기를 20px로 지정(master-css) |
+| `ti`, `ti-alert-triangle` | Tabler 아이콘 폰트, 경고 삼각형 아이콘 |
+| `text-secondary` | 설명 텍스트를 보조 색상(회색조)으로 표시 |
+| `row`, `col` | 하단 버튼 두 개를 같은 너비로 나란히 배치하는 그리드 |
+| `btn`, `btn-danger`, `w-100` | 기본 버튼, 위험(빨강) 강조 버튼, 버튼을 열 너비 전체로 확장 |
+| `modal-footer` | 버튼 영역 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/모달-위험-모달.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Modals](https://docs.tabler.io/ui/components/modals/)

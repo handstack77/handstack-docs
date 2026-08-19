@@ -6,6 +6,8 @@ sidebar_position: 12
 
 분류: 폼 요소
 
+여러 색상 중 하나를 고르는 **색상 선택 컨트롤** 예제입니다. `.form-colorinput`은 `radio` 입력을 색상 스와치(`.form-colorinput-color bg-*`)로 대체해 보여주는 커스텀 컨트롤이며, `.rounded-circle`을 추가하면 원형 스와치가 됩니다. 정해진 팔레트가 아니라 임의의 색상을 직접 고를 때는 `<input type="color">`에 `.form-control-color`를 붙인 네이티브 색상 선택기를 사용합니다.
+
 ## 소스
 ```html
 <div class="mb-3">
@@ -159,7 +161,24 @@ sidebar_position: 12
 ```
 
 ## 사용된 주요 클래스
-`bg-azure`, `bg-blue`, `bg-dark`, `bg-indigo`, `bg-lime`, `bg-orange`, `bg-pink`, `bg-purple`, `bg-red`, `bg-white`, `bg-yellow`, `col-auto`, `form-colorinput`, `form-colorinput-color`, `form-colorinput-input`, `form-colorinput-light`, `form-control`, `form-control-color`, `form-label`, `g-2`, `mb-3`, `rounded-circle`, `row`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `bg-azure`, `bg-blue`, `bg-dark`, `bg-indigo`, `bg-lime`, `bg-orange`, `bg-pink`, `bg-purple`, `bg-red`, `bg-white`, `bg-yellow` | 색상 스와치의 배경색을 지정하는 Tabler 색상 유틸리티 |
+| `col-auto` | 콘텐츠 크기만큼만 폭을 차지하는 그리드 열 |
+| `form-colorinput` | 라디오 입력을 색상 스와치 형태로 감싸는 라벨 컨테이너 |
+| `form-colorinput-color` | 실제로 색이 채워져 보이는 스와치 영역 |
+| `form-colorinput-input` | 화면에는 보이지 않는 실제 `radio` 입력 |
+| `form-colorinput-light` | 밝은 배경(흰색 등)의 스와치에 얇은 테두리를 추가해 구분되도록 함 |
+| `form-control`, `form-control-color` | 네이티브 `<input type="color">` 색상 선택기의 기본 스타일 |
+| `form-label` | 입력 그룹 위에 붙는 라벨 텍스트 스타일 |
+| `g-2` | 그리드 행의 열 사이 간격(gutter) |
+| `mb-3` | 요소 사이 아래쪽 여백(margin-bottom) |
+| `rounded-circle` | 스와치를 사각형이 아닌 원형으로 표시 |
+| `row` | Bootstrap 그리드 행 |
+
+## 참고 자료
+- [Form color check](https://docs.tabler.io/ui/forms/form-color-check/)
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-색상-입력.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

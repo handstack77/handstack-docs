@@ -6,7 +6,7 @@ sidebar_position: 31
 
 분류: UI 예제
 
-계정을 잠금 해제하려면 비밀번호를 입력 하세요.
+자리를 비운 뒤 다시 접속했을 때 **비밀번호만 재입력해 잠금을 해제**하는 화면 예제입니다. 이메일 재입력 없이 아바타(`avatar avatar-xl`)와 사용자 이름으로 "지금 로그인된 사람이 누구인지"를 먼저 보여주고, 비밀번호 입력란과 잠금 해제 버튼만 남겨 화면을 단순화한 구조입니다.
 
 ## 소스
 ```html
@@ -36,7 +36,20 @@ sidebar_position: 31
 > 원본 이미지 경로(`img/...`)는 참고용 표시이며 실제 이미지 파일은 포함하지 않았습니다. 미리보기 페이지에서는 자리 표시 이미지로 대체됩니다.
 
 ## 사용된 주요 클래스
-`avatar`, `avatar-xl`, `btn`, `btn-primary`, `card-title`, `f:20`, `form-control`, `mb-3`, `mb-4`, `text-secondary`, `ti`, `ti-lock-open`, `w-100`
+| 클래스 | 역할 |
+| --- | --- |
+| `avatar`, `avatar-xl` | 원형 프로필 이미지 표시, `xl`은 큰 크기 변형 |
+| `card-title` | 카드 안 제목 텍스트 스타일 |
+| `text-secondary` | 보조 설명 텍스트에 회색 계열 색상 적용 |
+| `form-control` | 비밀번호 입력 필드의 기본 스타일 |
+| `btn`, `btn-primary` | 버튼 기본 스타일과 프라이머리 색상 강조(잠금 해제 버튼) |
+| `w-100` | 버튼 너비를 카드 폭 전체로 확장 |
+| `mb-3`, `mb-4` | 하단 여백(0.75rem/1rem)으로 영역 사이 간격 조정 |
+| `f:20` | master-css 속성형 클래스, 아이콘 폰트 크기를 20px로 지정 |
+| `ti`, `ti-lock-open` | Tabler 아이콘 폰트 기본 클래스와 열린 자물쇠 아이콘 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/ui-예제-계정-잠금.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Cards](https://docs.tabler.io/ui/components/cards/)

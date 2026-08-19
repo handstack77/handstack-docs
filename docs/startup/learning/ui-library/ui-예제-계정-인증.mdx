@@ -6,7 +6,7 @@ sidebar_position: 32
 
 분류: UI 예제
 
-+82 10-1234-5678 로 전송된 인증 코드를 입력하여 계정을 확인하세요.
+SMS 등으로 전송된 **인증 코드를 한 자리씩 입력**받는 2단계 인증(OTP) 화면 예제입니다. 코드 자릿수만큼 `form-control`을 1글자(`maxlength="1"`) 입력란으로 나눠 3개씩 두 그룹(`row g-4` 안에 `row g-2`)으로 묶고, `inputmode="numeric"` `pattern="[0-9]*"`로 모바일에서 숫자 키패드가 뜨도록 했습니다. 하단에는 취소·인증 버튼을 `btn-list`로 나란히 배치합니다.
 
 ## 소스
 ```html
@@ -65,7 +65,22 @@ sidebar_position: 32
 ```
 
 ## 사용된 주요 클래스
-`btn`, `btn-list`, `btn-primary`, `card-title`, `card-title-lg`, `col`, `flex-nowrap`, `form-check`, `form-check-input`, `form-control`, `form-control-lg`, `form-footer`, `g-2`, `g-4`, `mb-4`, `my-4`, `my-5`, `py-3`, `row`, `text-center`, `w-100`
+| 클래스 | 역할 |
+| --- | --- |
+| `card-title`, `card-title-lg` | 카드 제목 스타일과, 더 큰 크기로 강조하는 변형 |
+| `text-center` | 텍스트를 가운데 정렬 |
+| `row`, `col`, `g-2`, `g-4` | 인증 코드 입력란을 그리드로 배치하는 행/열과 각 간격(0.5rem/1.5rem) |
+| `form-control`, `form-control-lg` | 입력 필드 기본 스타일과, 숫자 1자리를 크게 보여주는 확대 변형 |
+| `py-3` | 입력란 상하 여백을 0.75rem으로 넓혀 클릭 영역을 키움 |
+| `form-check`, `form-check-input` | 체크박스와 라벨을 한 세트로 묶는 래퍼, 입력 요소 |
+| `form-footer` | 폼 하단 버튼 영역에 상단 여백 부여 |
+| `btn-list`, `flex-nowrap` | 버튼 여러 개를 균등 간격으로 나열, 줄바꿈 없이 한 줄 유지 |
+| `btn`, `btn-primary` | 버튼 기본 스타일과 프라이머리 색상 강조(인증 버튼) |
+| `w-100` | 버튼 너비를 폭 전체로 확장 |
+| `mb-4`, `my-4`, `my-5` | 하단 여백(1rem), 상하 여백(1rem/2rem)으로 영역 사이 간격 조정 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/ui-예제-계정-인증.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Cards](https://docs.tabler.io/ui/components/cards/)

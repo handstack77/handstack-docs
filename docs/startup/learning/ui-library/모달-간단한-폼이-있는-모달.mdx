@@ -6,6 +6,8 @@ sidebar_position: 57
 
 분류: 모달
 
+**간단한 폼이 있는 모달**은 새 팀 추가처럼 **입력 항목 수가 적은 짧은 등록 폼**을 담는 모달입니다. [폼이 있는 모달](모달-폼이-있는-모달)과 달리 기본 너비(`modal-dialog`)를 그대로 사용하며, 이름 입력 옆에 아바타 업로드 버튼(`avatar avatar-upload`)을 나란히 배치하고, 라디오 버튼을 색상 견본(`form-colorinput`)으로 표현해 텍스트 대신 색상을 클릭해 선택하도록 구성했습니다.
+
 ## 소스
 ```html
 <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-team">
@@ -118,7 +120,33 @@ sidebar_position: 57
 ```
 
 ## 사용된 주요 클래스
-`align-items-end`, `avatar`, `avatar-upload`, `avatar-upload-text`, `bg-azure`, `bg-blue`, `bg-dark`, `bg-indigo`, `bg-lime`, `bg-orange`, `bg-pink`, `bg-purple`, `bg-red`, `bg-white`, `bg-yellow`, `btn`, `btn-close`, `btn-primary`, `col`, `col-auto`, `f:20`, `fade`, `form-colorinput`, `form-colorinput-color`, `form-colorinput-input`, `form-colorinput-light`, `form-control`, `form-label`, `g-2`, `mb-3`, `me-auto`, `modal`, `modal-blur`, `modal-body`, `modal-content`, `modal-dialog`, `modal-dialog-centered`, `modal-footer`, `modal-header`, `modal-title`, `rounded`, `row`, `ti`, `ti-plus`
+| 클래스 | 역할 |
+| --- | --- |
+| `modal`, `modal-blur`, `fade` | 모달 컨테이너, 배경 흐림, 페이드 애니메이션 |
+| `modal-dialog` | 모달 상자 영역(기본 너비) |
+| `modal-dialog-centered` | 화면 세로 중앙 배치 |
+| `modal-content` / `modal-header` / `modal-title` | 콘텐츠 박스 / 상단 제목 영역 / 제목 텍스트 스타일 |
+| `btn-close` | 우측 상단 닫기(×) 아이콘 버튼 |
+| `modal-body` | 본문 영역 |
+| `row`, `col`, `col-auto` | 아바타 업로드와 이름 입력을 가로로 배치하는 그리드 |
+| `align-items-end` | 라벨 높이가 달라도 입력 필드 하단을 맞춰 정렬 |
+| `avatar`, `avatar-upload`, `avatar-upload-text`, `rounded` | 아바타 표시 영역, 업로드 가능한 아바타 스타일, 업로드 안내 텍스트, 모서리 둥글게 |
+| `f:20` | 아이콘 크기를 20px로 지정(master-css) |
+| `ti`, `ti-plus` | Tabler 아이콘 폰트, 더하기 아이콘 |
+| `form-label` / `form-control` | 입력 항목 라벨 / 텍스트 입력·textarea |
+| `mb-3` | 입력 항목 사이 아래쪽 여백 |
+| `g-2` | 색상 견본 사이 그리드 간격 |
+| `form-colorinput` | 색상 견본형 라디오 입력을 감싸는 라벨 |
+| `form-colorinput-input` | 실제 라디오 입력(화면에는 숨김) |
+| `form-colorinput-color` | 원형 색상 견본을 그리는 요소 |
+| `form-colorinput-light` | 밝은 색상 견본에 테두리를 추가해 배경과 구분되게 함 |
+| `bg-*`(`bg-dark`, `bg-white`, `bg-blue` 등) | 각 색상 견본의 배경색 |
+| `btn`, `btn-primary` | 기본 버튼, 강조(주 작업) 버튼 색상 |
+| `me-auto` | 닫기 버튼을 왼쪽으로 밀어 추가 버튼과 간격을 자동으로 벌림 |
+| `modal-footer` | 버튼 영역 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/모달-간단한-폼이-있는-모달.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Modals](https://docs.tabler.io/ui/components/modals/)

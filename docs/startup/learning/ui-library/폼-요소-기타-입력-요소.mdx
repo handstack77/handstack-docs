@@ -6,6 +6,8 @@ sidebar_position: 21
 
 분류: 폼 요소
 
+앞선 문서들에 포함되지 않은 **입력/표시 컴포넌트**를 모아둔 예제입니다. 자동완성 후보를 보여주는 데이터 목록(`<datalist>`), HTML 기본 범위 입력과 noUiSlider 라이브러리로 만든 커스텀 슬라이더(`noUi-*` 클래스), 진행률 표시줄(`.progress`), 소셜 로그인 버튼을 함께 담고 있습니다. `noUi-*` 클래스는 noUiSlider 자바스크립트 라이브러리가 자동으로 생성하는 마크업이므로 직접 작성할 필요는 없습니다.
+
 ## 소스
 ```html
 <div class="mb-3">
@@ -75,7 +77,26 @@ sidebar_position: 21
 ```
 
 ## 사용된 주요 클래스
-`bg-green`, `btn`, `col`, `f:20`, `form-control`, `form-label`, `form-range`, `mb-2`, `mb-3`, `noUi-base`, `noUi-connect`, `noUi-connects`, `noUi-handle`, `noUi-handle-lower`, `noUi-handle-upper`, `noUi-horizontal`, `noUi-ltr`, `noUi-origin`, `noUi-target`, `noUi-touch-area`, `noUi-txt-dir-ltr`, `progress`, `progress-bar`, `progress-bar-indeterminate`, `row`, `text-green`, `ti`, `ti-brand-github`, `ti-brand-x`, `visually-hidden`, `w-100`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `form-control` | 데이터 목록 입력 필드의 기본 스타일 |
+| `form-range` | HTML 기본 `<input type="range">`와 noUiSlider 슬라이더에 공통 적용하는 폭/여백 스타일 |
+| `noUi-target`, `noUi-base`, `noUi-connects`, `noUi-connect`, `noUi-origin`, `noUi-handle`, `noUi-handle-lower`, `noUi-handle-upper`, `noUi-touch-area`, `noUi-horizontal`, `noUi-ltr`, `noUi-txt-dir-ltr` | noUiSlider 라이브러리가 렌더링할 때 자동으로 붙이는 클래스(슬라이더 트랙, 채워진 구간, 손잡이 등) |
+| `progress` | 진행률 표시줄의 트랙(배경) 영역 |
+| `progress-bar` | 진행률 표시줄의 채워진 막대. `style="width: N%"`로 진행률 지정 |
+| `progress-bar-indeterminate` | 진행률을 알 수 없을 때 좌우로 계속 움직이는 애니메이션 적용 |
+| `bg-green` / `text-green` | 진행률 막대와 슬라이더를 초록색 계열로 강조 |
+| `visually-hidden` | 화면에는 보이지 않지만 스크린 리더에는 읽히는 보조 텍스트 |
+| `btn` | 소셜 로그인 버튼의 기본 스타일 |
+| `w-100` | 버튼/슬라이더가 부모 너비를 100% 채우도록 지정 |
+| `row`, `col` | 버튼 2개를 가로로 나란히 배치하는 Bootstrap 그리드 |
+| `f:20` | master-css 속성형 클래스, 아이콘 크기를 20px로 지정 |
+| `mb-2`, `mb-3` | master-css 속성형 클래스, 요소 사이 아래쪽 여백 |
+| `ti`, `ti-brand-github`, `ti-brand-x` | Tabler Icons 폰트 아이콘, 각각 GitHub·X(트위터) 브랜드 아이콘 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-기타-입력-요소.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Form helpers](https://docs.tabler.io/ui/forms/form-helpers/)

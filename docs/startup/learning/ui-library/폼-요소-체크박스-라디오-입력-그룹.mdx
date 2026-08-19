@@ -6,6 +6,8 @@ sidebar_position: 8
 
 분류: 폼 요소
 
+`.input-group`을 활용해 입력 앞뒤에 **고정 텍스트**(`@`, `.tabler.io`, `https://` 등)나 **체크박스·라디오 버튼**을 붙이는 예제입니다. `.input-group-text`는 입력과 이어 붙는 텍스트/아이콘 영역이고, 체크박스·라디오를 넣을 때는 `.form-check-input`에 `.m-0`을 함께 주어 `.input-group-text` 안에서 불필요한 여백 없이 정렬되도록 합니다.
+
 ## 소스
 ```html
 <div class="mb-3">
@@ -51,7 +53,19 @@ sidebar_position: 8
 ```
 
 ## 사용된 주요 클래스
-`form-check-input`, `form-control`, `form-label`, `input-group`, `input-group-text`, `m-0`, `mb-2`, `mb-3`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `form-check-input` | 체크박스·라디오 버튼의 기본 스타일 |
+| `form-control` | 입력 그룹 안 텍스트 입력의 기본 스타일 |
+| `form-label` | 입력 그룹 위에 붙는 라벨 텍스트 스타일 |
+| `input-group` | 입력·텍스트·컨트롤을 하나로 이어 붙이는 컨테이너 |
+| `input-group-text` | 입력 앞뒤에 붙는 고정 텍스트/아이콘/체크박스 영역 |
+| `m-0` | 모든 방향 여백 제거(체크박스가 `input-group-text` 안에서 여백 없이 정렬되도록 함) |
+| `mb-2`, `mb-3` | 요소 사이 아래쪽 여백(margin-bottom) |
+
+## 참고 자료
+- [Form select boxes](https://docs.tabler.io/ui/forms/form-selectboxes/)
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/폼-요소-체크박스-라디오-입력-그룹.html` 경로에서 렌더링 결과를 확인할 수 있습니다.

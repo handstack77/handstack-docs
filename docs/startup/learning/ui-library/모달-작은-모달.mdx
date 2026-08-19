@@ -6,6 +6,8 @@ sidebar_position: 51
 
 분류: 모달
 
+**작은 모달**은 `modal-dialog` 위에 `modal-sm`을 추가해 너비를 좁힌 형태로, 삭제 확인처럼 **짧은 문장과 예/아니오 버튼만 필요한 상황**에 사용합니다. 기본 모달과 달리 `modal-header`를 생략하고 제목(`modal-title`)을 본문 안에 함께 넣어 더 간결하게 구성했으며, 취소 버튼은 `btn-link`로 눈에 덜 띄게, 실행 버튼은 `btn-danger`로 위험한 동작임을 강조했습니다.
+
 ## 소스
 ```html
 <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-small">
@@ -29,7 +31,23 @@ sidebar_position: 51
 ```
 
 ## 사용된 주요 클래스
-`btn`, `btn-danger`, `btn-link`, `fade`, `link-secondary`, `me-auto`, `modal`, `modal-blur`, `modal-body`, `modal-content`, `modal-dialog`, `modal-dialog-centered`, `modal-footer`, `modal-sm`, `modal-title`
+| 클래스 | 역할 |
+| --- | --- |
+| `modal`, `modal-blur`, `fade` | 모달 컨테이너, 배경 흐림, 페이드 애니메이션 |
+| `modal-dialog` | 모달 상자 영역 |
+| `modal-sm` | 모달 너비를 좁게(small) 설정 |
+| `modal-dialog-centered` | 화면 세로 중앙 배치 |
+| `modal-content` | 헤더 없이 본문·푸터를 감싸는 콘텐츠 박스 |
+| `modal-title` | 본문 안에 배치된 제목 텍스트 스타일 |
+| `modal-body` / `modal-footer` | 본문 영역 / 버튼 영역 |
+| `btn` | 기본 버튼 스타일 |
+| `btn-link` | 밑줄 없는 링크 형태 버튼(취소처럼 덜 강조되는 동작에 사용) |
+| `link-secondary` | 링크 버튼 텍스트를 보조 색상(회색조)으로 표시 |
+| `btn-danger` | 삭제 등 위험한 동작을 나타내는 빨간색 버튼 |
+| `me-auto` | 취소 버튼을 왼쪽으로 밀어 실행 버튼과 자동으로 간격을 벌림 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/모달-작은-모달.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Modals](https://docs.tabler.io/ui/components/modals/)

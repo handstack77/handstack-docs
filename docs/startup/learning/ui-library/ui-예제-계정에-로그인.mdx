@@ -6,6 +6,8 @@ sidebar_position: 30
 
 분류: UI 예제
 
+**로그인 화면**을 구성할 때 쓰는 카드형 레이아웃 예제입니다. `card`와 `card-body`로 감싼 영역에 이메일·비밀번호 입력, "로그인 상태 유지" 체크박스, 제출 버튼을 배치하고, `hr-text`로 구분선을 그은 뒤 소셜 로그인 버튼을 이어 붙이는 구조입니다. 비밀번호 입력은 `input-group input-group-flat`으로 감싸 우측에 "비밀번호 보기" 아이콘 버튼을 붙였습니다.
+
 ## 소스
 ```html
 <div class="card card-md">
@@ -62,7 +64,28 @@ sidebar_position: 30
 ```
 
 ## 사용된 주요 클래스
-`btn`, `btn-primary`, `card`, `card-body`, `card-md`, `col`, `f:20`, `form-check`, `form-check-input`, `form-check-label`, `form-control`, `form-footer`, `form-label`, `form-label-description`, `h2`, `hr-text`, `input-group`, `input-group-flat`, `input-group-text`, `link-secondary`, `mb-2`, `mb-3`, `mb-4`, `mr:4`, `row`, `text-center`, `ti`, `ti-brand-github`, `ti-brand-x`, `ti-eye`, `w-100`
+| 클래스 | 역할 |
+| --- | --- |
+| `card`, `card-body` | 로그인 폼 전체를 감싸는 카드 컨테이너와 본문 영역 |
+| `card-md` | 카드 최대 너비를 폼에 어울리는 중간 크기로 제한 |
+| `form-label`, `form-label-description` | 입력 필드 라벨과, 라벨 옆에 붙는 보조 링크(비밀번호 찾기) 영역 |
+| `form-control` | 이메일·비밀번호 텍스트 입력의 기본 스타일 |
+| `input-group`, `input-group-flat`, `input-group-text` | 입력과 아이콘 버튼을 한 줄로 묶는 그룹, `flat`은 배경을 제거해 테두리만 남긴 형태, `input-group-text`는 그룹 안의 보조 요소(아이콘) 영역 |
+| `link-secondary` | 보조 색상(회색 계열)의 링크/아이콘 버튼 |
+| `form-check`, `form-check-input`, `form-check-label` | 체크박스와 라벨을 한 세트로 묶는 래퍼, 입력 요소, 라벨 |
+| `form-footer` | 폼 하단의 제출 버튼 영역에 상단 여백을 부여 |
+| `btn`, `btn-primary` | 버튼 기본 스타일과, 프라이머리 색상 강조 버튼(로그인 제출) |
+| `w-100` | 요소 너비를 100%로 채움(버튼을 카드 폭 전체로 확장) |
+| `hr-text` | 텍스트가 포함된 수평 구분선("또는") |
+| `h2`, `text-center` | 2단계 제목 스타일, 텍스트 가운데 정렬 |
+| `mb-2`, `mb-3`, `mb-4` | 하단 여백(0.5rem/0.75rem/1rem 단위)으로 필드 사이 간격 조정 |
+| `row`, `col` | 소셜 로그인 버튼 두 개를 가로로 나란히 배치하는 그리드 |
+| `f:20` | master-css 속성형 클래스, 아이콘 폰트 크기를 20px로 지정 |
+| `mr:4` | master-css 속성형 클래스, 우측 여백을 4px로 지정 |
+| `ti`, `ti-brand-github`, `ti-brand-x`, `ti-eye` | Tabler 아이콘 폰트 기본 클래스와 각 아이콘(GitHub, X, 눈 모양) |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/ui-예제-계정에-로그인.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Cards](https://docs.tabler.io/ui/components/cards/)

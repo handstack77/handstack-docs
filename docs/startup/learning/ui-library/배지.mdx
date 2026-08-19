@@ -6,6 +6,20 @@ sidebar_position: 39
 
 분류: 배지
 
+작은 원형/알약 모양의 라벨로 **상태·개수·새 항목 여부**처럼 부가 정보를 짧게 덧붙일 때 쓰는 **배지(badge)** 컴포넌트의 여섯 가지 활용 패턴을 한 카드에 모아 보여줍니다. 제목 옆(`<h1>~<h6>`)에 붙이는 기본형, `bg-*`/`bg-*-lt`로 진하거나 옅은 배경색을 주는 색상형, 배경 없이 글자와 테두리만 색을 입히는 `badge-outline`, 드롭다운 메뉴 항목의 카운터, 버튼 옆에 개수를 붙이는 형태, 그리고 버튼 우측 상단에 점으로 떠 있는 `badge-notification`(필요하면 `badge-blink`로 깜빡임 효과까지) 형태입니다.
+
+```text
+배지 활용 패턴
+├── 제목 + 배지 (h1~h6 옆 badge)
+├── 색상 배지
+│   ├── bg-* (진한 배경 + *-fg 대비 글자색)
+│   ├── bg-*-lt (옅은 배경)
+│   └── badge-outline (테두리만)
+├── 드롭다운 메뉴 항목의 카운터 배지
+├── 버튼 옆 개수 배지 (btn-list)
+└── 버튼 알림 점 배지 (position-relative + badge-notification[+ badge-blink])
+```
+
 ## 소스
 ```html
 <div class="card overflow-auto mt-3">
@@ -173,7 +187,27 @@ sidebar_position: 39
 ```
 
 ## 사용된 주요 클래스
-`badge`, `badge-blink`, `badge-notification`, `badge-outline`, `badge-pill`, `badges-list`, `bg-azure`, `bg-azure-lt`, `bg-blue`, `bg-blue-lt`, `bg-cyan`, `bg-cyan-lt`, `bg-green`, `bg-green-lt`, `bg-indigo`, `bg-indigo-lt`, `bg-lime`, `bg-lime-lt`, `bg-orange`, `bg-orange-lt`, `bg-pink`, `bg-pink-lt`, `bg-primary`, `bg-purple`, `bg-purple-lt`, `bg-red`, `bg-red-lt`, `bg-teal`, `bg-teal-lt`, `bg-yellow`, `bg-yellow-lt`, `btn`, `btn-list`, `card`, `card-body`, `col-12`, `dropdown-item`, `dropdown-menu`, `dropdown-menu-arrow`, `dropdown-menu-demo`, `ms-2`, `ms-auto`, `overflow-auto`, `position-relative`, `row`, `row-cards`, `text-azure`, `text-azure-fg`, `text-blue`, `text-blue-fg`, `text-cyan`, `text-cyan-fg`, `text-green`, `text-green-fg`, `text-indigo`, `text-indigo-fg`, `text-lime`, `text-lime-fg`, `text-orange`, `text-orange-fg`, `text-pink`, `text-pink-fg`, `text-primary-fg`, `text-purple`, `text-purple-fg`, `text-red`, `text-red-fg`, `text-teal`, `text-teal-fg`, `text-yellow`, `text-yellow-fg`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `badge` | 배지의 기본 크기·모양·글자 스타일을 적용하는 기본 클래스 |
+| `bg-blue` / `bg-azure` / `bg-indigo` / `bg-purple` / `bg-pink` / `bg-red` / `bg-orange` / `bg-yellow` / `bg-lime` / `bg-green` / `bg-teal` / `bg-cyan` / `bg-primary` | 배지의 배경색을 Tabler 팔레트 색상으로 진하게 지정 |
+| `text-blue-fg` 등 `text-*-fg` | 해당 배경색(`bg-*`) 위에서 대비가 확보되는 전용 글자색 |
+| `bg-*-lt` (`bg-blue-lt` 등) | 배경을 옅은(light tint) 색조로 지정 |
+| `badge-outline` | 배경 없이 테두리와 글자에만 `text-*` 색상을 적용 |
+| `badge-pill` | 배지 모서리를 완전히 둥글려 알약 모양으로 표시 |
+| `badge-notification` | 배지를 부모 요소(주로 버튼)의 우측 상단 모서리에 점처럼 겹쳐 표시 |
+| `badge-blink` | 배지에 깜빡이는 애니메이션 효과를 적용 |
+| `badges-list` | 여러 배지를 줄바꿈 가능한 flex 목록으로 배치 |
+| `btn-list` | 여러 버튼을 간격을 두고 줄바꿈 가능하게 배치하는 flex 목록 |
+| `position-relative` | 배지가 버튼 모서리에 절대 위치로 겹칠 수 있도록 부모 버튼에 기준 좌표를 부여 |
+| `dropdown-menu`, `dropdown-menu-demo`, `dropdown-menu-arrow`, `dropdown-item` | 드롭다운 메뉴 컨테이너·항목 스타일(`-demo`는 항상 펼쳐진 상태로 보여주기 위한 예제용, `-arrow`는 삼각형 화살표 표시) |
+| `ms-2`, `ms-auto` | 요소 왼쪽 여백 지정. `ms-auto`는 남은 공간만큼 밀어 우측 정렬 |
+| `row`, `row-cards`, `col-12` | Bootstrap 그리드 행/열. `row-cards`는 카드 사이 간격을 카드 컴포넌트 기준으로 맞춤 |
+| `card`, `card-body`, `overflow-auto` | 각 예시를 감싸는 카드 컨테이너와 본문 영역, 내용이 넘칠 때 스크롤 처리 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/배지.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Badges](https://docs.tabler.io/ui/components/badges/)

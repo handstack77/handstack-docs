@@ -6,6 +6,8 @@ sidebar_position: 47
 
 분류: 카드 헤더
 
+**아이콘 버튼 여러 개를 촘촘하게 배치**하는 카드 헤더 액션 예제입니다. `card-actions`에 `btn-actions`를 추가하면 버튼 사이 간격이 좁아지고, 각 버튼은 텍스트 없이 `btn-action` 아이콘 전용 스타일을 사용해 새로고침·접기·더보기·닫기 같은 카드 자체의 제어 동작을 표현합니다.
+
 ## 소스
 ```html
 <div class="card overflow-auto">
@@ -30,7 +32,18 @@ sidebar_position: 47
 ```
 
 ## 사용된 주요 클래스
-`btn-action`, `btn-actions`, `card`, `card-actions`, `card-header`, `card-title`, `f:20`, `overflow-auto`, `ti`, `ti-chevron-up`, `ti-dots-vertical`, `ti-refresh`, `ti-x`
+| 클래스 | 역할 |
+| --- | --- |
+| `card`, `card-header`, `card-title` | 카드 컨테이너, 헤더 영역, 헤더 안의 제목 텍스트 |
+| `overflow-auto` | 카드 내용이 넘칠 때 스크롤을 허용 |
+| `card-actions` | 헤더 우측에 정렬되는 동작 영역 |
+| `btn-actions` | `card-actions` 안 버튼들의 간격을 좁혀 아이콘 버튼 묶음처럼 보이게 함 |
+| `btn-action` | 아이콘 하나로 이루어진 카드 동작 트리거 버튼 스타일 |
+| `f:20` | master-css 속성형 클래스, 아이콘 폰트 크기를 20px로 지정 |
+| `ti`, `ti-refresh`, `ti-chevron-up`, `ti-dots-vertical`, `ti-x` | Tabler 아이콘 폰트 기본 클래스와 새로고침/접기/더보기/닫기 아이콘 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/카드-헤더-카드-액션.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Cards](https://docs.tabler.io/ui/components/cards/)

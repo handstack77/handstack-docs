@@ -6,6 +6,8 @@ sidebar_position: 41
 
 분류: 카드 헤더
 
+카드 제목 오른쪽에 **주요 동작 버튼 하나**를 배치하는 가장 단순한 헤더 액션 예제입니다. `card-header`는 기본적으로 좌우 양 끝에 자식 요소를 정렬하므로, `card-title` 옆에 `card-actions`만 추가하면 "목록 카드 + 추가 버튼" 같은 패턴을 바로 만들 수 있습니다.
+
 ## 소스
 ```html
 <div class="card overflow-auto">
@@ -22,7 +24,17 @@ sidebar_position: 41
 ```
 
 ## 사용된 주요 클래스
-`btn`, `btn-primary`, `card`, `card-actions`, `card-header`, `card-title`, `f:20`, `overflow-auto`, `ti`, `ti-plus`
+| 클래스 | 역할 |
+| --- | --- |
+| `card`, `card-header`, `card-title` | 카드 컨테이너, 헤더 영역, 헤더 안의 제목 텍스트 |
+| `overflow-auto` | 카드 내용이 넘칠 때 스크롤을 허용 |
+| `card-actions` | 헤더 우측에 정렬되는 동작 영역 |
+| `btn`, `btn-primary` | 버튼 기본 스타일과 프라이머리 색상으로 강조하는 주요 동작 버튼 |
+| `f:20` | master-css 속성형 클래스, 아이콘 폰트 크기를 20px로 지정 |
+| `ti`, `ti-plus` | Tabler 아이콘 폰트 기본 클래스와 더하기 아이콘 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/카드-헤더-액션이-있는-카드.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Cards](https://docs.tabler.io/ui/components/cards/)

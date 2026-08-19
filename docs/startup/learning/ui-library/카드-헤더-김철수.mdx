@@ -6,6 +6,8 @@ sidebar_position: 46
 
 분류: 카드 헤더
 
+[홍길동](카드-헤더-홍길동) 예제와 같은 사용자 카드 헤더 구조에, 우측 액션을 버튼 대신 **점 3개(⋮) 드롭다운 메뉴**로 바꾼 예제입니다. `dropdown`/`dropdown-toggle`/`dropdown-menu` 조합으로 편집·권한 변경·삭제 같은 여러 동작을 메뉴 하나에 모을 때 사용하며, 삭제처럼 위험한 항목은 `text-danger`로 강조합니다.
+
 ## 소스
 ```html
 <div class="card overflow-auto">
@@ -40,7 +42,25 @@ sidebar_position: 46
 > 원본 이미지 경로(`img/...`)는 참고용 표시이며 실제 이미지 파일은 포함하지 않았습니다. 미리보기 페이지에서는 자리 표시 이미지로 대체됩니다.
 
 ## 사용된 주요 클래스
-`align-items-center`, `avatar`, `btn-action`, `card`, `card-actions`, `card-header`, `card-subtitle`, `card-title`, `col`, `col-auto`, `dropdown`, `dropdown-item`, `dropdown-menu`, `dropdown-menu-end`, `dropdown-toggle`, `f:20`, `overflow-auto`, `row`, `text-danger`, `ti`, `ti-dots-vertical`
+| 클래스 | 역할 |
+| --- | --- |
+| `card`, `card-header` | 카드 컨테이너와 헤더 영역 |
+| `overflow-auto` | 카드 내용이 넘칠 때 스크롤을 허용 |
+| `row`, `col`, `col-auto`, `align-items-center` | 아바타와 이름/직함을 세로 중앙 정렬로 배치하는 그리드 |
+| `avatar` | 원형 프로필 이미지 표시 |
+| `card-title` | 이름(주 텍스트) 스타일 |
+| `card-subtitle` | 직함(보조 텍스트) 스타일 |
+| `card-actions` | 헤더 우측에 정렬되는 동작 영역 |
+| `btn-action` | 아이콘 하나로 이루어진 카드 동작 트리거 버튼 스타일 |
+| `dropdown`, `dropdown-toggle` | 드롭다운 메뉴 래퍼와, 클릭 시 메뉴를 여는 트리거 요소 |
+| `dropdown-menu`, `dropdown-menu-end` | 드롭다운 메뉴 목록과, 트리거 우측 끝에 맞춰 정렬하는 옵션 |
+| `dropdown-item` | 드롭다운 메뉴 안의 개별 항목 스타일 |
+| `text-danger` | 위험(삭제 등) 동작 항목을 빨간색으로 강조 |
+| `f:20` | master-css 속성형 클래스, 아이콘 폰트 크기를 20px로 지정 |
+| `ti`, `ti-dots-vertical` | Tabler 아이콘 폰트 기본 클래스와 점 3개(⋮) 아이콘 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/카드-헤더-김철수.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Cards](https://docs.tabler.io/ui/components/cards/)

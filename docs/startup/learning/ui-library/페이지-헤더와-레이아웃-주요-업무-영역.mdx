@@ -6,6 +6,23 @@ sidebar_position: 62
 
 분류: 페이지 헤더와 레이아웃
 
+대시보드나 업무 화면 상단에서 **핵심 지표를 한눈에 요약**해 보여줄 때 쓰는 카드 패턴입니다. `.card` 안에 `.row`/`.col-sm-4`로 3분할한 뒤, 각 칸을 `.border.rounded`로 감싸 아이콘 · 숫자 · 라벨 순으로 쌓았습니다. `text-blue`, `text-green`, `text-orange`처럼 칸마다 다른 강조 색을 주면 항목 성격(매출/완료/지연 등)을 색으로도 구분할 수 있습니다.
+
+이 카드는 독립적으로도 쓸 수 있지만, Tabler 레이아웃의 `.page-body` 영역(제목·버튼이 있는 `.page-header` 아래, 실제 콘텐츠가 들어가는 부분)에 배치하는 것을 전제로 만들어졌습니다.
+
+```text
+.page
+└─ .page-wrapper
+    ├─ .page-header
+    │   └─ .container-xl (제목 / 버튼 영역)
+    └─ .page-body
+        └─ .container-xl
+            └─ .card          ← 이 예제
+                └─ .card-body
+                    └─ .row
+                        └─ .col-sm-4 × 3  (아이콘 · 수치 · 라벨)
+```
+
 ## 소스
 ```html
 <div class="card">
@@ -41,7 +58,23 @@ sidebar_position: 62
 ```
 
 ## 사용된 주요 클래스
-`border`, `col-sm-4`, `f:24`, `g-3`, `h-100`, `h3`, `mb-1`, `mt-2`, `p-3`, `rounded`, `row`, `text-blue`, `text-green`, `text-orange`, `text-secondary`, `ti`, `ti-chart-bar`, `ti-clock`, `ti-file-check`
+| 클래스 | 역할 |
+| --- | --- |
+| `row`, `col-sm-4` | Bootstrap 그리드로 화면을 3등분(각 칸 너비 1/3) |
+| `g-3` | 그리드 칸 사이의 간격(gutter) 지정 |
+| `border`, `rounded` | 각 지표 칸에 테두리와 둥근 모서리 표시 |
+| `h-100` | 칸 높이를 부모 높이(100%)에 맞춰 세 칸의 높이를 통일 |
+| `h3`, `mb-1` | 지표 수치의 글자 크기와 아래쪽 여백 |
+| `mt-2` | 아이콘과 수치 사이 위쪽 여백 |
+| `p-3` | 칸 안쪽 여백 |
+| `text-secondary` | 라벨 텍스트를 보조색(회색톤)으로 표시 |
+| `text-blue`, `text-green`, `text-orange` | 아이콘 색을 칸별로 다르게 지정 |
+| `f:24` | master-css 속성형 클래스, 아이콘 글자 크기를 24px로 지정 |
+| `ti`, `ti-chart-bar`, `ti-clock`, `ti-file-check` | Tabler 아이콘 폰트와 아이콘 종류(막대그래프/시계/파일확인) |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/페이지-헤더와-레이아웃-주요-업무-영역.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Page headers](https://docs.tabler.io/ui/layout/page-headers/)
+- [Page layouts](https://docs.tabler.io/ui/layout/page-layouts/)

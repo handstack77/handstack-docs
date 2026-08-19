@@ -6,6 +6,8 @@ sidebar_position: 3
 
 분류: 알림 정보
 
+작업 결과를 사용자에게 알릴 때 쓰는 **네 가지 상태의 알림**(`.alert`) 모음입니다. `alert-success`(성공), `alert-warning`(경고), `alert-danger`(위험), `alert-info`(정보) 색상 변형을 나란히 배치해, 상황에 맞는 색상을 고를 때 한눈에 비교할 수 있도록 구성했습니다. 각 알림은 왼쪽에 상태를 나타내는 아이콘, 오른쪽에 닫기 버튼(`btn-close`)을 두는 동일한 레이아웃을 공유합니다.
+
 ## 소스
 ```html
 <div class="card overflow-auto mt-3">
@@ -63,7 +65,23 @@ sidebar_position: 3
 ```
 
 ## 사용된 주요 클래스
-`alert`, `alert-danger`, `alert-dismissible`, `alert-info`, `alert-success`, `alert-warning`, `btn-close`, `d-flex`, `f:20`, `mr-2`, `ti`, `ti-alert-circle`, `ti-alert-triangle`, `ti-check`, `ti-info-circle`
+
+| 클래스 | 역할 |
+| --- | --- |
+| `alert` | 알림 박스의 기본 스타일(테두리, 배경, 여백) |
+| `alert-success` | 성공을 나타내는 초록 계열 색상 |
+| `alert-warning` | 경고를 나타내는 노랑/주황 계열 색상 |
+| `alert-danger` | 실패·위험을 나타내는 빨강 계열 색상 |
+| `alert-info` | 단순 정보 안내를 나타내는 파랑 계열 색상 |
+| `alert-dismissible` | 닫기 버튼이 들어갈 오른쪽 여백을 확보 |
+| `btn-close` | 알림을 닫는 X 버튼(`data-bs-dismiss="alert"`와 함께 사용) |
+| `d-flex` | 아이콘과 메시지 텍스트를 가로로 나란히 배치 |
+| `f:20` | master-css 속성형 클래스, 아이콘 크기를 20px로 지정 |
+| `mr-2` | 아이콘과 메시지 사이의 오른쪽 여백 |
+| `ti`, `ti-check`, `ti-alert-triangle`, `ti-alert-circle`, `ti-info-circle` | Tabler Icons 폰트 아이콘. 각각 성공/경고/위험/정보 상태에 대응 |
 
 ## 실전 예제 페이지
 HandStack 웹 호스트(`wwwroot` 모듈)를 기동한 뒤 `/sample/ui-library/알림-정보.html` 경로에서 렌더링 결과를 확인할 수 있습니다.
+
+## 참고 자료
+- [Alerts](https://docs.tabler.io/ui/components/alerts/)
