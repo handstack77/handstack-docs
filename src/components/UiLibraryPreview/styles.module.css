@@ -1,0 +1,33 @@
+.previewContainer {
+    margin: 1rem 0 1.5rem;
+    border: 1px solid var(--ifm-color-emphasis-300);
+    border-radius: var(--ifm-alert-border-radius, 8px);
+    overflow: hidden;
+    background: var(--ifm-background-surface-color);
+}
+
+.previewToolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: var(--ifm-color-emphasis-100);
+    border-bottom: 1px solid var(--ifm-color-emphasis-300);
+    font-size: 0.85rem;
+}
+
+.previewLabel {
+    color: var(--ifm-color-emphasis-700);
+    font-weight: 600;
+}
+
+.previewLink {
+    text-decoration: none;
+}
+
+.previewFrame {
+    display: block;
+    width: 100%;
+    border: 0;
+    background: #fff;
+}
