@@ -2,317 +2,1112 @@
 sidebar_position: 21
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # 필수 프로그램 설치하기
 
-개발에 필요한 필수 환경 구성을 위한 Git, .NET Core, Node.js, curl, PowerShell 7 도구는 크로스 플랫폼 개발을 지원하므로 공식 웹 사이트에서 Windows, macOS, Linux에서 실행되는 설치 관리자를 제공합니다. 
+이 문서에서는 HandStack을 빌드하고 실행하는 데 필요한 프로그램을 처음부터 설치합니다. 사용 중인 운영체제 탭 하나만 선택하고 위에서 아래로 따라 하세요.
 
-* [git 2.44.0+ 다운로드](https://git-scm.com/downloads)
-* [.NET Core 10.0 다운로드](https://dotnet.microsoft.com/ko-kr/download/dotnet/10.0)
-* [Node.js v20.12.2 LTS 다운로드](https://nodejs.org/en/download)
-* [Windows, Linux 및 macOS에 PowerShell 설치](https://learn.microsoft.com/ko-kr/powershell/scripting/install/install-powershell?view=powershell-7.5)
+설치가 끝나면 다음 명령을 사용할 수 있습니다.
 
-설치 관리자를 이용한 설치는 대부분 권장되며 간단한 설치 방법을 제공합니다. 
+| 프로그램 | 용도 | 확인 명령 |
+|---|---|---|
+| .NET SDK 10 GA | HandStack 서버 빌드 및 실행 | `dotnet --list-sdks` |
+| Node.js LTS와 npm | 화면 리소스와 Node.js 패키지 관리 | `node --version`, `npm --version` |
+| Git | HandStack 소스 코드 내려받기 | `git --version` |
+| curl | 설치 파일과 HTTP 리소스 내려받기 | `curl --version` |
+| gulp-cli | 화면 리소스 번들링 | `gulp --version` |
+| LibMan CLI | 클라이언트 라이브러리 복원 | `libman --version` |
+| PowerShell 7 | HandStack 자동화 스크립트 실행 | `pwsh --version` |
 
-만약 버전 업데이트 자동화 기능이 필요하다면 .NET Core와 Node.js같은 프로그램을 설치하는 방법은 각 운영 체제의 특성과 설치 절차를 이해하는 것을 필요로 합니다.
+:::info 설치 전에 확인하세요
 
-이러한 작업은 사용자의 시스템에 변경을 가하므로 보안 및 권한 문제를 고려해서 자신의 환경에 적합한 안정적이고 신뢰할 수 있는 설치 스크립트를 만들고 테스트해야 합니다. 다음의 패키지 관리자 명령 프롬프트 예시를 참고하세요.
+- 설치 파일을 내려받으려면 인터넷 연결이 필요합니다.
+- 이미 설치되어 정상 실행되는 프로그램은 해당 설치 명령을 건너뛰어도 됩니다.
+- 이 문서의 대상 환경은 **Windows 11 x64**, **macOS 14·15·26**, **Ubuntu 26.04 LTS amd64**입니다.
+- `.NET SDK` 확인 결과에는 `10.0.x-preview`나 `10.0.x-rc`가 아닌 정식 `10.0.x` 버전이 있어야 합니다.
 
-## Windows 10+ 에서 명령 프롬프트로 설치하기
+:::
 
-> 이 과정은 관리자 권한이 필요할 수 있으며, 설치 중에 권한 상승을 요구하는 메시지가 표시될 수 있습니다. 모든 패키지를 설치하고 환경 변수가 적용된 명령 프롬프트를 사용하기 위해 창을 다시 시작하거나 시스템을 재부팅하는 것을 권장합니다.
+## 한 번에 설치하기
 
-명령 프롬프트 창을 열기 위해 Windows 키 + R을 누르고, 나타나는 창에 cmd.exe를 입력하고 엔터를 누릅니다.
+설치 과정을 자동으로 진행하려면 사용 중인 운영체제 탭에서 스크립트를 파일로 저장한 뒤 실행하세요. 스크립트는 이미 사용할 수 있는 도구를 건너뛰므로 같은 사용자 계정에서 다시 실행할 수 있습니다.
 
-### Winget 을 이용한 Git 설치
+:::warning
 
-Git을 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 2.44.0+을 설치합니다.
+스크립트를 실행하기 전에 내용을 확인하세요. macOS와 Ubuntu에서는 스크립트 전체에 `sudo`를 붙이지 말고 일반 사용자 계정으로 실행합니다.
 
-```bash
-winget install -e --id=Git.Git
-```
+:::
 
-### Winget 을 이용한 .NET Core 설치
+<Tabs groupId="operating-system">
+<TabItem value="windows" label="Windows 11" default>
 
-.NET 10.0을 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 .NET Core 10.0을 설치합니다.
+### Windows 11
 
-```bash
-winget install -e --id=Microsoft.DotNet.SDK.10
-```
+다음 내용을 `windows-bootstrapper.ps1`로 인코딩을 `UTF-8 with BOM` 으로 저장한다.
 
-### Winget 을 이용한 Node.js 설치
+```powershell
+#requires -Version 5.1
 
-Node.js LTS를 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 Node.js v20.12.2+ LTS를 설치합니다.
+[CmdletBinding()]
+param()
 
-```bash
-winget install -e --id=OpenJS.NodeJS.LTS
-```
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
 
-### Winget 을 이용한 PowerShell 설치
+function Test-Command {
+    param([Parameter(Mandatory)][string]$Name)
 
-PowerShell을 설치하는 방법은 명령 프롬프트를 열고 다음 명령을 실행하여 최신 버전의 PowerShell 을 설치합니다.
+    return $null -ne (Get-Command $Name -ErrorAction SilentlyContinue)
+}
 
-```bash
-winget install -e --id=Microsoft.PowerShell
-```
+function Update-ProcessPath {
+    $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+    $env:Path = (@($machinePath, $userPath) | Where-Object { $_ }) -join ';'
+}
+
+function Add-UserPath {
+    param([Parameter(Mandatory)][string]$Directory)
 
-업데이트 할 패키지를 검색하기 위해 다음 명령을 실행합니다.
+    $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+    $userPathEntries = @($userPath -split ';' | Where-Object { $_ })
+    if ($userPathEntries -notcontains $Directory) {
+        $newUserPath = (@($userPathEntries) + $Directory) -join ';'
+        [Environment]::SetEnvironmentVariable('Path', $newUserPath, 'User')
+    }
 
-```bash
-winget search Git.Git
-winget search Microsoft.DotNet
-winget search OpenJS.NodeJS
-winget search cURL.cURL
-winget search Microsoft.PowerShell
-```
-
-설치 된 패키지를 최신 버전으로 업데이트하는 방법은 다음과 같습니다.
-
-```bash
-winget upgrade -e --id=<package-id>
-```
-
-## macOS 에서 명령 프롬프트로 설치하기
-
-> .NET Core 10.0 의 경우 macOS 12+ (Monterey) 이상을 지원합니다. macOS 11 (Big Sur) 포함 이하 버전에서는 Homebrew 와 같은 패키지 관리자에서 설치 오류가 발생하지만 [.NET Core 10.0 다운로드](https://dotnet.microsoft.com/ko-kr/download/dotnet/10.0) 에서 직접 macOS 설치 관리자를 다운로드 받아 설치 할 수 있으나 공식적으로 지원하지 않습니다.
-
-터미널(Terminal) 창을 열기 위해 Spotlight 검색(Cmd + Space)을 이용하여 Terminal을 찾거나, Finder에서 Applications > Utilities > Terminal을 찾아 실행합니다.
-
-### Homebrew 를 이용한 Git 설치
-
-```bash
-brew install git
-```
-
-위의 명령어는 Git 2.44을 다운로드 하고 설치합니다.
-
-### Homebrew 를 이용한 .NET Core 설치
-
-```bash
-brew install --cask dotnet-sdk
-```
-
-위의 명령어는 .NET Core 10.0+ 을 다운로드 하고 설치합니다.
-
-### Homebrew 를 이용한 Node.js 설치
-
-```bash
-brew install node@20
-```
-
-위의 명령어는 Node.js v20.12.2 LTS 을 다운로드 하고 설치합니다.
-
-Homebrew 명령으로 설치되는 위치는 /opt/homebrew/opt/node@20 입니다. 이 경로를 시스템의 PATH에 추가해야 node 명령을 편리하게 사용할 수 있습니다. 이를 위해 터미널에서 다음 명령을 실행합니다.
-
-```bash
-echo 'export PATH="/opt/homebrew/opt/node@20/bin:$PATH"' >> ~/.zprofile
-source ~/.zprofile
-```
-
-### Homebrew 를 이용한 curl 설치
-
-```bash
-brew install curl
-```
-
-위의 명령어는 curl 을 다운로드 하고 설치합니다.
-
-### Homebrew 를 이용한 powershell 설치
-
-```bash
-brew install powershell
-```
-
-위의 명령어는 powershell 을 다운로드 하고 설치합니다.
-
-이렇게 하면 CLI 에서 을 macOS 에 설치할 수 있습니다. 이 과정은 관리자 권한이 필요할 수 있습니다.
-
-Homebrew를 사용하여 업데이트가 필요한 패키지의 목록을 확인하려면 brew outdated 명령어를 사용하면 됩니다. 이 명령어는 현재 설치된 패키지 중에서 업데이트가 가능한 패키지의 목록을 보여줍니다.
-
-```bash
-brew outdated
-```
-
-설치 된 패키지를 최신 버전으로 업데이트하는 방법은 다음과 같습니다.
-
-```bash
-brew upgrade <package-id>
-```
-
-## Ubuntu 22.04에서 명령 프롬프트로 설치하기
-
-터미널(Terminal) 창을 열기 위해 Dash 검색(Alt + F2)을 이용하여 Terminal을 찾거나, Show Applications에서 Terminal을 찾아 실행합니다.
-
-### apt 를 이용한 Git 설치
-
-```bash
-sudo apt install -y git
-```
-
-위의 명령어는 Git 2.44을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
-
-### apt, apt-get 를 이용한 .NET Core 설치
-
-```bash
-# Microsoft 패키지 리포지토리 등록
-sudo add-apt-repository ppa:dotnet/backports
-sudo apt update
-
-sudo apt-get install -y dotnet-sdk-10.0
-sudo apt-get install -y aspnetcore-runtime-10.0
-sudo apt-get install -y dotnet-runtime-10.0
-```
-
-위의 명령어는 .NET Core 10.0+ 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
-
-만약 기존 dotnet 버전을 삭제 후 재설치하려면 다음 명령어로 기존 dotnet 버전을 삭제후 설치를 진행하세요.
-
-```bash
-sudo apt-get remove --purge 'dotnet*'
-sudo apt-get autoremove
-```
-
-### apt-get 를 이용한 Node.js 설치
-
-```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-
-위의 명령어는 Node.js v20.12.2 LTS 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
-
-### apt 를 이용한 curl 설치
-
-```bash
-sudo apt install -y curl
-```
-
-위의 명령어는 curl 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
-
-### apt 를 이용한 powershell 설치
-
-```bash
-sudo apt install -y powershell
-```
-
-위의 명령어는 powershell 을 다운로드하고, 설치를 관리자 권한으로 실행합니다.
-
-
-apt를 사용하여 업데이트가 필요한 패키지의 목록을 확인하려면 apt list --upgradable 명령어를 사용하면 됩니다. 이 명령어는 현재 설치된 패키지 중에서 업데이트가 가능한 패키지의 목록을 보여줍니다.
-
-```bash
-apt list --upgradable
-```
-
-설치 된 패키지를 최신 버전으로 업데이트하는 방법은 다음과 같습니다.
-
-```bash
-sudo apt upgrade <package-id>
-```
-
-## 프로그램 설치 확인하기
-
-설치가 제대로 되었는지 확인하려면, 명령 프롬프트에 Git, .NET Core, Node.js 실행을 위한 환경 변수가 적용되기 위해, 새로운 명령 프롬프트 창을 실행해서 아래의 명령어를 입력해보세요.
-
-```bash
-git -v
-dotnet --version
-node -v
-curl -V
-```
-
-## CLI 도구 설치하기
-
-HandStack 화면 개발을 위해 필요한 CLI 도구를 설치합니다. 이 도구 들을 활용하여 클라이언트 측 라이브러리를 관리하고 배포를 위한 번들링 작업, 서버 프로세스 관리를 위한 서비스를 관리할 수 있습니다.
-
-### libman 설치하기
-
-**LibMan**는 .NET Core 기반의 CLI 도구로 가벼운 클라이언트 라이브러리 획득 도구입니다. 이 도구는 파일 시스템에서 또는 CDN (콘텐츠 전송 네트워크)에서 인기 있는 라이브러리 및 프레임워크를 다운로드합니다. 지원되는 CDN은 CDNJS, jsDelivr 및 unpkg 입니다.
-
-이 도구는 .NET Core 전역 도구로서 Microsoft.Web.LibraryManager.Cli NuGet 패키지에서 설치됩니다. LibMan CLI를 설치하려면 다음 명령어를 사용합니다.
-
-#### Windows 10+ 에서 명령 프롬프트로 설치하기
-
-```bash
-dotnet tool install -g Microsoft.Web.LibraryManager.Cli
-```
-
-#### macOS, Ubuntu 에서 명령 프롬프트로 설치하기
-
-```bash
-sudo dotnet tool install -g Microsoft.Web.LibraryManager.Cli
-```
-
-설치가 완료 되면 CLI 에서 libman 명령어를 사용할 수 있습니다.
-
-클라이언트 라이브러리 목록은 libman.json 파일에 다음과 같은 형식으로 정의되어 있습니다. 
-
-```json
-{
-  "version": "1.0",
-  "defaultProvider": "cdnjs",
-  "libraries": [
-	{
-	  "library": "jquery@3.4.1",
-	  "destination": "wwwroot/lib/jquery/",
-	  "files": [
-		"jquery.min.js",
-		"jquery.min.map"
-	  ]
-	},
-	{
-	  "library": "bootstrap@4.3.1",
-	  "destination": "wwwroot/lib/bootstrap/",
-	  "files": [
-		"dist/css/bootstrap.min.css",
-		"dist/js/bootstrap.min.js"
-	  ]
-	}
-  ]
+    Update-ProcessPath
+}
+
+function Install-WinGetPackage {
+    param([Parameter(Mandatory)][string]$Id)
+
+    & winget.exe install `
+        --id $Id `
+        --exact `
+        --source winget `
+        --accept-package-agreements `
+        --accept-source-agreements `
+        --disable-interactivity `
+        --silent
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "WinGet 패키지 설치 실패: $Id (종료 코드 $LASTEXITCODE)"
+    }
+
+    Update-ProcessPath
+}
+
+function Get-NpmCommand {
+    # Node.js MSI가 PATH를 갱신한 직후에도 현재 프로세스에서 바로 보이지 않을 수 있다.
+    # 먼저 레지스트리 PATH를 다시 읽고, 그래도 찾지 못하면 기본 설치 위치를 직접 사용한다.
+    Update-ProcessPath
+
+    $command = Get-Command 'npm.cmd' -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($null -ne $command) {
+        return $command.Source
+    }
+
+    $defaultNpmCommand = Join-Path $env:ProgramFiles 'nodejs\npm.cmd'
+    if (Test-Path -LiteralPath $defaultNpmCommand -PathType Leaf) {
+        $nodeDirectory = Split-Path -Parent $defaultNpmCommand
+        if (($env:Path -split ';') -notcontains $nodeDirectory) {
+            $env:Path = "$nodeDirectory;$env:Path"
+        }
+        return $defaultNpmCommand
+    }
+
+    return $null
+}
+
+function Initialize-NpmGlobalDirectory {
+    $npmCommand = Get-NpmCommand
+    if (-not $npmCommand) {
+        throw 'Node.js 설치 후 npm.cmd를 찾을 수 없습니다.'
+    }
+
+    # npm 11/Node.js 24의 Windows 기본 prefix가 Program Files로 잡히면 일반 사용자
+    # 전역 설치가 실패할 수 있다. npm 조회 명령에 의존하지 않고 사용자 전용 위치를 쓴다.
+    $npmGlobalDirectory = Join-Path ([Environment]::GetFolderPath('ApplicationData')) 'npm'
+    if (-not (Test-Path -LiteralPath $npmGlobalDirectory -PathType Container)) {
+        New-Item -ItemType Directory -Path $npmGlobalDirectory -Force | Out-Null
+    }
+
+    [Environment]::SetEnvironmentVariable('NPM_CONFIG_PREFIX', $npmGlobalDirectory, 'User')
+    $env:NPM_CONFIG_PREFIX = $npmGlobalDirectory
+    Add-UserPath $npmGlobalDirectory
+
+    return $npmCommand
+}
+
+function Test-DotNet10Ga {
+    if (-not (Test-Command 'dotnet.exe')) {
+        return $false
+    }
+
+    $sdks = & dotnet.exe --list-sdks 2>$null
+    return $null -ne ($sdks | Where-Object { $_ -match '^10[.]0[.][0-9]+\s' } | Select-Object -First 1)
+}
+
+try {
+    Write-Host '=== HandStack 개발 환경 설치: Windows 11 x64 ==='
+    Write-Host '[1/8] 사전 조건 확인'
+
+    if ($env:OS -ne 'Windows_NT') {
+        throw 'Windows 전용 스크립트입니다.'
+    }
+
+    if ([Environment]::OSVersion.Version.Build -lt 22000) {
+        throw "Windows 11 전용 스크립트입니다. 현재 빌드: $([Environment]::OSVersion.Version.Build)"
+    }
+
+    $architecture = if ($env:PROCESSOR_ARCHITEW6432) {
+        $env:PROCESSOR_ARCHITEW6432
+    } else {
+        $env:PROCESSOR_ARCHITECTURE
+    }
+
+    if ($architecture -ne 'AMD64') {
+        throw "Windows x64 전용 스크립트입니다. 현재 아키텍처: $architecture"
+    }
+
+    if (-not (Test-Command 'winget.exe')) {
+        throw 'winget.exe를 찾을 수 없습니다. Microsoft Store의 앱 설치 관리자(App Installer)를 설치하거나 업데이트하세요.'
+    }
+
+    & winget.exe source update --disable-interactivity
+    if ($LASTEXITCODE -ne 0) {
+        throw "WinGet 원본 업데이트 실패 (종료 코드 $LASTEXITCODE)"
+    }
+
+    Write-Host '[2/8] .NET SDK 10 GA 확인 및 설치'
+    if (Test-DotNet10Ga) {
+        Write-Host '  .NET SDK 10 GA가 이미 설치되어 있어 건너뜁니다.'
+    } else {
+        Install-WinGetPackage 'Microsoft.DotNet.SDK.10'
+    }
+
+    $dotnetToolsDirectory = Join-Path $HOME '.dotnet\tools'
+    Add-UserPath $dotnetToolsDirectory
+
+    Write-Host '[3/8] Node.js LTS 확인 및 설치'
+    if ((Test-Command 'node.exe') -and (Test-Command 'npm.cmd')) {
+        Write-Host '  Node.js가 이미 설치되어 있어 건너뜁니다.'
+    } else {
+        Install-WinGetPackage 'OpenJS.NodeJS.LTS'
+    }
+
+    $npmCommand = Initialize-NpmGlobalDirectory
+
+    Write-Host '[4/8] Git 확인 및 설치'
+    if (Test-Command 'git.exe') {
+        Write-Host '  Git이 이미 설치되어 있어 건너뜁니다.'
+    } else {
+        Install-WinGetPackage 'Git.Git'
+    }
+
+    Write-Host '[5/8] curl 확인 및 설치'
+    if (Test-Command 'curl.exe') {
+        Write-Host '  curl이 이미 설치되어 있어 건너뜁니다.'
+    } else {
+        Install-WinGetPackage 'cURL.cURL'
+    }
+
+    Write-Host '[6/8] gulp-cli 확인 및 설치'
+    if (Test-Command 'gulp.cmd') {
+        Write-Host '  gulp-cli가 이미 설치되어 있어 건너뜁니다.'
+    } else {
+        & $npmCommand install --global gulp-cli
+        if ($LASTEXITCODE -ne 0) {
+            throw "gulp-cli 설치 실패 (종료 코드 $LASTEXITCODE)"
+        }
+    }
+
+    Write-Host '[7/8] Microsoft.Web.LibraryManager.Cli 확인 및 설치'
+    if (Test-Command 'libman.exe') {
+        Write-Host '  libman이 이미 설치되어 있어 건너뜁니다.'
+    } else {
+        & dotnet.exe tool install --global Microsoft.Web.LibraryManager.Cli
+        if ($LASTEXITCODE -ne 0) {
+            throw "LibMan CLI 설치 실패 (종료 코드 $LASTEXITCODE)"
+        }
+    }
+
+    Write-Host '[8/8] PowerShell 확인 및 설치'
+    if (Test-Command 'pwsh.exe') {
+        Write-Host '  PowerShell이 이미 설치되어 있어 건너뜁니다.'
+    } else {
+        & dotnet.exe tool install --global PowerShell
+        if ($LASTEXITCODE -ne 0) {
+            throw "PowerShell 설치 실패 (종료 코드 $LASTEXITCODE)"
+        }
+    }
+
+    Write-Host
+    Write-Host '=== 설치 결과 ==='
+    Write-Host "Windows:    $([Environment]::OSVersion.VersionString)"
+    Write-Host '.NET SDK:'
+    & dotnet.exe --list-sdks
+    Write-Host "Node.js:    $(& node.exe --version)"
+    Write-Host "npm:        $(& npm.cmd --version)"
+    Write-Host "PowerShell: $(& pwsh.exe --version)"
+    Write-Host "Git:        $(& git.exe --version)"
+    Write-Host "curl:       $((& curl.exe --version | Select-Object -First 1))"
+    Write-Host 'gulp-cli:'
+    & gulp.cmd --version
+    Write-Host "libman:     $(& libman.exe --version)"
+    Write-Host
+    Write-Host '모든 구성 요소가 설치되었습니다. 새 터미널에서도 사용자 PATH 설정이 적용됩니다.'
+} catch {
+    Write-Error "설치 실패: $($_.Exception.Message)"
+    exit 1
 }
 ```
 
-이 파일은 프로젝트의 `handstack/2.Modules/wwwroot/libman.json` 에 있습니다. 라이브러리를 추가하거나 제거하려면 libman.json 파일을 편집하고 libman restore 명령을 실행합니다. 이 명령은 libman.json 파일에 정의된 모든 라이브러리를 다운로드합니다.
+관리자 권한으로 PowerShell에서 실행한다. 일반 사용자 권한으로 실행 하면, 시스템 범위 패키지 설치 시 WinGet이 UAC 승인을 요청할 수 있다.
 
-> 통합 개발 환경으로 Visual Studio 2022 를 사용하는 경우, 프로젝트를 열면 libman.json 파일을 인식하여 변경 할 때 마다 자동으로 업데이트 됩니다.
-
-libman.json 파일의 라이브러리는 HandStack 프로젝트 내부의 다음의 위치에 배치되어야 하며, 이 위치는 libman.json 파일의 destination 속성에 정의되어 있습니다.
-
-### pm2 설치하기
-
-PM2는 Node.js 애플리케이션을 위한 프로덕션 프로세스 매니저로, 내장된 로드 밸런서를 가지고 있습니다. 
-
-이 도구는 Node.js 전역 도구로서 pm2 npm 패키지에서 설치됩니다. pm2 CLI를 설치하려면 다음 명령어를 사용합니다.
-
-#### Windows 10+ 에서 명령 프롬프트로 설치하기
-```bash
-npm install -g pm2
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\windows-bootstrapper.ps1
 ```
 
-#### macOS, Ubuntu 에서 명령 프롬프트로 설치하기
+</TabItem>
+<TabItem value="macos" label="macOS">
+
+### macOS
+
+다음 내용을 `macos-bootstrapper.sh`로 저장한다.
 
 ```bash
-sudo npm install -g pm2
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly NODE_LTS_FORMULA="node@24"
+
+on_error() {
+    local exit_code=$?
+    printf '\n설치 실패: %s번째 줄, 종료 코드 %s\n' "${BASH_LINENO[0]}" "$exit_code" >&2
+    exit "$exit_code"
+}
+trap on_error ERR
+
+ensure_profile_line() {
+    local line=$1
+    touch "$HOME/.zprofile"
+    if ! grep -Fqx "$line" "$HOME/.zprofile"; then
+        printf '\n%s\n' "$line" >> "$HOME/.zprofile"
+    fi
+}
+
+has_dotnet_10_ga() {
+    command -v dotnet >/dev/null 2>&1 || return 1
+    dotnet --list-sdks 2>/dev/null | awk '
+        $1 ~ /^10[.]0[.][0-9]+$/ { found = 1 }
+        END { exit(found ? 0 : 1) }
+    '
+}
+
+echo "=== HandStack 개발 환경 설치: macOS ==="
+echo "[1/8] 사전 조건 확인 및 Homebrew 설치"
+
+if [[ $(uname -s) != "Darwin" ]]; then
+    echo "macOS 전용 스크립트입니다." >&2
+    exit 1
+fi
+
+if [[ ${EUID} -eq 0 ]]; then
+    echo "이 스크립트 자체를 root로 실행하지 마세요. 일반 사용자로 실행하면 필요한 경우에만 sudo 인증을 요청합니다." >&2
+    exit 1
+fi
+
+macos_version="$(sw_vers -productVersion)"
+macos_major_version="${macos_version%%.*}"
+case "$macos_major_version" in
+    14|15|26) ;;
+    *)
+        echo "macOS 14, 15 또는 26 전용 스크립트입니다. 현재 버전: $macos_version" >&2
+        exit 1
+        ;;
+esac
+
+machine_architecture="$(uname -m)"
+case "$machine_architecture" in
+    arm64)
+        dotnet_architecture="arm64"
+        homebrew_binary="/opt/homebrew/bin/brew"
+        ;;
+    x86_64)
+        dotnet_architecture="x64"
+        homebrew_binary="/usr/local/bin/brew"
+        ;;
+    *)
+        echo "지원하지 않는 아키텍처입니다: $machine_architecture" >&2
+        exit 1
+        ;;
+esac
+
+if ! xcode-select -p >/dev/null 2>&1; then
+    echo "Xcode Command Line Tools가 필요합니다. 'xcode-select --install'을 실행해 설치를 마친 뒤 다시 실행하세요." >&2
+    exit 1
+fi
+
+if [[ ! -x $homebrew_binary ]]; then
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+if [[ ! -x $homebrew_binary ]]; then
+    echo "Homebrew 실행 파일을 찾을 수 없습니다: $homebrew_binary" >&2
+    exit 1
+fi
+
+eval "$("$homebrew_binary" shellenv)"
+homebrew_profile_line="eval \"\$($homebrew_binary shellenv)\""
+ensure_profile_line "$homebrew_profile_line"
+brew update
+
+temporary_directory="$(mktemp -d)"
+cleanup() {
+    rm -rf -- "$temporary_directory"
+}
+trap cleanup EXIT
+
+dotnet_root="$HOME/.dotnet"
+dotnet_tools_directory="$dotnet_root/tools"
+export DOTNET_ROOT="$dotnet_root"
+export PATH="$dotnet_root:$dotnet_tools_directory:$PATH"
+ensure_profile_line 'export DOTNET_ROOT="$HOME/.dotnet"'
+ensure_profile_line 'export PATH="$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH"'
+
+echo "[2/8] .NET SDK 10 GA 확인 및 설치"
+if has_dotnet_10_ga; then
+    echo "  .NET SDK 10 GA가 이미 설치되어 있어 건너뜁니다."
+else
+    dotnet_install_script="$temporary_directory/dotnet-install.sh"
+    curl -fsSL https://dot.net/v1/dotnet-install.sh -o "$dotnet_install_script"
+    chmod +x "$dotnet_install_script"
+    "$dotnet_install_script" \
+        --channel 10.0 \
+        --quality ga \
+        --architecture "$dotnet_architecture" \
+        --install-dir "$dotnet_root"
+fi
+
+echo "[3/8] Node.js LTS 확인 및 설치"
+if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+    echo "  Node.js가 이미 설치되어 있어 건너뜁니다."
+else
+    brew install "$NODE_LTS_FORMULA"
+    node_lts_binary_directory="$(brew --prefix "$NODE_LTS_FORMULA")/bin"
+    export PATH="$node_lts_binary_directory:$PATH"
+    node_profile_line="export PATH=\"$node_lts_binary_directory:\$PATH\""
+    ensure_profile_line "$node_profile_line"
+fi
+
+echo "[4/8] Git 확인 및 설치"
+if command -v git >/dev/null 2>&1 && git --version >/dev/null 2>&1; then
+    echo "  Git이 이미 설치되어 있어 건너뜁니다."
+else
+    brew install git
+fi
+
+echo "[5/8] curl 확인 및 설치"
+if command -v curl >/dev/null 2>&1 && curl --version >/dev/null 2>&1; then
+    echo "  curl이 이미 설치되어 있어 건너뜁니다."
+else
+    brew install curl
+    curl_binary_directory="$(brew --prefix curl)/bin"
+    export PATH="$curl_binary_directory:$PATH"
+    curl_profile_line="export PATH=\"$curl_binary_directory:\$PATH\""
+    ensure_profile_line "$curl_profile_line"
+fi
+
+echo "[6/8] gulp-cli 확인 및 설치"
+if command -v gulp >/dev/null 2>&1 && gulp --version >/dev/null 2>&1; then
+    echo "  gulp-cli가 이미 설치되어 있어 건너뜁니다."
+else
+    npm install --global gulp-cli
+fi
+
+echo "[7/8] Microsoft.Web.LibraryManager.Cli 확인 및 설치"
+if command -v libman >/dev/null 2>&1 && libman --version >/dev/null 2>&1; then
+    echo "  libman이 이미 설치되어 있어 건너뜁니다."
+else
+    dotnet tool install --global Microsoft.Web.LibraryManager.Cli
+fi
+
+echo "[8/8] PowerShell 확인 및 설치"
+if command -v pwsh >/dev/null 2>&1 && pwsh --version >/dev/null 2>&1; then
+    echo "  PowerShell이 이미 설치되어 있어 건너뜁니다."
+else
+    dotnet tool install --global PowerShell
+fi
+
+echo
+echo "=== 설치 결과 ==="
+printf 'macOS:      %s (%s)\n' "$macos_version" "$machine_architecture"
+printf '.NET SDK:\n%s\n' "$(dotnet --list-sdks)"
+printf 'Node.js:    %s\n' "$(node --version)"
+printf 'npm:        %s\n' "$(npm --version)"
+printf 'PowerShell: %s\n' "$(pwsh --version)"
+printf 'Git:        %s\n' "$(git --version)"
+printf 'curl:       %s\n' "$(curl --version | sed -n '1p')"
+printf 'gulp-cli:\n%s\n' "$(gulp --version)"
+printf 'libman:     %s\n' "$(libman --version)"
+echo
+echo "모든 구성 요소가 설치되었습니다. 새 로그인 셸에서도 ~/.zprofile의 PATH 설정이 적용됩니다."
 ```
 
-주요 기능으로 프로그램이 장애가	발생하면 자동으로 재시작하고, 로그를 관리하며, 멀티 프로세스를 관리할 수 있습니다.
+실행 권한을 부여한 뒤 일반 사용자 계정에서 실행한다. 스크립트 전체에 `sudo`를 붙이지 않는다.
 
-> PM2는 기본적으로 Node.js 애플리케이션을 실행하는 데 사용되며, HandStack 의 ack 서버 프로그램을 실행할 때도 사용 가능합니다.
-
-### gulp 설치하기
-
-Gulp는 Node.js 기반의 Task 업무 및 번들링 자동화 도구로, 반복적인 작업들을 위해 개발된 도구입니다.
-
-이 도구는 Node.js 전역 도구로서 Gulp npm 패키지에서 설치됩니다. Gulp CLI를 설치하려면 다음 명령어를 사용합니다.
-
-#### Windows 10+ 에서 명령 프롬프트로 설치하기
 ```bash
-npm install -g gulp-cli
+chmod +x ./macos-bootstrapper.sh
+./macos-bootstrapper.sh
 ```
 
-#### macOS, Ubuntu 에서 명령 프롬프트로 설치하기
+설치 직후 현재 터미널에 프로필 설정을 다시 적용하려면 다음 명령을 실행한다.
 
 ```bash
-sudo npm install -g gulp-cli
+source "$HOME/.zprofile"
 ```
 
-주요 기능은 배포를 위한 CSS, JS, fonts, image 등의 리소스 최적화를 수행합니다.
+</TabItem>
+<TabItem value="ubuntu" label="Ubuntu 26.04">
+
+### Ubuntu 26.04
+
+다음 내용을 `ubuntu-bootstrapper.sh`로 저장한다.
+
+```bash
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly REQUIRED_UBUNTU_VERSION="26.04"
+readonly DOTNET_SDK_PACKAGE="dotnet-sdk-10.0"
+
+on_error() {
+    local exit_code=$?
+    printf '\n설치 실패: %s번째 줄, 종료 코드 %s\n' "${BASH_LINENO[0]}" "$exit_code" >&2
+    exit "$exit_code"
+}
+trap on_error ERR
+
+if [[ ${EUID} -eq 0 ]]; then
+    echo "이 스크립트 자체를 root로 실행하지 마세요. 일반 사용자로 실행하면 필요한 단계에서만 sudo를 사용합니다." >&2
+    exit 1
+fi
+
+if [[ ! -r /etc/os-release ]]; then
+    echo "/etc/os-release를 읽을 수 없습니다." >&2
+    exit 1
+fi
+
+# shellcheck disable=SC1091
+source /etc/os-release
+if [[ ${ID:-} != "ubuntu" || ${VERSION_ID:-} != "$REQUIRED_UBUNTU_VERSION" ]]; then
+    echo "Ubuntu ${REQUIRED_UBUNTU_VERSION} 전용 스크립트입니다. 현재 환경: ${PRETTY_NAME:-알 수 없음}" >&2
+    exit 1
+fi
+
+architecture="$(dpkg --print-architecture)"
+if [[ $architecture != "amd64" ]]; then
+    echo "이 문서는 linux-x64/amd64를 대상으로 합니다. 현재 아키텍처: $architecture" >&2
+    exit 1
+fi
+
+sudo_apt() {
+    sudo env DEBIAN_FRONTEND=noninteractive apt-get "$@"
+}
+
+has_dotnet_10_ga() {
+    command -v dotnet >/dev/null 2>&1 || return 1
+    dotnet --list-sdks 2>/dev/null | awk '
+        $1 ~ /^10[.]0[.][0-9]+$/ { found = 1 }
+        END { exit(found ? 0 : 1) }
+    '
+}
+
+echo "=== HandStack 개발 환경 설치: Ubuntu 26.04 ==="
+echo "[1/8] 사전 조건 확인 및 기본 패키지 설치"
+sudo -v
+sudo_apt update
+sudo_apt install -y ca-certificates curl gnupg apt-transport-https
+
+temporary_directory="$(mktemp -d)"
+cleanup() {
+    rm -rf -- "$temporary_directory"
+}
+trap cleanup EXIT
+
+echo "[2/8] .NET SDK 10 GA 확인 및 설치"
+if has_dotnet_10_ga; then
+    echo "  .NET SDK 10 GA가 이미 설치되어 있어 건너뜁니다."
+else
+    sudo_apt install -y "$DOTNET_SDK_PACKAGE"
+fi
+
+# PowerShell과 LibMan 같은 dotnet 전역 도구는 현재 사용자의 ~/.dotnet/tools에 설치된다.
+dotnet_tools_directory="$HOME/.dotnet/tools"
+export PATH="$PATH:$dotnet_tools_directory"
+profile_line='export PATH="$PATH:$HOME/.dotnet/tools"'
+touch "$HOME/.profile"
+if ! grep -Fqx "$profile_line" "$HOME/.profile"; then
+    printf '\n%s\n' "$profile_line" >> "$HOME/.profile"
+fi
+
+echo "[3/8] Node.js LTS 확인 및 설치"
+if command -v node >/dev/null 2>&1 && node --version >/dev/null 2>&1; then
+    echo "  Node.js가 이미 설치되어 있어 건너뜁니다."
+else
+    nodesource_script="$temporary_directory/nodesource_setup.sh"
+    curl -fsSL https://deb.nodesource.com/setup_lts.x -o "$nodesource_script"
+    sudo -E bash "$nodesource_script"
+    sudo_apt install -y nodejs
+fi
+
+echo "[4/8] Git 확인 및 설치"
+if command -v git >/dev/null 2>&1 && git --version >/dev/null 2>&1; then
+    echo "  Git이 이미 설치되어 있어 건너뜁니다."
+else
+    sudo_apt install -y git
+fi
+
+echo "[5/8] curl 확인 및 설치"
+if command -v curl >/dev/null 2>&1 && curl --version >/dev/null 2>&1; then
+    echo "  curl이 이미 설치되어 있어 건너뜁니다."
+else
+    sudo_apt install -y curl
+fi
+
+echo "[6/8] gulp-cli 확인 및 설치"
+if command -v gulp >/dev/null 2>&1 && gulp --version >/dev/null 2>&1; then
+    echo "  gulp-cli가 이미 설치되어 있어 건너뜁니다."
+else
+    sudo npm install --global gulp-cli
+fi
+
+echo "[7/8] Microsoft.Web.LibraryManager.Cli 확인 및 설치"
+if command -v libman >/dev/null 2>&1 && libman --version >/dev/null 2>&1; then
+    echo "  libman이 이미 설치되어 있어 건너뜁니다."
+else
+    dotnet tool install --global Microsoft.Web.LibraryManager.Cli
+fi
+
+echo "[8/8] PowerShell 확인 및 설치"
+if command -v pwsh >/dev/null 2>&1 && pwsh --version >/dev/null 2>&1; then
+    echo "  PowerShell이 이미 설치되어 있어 건너뜁니다."
+else
+    dotnet tool install --global PowerShell
+fi
+
+echo
+echo "=== 설치 결과 ==="
+printf 'Ubuntu:    %s\n' "$PRETTY_NAME"
+printf '.NET SDK:\n%s\n' "$(dotnet --list-sdks)"
+printf 'Node.js:   %s\n' "$(node --version)"
+printf 'npm:       %s\n' "$(npm --version)"
+printf 'PowerShell:%s\n' "$(pwsh --version)"
+printf 'Git:       %s\n' "$(git --version)"
+printf 'curl:      %s\n' "$(curl --version | sed -n '1p')"
+printf 'gulp-cli:\n%s\n' "$(gulp --version)"
+printf 'libman:    %s\n' "$(libman --version)"
+echo
+echo "모든 구성 요소가 설치되었습니다. 새 로그인 셸을 열면 ~/.profile의 PATH 설정도 적용됩니다."
+```
+
+실행 권한을 부여한 뒤 **일반 사용자 계정**에서 실행한다. 스크립트 전체에 `sudo`를 붙이지 않는다.
+
+```bash
+chmod +x ./ubuntu-bootstrapper.sh
+./ubuntu-bootstrapper.sh
+```
+
+설치 직후 현재 터미널에 프로필 설정을 다시 적용하려면 다음 명령을 실행한다.
+
+```bash
+source "$HOME/.profile"
+```
+
+</TabItem>
+</Tabs>
+
+
+<Tabs groupId="operating-system" queryString="os">
+<TabItem value="windows" label="Windows 11" default>
+
+## Windows 11에서 설치하기
+
+Windows에서는 **Windows PowerShell 5.1**과 WinGet을 사용합니다. 프로그램 설치 중 사용자 계정 컨트롤(UAC) 창이 표시되면 내용을 확인한 뒤 승인하세요.
+
+### 1. Windows PowerShell 열기
+
+1. 시작 메뉴에서 `Windows PowerShell`을 검색합니다.
+2. **관리자 권한으로 실행**을 선택합니다.
+3. 다음 명령을 실행해 Windows 버전, CPU 아키텍처, WinGet을 확인합니다.
+
+```powershell
+[Environment]::OSVersion.Version
+$env:PROCESSOR_ARCHITECTURE
+winget.exe --version
+```
+
+Windows 빌드는 `22000` 이상, 아키텍처는 `AMD64`여야 합니다. `winget.exe`를 찾을 수 없다면 Microsoft Store에서 [앱 설치 관리자](https://apps.microsoft.com/detail/9nblggh4nns1)를 설치하거나 업데이트한 뒤 Windows에 다시 로그인하세요.
+
+WinGet 패키지 정보를 갱신합니다.
+
+```powershell
+winget.exe source update --disable-interactivity
+```
+
+### 2. .NET SDK 10 설치
+
+```powershell
+winget.exe install --id Microsoft.DotNet.SDK.10 --exact --source winget `
+  --accept-package-agreements --accept-source-agreements
+```
+
+설치가 끝나면 정식 버전이 표시되는지 확인합니다.
+
+```powershell
+dotnet.exe --list-sdks
+```
+
+결과에 `10.0.`으로 시작하고 `-preview`나 `-rc`가 붙지 않은 버전이 하나 이상 있으면 정상입니다.
+
+### 3. Node.js LTS와 Git 설치
+
+```powershell
+winget.exe install --id OpenJS.NodeJS.LTS --exact --source winget `
+  --accept-package-agreements --accept-source-agreements
+
+winget.exe install --id Git.Git --exact --source winget `
+  --accept-package-agreements --accept-source-agreements
+```
+
+Windows 11에는 일반적으로 `curl.exe`가 포함되어 있습니다. 다음 명령에서 오류가 날 때만 WinGet으로 설치하세요.
+
+```powershell
+curl.exe --version
+```
+
+```powershell
+winget.exe install --id cURL.cURL --exact --source winget `
+  --accept-package-agreements --accept-source-agreements
+```
+
+여기까지 설치했으면 **PowerShell 창을 닫고 새 PowerShell 창을 일반 사용자 권한으로 여세요.** 새로 추가된 `dotnet`, `node`, `npm`, `git` 경로가 이때 적용됩니다.
+
+### 4. 사용자 전역 도구 경로 설정
+
+npm 도구와 .NET 전역 도구를 현재 사용자 계정에 설치하도록 경로를 설정합니다. 새 PowerShell 창에서 다음 블록 전체를 한 번 실행하세요.
+
+```powershell
+$npmDirectory = Join-Path $env:APPDATA 'npm'
+$dotnetToolsDirectory = Join-Path $HOME '.dotnet\tools'
+New-Item -ItemType Directory -Path $npmDirectory -Force | Out-Null
+
+[Environment]::SetEnvironmentVariable('NPM_CONFIG_PREFIX', $npmDirectory, 'User')
+$env:NPM_CONFIG_PREFIX = $npmDirectory
+
+$userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+$pathEntries = @($userPath -split ';' | Where-Object { $_ })
+foreach ($directory in @($npmDirectory, $dotnetToolsDirectory)) {
+  if ($pathEntries -notcontains $directory) {
+    $pathEntries += $directory
+  }
+}
+[Environment]::SetEnvironmentVariable('Path', ($pathEntries -join ';'), 'User')
+$env:Path = "$npmDirectory;$dotnetToolsDirectory;$env:Path"
+```
+
+### 5. gulp-cli, LibMan, PowerShell 7 설치
+
+다음 세 명령은 관리자 PowerShell이 아닌 **현재 사용자 PowerShell**에서 실행합니다.
+
+```powershell
+npm.cmd install --global gulp-cli
+dotnet.exe tool install --global Microsoft.Web.LibraryManager.Cli
+dotnet.exe tool install --global PowerShell
+```
+
+`Tool ... is already installed` 메시지가 나오면 이미 설치된 것입니다. 최신 버전으로 갱신하려면 `install` 대신 `update`를 사용합니다.
+
+```powershell
+dotnet.exe tool update --global Microsoft.Web.LibraryManager.Cli
+dotnet.exe tool update --global PowerShell
+```
+
+### 6. 설치 결과 확인
+
+PowerShell 창을 다시 닫고 새 창을 연 뒤 다음 명령을 한 줄씩 실행합니다.
+
+```powershell
+dotnet.exe --list-sdks
+node.exe --version
+npm.cmd --version
+git.exe --version
+curl.exe --version
+gulp.cmd --version
+libman.exe --version
+pwsh.exe --version
+```
+
+모든 명령이 버전 정보를 출력하면 Windows 설치가 끝났습니다.
+
+### Windows 문제 해결
+
+- `npm.cmd`를 찾을 수 없음: PowerShell을 새로 열고 `where.exe node`, `where.exe npm`을 실행합니다. 기본 설치 경로인 `C:\Program Files\nodejs`가 PATH에 있는지도 확인합니다.
+- `gulp.cmd`를 찾을 수 없음: `npm.cmd config get prefix`가 `%APPDATA%\npm`을 가리키는지 확인하고 4단계를 다시 실행합니다.
+- `libman.exe` 또는 `pwsh.exe`를 찾을 수 없음: `dotnet.exe tool list --global`로 설치 여부를 확인하고 `%USERPROFILE%\.dotnet\tools`가 사용자 PATH에 있는지 확인합니다.
+- `curl`이 `Invoke-WebRequest`로 실행됨: `curl` 대신 실행 파일 이름인 `curl.exe`를 사용합니다.
+- .NET SDK 10이 보이지 않음: `where.exe dotnet`과 `dotnet.exe --info`로 실제 실행 경로와 아키텍처를 확인합니다.
+
+</TabItem>
+<TabItem value="macos" label="macOS">
+
+## macOS에서 설치하기
+
+macOS에서는 기본 터미널과 Homebrew를 사용합니다. Apple Silicon(`arm64`)과 Intel(`x86_64`) Mac을 모두 지원합니다.
+
+### 1. 터미널과 Xcode Command Line Tools 준비
+
+1. `Command + Space`를 누릅니다.
+2. `터미널` 또는 `Terminal`을 검색해 실행합니다.
+3. 다음 명령으로 macOS 버전과 CPU 아키텍처를 확인합니다.
+
+```bash
+sw_vers -productVersion
+uname -m
+```
+
+Xcode Command Line Tools를 설치합니다.
+
+```bash
+xcode-select --install
+```
+
+설치 창이 열리면 설치를 완료한 뒤 다음 명령을 실행합니다. 이미 설치되어 있다면 첫 번째 명령은 설치되어 있다는 메시지를 표시합니다.
+
+```bash
+xcode-select -p
+```
+
+### 2. Homebrew 설치
+
+Homebrew가 없다면 다음 명령을 실행합니다.
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+설치가 끝나면 CPU 아키텍처에 맞춰 Homebrew를 현재 터미널과 이후 터미널에 등록합니다.
+
+```bash
+if [[ "$(uname -m)" == "arm64" ]]; then
+  echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+else
+  echo 'eval "$(/usr/local/bin/brew shellenv)"' >> "$HOME/.zprofile"
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+brew --version
+brew update
+```
+
+### 3. .NET SDK 10 설치
+
+공식 설치 스크립트를 파일로 내려받은 뒤 현재 사용자 계정의 `~/.dotnet`에 설치합니다.
+
+```bash
+curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+chmod +x /tmp/dotnet-install.sh
+/tmp/dotnet-install.sh --channel 10.0 --quality ga --install-dir "$HOME/.dotnet"
+rm -f /tmp/dotnet-install.sh
+```
+
+현재 터미널과 이후 터미널에서 .NET 명령을 찾을 수 있도록 설정합니다.
+
+```bash
+echo 'export DOTNET_ROOT="$HOME/.dotnet"' >> "$HOME/.zprofile"
+echo 'export PATH="$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH"' >> "$HOME/.zprofile"
+source "$HOME/.zprofile"
+dotnet --list-sdks
+```
+
+결과에 `10.0.`으로 시작하고 `-preview`나 `-rc`가 붙지 않은 버전이 하나 이상 있어야 합니다.
+
+### 4. Node.js LTS 설치
+
+```bash
+brew install node@24
+echo 'export PATH="$(brew --prefix node@24)/bin:$PATH"' >> "$HOME/.zprofile"
+source "$HOME/.zprofile"
+node --version
+npm --version
+```
+
+`node@24`는 버전이 지정된 Homebrew formula이므로 `bin` 경로를 직접 PATH에 추가합니다. 기존 `node`와 `npm`이 이미 정상 실행되면 이 단계는 건너뛰어도 됩니다.
+
+### 5. Git과 curl 확인
+
+macOS에는 보통 Apple Git과 시스템 curl이 포함되어 있습니다.
+
+```bash
+git --version
+curl --version
+```
+
+두 명령 중 하나를 찾을 수 없을 때만 해당 프로그램을 설치합니다.
+
+```bash
+brew install git
+brew install curl
+```
+
+Homebrew curl을 설치했다면 PATH 앞쪽에 해당 경로를 추가합니다.
+
+```bash
+echo 'export PATH="$(brew --prefix curl)/bin:$PATH"' >> "$HOME/.zprofile"
+source "$HOME/.zprofile"
+```
+
+### 6. gulp-cli, LibMan, PowerShell 7 설치
+
+다음 명령은 **일반 사용자 계정**에서 실행하고 명령 앞에 `sudo`를 붙이지 않습니다.
+
+```bash
+npm install --global gulp-cli
+dotnet tool install --global Microsoft.Web.LibraryManager.Cli
+dotnet tool install --global PowerShell
+```
+
+이미 설치된 .NET 전역 도구를 갱신하려면 다음 명령을 사용합니다.
+
+```bash
+dotnet tool update --global Microsoft.Web.LibraryManager.Cli
+dotnet tool update --global PowerShell
+```
+
+### 7. 설치 결과 확인
+
+프로필을 다시 적용한 뒤 모든 명령을 확인합니다.
+
+```bash
+source "$HOME/.zprofile"
+dotnet --list-sdks
+node --version
+npm --version
+git --version
+curl --version
+gulp --version
+libman --version
+pwsh --version
+```
+
+모든 명령이 버전 정보를 출력하면 macOS 설치가 끝났습니다.
+
+### macOS 문제 해결
+
+- `brew: command not found`: Apple Silicon에서는 `eval "$(/opt/homebrew/bin/brew shellenv)"`, Intel Mac에서는 `eval "$(/usr/local/bin/brew shellenv)"`을 실행합니다.
+- `dotnet`, `libman` 또는 `pwsh`를 찾을 수 없음: `source "$HOME/.zprofile"`을 실행하고 `dotnet tool list --global` 및 `ls "$HOME/.dotnet/tools"`를 확인합니다.
+- `node` 또는 `npm`을 찾을 수 없음: `brew --prefix node@24`를 실행하고 출력 경로 아래의 `bin`이 PATH에 포함되어 있는지 확인합니다.
+- Xcode Command Line Tools 오류: `xcode-select --install`로 설치한 뒤 `xcode-select -p`가 성공하는지 확인합니다.
+- Apple Silicon에서 .NET 아키텍처가 잘못됨: `uname -m`, `file "$HOME/.dotnet/dotnet"`, `dotnet --info`를 확인합니다. Rosetta 터미널이 아닌 기본 Arm64 터미널에서 설치하는 것을 권장합니다.
+
+</TabItem>
+<TabItem value="ubuntu" label="Ubuntu 26.04">
+
+## Ubuntu 26.04에서 설치하기
+
+Ubuntu에서는 Bash와 apt를 사용합니다. 스크립트 전체를 root로 실행하지 않고, 시스템 패키지를 설치하는 명령에만 `sudo`를 사용합니다.
+
+### 1. 터미널에서 환경 확인
+
+1. `Ctrl + Alt + T`를 눌러 터미널을 엽니다.
+2. 다음 명령으로 배포판 버전과 CPU 아키텍처를 확인합니다.
+
+```bash
+. /etc/os-release
+echo "$PRETTY_NAME"
+dpkg --print-architecture
+```
+
+Ubuntu 버전은 `26.04`, 아키텍처는 `amd64`여야 합니다.
+
+기본 패키지를 설치합니다. 암호를 묻는 경우 현재 사용자 암호를 입력하세요. 입력한 암호는 화면에 표시되지 않습니다.
+
+```bash
+sudo apt-get update
+sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  ca-certificates curl gnupg apt-transport-https
+```
+
+### 2. .NET SDK 10 설치
+
+Ubuntu 26.04 기본 저장소의 .NET SDK 패키지를 설치합니다.
+
+```bash
+sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y dotnet-sdk-10.0
+dotnet --list-sdks
+```
+
+결과에 `10.0.`으로 시작하고 `-preview`나 `-rc`가 붙지 않은 버전이 하나 이상 있어야 합니다.
+
+:::warning .NET 설치 방식을 섞지 마세요
+
+apt로 설치한 .NET과 `dotnet-install.sh`로 설치한 .NET은 설치 위치와 업데이트 방법이 다릅니다. 특별한 이유가 없다면 이 문서의 apt 방식만 사용하세요.
+
+:::
+
+### 3. Node.js LTS 설치
+
+NodeSource 설치 스크립트를 먼저 파일로 내려받은 뒤 실행합니다.
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_lts.x -o /tmp/nodesource_setup.sh
+sudo -E bash /tmp/nodesource_setup.sh
+sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+rm -f /tmp/nodesource_setup.sh
+node --version
+npm --version
+```
+
+`setup_lts.x`는 실행 시점의 Node.js LTS 채널을 사용합니다. 기존 `node`와 `npm`이 이미 정상 실행되면 이 단계는 건너뛰어도 됩니다.
+
+### 4. Git과 curl 설치
+
+```bash
+sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y git curl
+git --version
+curl --version
+```
+
+curl은 1단계에서 설치했으므로 이 단계에서는 최신 상태인지 확인합니다.
+
+### 5. .NET 전역 도구 경로 설정
+
+LibMan과 PowerShell은 현재 사용자의 `~/.dotnet/tools`에 설치됩니다. 새 로그인 셸에서도 명령을 찾도록 PATH를 등록합니다.
+
+```bash
+touch "$HOME/.profile"
+profile_line='export PATH="$PATH:$HOME/.dotnet/tools"'
+grep -Fqx "$profile_line" "$HOME/.profile" || printf '\n%s\n' "$profile_line" >> "$HOME/.profile"
+export PATH="$PATH:$HOME/.dotnet/tools"
+```
+
+### 6. gulp-cli, LibMan, PowerShell 7 설치
+
+Node.js는 시스템 패키지로 설치했으므로 gulp-cli만 시스템 전역 npm 패키지로 설치합니다.
+
+```bash
+sudo npm install --global gulp-cli
+```
+
+LibMan과 PowerShell은 현재 사용자 계정에 설치해야 하므로 다음 두 명령에는 `sudo`를 붙이지 않습니다.
+
+```bash
+dotnet tool install --global Microsoft.Web.LibraryManager.Cli
+dotnet tool install --global PowerShell
+```
+
+이미 설치된 .NET 전역 도구를 갱신하려면 다음 명령을 사용합니다.
+
+```bash
+dotnet tool update --global Microsoft.Web.LibraryManager.Cli
+dotnet tool update --global PowerShell
+```
+
+### 7. 설치 결과 확인
+
+프로필을 다시 적용한 뒤 모든 명령을 확인합니다.
+
+```bash
+source "$HOME/.profile"
+dotnet --list-sdks
+node --version
+npm --version
+git --version
+curl --version
+gulp --version
+libman --version
+pwsh --version
+```
+
+모든 명령이 버전 정보를 출력하면 Ubuntu 설치가 끝났습니다.
+
+### Ubuntu 문제 해결
+
+- `libman` 또는 `pwsh: command not found`: `source "$HOME/.profile"`을 실행하고 `dotnet tool list --global`과 `ls "$HOME/.dotnet/tools"`를 확인합니다.
+- `npm: command not found`: `apt-cache policy nodejs`로 설치 상태를 확인한 뒤 3단계를 다시 실행합니다.
+- NodeSource 설치 실패: `/tmp/nodesource_setup.sh`를 다시 내려받고, 프록시나 방화벽에서 `deb.nodesource.com` 접근이 허용되는지 확인합니다.
+- .NET 설치가 충돌함: `command -v dotnet`, `readlink -f "$(command -v dotnet)"`, `dotnet --info`로 실제 사용 중인 설치 위치를 확인합니다.
+- `Permission denied` 오류: 문서에서 `sudo`가 표시된 시스템 패키지와 gulp-cli 설치 명령에만 `sudo`를 사용했는지 확인합니다. `dotnet tool install --global`에는 `sudo`를 붙이지 않습니다.
+
+</TabItem>
+</Tabs>
+
+## 설치 완료 기준
+
+사용 중인 운영체제의 마지막 확인 명령이 모두 성공하고 다음 조건을 만족하면 준비가 끝난 것입니다.
+
+- `dotnet --list-sdks`에 정식 `.NET SDK 10.0.x`가 표시됩니다.
+- `node`, `npm`, `git`, `curl`, `gulp`, `libman`, `pwsh`가 각각 버전 정보를 출력합니다.
+- 새 터미널을 열어도 같은 명령을 사용할 수 있습니다.
+
+이제 [개발 환경 설정하기](/docs/startup/install/개발-환경-설정하기)로 이동해 HandStack 소스 코드를 내려받고 빌드하세요.
+
+## 도구 업데이트하기
+
+설치 후에는 운영체제의 패키지 관리자와 각 도구의 업데이트 명령을 사용합니다.
+
+<Tabs groupId="operating-system">
+<TabItem value="windows" label="Windows 11" default>
+
+```powershell
+winget.exe upgrade --all
+npm.cmd update --global gulp-cli
+dotnet.exe tool update --global Microsoft.Web.LibraryManager.Cli
+dotnet.exe tool update --global PowerShell
+```
+
+</TabItem>
+<TabItem value="macos" label="macOS">
+
+```bash
+brew update
+brew upgrade
+npm update --global gulp-cli
+dotnet tool update --global Microsoft.Web.LibraryManager.Cli
+dotnet tool update --global PowerShell
+```
+
+`.NET SDK`를 `dotnet-install.sh`로 설치했으므로 새 SDK 기능 버전이 필요할 때는 이 문서의 .NET 설치 명령을 다시 실행합니다.
+
+</TabItem>
+<TabItem value="ubuntu" label="Ubuntu 26.04">
+
+```bash
+sudo apt-get update
+sudo apt-get upgrade
+sudo npm update --global gulp-cli
+dotnet tool update --global Microsoft.Web.LibraryManager.Cli
+dotnet tool update --global PowerShell
+```
+
+</TabItem>
+</Tabs>
+
+## 참고 자료
+
+- [.NET 10 설치](https://learn.microsoft.com/dotnet/core/install/)
+- [Node.js 릴리스와 LTS 일정](https://nodejs.org/en/about/previous-releases)
+- [WinGet install 명령](https://learn.microsoft.com/windows/package-manager/winget/install)
+- [Homebrew 설치](https://brew.sh/)
+- [NodeSource distributions](https://github.com/nodesource/distributions)
+- [LibMan CLI](https://learn.microsoft.com/aspnet/core/client-side/libman/libman-cli)
+- [PowerShell 설치](https://learn.microsoft.com/powershell/scripting/install/installing-powershell)
+- [.NET 전역 도구 설치](https://learn.microsoft.com/dotnet/core/tools/dotnet-tool-install)
