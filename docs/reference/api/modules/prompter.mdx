@@ -47,7 +47,41 @@ contracts/prompter/{ApplicationID}/{ProjectID}/{TransactionID}.xml
 ApplicationID|ProjectID|TransactionID|PromptID
 ```
 
-프롬프트 본문은 `${ParameterName}` 형태로 요청 값을 치환합니다. `authorization`, `headers`, `body` 속성처럼 값 전체를 파라미터로 받을 때는 `@ParameterName` 형식을 사용합니다.
+프롬프트 본문은 `${ParameterName}` 형태로 요청 값을 치환합니다. `authorization`, `headers`, `body` 속성처럼 값 전체를 파라미터로 받을 때는 `@ParameterName` 형식을 사용합니다. statement의 `role` 기본값은 `user`이며, 시스템 지시문으로 전달할 계약만 `role="system"`을 명시합니다. `<message>`의 `role`을 생략하면 statement role을 상속합니다.
+
+## 이미지·오디오 입력
+
+계약의 `<media>`는 `QueryObject.Parameters`에 담긴 Base64 원문을 텍스트와 분리하여 provider별 멀티모달 메시지로 전달합니다.
+
+```xml
+<statement id="GP02" seq="0" role="system">
+  <message role="user"><![CDATA[
+${UserMessage}
+  ]]></message>
+  <param id="@UserMessage" type="String" length="-1" value="" />
+  <media id="@Image1" type="Image" mimeType="image/png" required="N" />
+  <media id="@Audio1" type="Audio" mimeType="audio/wav" required="N" />
+</statement>
+```
+
+- `id`는 `<param>`과 중복될 수 없으며 대소문자를 구분하지 않습니다.
+- `type`은 `Image`, `Audio`만 허용합니다.
+- `mimeType`은 `image/png`, `image/jpeg`, `audio/wav`, `audio/mpeg` 같은 구체적인 값이어야 하며 wildcard는 허용하지 않습니다.
+- `required="Y"`인 값이 없거나 값이 유효한 Base64가 아니면 provider 호출 전에 실패합니다. `required="N"`의 빈 값은 생략합니다.
+- 파라미터 값에는 URL이나 `data:...;base64,` 접두사를 넣지 않고 Base64 데이터만 넣습니다.
+- media 파라미터는 프롬프트, authorization, headers, body, pretransaction 텍스트 치환에서 제외되고 현재 statement가 만든 마지막 `user` 메시지에 첨부됩니다. `user` 메시지가 없으면 media 전용 메시지를 만듭니다.
+
+| LLMProvider | Image | Audio | provider 요청 형식 |
+| --- | --- | --- | --- |
+| OpenAI | 지원 | 지원 (`audio/wav`, `audio/mpeg`) | Chat Completions content parts |
+| Claude | 지원 | 미지원 | Messages base64 image source |
+| Gemini | 지원 | 지원 | GenerateContent `inlineData` |
+| Ollama | 지원 | 미지원 | Chat message `images` |
+| LM Studio | 지원 | 미지원 | OpenAI 호환 `image_url` content part |
+
+provider뿐 아니라 선택한 모델도 해당 modality를 지원해야 합니다. 미지원 media는 네트워크 요청 전에 오류로 처리됩니다. prompter 내부 로그는 media 값을 `[media:유형;base64-length:길이]`로 마스킹하지만, 앞단 `transact`와 프록시 로그에도 원문을 저장하지 않도록 별도 정책을 적용해야 합니다.
+
+실행 가능한 예시는 [CLS010.xml](/sample/prompter/multimodal/CLS010.xml)과 [request.json](/sample/prompter/multimodal/request.json)에서 확인할 수 있습니다. 계약을 `contracts/prompter/HDS/LLM/CLS010.xml`에 배치하고 `LLM1`을 OpenAI 또는 Gemini의 멀티모달 모델로 설정한 뒤 `request.json`을 `/prompter/api/query`에 POST합니다.
 
 ## 주요 설정
 
@@ -122,6 +156,7 @@ ApplicationID|ProjectID|TransactionID|PromptID
 ## 운영 주의사항
 
 - API Key, endpoint, 로컬 모델 경로는 실제 값으로 계약이나 공개 문서에 남기지 않습니다.
+- Ollama의 일부 qwen3 계열 모델은 비어 있지 않은 `user` role이 없는 요청을 거부합니다. prompter는 `<message>`가 없는 기존 system-only 계약을 Ollama로 호출할 때 마지막 유효한 `system` 메시지를 `user`로 정규화하며, 메시지 본문은 복제하지 않습니다.
 - 도구 호출은 계약 선언과 `module.json` allowlist가 모두 일치할 때만 허용되도록 관리합니다.
 - MCP, CLI, 파일 body 기능은 외부 시스템이나 파일 시스템에 접근할 수 있으므로 운영 환경에서는 최소 권한 원칙을 적용합니다.
 - LLM 응답은 비결정적일 수 있으므로 업무 거래에서는 후속 검증, 스키마 검사, 실패 시 fallback 전략을 함께 설계합니다.

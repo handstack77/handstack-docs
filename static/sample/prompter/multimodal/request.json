@@ -1,0 +1,28 @@
+{
+  "ReturnType": "Json",
+  "DynamicObjects": [
+    {
+      "QueryID": "HDS|LLM|CLS010|GP0200",
+      "Parameters": [
+        {
+          "ParameterName": "@UserMessage",
+          "Value": "첨부된 이미지와 오디오를 설명해 줘",
+          "DbType": "String",
+          "Length": -1
+        },
+        {
+          "ParameterName": "@Image1",
+          "Value": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nF8AAAAASUVORK5CYII=",
+          "DbType": "String",
+          "Length": -1
+        },
+        {
+          "ParameterName": "@Audio1",
+          "Value": "UklGRiwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQgAAACAgICAgICAgA==",
+          "DbType": "String",
+          "Length": -1
+        }
+      ]
+    }
+  ]
+}

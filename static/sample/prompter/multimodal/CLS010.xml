@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper xmlns="contract.xsd">
+    <header>
+        <application>HDS</application>
+        <project>LLM</project>
+        <transaction>CLS010</transaction>
+        <datasource>LLM1</datasource>
+        <use>Y</use>
+        <desc>이미지와 오디오 입력 예제</desc>
+    </header>
+    <prompts>
+        <statement id="GP02" seq="0" use="Y" role="system" desc="멀티모달 입력 설명" maxtokens="1000" temperature="0.2">
+            <![CDATA[
+입력된 이미지와 오디오를 한국어로 간단히 설명하세요.
+            ]]>
+            <message role="user"><![CDATA[
+${UserMessage}
+            ]]></message>
+            <param id="@UserMessage" type="String" length="-1" value="" />
+            <media id="@Image1" type="Image" mimeType="image/png" required="N" />
+            <media id="@Audio1" type="Audio" mimeType="audio/wav" required="N" />
+            <outputmeta value="PromptResult:string" />
+        </statement>
+    </prompts>
+</mapper>
