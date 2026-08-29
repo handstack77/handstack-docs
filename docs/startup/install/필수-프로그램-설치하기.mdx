@@ -45,7 +45,7 @@ import TabItem from '@theme/TabItem';
 
 ### Windows 11
 
-다음 내용을 `windows-bootstrapper.ps1`로 인코딩을 `UTF-8 with BOM` 으로 저장한다.
+다음 내용을 `windows-bootstrapper.ps1`로 인코딩을 `UTF-8 with BOM` 으로 저장 합니다.
 
 ```powershell
 #requires -Version 5.1
@@ -267,7 +267,7 @@ try {
 }
 ```
 
-관리자 권한으로 PowerShell에서 실행한다. 일반 사용자 권한으로 실행 하면, 시스템 범위 패키지 설치 시 WinGet이 UAC 승인을 요청할 수 있다.
+관리자 권한으로 PowerShell에서 실행한다. 일반 사용자 권한으로 실행 하면, 시스템 범위 패키지 설치 시 WinGet이 UAC 승인을 요청할 수 있습니다.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\windows-bootstrapper.ps1
@@ -278,7 +278,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\windows-bootstrapper.p
 
 ### macOS
 
-다음 내용을 `macos-bootstrapper.sh`로 저장한다.
+다음 내용을 `macos-bootstrapper.sh`로 저장 합니다.
 
 ```bash
 #!/usr/bin/env bash
@@ -460,14 +460,14 @@ echo
 echo "모든 구성 요소가 설치되었습니다. 새 로그인 셸에서도 ~/.zprofile의 PATH 설정이 적용됩니다."
 ```
 
-실행 권한을 부여한 뒤 일반 사용자 계정에서 실행한다. 스크립트 전체에 `sudo`를 붙이지 않는다.
+실행 권한을 부여한 뒤 일반 사용자 계정에서 실행합니다. 스크립트 전체에 `sudo`를 붙이지 않습니다.
 
 ```bash
 chmod +x ./macos-bootstrapper.sh
 ./macos-bootstrapper.sh
 ```
 
-설치 직후 현재 터미널에 프로필 설정을 다시 적용하려면 다음 명령을 실행한다.
+설치 직후 현재 터미널에 프로필 설정을 다시 적용하려면 다음 명령을 실행합니다.
 
 ```bash
 source "$HOME/.zprofile"
@@ -478,7 +478,7 @@ source "$HOME/.zprofile"
 
 ### Ubuntu 26.04
 
-다음 내용을 `ubuntu-bootstrapper.sh`로 저장한다.
+다음 내용을 `ubuntu-bootstrapper.sh`로 저장 합니다.
 
 ```bash
 #!/usr/bin/env bash
@@ -618,14 +618,14 @@ echo
 echo "모든 구성 요소가 설치되었습니다. 새 로그인 셸을 열면 ~/.profile의 PATH 설정도 적용됩니다."
 ```
 
-실행 권한을 부여한 뒤 **일반 사용자 계정**에서 실행한다. 스크립트 전체에 `sudo`를 붙이지 않는다.
+실행 권한을 부여한 뒤 일반 사용자 계정에서 실행합니다. 스크립트 전체에 `sudo`를 붙이지 않습니다.
 
 ```bash
 chmod +x ./ubuntu-bootstrapper.sh
 ./ubuntu-bootstrapper.sh
 ```
 
-설치 직후 현재 터미널에 프로필 설정을 다시 적용하려면 다음 명령을 실행한다.
+설치 직후 현재 터미널에 프로필 설정을 다시 적용하려면 다음 명령을 실행합니다.
 
 ```bash
 source "$HOME/.profile"
