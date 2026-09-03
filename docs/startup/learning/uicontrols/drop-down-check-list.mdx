@@ -181,7 +181,7 @@ DropDownCheckList는 네이티브 `<select multiple>` 태그를 [tail.select](ht
 | --- | --- |
 | `controlLoad(elID, setting)` | 컨트롤 초기화. 로컬/원격 데이터소스를 읽어 옵션을 구성하고 tail.select로 감쌉니다. 보통 페이지 로더가 자동으로 호출하므로 직접 호출할 일은 거의 없습니다. |
 | `loadData(elID, dataSource, required)` | 이미 가지고 있는 데이터(`객체 설정` 형태)로 옵션 목록을 즉시 채웁니다. |
-| `dataRefresh(elID, setting, callback)` | 데이터소스를 다시 조회해서 옵션을 갱신합니다. `setting.deleteCache`가 `true`(기본값)면 기존 캐시를 지우고 새로 조회합니다. |
+| `dataRefresh(elID, setting, callback)` | 데이터소스를 다시 조회해서 옵션을 갱신합니다. `setting.deleteCache`가 `true`(기본값)면 기존 캐시를 지우고 새로 조회합니다. `callback` 생략 시 `Promise` 반환. |
 | `controlReload(elID)` | tail.select picker의 화면(UI)만 다시 그립니다. 값이나 옵션 자체를 바꾸지는 않습니다. |
 | `getValue(elID, meta)` | 선택된 옵션들의 value를 콤마(`,`)로 연결한 문자열을 반환합니다(예: `"01,03"`). 선택된 항목이 없으면 빈 문자열입니다. |
 | `setValue(elID, value, selected)` | 먼저 모든 옵션의 선택을 해제한 뒤, 콤마 문자열 또는 배열로 넘긴 값과 일치하는 옵션들만 다시 선택 상태로 만듭니다(항상 완전히 초기화 후 재선택). `selected`를 `false`로 넘기면 해당 값들을 선택된 상태가 아니라 명시적으로 `selected: false`로 설정합니다(사실상 다른 옵션과 동일하게 미선택 상태가 됨). |

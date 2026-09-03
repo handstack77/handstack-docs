@@ -23,7 +23,7 @@ sidebar_position: 70
 | `GET` | `/wwwroot/api/sync/refresh` | 대상 모듈 refresh API를 호출합니다. |
 | `GET` | `/wwwroot/api/htmx/*` | HTMX 샘플/보조 API입니다. |
 | `GET` | `/wwwroot/api/index/*` | 화면 보조 API와 거래 직접 호출 래퍼입니다. |
-| `GET` | `/wwwroot/api/dev-account/sign-in` | 개발 목적 테스트 계정 자동 로그인입니다. `AppSettings:IsEnabledDevAutoSignIn`이 `true`이고 `RunningEnvironment`가 `D`일 때만 동작하며, 그 외에는 `404`를 반환합니다. |
+| `GET`/`POST` | `/wwwroot/api/dev-account/sign-in` | 개발 목적 테스트 계정 로그인입니다. GET은 `DevAutoSignIn`의 고정 계정을 사용하고, POST는 JSON 본문의 사용자 정보를 사용합니다. `AppSettings:IsEnabledDevAutoSignIn`이 `true`이고 `RunningEnvironment`가 `D`일 때만 동작하며, 그 외에는 `404`를 반환합니다. |
 | `GET` | `/shared-files/manifest` | 공통 파일의 공개 요청 경로 목록을 반환합니다. |
 
 ## 핵심 구현
@@ -49,7 +49,27 @@ sidebar_position: 70
 | `FileSyncTokens` | `/wwwroot/api/sync/*` 호출을 허용할 Basic token 목록입니다. |
 | `BusinessServerUrl` | 화면 보조 API가 거래를 실행할 transact URL입니다. |
 | `ModuleLogFilePath` | wwwroot 모듈 로그 파일 경로입니다. |
-| `DevAutoSignIn` | `/wwwroot/api/dev-account/sign-in`이 발급할 고정 테스트 계정입니다. `UserNo`/`UserID`/`UserName`/`Email`/`Roles`와, `HandStack.Web.Entity.UserAccount`의 선택 프로필 필드를 그대로 따르는 `Celluar`/`PositionName`/`DepartmentName`/`CompanyName`/`BirthDate`/`Gender`/`Address`/`ExtendOption`을 설정합니다(빈 문자열은 미설정으로 취급). 호스트의 `AppSettings:IsEnabledDevAutoSignIn`이 `true`이고 `RunningEnvironment`가 `D`일 때만 사용됩니다. |
+| `DevAutoSignIn` | `GET /wwwroot/api/dev-account/sign-in`이 발급할 고정 테스트 계정입니다. `UserNo`/`UserID`/`UserName`/`Email`/`Roles`와, `HandStack.Web.Entity.UserAccount`의 선택 프로필 필드를 그대로 따르는 `Celluar`/`PositionName`/`DepartmentName`/`CompanyName`/`BirthDate`/`Gender`/`Address`/`ExtendOption`을 설정합니다(빈 문자열은 미설정으로 취급). POST 요청은 이 설정 대신 같은 형식의 JSON 본문을 사용합니다. 호스트의 `AppSettings:IsEnabledDevAutoSignIn`이 `true`이고 `RunningEnvironment`가 `D`일 때만 사용됩니다. |
+
+POST 요청은 다음처럼 `Content-Type: application/json`과 사용자 정보를 보냅니다. `UserID`는 필수이며, 기존 로그인 쿠키가 있으면 요청 정보와 관계없이 기존 동작처럼 `returnUrl`로 이동합니다.
+
+```json
+{
+  "UserNo": "USERNO001",
+  "UserID": "user01@handstack.kr",
+  "UserName": "사용자",
+  "Email": "user01@handstack.kr",
+  "Roles": [ "Administrator" ],
+  "Celluar": "010-0000-0000",
+  "PositionName": "담당자",
+  "DepartmentName": "업무팀",
+  "CompanyName": "HandStack",
+  "BirthDate": "2026-01-01",
+  "Gender": "M",
+  "Address": "서울특별시 중구 세종대로 110",
+  "ExtendOption": "..."
+}
+```
 
 ## 공통 파일 카탈로그
 

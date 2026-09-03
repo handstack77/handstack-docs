@@ -863,6 +863,28 @@ if (typeof module !== 'undefined' && module.exports) {
             return this;
         },
 
+        // await syn.$m.fadeAsync(el, { duration: 1000, to: 0 });
+        fadeAsync(el, options = {}) {
+            return new Promise((resolve) => {
+                const element = syn.$l.getElement(el);
+                if (!element) {
+                    resolve(null);
+                    return;
+                }
+
+                const userCallback = options.callback;
+                $manipulation.fade(element, {
+                    ...options,
+                    callback: function () {
+                        if (typeof userCallback === 'function') {
+                            userCallback.call(this);
+                        }
+                        resolve(this);
+                    }
+                });
+            });
+        },
+
         append(baseEl, tag, elID, options = {}) {
             const baseElement = syn.$l.getElement(baseEl);
             if (!baseElement || !tag || !doc) return null;
@@ -5098,10 +5120,19 @@ if (typeof module !== 'undefined' && module.exports) {
             }
         },
 
+        // syn.$l.blobToDataUri(blob, callback) 또는 await syn.$l.blobToDataUri(blob)
         blobToDataUri(blob, callback) {
-            if (!(blob instanceof Blob) || typeof callback !== 'function') {
+            if (typeof callback !== 'function') {
+                return new Promise(function (resolve, reject) {
+                    $library.blobToDataUri(blob, function (result) {
+                        if (result instanceof Error) { reject(result); } else { resolve(result); }
+                    });
+                });
+            }
+
+            if (!(blob instanceof Blob)) {
                 syn.$l.eventLog('$l.blobToDataUri', '잘못된 Blob 또는 콜백 함수가 제공되었습니다.', 'Warning');
-                if (callback) callback(new Error("잘못된 입력값"), null);
+                callback(new Error("잘못된 입력값"), null);
                 return;
             }
 
@@ -5109,6 +5140,7 @@ if (typeof module !== 'undefined' && module.exports) {
             reader.onloadend = () => {
                 if (reader.error) {
                     syn.$l.eventLog('$l.blobToDataUri', `FileReader 오류: ${reader.error}`, 'Error');
+                    callback(null);
                 } else {
                     callback(reader.result);
                 }
@@ -5155,13 +5187,16 @@ if (typeof module !== 'undefined' && module.exports) {
             }
         },
 
+        // syn.$l.blobUrlToBlob(url, callback) 또는 await syn.$l.blobUrlToBlob(url)
         blobUrlToBlob(url, callback) {
             if (typeof callback !== 'function') {
-                syn.$l.eventLog('$l.blobUrlToBlob', '콜백 함수 확인 필요', 'Warning');
-                return;
+                return new Promise(function (resolve) {
+                    $library.blobUrlToBlob(url, function (blob) { resolve(blob); });
+                });
             }
             if (!url || typeof url !== 'string') {
                 syn.$l.eventLog('$l.blobUrlToBlob', 'URL 확인 필요', 'Warning');
+                callback(null);
                 return;
             }
 
@@ -5175,16 +5210,20 @@ if (typeof module !== 'undefined' && module.exports) {
                 .then(blob => callback(blob))
                 .catch(error => {
                     syn.$l.eventLog('$l.blobUrlToBlob', `url: ${url}, 오류: ${error}`, 'Warning');
+                    callback(null);
                 });
         },
 
+        // syn.$l.blobUrlToDataUri(url, callback) 또는 await syn.$l.blobUrlToDataUri(url)
         blobUrlToDataUri(url, callback) {
             if (typeof callback !== 'function') {
-                syn.$l.eventLog('$l.blobUrlToDataUri', '콜백 함수 확인 필요', 'Warning');
-                return;
+                return new Promise(function (resolve) {
+                    $library.blobUrlToDataUri(url, function (dataUri) { resolve(dataUri); });
+                });
             }
             if (!url || typeof url !== 'string') {
                 syn.$l.eventLog('$l.blobUrlToDataUri', 'URL 확인 필요', 'Warning');
+                callback(null);
                 return;
             }
 
@@ -5193,6 +5232,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     this.blobToDataUri(blob, callback);
                 } else {
                     syn.$l.eventLog('$l.blobUrlToDataUri', 'URL에서 Blob 가져오기 실패', 'Warning');
+                    callback(null);
                 }
             });
         },
@@ -5738,9 +5778,21 @@ if (typeof module !== 'undefined' && module.exports) {
                             return Promise.resolve({ error: `${action} 메서드 확인 필요` });
                         }
 
-                        options = syn.$w.argumentsExtend({
-                            method: 'GET'
-                        }, options);
+                        const defaultOptions = {
+                            method: 'GET',
+                            mode: 'cors',
+                            cache: 'default',
+                            credentials: 'same-origin',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            redirect: 'follow',
+                            referrerPolicy: 'no-referrer-when-downgrade'
+                        };
+                        const fetchOptions = syn.$w.getFetchClientOptions ? syn.$w.getFetchClientOptions(defaultOptions) : defaultOptions;
+                        options = syn.$w.argumentsExtend(fetchOptions, options);
+
+                        if (context.$object.isNullOrUndefined(options.headers) == false && (options.headers instanceof Headers) == false) {
+                            options.headers = new Headers(options.headers);
+                        }
 
                         let response = null;
                         let requestTimeoutID = null;
@@ -5771,12 +5823,11 @@ if (typeof module !== 'undefined' && module.exports) {
                                 options.headers.append('OffsetMinutes', syn.$w.timezoneOffsetMinutes);
                             }
 
-                            const data = {
+                            const data = syn.$w.argumentsExtend(options, {
                                 method: options.method,
                                 headers: options.headers,
-                                body: raw instanceof FormData ? raw : JSON.stringify(raw),
-                                redirect: 'follow'
-                            };
+                                body: raw instanceof FormData ? raw : JSON.stringify(raw)
+                            });
 
                             if (context.$object.isNullOrUndefined(options.timeout) == false) {
                                 const controller = new AbortController();
@@ -5811,11 +5862,10 @@ if (typeof module !== 'undefined' && module.exports) {
                                 options.headers.append('OffsetMinutes', syn.$w.timezoneOffsetMinutes);
                             }
 
-                            const data = {
+                            const data = syn.$w.argumentsExtend(options, {
                                 method: options.method,
-                                headers: options.headers,
-                                redirect: 'follow'
-                            };
+                                headers: options.headers
+                            });
 
                             if (context.$object.isNullOrUndefined(options.timeout) == false) {
                                 const controller = new AbortController();
@@ -6623,48 +6673,68 @@ if (typeof module !== 'undefined' && module.exports) {
             return $network.connections.find(item => item.options.scope === channelID);
         },
 
+        // syn.$n.call(channelID, evt, params) — Promise 반환(응답 시 resolve(res), 오류 시 reject)
+        // 기존 fire-and-forget 호출부 호환을 위해 내부에서 rejection 을 흡수(await 시에는 정상 전파)
         call(channelID, evt, params) {
             const connection = this.findChannel(channelID);
             if (!connection) {
                 syn.$l.eventLog('$network.call', `Channel not found: ${channelID}`, 'Warning');
-                return;
+                const rejected = Promise.reject(new Error(`$network.call: Channel not found: ${channelID}`));
+                rejected.catch(() => { });
+                return rejected;
             }
 
-            const val = {
-                method: evt,
-                params: params,
-                success: (res) => {
-                    if (connection.options.debugOutput) {
-                        syn.$l.eventLog('$network.call.success', `"${evt}" call success, channelID: ${connection.options.scope}`, 'Information'); // Avoid logging potentially large 'res'
-                    }
-                },
-                error: (error, message) => {
-                    if (connection.options.debugOutput) {
-                        syn.$l.eventLog('$network.call.error', `"${evt}" call error: ${error}, message: ${message || ''}, channelID: ${connection.options.scope}`, 'Information');
-                    }
-                }
-            };
-            connection.call(val);
-        },
-
-        broadCast(evt, params) {
-            this.connections.forEach(connection => {
+            const promise = new Promise((resolve, reject) => {
                 const val = {
                     method: evt,
                     params: params,
                     success: (res) => {
                         if (connection.options.debugOutput) {
-                            syn.$l.eventLog('$network.broadcast.success', `"${evt}" broadcast success, channelID: ${connection.options.scope}`, 'Information');
+                            syn.$l.eventLog('$network.call.success', `"${evt}" call success, channelID: ${connection.options.scope}`, 'Information'); // Avoid logging potentially large 'res'
                         }
+                        resolve(res);
                     },
                     error: (error, message) => {
                         if (connection.options.debugOutput) {
-                            syn.$l.eventLog('$network.broadcast.error', `"${evt}" broadcast error: ${error}, message: ${message || ''}, channelID: ${connection.options.scope}`, 'Information');
+                            syn.$l.eventLog('$network.call.error', `"${evt}" call error: ${error}, message: ${message || ''}, channelID: ${connection.options.scope}`, 'Information');
                         }
+                        reject(error instanceof Error ? error : new Error(`${error}${message ? ': ' + message : ''}`));
                     }
                 };
                 connection.call(val);
             });
+
+            promise.catch(() => { });
+            return promise;
+        },
+
+        // syn.$n.broadCast(evt, params) — 모든 채널 호출을 Promise.all 로 반환
+        broadCast(evt, params) {
+            const promises = this.connections.map(connection => {
+                return new Promise((resolve, reject) => {
+                    const val = {
+                        method: evt,
+                        params: params,
+                        success: (res) => {
+                            if (connection.options.debugOutput) {
+                                syn.$l.eventLog('$network.broadcast.success', `"${evt}" broadcast success, channelID: ${connection.options.scope}`, 'Information');
+                            }
+                            resolve(res);
+                        },
+                        error: (error, message) => {
+                            if (connection.options.debugOutput) {
+                                syn.$l.eventLog('$network.broadcast.error', `"${evt}" broadcast error: ${error}, message: ${message || ''}, channelID: ${connection.options.scope}`, 'Information');
+                            }
+                            reject(error instanceof Error ? error : new Error(`${error}${message ? ': ' + message : ''}`));
+                        }
+                    };
+                    connection.call(val);
+                });
+            });
+
+            const all = Promise.all(promises);
+            all.catch(() => { });
+            return all;
         },
 
         emit(evt, params) {
@@ -6960,6 +7030,8 @@ if (typeof module !== 'undefined' && module.exports) {
         isPageLoad: false,
         transactionLoaderID: null,
         pageReadyTimeout: 60000,
+        pageReadyResolvers: [],
+        resourcePromises: {},
         eventAddReady: (globalRoot.devicePlatform === 'node') ? null : new CustomEvent('addready'),
         eventRemoveReady: (globalRoot.devicePlatform === 'node') ? null : new CustomEvent('removeready'),
         mappingModule: true,
@@ -7572,7 +7644,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 var synControls = document.querySelectorAll('[tag^="syn_"],[syn-datafield],[syn-options],[syn-events]');
                 for (var i = 0; i < synControls.length; i++) {
                     var synControl = synControls[i];
-                    if (synControl.tagName) {
+                    if (synControl.id && synControl.tagName) {
                         var tagName = synControl.tagName.toUpperCase();
                         var dataField = synControl.getAttribute('syn-datafield');
                         var elementID = synControl.getAttribute('id');
@@ -7605,7 +7677,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 synControls = document.querySelectorAll('[tag^="syn_"],[syn-datafield],[syn-options],[syn-events]');
                 for (var i = 0; i < synControls.length; i++) {
                     var synControl = synControls[i];
-                    if (synControl.tagName) {
+                    if (synControl.id && synControl.tagName) {
                         var tagName = synControl.tagName.toUpperCase();
                         var dataField = synControl.getAttribute('syn-datafield');
                         var elementID = synControl.getAttribute('id');
@@ -7656,22 +7728,24 @@ if (typeof module !== 'undefined' && module.exports) {
                 var synEventControls = document.querySelectorAll('[syn-events]');
                 for (var i = 0; i < synEventControls.length; i++) {
                     var synControl = synEventControls[i];
-                    var elEvents = null;
+                    if (synControl.id && synControl.tagName) {
+                        var elEvents = null;
 
-                    try {
-                        elEvents = $object.parseJsonValue(synControl.getAttribute('syn-events'), 'json');
-                    } catch (error) {
-                        syn.$l.eventLog('$w.contentLoaded', 'elID: "{0}" syn-events 확인 필요: '.format(synControl.id) + error.message, 'Warning');
-                    }
+                        try {
+                            elEvents = $object.parseJsonValue(synControl.getAttribute('syn-events'), 'json');
+                        } catch (error) {
+                            syn.$l.eventLog('$w.contentLoaded', 'elID: "{0}" syn-events 확인 필요: '.format(synControl.id) + error.message, 'Warning');
+                        }
 
-                    if (elEvents && $this.event) {
-                        var length = elEvents.length;
-                        for (var j = 0; j < length; j++) {
-                            var elEvent = elEvents[j];
+                        if (elEvents && $this.event) {
+                            var length = elEvents.length;
+                            for (var j = 0; j < length; j++) {
+                                var elEvent = elEvents[j];
 
-                            var func = $this.event[synControl.id + '_' + elEvent];
-                            if (func) {
-                                syn.$l.addEvent(synControl.id, elEvent, func);
+                                var func = $this.event[synControl.id + '_' + elEvent];
+                                if (func) {
+                                    syn.$l.addEvent(synControl.id, elEvent, func);
+                                }
                             }
                         }
                     }
@@ -7680,115 +7754,117 @@ if (typeof module !== 'undefined' && module.exports) {
                 var synOptionControls = document.querySelectorAll('[syn-options]');
                 for (var i = 0; i < synOptionControls.length; i++) {
                     var synControl = synOptionControls[i];
-                    var elID = synControl.id.replace('_hidden', '');
-                    var options = null;
+                    if (synControl.id && synControl.tagName) {
+                        var elID = synControl.id.replace('_hidden', '');
+                        var options = null;
 
-                    try {
-                        var el = syn.$l.get(synControl.id + '_hidden') || syn.$l.get(synControl.id);
-                        var synOptions = el.getAttribute('syn-options') || null;
-                        if (synOptions != null) {
-                            options = $object.parseJsonValue(synOptions, 'json');
+                        try {
+                            var el = syn.$l.get(synControl.id + '_hidden') || syn.$l.get(synControl.id);
+                            var synOptions = el.getAttribute('syn-options') || null;
+                            if (synOptions != null) {
+                                options = $object.parseJsonValue(synOptions, 'json');
+                            }
+                        } catch (error) {
+                            syn.$l.eventLog('$w.contentLoaded', 'elID: "{0}" syn-options 확인 필요: '.format(synControl.id) + error.message, 'Warning');
                         }
-                    } catch (error) {
-                        syn.$l.eventLog('$w.contentLoaded', 'elID: "{0}" syn-options 확인 필요: '.format(synControl.id) + error.message, 'Warning');
-                    }
 
-                    if (options && options.transactConfig && options.transactConfig.triggerEvent) {
-                        if (context.$object.isString(options.transactConfig.triggerEvent) == true) {
-                            syn.$l.addEvent(elID, options.transactConfig.triggerEvent, function (evt) {
-                                var el = syn.$w.activeControl(evt);
-                                var synOptions = el.getAttribute('syn-options') || null;
-                                if (synOptions != null) {
-                                    options = $object.parseJsonValue(synOptions, 'json');
-                                }
+                        if (options && options.transactConfig && options.transactConfig.triggerEvent) {
+                            if (context.$object.isString(options.transactConfig.triggerEvent) == true) {
+                                syn.$l.addEvent(elID, options.transactConfig.triggerEvent, function (evt) {
+                                    var el = syn.$w.activeControl(evt);
+                                    var synOptions = el.getAttribute('syn-options') || null;
+                                    if (synOptions != null) {
+                                        options = $object.parseJsonValue(synOptions, 'json');
+                                    }
 
-                                var transactConfig = null;
-                                if (options && options.transactConfig) {
-                                    transactConfig = options.transactConfig;
-                                }
+                                    var transactConfig = null;
+                                    if (options && options.transactConfig) {
+                                        transactConfig = options.transactConfig;
+                                    }
 
-                                if (transactConfig) {
-                                    syn.$w.transactionAction(transactConfig, transactConfig.options);
-                                }
-                            });
-                        }
-                        else if (context.$object.isArray(options.transactConfig.triggerEvent) == true) {
-                            var triggerFunction = function (evt) {
-                                var el = syn.$w.activeControl(evt);
-                                var synOptions = el.getAttribute('syn-options') || null;
-                                if (synOptions != null) {
-                                    options = $object.parseJsonValue(synOptions, 'json');
-                                }
+                                    if (transactConfig) {
+                                        syn.$w.transactionAction(transactConfig, transactConfig.options);
+                                    }
+                                });
+                            }
+                            else if (context.$object.isArray(options.transactConfig.triggerEvent) == true) {
+                                var triggerFunction = function (evt) {
+                                    var el = syn.$w.activeControl(evt);
+                                    var synOptions = el.getAttribute('syn-options') || null;
+                                    if (synOptions != null) {
+                                        options = $object.parseJsonValue(synOptions, 'json');
+                                    }
 
-                                var transactConfig = null;
-                                if (options && options.transactConfig) {
-                                    transactConfig = options.transactConfig;
-                                }
+                                    var transactConfig = null;
+                                    if (options && options.transactConfig) {
+                                        transactConfig = options.transactConfig;
+                                    }
 
-                                if (transactConfig) {
-                                    syn.$w.transactionAction(transactConfig, transactConfig.options);
-                                }
-                            };
+                                    if (transactConfig) {
+                                        syn.$w.transactionAction(transactConfig, transactConfig.options);
+                                    }
+                                };
 
-                            for (var key in options.transactConfig.triggerEvent) {
-                                var eventName = options.transactConfig.triggerEvent[key];
-                                syn.$l.addEvent(elID, eventName, triggerFunction);
+                                for (var key in options.transactConfig.triggerEvent) {
+                                    var eventName = options.transactConfig.triggerEvent[key];
+                                    syn.$l.addEvent(elID, eventName, triggerFunction);
+                                }
                             }
                         }
-                    }
 
-                    if (options && options.triggerConfig && options.triggerConfig.triggerEvent) {
-                        if (context.$object.isString(options.triggerConfig.triggerEvent) == true) {
-                            syn.$l.addEvent(elID, options.triggerConfig.triggerEvent, function (evt) {
-                                var triggerConfig = null;
-                                var el = syn.$w.activeControl(evt);
-                                var synOptions = el.getAttribute('syn-options') || null;
-                                if (synOptions != null) {
-                                    options = $object.parseJsonValue(synOptions, 'json');
-                                }
-                                else {
-                                    synOptions = el.parentElement.getAttribute('syn-options') || null;
+                        if (options && options.triggerConfig && options.triggerConfig.triggerEvent) {
+                            if (context.$object.isString(options.triggerConfig.triggerEvent) == true) {
+                                syn.$l.addEvent(elID, options.triggerConfig.triggerEvent, function (evt) {
+                                    var triggerConfig = null;
+                                    var el = syn.$w.activeControl(evt);
+                                    var synOptions = el.getAttribute('syn-options') || null;
                                     if (synOptions != null) {
                                         options = $object.parseJsonValue(synOptions, 'json');
                                     }
-                                }
+                                    else {
+                                        synOptions = el.parentElement.getAttribute('syn-options') || null;
+                                        if (synOptions != null) {
+                                            options = $object.parseJsonValue(synOptions, 'json');
+                                        }
+                                    }
 
-                                if (options && options.triggerConfig) {
-                                    triggerConfig = options.triggerConfig;
-                                }
+                                    if (options && options.triggerConfig) {
+                                        triggerConfig = options.triggerConfig;
+                                    }
 
-                                if (triggerConfig) {
-                                    syn.$w.triggerAction(triggerConfig);
-                                }
-                            });
-                        }
-                        else if (context.$object.isArray(options.triggerConfig.triggerEvent) == true) {
-                            var triggerFunction = function (evt) {
-                                var triggerConfig = null;
-                                var el = syn.$w.activeControl(evt);
-                                var synOptions = el.getAttribute('syn-options') || null;
-                                if (synOptions != null) {
-                                    options = $object.parseJsonValue(synOptions, 'json');
-                                }
-                                else {
-                                    synOptions = el.parentElement.getAttribute('syn-options') || null;
+                                    if (triggerConfig) {
+                                        syn.$w.triggerAction(triggerConfig);
+                                    }
+                                });
+                            }
+                            else if (context.$object.isArray(options.triggerConfig.triggerEvent) == true) {
+                                var triggerFunction = function (evt) {
+                                    var triggerConfig = null;
+                                    var el = syn.$w.activeControl(evt);
+                                    var synOptions = el.getAttribute('syn-options') || null;
                                     if (synOptions != null) {
                                         options = $object.parseJsonValue(synOptions, 'json');
                                     }
-                                }
+                                    else {
+                                        synOptions = el.parentElement.getAttribute('syn-options') || null;
+                                        if (synOptions != null) {
+                                            options = $object.parseJsonValue(synOptions, 'json');
+                                        }
+                                    }
 
-                                if (options && options.triggerConfig) {
-                                    triggerConfig = options.triggerConfig;
-                                }
+                                    if (options && options.triggerConfig) {
+                                        triggerConfig = options.triggerConfig;
+                                    }
 
-                                if (triggerConfig) {
-                                    syn.$w.triggerAction(triggerConfig);
-                                }
-                            };
+                                    if (triggerConfig) {
+                                        syn.$w.triggerAction(triggerConfig);
+                                    }
+                                };
 
-                            for (var key in options.triggerConfig.triggerEvent) {
-                                var eventName = options.triggerConfig.triggerEvent[key];
-                                syn.$l.addEvent(elID, eventName, triggerFunction);
+                                for (var key in options.triggerConfig.triggerEvent) {
+                                    var eventName = options.triggerConfig.triggerEvent[key];
+                                    syn.$l.addEvent(elID, eventName, triggerFunction);
+                                }
                             }
                         }
                     }
@@ -7814,6 +7890,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
                         pageLoad();
                         syn.$w.isPageLoad = true;
+                        syn.$w.flushPageReady();
                     }
                 }, 25);
 
@@ -7883,6 +7960,7 @@ if (typeof module !== 'undefined' && module.exports) {
             else {
                 pageLoad();
                 syn.$w.isPageLoad = true;
+                syn.$w.flushPageReady();
             }
         },
 
@@ -7904,6 +7982,74 @@ if (typeof module !== 'undefined' && module.exports) {
         removeReadyCount() {
             if (syn.$w.eventRemoveReady && syn.$w.isPageLoad == false) {
                 doc.dispatchEvent(syn.$w.eventRemoveReady);
+            }
+        },
+
+        // syn.$w.isPageLoad 가 true 로 전환되는 시점에 호출되어 대기 중인 readyAsync/ready 콜백을 모두 실행
+        flushPageReady() {
+            var resolvers = $webform.pageReadyResolvers;
+            $webform.pageReadyResolvers = [];
+            for (var i = 0; i < resolvers.length; i++) {
+                try {
+                    resolvers[i]();
+                } catch (error) {
+                    syn.$l.eventLog('$w.flushPageReady', 'pageReady 콜백 실행 오류: ' + error, 'Error');
+                }
+            }
+        },
+
+        // await syn.$w.readyAsync(); - 페이지 초기화(pageLoad) 완료를 Promise 로 대기
+        readyAsync() {
+            if (syn.$w.isPageLoad === true) {
+                return Promise.resolve();
+            }
+
+            return new Promise(function (resolve) {
+                $webform.pageReadyResolvers.push(resolve);
+            });
+        },
+
+        // syn.$w.ready(function () { ... }); - 콜백 전달 시 즉시/대기 후 실행하고 $webform 반환, 미전달 시 readyAsync() 반환
+        ready(callback) {
+            if (typeof callback === 'function') {
+                if (syn.$w.isPageLoad === true) {
+                    callback();
+                }
+                else {
+                    $webform.pageReadyResolvers.push(callback);
+                }
+
+                return $webform;
+            }
+
+            return $webform.readyAsync();
+        },
+
+        // syn.$w.withReadyCount(promise | function) - 비동기 작업을 페이지 준비 카운터에 연동(작업 완료까지 pageLoad 지연)
+        withReadyCount(task) {
+            syn.$w.addReadyCount();
+
+            var isSettled = false;
+            var releaseReadyCount = function () {
+                if (isSettled === true) {
+                    return;
+                }
+                isSettled = true;
+                syn.$w.removeReadyCount();
+            };
+
+            try {
+                var result = (typeof task === 'function') ? task() : task;
+                return Promise.resolve(result).then(function (value) {
+                    releaseReadyCount();
+                    return value;
+                }, function (error) {
+                    releaseReadyCount();
+                    throw error;
+                });
+            } catch (error) {
+                releaseReadyCount();
+                return Promise.reject(error);
             }
         },
 
@@ -7977,6 +8123,52 @@ if (typeof module !== 'undefined' && module.exports) {
                     if (callback && isForceCallback) callback();
                 }
             }
+        },
+
+        // var data = await syn.$w.loadJsonAsync('/sample/config.json', { timeout: 5000 });
+        loadJsonAsync(url, options) {
+            options = syn.$w.argumentsExtend({ timeout: 0 }, options);
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                if (options.timeout > 0) {
+                    xhr.timeout = options.timeout;
+                }
+
+                if (syn.$w.setServiceClientHeader && !syn.$w.setServiceClientHeader(xhr)) {
+                    const headerError = new Error(`$w.loadJsonAsync: URL ${url}에 대한 setServiceClientHeader 실패`);
+                    syn.$l.eventLog('$w.loadJsonAsync', headerError.message, 'Error');
+                    reject(headerError);
+                    return;
+                }
+
+                xhr.onreadystatechange = () => {
+                    if (xhr.readyState !== XMLHttpRequest.DONE) {
+                        return;
+                    }
+
+                    if (xhr.status === 200) {
+                        try {
+                            resolve(JSON.parse(xhr.responseText));
+                        } catch (e) {
+                            syn.$l.eventLog('$w.loadJsonAsync', `URL: ${url}, 상태: ${xhr.status}, JSON 파싱 오류: ${e}`, 'Error');
+                            reject(e instanceof Error ? e : new Error(String(e)));
+                        }
+                    } else {
+                        syn.$l.eventLog('$w.loadJsonAsync', `URL: ${url}, 상태: ${xhr.status}, 응답 텍스트: ${xhr.responseText} HTTP 오류`, 'Error');
+                        reject(new Error(`$w.loadJsonAsync: HTTP ${xhr.status} - ${url}`));
+                    }
+                };
+                xhr.onerror = () => {
+                    syn.$l.eventLog('$w.loadJsonAsync', `URL ${url} 네트워크 오류`, 'Error');
+                    reject(new Error(`$w.loadJsonAsync: 네트워크 오류 - ${url}`));
+                };
+                xhr.ontimeout = () => {
+                    syn.$l.eventLog('$w.loadJsonAsync', `URL ${url} 요청 시간 초과`, 'Error');
+                    reject(new Error(`$w.loadJsonAsync: 요청 시간 초과 - ${url}`));
+                };
+                xhr.send();
+            });
         },
 
         getTriggerOptions(el) {
@@ -8518,15 +8710,15 @@ if (typeof module !== 'undefined' && module.exports) {
 
             let dataMapping = null;
             try {
-                const raw = document.head ? document.head.getAttribute('data-mapping') : null;
-                dataMapping = raw ? $object.parseJsonValue(raw, 'json') : null;
+                const pageMappings = $this.config.pageMappings;
+                dataMapping = typeof pageMappings == 'string' ? $object.parseJsonValue(pageMappings, 'json') : pageMappings;
             } catch (error) {
-                syn.$l.eventLog('$w.transactionExchange', `data-mapping 파싱 오류: ${error}`, 'Error');
+                syn.$l.eventLog('$w.transactionExchange', `pageMappings 파싱 오류: ${error}`, 'Error');
                 return;
             }
 
             if (!dataMapping) {
-                syn.$l.eventLog('$w.transactionExchange', '화면에 data-mapping 정의가 없습니다.', 'Warning');
+                syn.$l.eventLog('$w.transactionExchange', '화면 스크립트에 $this.config.pageMappings 정의가 없습니다.', 'Warning');
                 return;
             }
 
@@ -10155,83 +10347,131 @@ if (typeof module !== 'undefined' && module.exports) {
             return new globalRoot.XMLHttpRequest();
         },
 
-        loadScript(url, scriptID, callback) {
-            var head;
-            var resourceID;
-            var heads = document.getElementsByTagName('head');
-            if (heads) {
-                head = heads[0];
+        // 스크립트/스타일 리소스를 로드하고 로드 완료(onload) 시 resolve, 실패(onerror)/시간 초과 시 reject 하는 Promise를 반환
+        // resourceID를 명시하면 동일 리소스에 대한 중복 로드를 방지(single-flight)
+        loadResourceAsync(kind, url, resourceID, options) {
+            options = options || {};
+            var isStyle = kind === 'style';
+            var logName = isStyle ? '$w.loadStyleAsync' : '$w.loadScriptAsync';
+
+            if (context.$object.isNullOrUndefined(url) == true || url === '') {
+                var argError = new Error(logName + ': url이 필요합니다.');
+                syn.$l.eventLog(logName, 'url이 필요합니다.', 'Error');
+                return Promise.reject(argError);
             }
-            else {
+
+            var hasExplicitID = context.$string.isNullOrEmpty(resourceID) == false;
+            resourceID = hasExplicitID == true ? resourceID : 'id_' + syn.$l.random();
+
+            if (hasExplicitID == true && $webform.resourcePromises[resourceID]) {
+                return $webform.resourcePromises[resourceID];
+            }
+
+            var existing = document.getElementById(resourceID);
+            if (existing) {
+                var resolved = Promise.resolve(existing);
+                if (hasExplicitID == true) {
+                    $webform.resourcePromises[resourceID] = resolved;
+                }
+                return resolved;
+            }
+
+            var promise = new Promise(function (resolve, reject) {
+                var heads = document.getElementsByTagName('head');
+                if (heads && heads.length > 0) {
+                    return heads[0];
+                }
+
                 document.documentElement.insertBefore(document.createElement('head'), document.documentElement.firstChild);
-                head = document.getElementsByTagName('head')[0];
-            }
+                var head = document.getElementsByTagName('head')[0];
+                var el = document.createElement(isStyle == true ? 'link' : 'script');
+                var timeoutID = null;
 
-            resourceID = scriptID || 'id_' + syn.$l.random();
+                var clearLoadTimeout = function () {
+                    if (timeoutID) {
+                        clearTimeout(timeoutID);
+                        timeoutID = null;
+                    }
+                };
 
-            var scriptTag = document.getElementById(resourceID);
-            if (scriptTag) {
-                callback();
-            } else {
-                var el = document.createElement('script');
-                el.setAttribute('type', 'text/javascript');
                 el.setAttribute('id', resourceID);
-                if (syn.Config && context.$string.toBoolean(syn.Config.IsClientCaching) == true) {
-                    el.setAttribute('src', url);
+                if (isStyle == true) {
+                    el.setAttribute('rel', 'stylesheet');
+                    el.setAttribute('type', 'text/css');
                 }
                 else {
-                    el.setAttribute('src', url + (url.indexOf('?') > -1 ? '&' : '?') + 'noCache=' + Date.now());
+                    el.setAttribute('type', 'text/javascript');
                 }
 
-                if (callback && typeof callback === 'function') {
-                    el.onload = function () {
-                        callback();
-                    };
+                var resourceUrl = url;
+                if (!(syn.Config && context.$string.toBoolean(syn.Config.IsClientCaching) == true)) {
+                    resourceUrl = url + (url.indexOf('?') > -1 ? '&' : '?') + 'noCache=' + Date.now();
                 }
 
-                head.insertBefore(el, head.firstChild);
+                el.onload = function () {
+                    clearLoadTimeout();
+                    resolve(el);
+                };
+
+                el.onerror = function () {
+                    clearLoadTimeout();
+                    delete $webform.resourcePromises[resourceID];
+                    syn.$l.eventLog(logName, 'url: ' + url + ', id: ' + resourceID + ' 리소스 로드 실패', 'Error');
+                    reject(new Error(logName + ': 리소스 로드 실패 - ' + url));
+                };
+
+                var timeout = Number(options.timeout) || 0;
+                if (timeout > 0) {
+                    timeoutID = setTimeout(function () {
+                        delete $webform.resourcePromises[resourceID];
+                        syn.$l.eventLog(logName, 'url: ' + url + ' 리소스 로드 시간 초과(' + timeout + 'ms)', 'Error');
+                        reject(new Error(logName + ': 리소스 로드 시간 초과 - ' + url));
+                    }, timeout);
+                }
+
+                if (isStyle == true) {
+                    el.setAttribute('href', resourceUrl);
+                    head.appendChild(el);
+                }
+                else {
+                    el.setAttribute('src', resourceUrl);
+                    head.insertBefore(el, head.firstChild);
+                }
+            });
+
+            if (hasExplicitID == true) {
+                $webform.resourcePromises[resourceID] = promise;
             }
+
+            return promise;
+        },
+
+        // var el = await syn.$w.loadScriptAsync('/lib/print-js/print.min.js', 'printjs');
+        loadScriptAsync(url, scriptID, options) {
+            return $webform.loadResourceAsync('script', url, scriptID, options);
+        },
+
+        // var el = await syn.$w.loadStyleAsync('/css/custom.css', 'customStyle');
+        loadStyleAsync(url, styleID, options) {
+            return $webform.loadResourceAsync('style', url, styleID, options);
+        },
+
+        loadScript(url, scriptID, callback) {
+            $webform.loadScriptAsync(url, scriptID).then(function () {
+                if (typeof callback === 'function') {
+                    callback();
+                }
+            }).catch(function () { });
 
             return $webform;
         },
 
         loadStyle(url, styleID, callback) {
-            var head;
-            var resourceID;
-            var heads = document.getElementsByTagName('head');
-            if (heads) {
-                head = heads[0];
-            }
-            else {
-                document.documentElement.insertBefore(document.createElement('head'), document.documentElement.firstChild);
-                head = document.getElementsByTagName('head')[0];
-            }
-
-            resourceID = styleID || 'id_' + syn.$l.random();
-
-            var styleTag = document.getElementById('scriptID');
-            if (styleTag) {
-                if (callback && typeof callback === 'function') {
+            $webform.loadStyleAsync(url, styleID).then(function () {
+                if (typeof callback === 'function') {
                     callback();
                 }
-            } else {
-                var el = document.createElement('link');
-                el.setAttribute('rel', 'stylesheet');
-                el.setAttribute('type', 'text/css');
-                el.setAttribute('id', resourceID);
-                if (syn.Config && context.$string.toBoolean(syn.Config.IsClientCaching) == true) {
-                    el.setAttribute('href', url);
-                }
-                else {
-                    el.setAttribute('href', url + (url.indexOf('?') > -1 ? '&' : '?') + 'noCache=' + Date.now());
-                }
-
-                head.appendChild(el);
-
-                if (callback && typeof callback === 'function') {
-                    callback();
-                }
-            }
+            }).catch(function () { });
 
             return $webform;
         },
@@ -11332,7 +11572,8 @@ if (typeof module !== 'undefined' && module.exports) {
             'activeControl', 'contentLoaded', 'addReadyCount', 'removeReadyCount', 'createSelection',
             'getTriggerOptions', 'scrollToTop', 'setFavicon', 'fileDownload', 'pseudoStyle', 'pseudoStyles',
             'isPageLoad', 'pageReadyTimeout', 'eventAddReady', 'eventRemoveReady', 'moduleReadyIntervalID',
-            'remainingReadyIntervalID', 'remainingReadyCount', 'defaultControlOptions', 'mappingModule'
+            'remainingReadyIntervalID', 'remainingReadyCount', 'defaultControlOptions', 'mappingModule',
+            'flushPageReady', 'readyAsync', 'ready', 'withReadyCount', 'pageReadyResolvers'
         ];
         browserOnlyMethods.forEach(method => { delete $webform[method]; });
     }
@@ -12421,11 +12662,7 @@ if (typeof module !== 'undefined' && module.exports) {
         translateControls: [],
 
         concreate() {
-            $resource.remainingReadyIntervalID = setInterval(function () {
-                if (syn.$w.isPageLoad == true) {
-                    clearInterval($resource.remainingReadyIntervalID);
-                    $resource.remainingReadyIntervalID = null;
-
+            syn.$w.readyAsync().then(function () {
                     var els = document.querySelectorAll('[syn-i18n]');
                     for (var i = 0, length = els.length; i < length; i++) {
                         var el = els[i];
@@ -12554,8 +12791,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     if (syn.Config && context.$string.toBoolean(syn.Config.IsLocaleTranslations) == true && mod.config && (context.$string.isNullOrEmpty(mod.config.isLocaleTranslations) == true || context.$string.toBoolean(mod.config.isLocaleTranslations) == true)) {
                         $resource.setLocale($resource.localeID);
                     }
-                }
-            }, 25);
+            });
         },
 
         add(id, val) {

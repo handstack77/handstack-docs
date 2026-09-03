@@ -943,7 +943,7 @@
         },
 
         statusMessage(val) {
-            if (parent.$mainframe) {
+            if (parent.$main) {
                 var tabInfo = syn.$w.getCurrentTabInfo();
                 if (tabInfo) {
                     parent.$layout.method.setStatusMessage(tabInfo.tabID, val);
@@ -953,7 +953,7 @@
                 }
             }
 
-            if (window == top || syn.$w.pageScript == '$mainframe') {
+            if (window == top || syn.$w.pageScript == '$main') {
                 var tabInfo = syn.$w.getCurrentTabInfo();
                 if (tabInfo) {
                     parent.$layout.method.setStatusMessage(tabInfo.tabID, val);
@@ -2149,6 +2149,12 @@
         },
 
         getDataSource(dataSourceID, parameters, callback) {
+            if (typeof callback !== 'function') {
+                return new Promise(function (resolve) {
+                    $webform.getDataSource(dataSourceID, parameters, function (value) { resolve(value); });
+                });
+            }
+
             if (dataSourceID) {
                 var mod = window[syn.$w.pageScript];
                 if (mod && mod.config) {
@@ -2167,6 +2173,7 @@
                         }
                         else {
                             syn.$w.alert(`앱 환경변수의 코드헬프 값 확인이 필요합니다. '${codeHelpID}'`, '정보');
+                            callback(null);
                             return;
                         }
                     }
@@ -2177,6 +2184,9 @@
                     transactionObject.transactionID = transactionID || 'SYS010';
                     transactionObject.screenID = syn.$w.pageScript.replace('$', '');
                     transactionObject.startTraceID = 'syn.domain.$w.getDataSource';
+                    transactionObject.fallback = (config, transactionObject) => {
+                        syn.$w.removeReadyCount();
+                    }
 
                     if (parameters == null || parameters == undefined) {
                         parameters = '';
@@ -2249,9 +2259,16 @@
                         }
                         else {
                             syn.$l.eventLog('getDataSource', 'DataSourceID: "{0}" 데이터 없음'.format(dataSourceID));
+                            callback(null);
                         }
                     });
                 }
+                else {
+                    callback(null);
+                }
+            }
+            else {
+                callback(null);
             }
         },
 

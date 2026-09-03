@@ -1,1 +1,0 @@
-function labelPlugin(){return function(n){return{onReady:function(){var t=n.input.id;t&&(n.mobileInput?(n.input.removeAttribute("id"),n.mobileInput.id=t):n.altInput&&(n.input.removeAttribute("id"),n.altInput.id=t),n.loadedPlugins.push("labelPlugin"))}}}}export default labelPlugin;

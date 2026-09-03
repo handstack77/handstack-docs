@@ -89,7 +89,7 @@ HandStack 호스트는 두 가지 조립 방식을 제공합니다. `ack`는 `Ap
 
 `rdy`의 `appsettings.json`과 모듈별 `module.json`에 사용된 포트는 `task.ps1 <현재 포트> <새 포트>`로 일괄 변경할 수 있습니다. 소스 디렉터리에서 실행하면 `rdy.csproj`의 `RdyServerPort`도 바뀌어 다음 빌드의 `modules/wwwroot/wwwroot/syn.config.json`에 적용되고, 빌드 산출물에서 실행하면 이미 생성된 `syn.config.json`을 직접 변경합니다. Windows에서는 `task.bat 8420 9420` 또는 `pwsh ./task.ps1 8420 9420`, macOS와 Ubuntu에서는 PowerShell 7 이상을 설치한 뒤 `sh ./task.sh 8420 9420`을 실행합니다.
 
-Windows x64용 `rdy` Debug 빌드 복사본은 `1.WebHost\rdy\publish.bat [출력 디렉터리]`로 생성합니다. 이 스크립트는 `dotnet build -c Debug -t:Rebuild -r win-x64` 결과인 `bin\Debug\net10.0\win-x64`를 대상 디렉터리에 미러링합니다.
+Windows x64용 `rdy` Debug 빌드 복사본은 `1.WebHost\rdy\publish.bat [출력 디렉터리]`로 생성합니다. 이 스크립트는 `dotnet build -c Debug -t:Rebuild -r win-x64` 결과인 `bin\Debug\net10.0\win-x64`를 대상 디렉터리에 미러링합니다. `rdy.csproj`는 빌드·게시 출력에서 루트와 `runtimes` 하위의 `libSkiaSharp.pdb`를 제거하므로 복사본에도 포함되지 않습니다.
 
 ![](img/handstack-modules.png)
 
