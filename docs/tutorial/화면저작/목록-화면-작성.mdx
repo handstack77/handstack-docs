@@ -1,0 +1,87 @@
+---
+sidebar_position: 3
+---
+
+# 목록 화면 작성
+
+> [주제 목차](/docs/tutorial/화면저작/) · 이전: [화면 저작 개념](/docs/tutorial/화면저작/화면-저작-개념) · 다음: [입력 화면과 레이아웃](/docs/tutorial/화면저작/입력-화면과-레이아웃)
+
+이 문서의 결과: `BOD010` 목록 화면에 조회 조건과 그리드를 작성한다.
+
+## 시작 조건
+
+- [04. 도메인 모델과 데이터베이스](/docs/tutorial/도메인모델과-데이터베이스/)에서 설계한 `Board` 테이블 컬럼표를 준비합니다.
+- `contracts/wwwroot/HDS/BOD/BOD010.html` 파일을 만듭니다.
+
+## 조회 조건 작성
+
+분류·기간·제목 조건을 입력받는 영역을 만듭니다.
+
+```html
+<div class="row mt--2">
+    <div class="col-sm-12 col-md-6 col-lg-3 mt-2 pl-0">
+        <div class="input-group">
+            <label class="w:86 col-form-label px-3">제목</label>
+            <input id="txtTitle" syn-datafield="Title" syn-options="{editType: 'text', belongID: ['LD01']}" type="text" class="form-control">
+        </div>
+    </div>
+    <div class="col-sm-12 col-md-6 col-lg-3 mt-2 pl-0">
+        <div class="input-group">
+            <label class="w:86 col-form-label px-3">분류</label>
+            <select class="form-select" id="ddlCategory" syn-datafield="Category" syn-options="{toSynControl: false, belongID: ['LD01']}">
+                <option value="" selected="">전체</option>
+                <option value="정보">정보</option>
+                <option value="강좌">강좌</option>
+                <option value="소식">소식</option>
+            </select>
+        </div>
+    </div>
+</div>
+```
+
+`syn-options`의 `belongID: ['LD01']`은 이 입력값이 `LD01` 거래를 호출할 때 함께 전송된다는 뜻입니다. [06. 화면 동작과 거래 연결](/docs/tutorial/화면동작과-거래연결/)에서 `LD01` 호출 코드를 작성할 때 이 값들이 실제로 전달됩니다.
+
+## 목록 그리드 작성
+
+```html
+<div class="form-fieldset p-0">
+    <syn_grid id="grdBoard" syn-datafield="Board" syn-options="{
+        height: 420
+        , columns: [
+            ['ID', '게시글 ID', 100, false, 'text', false, 'center']
+            , ['Category', '분류', 100, false, 'text', false, 'center']
+            , ['Title', '제목', 400, false, 'text', false, 'left']
+            , ['Author', '작성자', 100, false, 'text', true, 'center']
+            , ['DatePosted', '게시일자', 200, false, 'text', true, 'center']
+            , ['EditPost', '상세', 80, false, 'button', true, 'center']
+        ]
+        , readOnly: true
+    }" syn-events="['afterSelectionEnd']"></syn_grid>
+</div>
+```
+
+컬럼 배열의 각 항목은 `[컬럼명, 표시명, 너비, 편집가능여부, 타입, 정렬가능여부, 정렬방향]` 순서입니다. `ID`, `Category`, `Title` 등 컬럼명은 [04. 도메인 모델과 데이터베이스](/docs/tutorial/도메인모델과-데이터베이스/)에서 설계한 `Board` 테이블 컬럼명과 맞춰 둡니다. 실제로 이 이름이 서버 응답과 일치해야 하는 이유는 [07. dbclient SQL 계약](/docs/tutorial/dbclient-SQL계약/)에서 확인합니다.
+
+## 버튼 영역
+
+```html
+<div class="btn-list">
+    <button type="button" id="btnNewBoard" syn-events="['click']" class="btn btn-primary">
+        신규 게시글 작성
+    </button>
+    <button type="button" id="btnSearch" syn-events="['click']" class="btn btn-secondary">
+        조회
+    </button>
+</div>
+```
+
+버튼 클릭에 실제 동작을 연결하는 방법은 다음 주제인 [06. 화면 동작과 거래 연결](/docs/tutorial/화면동작과-거래연결/)에서 다룹니다. 이 문서에서는 화면 요소만 준비합니다.
+
+## 성공 증거
+
+- [ ] 브라우저에서 `BOD010.html`을 열었을 때 조회 조건과 빈 그리드가 레이아웃 깨짐 없이 표시됩니다.
+- [ ] `syn-datafield` 이름(`Title`, `Category`, `Board` 등)을 표로 정리했습니다.
+
+## 다음 문서
+
+[입력 화면과 레이아웃](/docs/tutorial/화면저작/입력-화면과-레이아웃)에서 `BOD011`/`BOD012` 입력 화면을 작성합니다.

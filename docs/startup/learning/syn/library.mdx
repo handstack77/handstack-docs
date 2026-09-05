@@ -144,7 +144,6 @@ syn.$l.eventLog('moduleName.methodName', error, 'Error');
 | 항목 | 내용 |
 |---|---|
 | 별칭 | `syn.$l`, `syn.$library`, `context.$library` |
-| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 4385 ~ 5553 줄) |
 | 예제 경로 | `2.Modules/wwwroot/wwwroot/sample/syn/library.html`, `library.js` |
 | 의존 모듈 | `$object`(존재/타입 판별), `$string`(TSD 파싱, Boolean 변환), `$date`(파일명 타임스탬프), `syn.$r`(내부 `urlToBase64`가 `httpFetch` 사용), `syn.getModuleLibrary`(`moduleEventLog`) |
 | 실행 환경 제약 | DOM 계열 메서드(`addEvent`, `addEvents`, `addLive`, `removeEvent`, `hasEvent`, `trigger`, `triggerEvent`, `getValue`, `get`, `querySelector`, `getTagName`, `querySelectorAll`, `dispatchClick`)는 Node.js에서 제거됨. `getBasePath`, `moduleEventLog`는 브라우저에서 제거됨(Node.js 전용) |

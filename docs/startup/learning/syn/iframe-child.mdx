@@ -46,13 +46,12 @@ sidebar_position: 20
 | 항목 | 내용 |
 |---|---|
 | 전역 별칭 | `syn.$n` |
-| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 6056~6919번째 줄) |
 | 예제 페이지 | `/sample/syn/iframe_child.html` |
 
 ## 메서드
 
 ### 채널 객체 `.bind(method, callback)`
-- 설명: 상대(부모) 창이 `call()` 또는 `emit()`으로 보내는 `method` 이름에 대한 처리 함수를 등록합니다. 소스 위치: 약 6474~6489번째 줄.
+- 설명: 상대(부모) 창이 `call()` 또는 `emit()`으로 보내는 `method` 이름에 대한 처리 함수를 등록합니다.
 - 매개변수
 
 | 이름 | 타입 | 필수 | 설명 |
@@ -70,7 +69,7 @@ $this.prop.childrenChannel.bind('request', function (transaction, params) {
 ```
 
 ### 트랜잭션 객체 (`bind`의 `call` 콜백 1번째 인자)
-- 설명: `call()`로 수신된 요청 처리 중 응답을 제어하는 객체입니다. 소스 위치: 약 6269~6314번째 줄.
+- 설명: `call()`로 수신된 요청 처리 중 응답을 제어하는 객체입니다.
 - 멤버
 
 | 이름 | 설명 |
@@ -92,7 +91,7 @@ channel.bind('longRequest', function (transaction, params) {
 ```
 
 ### 채널 객체 `.emit({ method, params })`
-- 설명: 상대에게 응답을 기대하지 않는 단방향 메시지를 전송합니다. 소스 위치: 약 6555~6561번째 줄.
+- 설명: 상대에게 응답을 기대하지 않는 단방향 메시지를 전송합니다.
 - 매개변수
 
 | 이름 | 타입 | 필수 | 설명 |

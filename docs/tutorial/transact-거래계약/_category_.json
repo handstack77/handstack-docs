@@ -1,0 +1,8 @@
+{
+    "label": "08. transact 거래 계약",
+    "position": 8,
+    "link": {
+        "type": "generated-index",
+        "description": "화면과 SQL을 거래로 연결하고 요청·응답 전문과 데이터 맵을 확인하는 방법을 배웁니다."
+    }
+}

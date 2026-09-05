@@ -1,0 +1,75 @@
+---
+sidebar_position: 1
+---
+
+# 학습 트랙
+
+HandStack을 처음 사용하는 개발자가 혼자서도 순서대로 익힐 수 있는 자습 코스입니다. "이 기능이 무엇을 하는가"를 정리한 [참고하기](/docs/category/환경설정) 문서와 달리, 이 트랙은 "**왜 필요한지 알고, 직접 만들어 보고, 운영까지 넘길 수 있게**" 순서를 잡아 주는 학습서입니다.
+
+12개 주제는 하나의 게시판 프로젝트(모듈 `BOD`, 화면 `BOD010`/`BOD011`/`BOD012`)를 3~8주제에 걸쳐 계속 키워 나가는 방식으로 이어집니다. 각 주제는 내용에 맞는 개념·이해·계획·설계·실습·구축·테스트·유지보수 흐름으로 구성되며, 모든 주제가 같은 절 이름을 갖지는 않습니다.
+
+## 12개 주제
+
+| # | 주제 | 이 주제를 끝내면 | 관련 슬라이드 |
+|---|---|---|---|
+| 01 | [HandStack 기초 개념](/docs/tutorial/handstack-기초개념/) | ack·모듈·계약·화면의 관계를 설명할 수 있습니다 | <a href="/slides/010 HandStack이란 무엇일까요.html" target="_blank" rel="noopener noreferrer">010</a>, <a href="/slides/040 HandStack 프로젝트의 큰 그림 그리기.html" target="_blank" rel="noopener noreferrer">040</a> |
+| 02 | [프로젝트 구조와 파일 작업](/docs/tutorial/프로젝트구조와-파일작업/) | contracts 디렉토리를 열고 화면·계약 파일을 안전하게 편집합니다 | <a href="/slides/050 업무 모듈 디렉토리 깊게 파헤치기.html" target="_blank" rel="noopener noreferrer">050</a> |
+| 03 | [프로젝트와 개발 서버](/docs/tutorial/프로젝트와-개발서버/) | 프로젝트를 만들고 개발 서버를 붙여 화면을 띄웁니다 | <a href="/slides/020 내 컴퓨터에 개발 환경 꾸미기.html" target="_blank" rel="noopener noreferrer">020</a>, <a href="/slides/030 HandStack으로 첫 프로젝트 실행하기.html" target="_blank" rel="noopener noreferrer">030</a> |
+| 04 | [도메인 모델과 데이터베이스](/docs/tutorial/도메인모델과-데이터베이스/) | 데이터를 모델로 설계하고 실제 테이블과 연결합니다 | <a href="/slides/300 Docker로 개발용 데이터베이스 쉽게 설치하고 연결하기.html" target="_blank" rel="noopener noreferrer">300</a>, <a href="/slides/310 CSV 파일로 데이터 모델 관리하기.html" target="_blank" rel="noopener noreferrer">310</a> |
+| 05 | [화면 저작 (HTML/JS 작성)](/docs/tutorial/화면저작/) | 목록·입력 화면을 HTML/JS로 직접 작성합니다 | <a href="/slides/070 클라이언트 디렉토리와 화면 구조 이해하기.html" target="_blank" rel="noopener noreferrer">070</a>, <a href="/slides/190 Tabler, Master CSS, Mustache 로 만드는 화면 레이아웃.html" target="_blank" rel="noopener noreferrer">190</a> |
+| 06 | [화면 동작과 거래 연결](/docs/tutorial/화면동작과-거래연결/) | 화면 스크립트로 버튼과 거래를 연결합니다 | <a href="/slides/090 화면의 동작과 업무 구현을 위한 공통 라이브러리.html" target="_blank" rel="noopener noreferrer">090</a> |
+| 07 | [dbclient SQL 계약](/docs/tutorial/dbclient-SQL계약/) | SQL을 계약으로 만들고 단독으로 검증합니다 | <a href="/slides/160 데이터베이스 쿼리 계약 관리하기.html" target="_blank" rel="noopener noreferrer">160</a>, <a href="/slides/170 SQL 처리를 위한 다양한 확장 기능.html" target="_blank" rel="noopener noreferrer">170</a> |
+| 08 | [transact 거래 계약](/docs/tutorial/transact-거래계약/) | 화면과 SQL을 거래로 연결하고 전문을 확인합니다 | <a href="/slides/140 데이터 거래란 무엇인가요.html" target="_blank" rel="noopener noreferrer">140</a>, <a href="/slides/150 HandStack이 만들어준 API 사용하기.html" target="_blank" rel="noopener noreferrer">150</a> |
+| 09 | [확장 모듈](/docs/tutorial/확장모듈/) | function·command·repository 등을 다루고 모듈을 관리합니다 | <a href="/slides/110 repository 모듈을 이용한 파일 업로드, 다운로드.html" target="_blank" rel="noopener noreferrer">110</a>, <a href="/slides/330 function 모듈로 백엔드 기능 확장과 배포 준비.html" target="_blank" rel="noopener noreferrer">330</a> |
+| 10 | [테스트와 디버깅](/docs/tutorial/테스트와-디버깅/) | 실패의 첫 원인을 순서대로 찾아냅니다 | <a href="/slides/180 HTTP 클라이언트로 거래 데이터 및 SQL 테스트 하기.html" target="_blank" rel="noopener noreferrer">180</a>, <a href="/slides/210 UI 화면과 거래 로그로 디버깅하기.html" target="_blank" rel="noopener noreferrer">210</a> |
+| 11 | [환경설정과 보안](/docs/tutorial/환경설정과-보안/) | 환경별 설정을 분리하고 비밀정보를 지킵니다 | <a href="/slides/340 백엔드 보안을 위한 인증, 인가의 필요성.html" target="_blank" rel="noopener noreferrer">340</a>, <a href="/slides/400 비밀번호, API Key, 인증서 등 비밀(Secrets) 키 관리하기.html" target="_blank" rel="noopener noreferrer">400</a> |
+| 12 | [모니터링과 운영 인수인계](/docs/tutorial/모니터링과-운영인수인계/) | 거래 이력·서버 상태를 보고 운영을 넘겨받습니다 | <a href="/slides/360 PM2를 이용한 서버 프로세스 관리 및 로그 모니터링.html" target="_blank" rel="noopener noreferrer">360</a>, <a href="/slides/380 운영 준비를 위한 HandStack 배포 전략 알아보기.html" target="_blank" rel="noopener noreferrer">380</a> |
+
+## 역할별 추천 경로
+
+| 나는 | 이 순서로 | 완료 기준 |
+|---|---|---|
+| 화면·거래를 만드는 신규 개발자 | 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → 11 → 12 | 게시판 CRUD·별도 환경 검증까지 완료 |
+| 화면/기능 개발자로 빠르게 실무에 투입되어야 하는 사람 | 01 → 03 → 05 → 06 → 07 → 08 | 화면 하나의 조회·저장 왕복 성공 |
+| 시스템을 운영·인수인계 받는 담당자 | 01 → 02 → 03 → 11 → 12 → 10 | 기동·접근·복원·조사 재현 |
+| 당장 전체 코드부터 보고 싶은 사람 | [게시판 프로젝트 시작하기](/docs/startup/handsonlab/게시판-프로젝트-시작하기) | 요약본으로 큰 그림 파악 |
+
+## 실습이 이어지는 방식
+
+주제 03부터 08까지는 하나의 게시판 프로젝트를 계속 키워 나갑니다. 05·06주제에서 화면과 호출을 준비해도 실제 조회·저장의 전체 성공은 07·08주제의 계약을 완성한 뒤 확인합니다.
+
+| 화면·계약 | 하는 일 | 처음 만드는 주제 |
+|---|---|---|
+| 모듈 `BOD`, 프로그램 ID `HDS` | 프로젝트 골격과 개발 서버 | 03 |
+| `Board` 테이블 | 게시글 데이터 구조 | 04 |
+| `BOD010` | 게시글 목록·검색 화면 | 05 |
+| `BOD011` | 게시글 등록 화면 | 05 · 06 |
+| `BOD012` | 게시글 상세·수정·삭제 화면 | 05 · 06 |
+| `BOD010.xml`, `BOD011.xml`, `BOD012.xml` | 조회·저장 SQL | 07 |
+| `BOD010.json`, `BOD011.json`, `BOD012.json` | 화면과 SQL을 잇는 거래 | 08 |
+
+전체 완성 코드는 [게시판 프로젝트 시작하기](/docs/startup/handsonlab/게시판-프로젝트-시작하기)와 [GitHub 데모 소스](https://github.com/handstack77/handstack/tree/master/2.Modules/wwwroot/Contracts)에서 한 번에 확인할 수 있습니다.
+
+## 진도 체크리스트
+
+- [ ] 01 HandStack 기초 개념
+- [ ] 02 프로젝트 구조와 파일 작업
+- [ ] 03 프로젝트와 개발 서버
+- [ ] 04 도메인 모델과 데이터베이스
+- [ ] 05 화면 저작 (HTML/JS 작성)
+- [ ] 06 화면 동작과 거래 연결
+- [ ] 07 dbclient SQL 계약
+- [ ] 08 transact 거래 계약
+- [ ] 09 확장 모듈
+- [ ] 10 테스트와 디버깅
+- [ ] 11 환경설정과 보안
+- [ ] 12 모니터링과 운영 인수인계
+
+## 다른 문서와의 관계
+
+| 찾는 것 | 볼 문서 |
+|---|---|
+| 개념·프로토콜의 정확한 정의 | [계약 중심 거래](/docs/reference/concept/계약-중심-거래) 등 개념 문서 |
+| 역할별 슬라이드 모음 | [HandStack 개발자를 위한 학습](/docs/reference/presentation/HandStack-개발자-학습) |
+| 전체 코드를 한 번에 보는 요약 경로 | [게시판 프로젝트 시작하기](/docs/startup/handsonlab/게시판-프로젝트-시작하기) |
+| 설치·환경 준비 | [시작하기](/docs/startup/개요) |

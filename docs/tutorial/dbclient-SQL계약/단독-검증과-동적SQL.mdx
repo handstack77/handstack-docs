@@ -1,0 +1,49 @@
+---
+sidebar_position: 4
+---
+
+# 단독 검증과 동적 SQL
+
+> [주제 목차](/docs/tutorial/dbclient-SQL계약/) · 이전: [CRUD 계약 작성](/docs/tutorial/dbclient-SQL계약/CRUD-계약-작성)
+
+이 문서의 결과: 화면 없이 SQL 계약을 검증하고, 동적 SQL이 필요한 상황을 판단한다.
+
+## 왜 화면 없이 먼저 검증하는가
+
+화면·거래·SQL을 한 번에 만들고 나서 문제가 생기면 세 곳 중 어디가 원인인지 찾기 어렵습니다. dbclient 계약만 먼저 완성해 검증해 두면, 이후 [08. transact 거래 계약](/docs/tutorial/transact-거래계약/)과 화면을 연결했을 때 문제가 생겨도 "SQL은 이미 검증됐다"는 전제를 두고 원인 범위를 좁힐 수 있습니다.
+
+## HTTP 클라이언트로 단독 검증하기
+
+브라우저나 HTTP 클라이언트 도구로 거래 요청을 직접 보내 SQL 실행 결과만 확인할 수 있습니다. 요청 형식과 절차는 <a href="/slides/180 HTTP 클라이언트로 거래 데이터 및 SQL 테스트 하기.html" target="_blank" rel="noopener noreferrer">180 HTTP 클라이언트로 거래 데이터 및 SQL 테스트 하기</a> 슬라이드를 참고합니다. 확인할 것은 다음과 같습니다.
+
+| 확인 항목 | 방법 |
+|---|---|
+| SQL 문법 오류 여부 | 응답의 오류 메시지 확인 |
+| 파라미터 바인딩 정확성 | 조건값을 바꿔가며 결과 행 수 비교 |
+| 정렬·조건 로직 | 기대한 순서·범위로 결과가 나오는지 확인 |
+
+## 동적 SQL이 필요한 상황
+
+조건에 따라 SQL 문장 자체가 크게 달라져야 할 때는 XML 안에 조건부 SQL 조립 기능을 사용할 수 있습니다. 예를 들어 정렬 컬럼을 사용자가 선택하는 경우처럼 단순 파라미터 바인딩만으로 표현하기 어려운 로직에 사용합니다.
+
+```sql
+ORDER BY (CASE @Sequence WHEN 'ASC' THEN CASE @OrderBy
+        WHEN 'ID' THEN ID
+        WHEN 'Title' THEN Title END
+    END) ASC
+    , (CASE @Sequence WHEN 'DESC' THEN CASE @OrderBy
+        WHEN 'ID' THEN ID
+        WHEN 'Title' THEN Title END
+    END) DESC;
+```
+
+이 예시처럼 `CASE` 문으로 처리 가능한 수준이면 표준 SQL만으로 충분합니다. 조건 조합이 훨씬 복잡해질 때만 dbclient가 제공하는 추가 확장 기능(동적 쿼리 조립, 전처리 쿼리 등)을 검토합니다. 자세한 기능 목록은 <a href="/slides/170 SQL 처리를 위한 다양한 확장 기능.html" target="_blank" rel="noopener noreferrer">170 SQL 처리를 위한 다양한 확장 기능</a> 슬라이드에서 확인합니다.
+
+## 자주 하는 오해
+
+**"동적 SQL 기능을 처음부터 다 써야 계약을 잘 만드는 건가요?"**
+아닙니다. 표준 SQL과 `CASE` 문으로 해결되는 조건이 대부분입니다. 확장 기능은 실제로 필요한 복잡도에 도달했을 때만 사용합니다. 미리 복잡하게 만들면 유지보수 비용만 늘어납니다.
+
+## 완료 조건 확인
+
+[07. dbclient SQL 계약](/docs/tutorial/dbclient-SQL계약/)의 완료 조건을 확인한 뒤 [08. transact 거래 계약](/docs/tutorial/transact-거래계약/)으로 이동합니다.

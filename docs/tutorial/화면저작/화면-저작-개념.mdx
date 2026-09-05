@@ -1,0 +1,83 @@
+---
+sidebar_position: 2
+---
+
+# 화면 저작 개념
+
+> [주제 목차](/docs/tutorial/화면저작/) · 다음: [목록 화면 작성](/docs/tutorial/화면저작/목록-화면-작성)
+
+이 문서의 결과: 화면의 기본 골격과 `syn-datafield`/`syn-options`/`syn-events` 세 속성의 역할을 설명한다.
+
+## 화면의 기본 골격
+
+HandStack 화면은 `syn.loader.js`가 필요한 리소스를 자동으로 불러옵니다. 컴파일 과정이 없으므로 이 HTML 파일 자체가 곧 배포 대상입니다.
+
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="visibility: hidden;">
+  <form autocomplete="off" id="form1" syn-datafield="MainForm">
+    <div class="page">
+      <div class="page-wrapper">
+        <div class="page-body">
+          <div class="container-xl">
+            <!-- 화면 내용 -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+  <script src="/js/syn.loader.js"></script>
+</body>
+</html>
+```
+
+`body`에 `style="visibility: hidden;"`을 두는 이유는 리소스 로딩이 끝나기 전 화면이 깜빡이며 보이는 것을 막기 위해서입니다. 레이아웃은 기본 번들인 Tabler CSS Framework를 사용하며, 다른 CSS Framework로 바꿀 수도 있습니다.
+
+## 데이터를 표시하는 세 가지 속성
+
+| 속성 | 역할 |
+|---|---|
+| `syn-datafield` | 이 요소가 어떤 데이터 항목에 대응하는지 지정 |
+| `syn-options` | 컨트롤 동작(그리드 컬럼, 날짜 범위 등) 세부 설정 |
+| `syn-events` | 이 요소에 연결할 이벤트 목록(`click` 등) |
+
+```html
+<syn_grid id="grdBoard" syn-datafield="Board" syn-options="{
+    height: 420
+    , columns: [
+        ['ID', '게시글 ID', 100, false, 'text', false, 'center']
+        , ['Title', '제목', 400, false, 'text', false, 'left']
+    ]
+    , readOnly: true
+}"></syn_grid>
+```
+
+## 왜 이름이 세 곳에서 같아야 하는가
+
+`syn-datafield`에 쓴 이름(`Board`)은 다음 두 곳과 반드시 같아야 합니다.
+
+```text
+[화면 HTML]   syn-datafield="Board"
+[화면 JS]     outputs: [{ type: 'Grid', dataFieldID: 'Board' }]
+[.txn 계약]   Outputs: [{ Type: "Grid", ... }]
+```
+
+세 곳 중 하나라도 이름이 다르면 [08. transact 거래 계약](/docs/tutorial/transact-거래계약/)에서 배울 거래는 성공해도 화면에 데이터가 표시되지 않습니다. 화면을 작성하는 시점부터 이름을 정확히 맞추는 습관이 이후 디버깅 시간을 크게 줄여 줍니다.
+
+## 자주 하는 오해
+
+**"`syn-options`에 다 넣으면 되는데 `syn-datafield`는 왜 따로 있나요?"**
+`syn-datafield`는 "무엇을 담을 그릇인가"를, `syn-options`는 "그 그릇을 어떻게 꾸밀 것인가"를 정합니다. 역할이 다르기 때문에 속성도 분리돼 있습니다.
+
+**"컨트롤 이름(`id`)과 `syn-datafield`는 같은 건가요?"**
+다릅니다. `id`는 DOM 요소를 가리키는 고유 식별자이고, `syn-datafield`는 서버와 주고받는 데이터 항목의 이름입니다. 같은 화면에 `id`가 다른 컨트롤 두 개가 같은 `syn-datafield`를 가리킬 수도 있습니다.
+
+## 이것만 기억하세요
+
+1. **HTML 파일 자체가 배포 대상이며 별도 컴파일이 없다.**
+2. **`syn-datafield` 이름은 화면·화면 JS·거래 계약 세 곳에서 반드시 일치해야 한다.**

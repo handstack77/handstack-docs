@@ -1,0 +1,88 @@
+---
+sidebar_position: 4
+---
+
+# 화면 이동과 메뉴
+
+> [주제 목차](/docs/tutorial/화면동작과-거래연결/) · 이전: [이벤트와 거래 연결](/docs/tutorial/화면동작과-거래연결/이벤트와-거래-연결)
+
+이 문서의 결과: 목록 화면에서 등록/상세 화면을 팝업으로 열고, 닫힐 때 목록을 자동 갱신한다.
+
+## 팝업으로 화면 열기
+
+```js
+event: {
+    btnNewBoard_click(evt) {
+        var windowID = 'BOD011';
+        var popupOptions = $object.clone(syn.$w.popupOptions);
+        popupOptions.notifyActions.push({
+            actionID: 'response',
+            handler(evt, val) {
+                syn.$w.windowClose(windowID);
+                syn.$w.transactionAction('LD01');
+            }
+        });
+
+        syn.$w.windowOpen(windowID, popupOptions);
+    }
+}
+```
+
+`windowOpen`으로 등록 화면을 팝업으로 열고, 팝업 쪽에서 저장이 끝나면 `response` 이벤트를 보내도록 약속해 둡니다. 부모 화면은 그 이벤트를 받으면 팝업을 닫고(`windowClose`) 목록을 다시 조회(`LD01`)합니다.
+
+## 팝업에서 응답 보내기
+
+```js
+// BOD011.js 등록 화면 쪽
+transaction: {
+    ID01: {
+        inputs: [{ type: 'Row', dataFieldID: 'MainForm' }],
+        outputs: [],
+        callback: (error) => {
+            if ($string.isNullOrEmpty(error) == true) {
+                syn.$w.notify('success', '저장 되었습니다');
+                setTimeout(() => {
+                    syn.$n.emit('response');
+                }, 200);
+            }
+        }
+    }
+}
+```
+
+저장이 성공한 뒤에만 `response` 이벤트를 보내는 것이 중요합니다. 실패했는데도 창을 닫아 버리면 사용자가 입력한 내용을 잃어버립니다.
+
+## 상세 화면으로 행 데이터 전달하기
+
+목록 그리드의 버튼 컬럼을 클릭해 상세 화면을 열 때는 선택한 행의 데이터를 함께 전달합니다.
+
+```js
+grdBoard_cellButtonClick(elID, row, column, prop, value) {
+    var gridID = 'grdBoard';
+    var columnViewPost = syn.uicontrols.$grid.propToCol(gridID, 'EditPost');
+    if (column == columnViewPost && row > -1) {
+        var windowID = 'BOD012';
+        var popupOptions = $object.clone(syn.$w.popupOptions);
+        popupOptions.notifyActions.push({
+            actionID: 'response',
+            handler(evt, val) {
+                syn.$w.windowClose(windowID);
+                syn.$w.transactionAction('LD01');
+            }
+        });
+
+        syn.$w.windowOpen(windowID, popupOptions, (elID) => {
+            var post = { postID: syn.uicontrols.$grid.getDataAtCell(gridID, row, 'ID') };
+            syn.$n.call(windowID, 'request', post);
+        });
+    }
+}
+```
+
+## 메뉴 노출
+
+화면을 실제 메뉴에 노출하는 절차는 운영 환경의 메뉴 관리 설정을 따르며, 화면 자체의 동작 코드와는 분리해서 관리합니다. 메뉴 등록 없이도 화면 URL을 직접 열어 개발 중 동작을 확인할 수 있습니다.
+
+## 완료 조건 확인
+
+[06. 화면 동작과 거래 연결](/docs/tutorial/화면동작과-거래연결/)의 완료 조건을 확인한 뒤 [07. dbclient SQL 계약](/docs/tutorial/dbclient-SQL계약/)으로 이동합니다.

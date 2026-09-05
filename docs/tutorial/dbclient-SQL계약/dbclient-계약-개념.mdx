@@ -1,0 +1,68 @@
+---
+sidebar_position: 2
+---
+
+# dbclient 계약 개념
+
+> [주제 목차](/docs/tutorial/dbclient-SQL계약/) · 다음: [CRUD 계약 작성](/docs/tutorial/dbclient-SQL계약/CRUD-계약-작성)
+
+이 문서의 결과: dbclient 계약(XML)의 구조와 파라미터 바인딩 원리를 설명한다.
+
+## 왜 SQL을 XML로 감싸는가
+
+SQL 문자열만 있으면 어떤 프로그램이 이 SQL을 실행할지, 어느 데이터베이스에 실행할지, 파라미터는 어떻게 받을지가 코드마다 제각각이 됩니다. dbclient는 이 정보를 계약(XML)으로 표준화해 어떤 SQL이든 같은 방식으로 실행·관리할 수 있게 합니다.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper xmlns="contract.xsd">
+    <header>
+        <application>HDS</application>
+        <project>BOD</project>
+        <transaction>BOD010</transaction>
+        <datasource>DB01</datasource>
+        <use>Y</use>
+        <desc>게시판 Board 테이블 조회</desc>
+    </header>
+    <commands>
+        <statement id="LD01" seq="0" use="Y" timeout="0" desc="분류·기간·제목 기준 게시글 조회">
+            <![CDATA[
+SELECT B.ID, B.Category, B.Title, B.Author, B.DatePosted
+FROM Board B
+WHERE B.DatePosted BETWEEN @StartDate AND (@EndDate || '23:59:59')
+    AND CASE WHEN @Category = '' THEN @Category ELSE B.Category END = @Category
+ORDER BY B.ID DESC;
+            ]]>
+            <param id="@Category" type="String" length="-1" value="" />
+            <param id="@StartDate" type="String" length="-1" value="" />
+            <param id="@EndDate" type="String" length="-1" value="" />
+        </statement>
+    </commands>
+</mapper>
+```
+
+## 구조 요약
+
+| 요소 | 역할 |
+|---|---|
+| `header` | 프로그램·프로젝트·거래 ID, 사용할 데이터 원본(`datasource`) |
+| `statement` | SQL 하나, `id`가 기능 ID(예: `LD01`) |
+| `param` | SQL에서 쓰는 파라미터의 이름·타입·기본값 |
+
+파일 이름(`BOD010.xml`)과 `header`의 `transaction`(`BOD010`)이 같아야 하며, 이는 [02. 프로젝트 구조와 파일 작업](/docs/tutorial/프로젝트구조와-파일작업/contracts-디렉토리-구조)에서 배운 항목 ID 규칙과 동일합니다.
+
+## 파라미터 바인딩과 SQL 인젝션
+
+`@Category`, `@StartDate`처럼 `param`으로 선언한 값은 문자열을 그대로 이어붙이는 것이 아니라 매개변수로 바인딩되어 실행됩니다. 사용자가 `Category` 입력값에 SQL 구문을 넣더라도 데이터 값으로만 처리되어 SQL 인젝션으로부터 안전합니다.
+
+## 자주 하는 오해
+
+**"WHERE 절의 CASE 문은 왜 필요한가요? 그냥 `@Category = @Category`로 하면 안 되나요?"**
+조건값이 빈 문자열일 때 "전체 조회"를 의미하게 하려는 패턴입니다. `CASE WHEN @Category = '' THEN @Category ELSE B.Category END = @Category`는 `@Category`가 비어 있으면 항상 참이 되어 분류 조건 없이 전체를 조회하고, 값이 있으면 실제 컬럼과 비교합니다.
+
+**"datasource에 실제 연결 문자열을 적어야 하나요?"**
+아닙니다. `datasource`는 `DB01`처럼 서버에 등록된 데이터 원본의 ID일 뿐입니다. 실제 연결 정보는 서버 설정에서 관리하며, 계약 파일에는 절대 적지 않습니다.
+
+## 이것만 기억하세요
+
+1. **하나의 `statement`가 하나의 기능 ID에 대응한다.**
+2. **파라미터는 값 치환이 아니라 바인딩으로 처리되어 안전하다.**

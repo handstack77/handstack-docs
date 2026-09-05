@@ -1,0 +1,48 @@
+---
+sidebar_position: 4
+---
+
+# 비밀정보 관리
+
+> [주제 목차](/docs/tutorial/환경설정과-보안/) · 이전: [공개 거래와 인증 점검](/docs/tutorial/환경설정과-보안/공개거래와-인증-점검)
+
+이 문서의 결과: 비밀정보를 암호화해 관리하고, 문서·저장소에 남기지 않는 습관을 만든다.
+
+## 무엇이 비밀정보인가
+
+인증 키, 암호, API 토큰, 연결 문자열은 문서나 저장소에 실제 값으로 남기지 않습니다. 학습 트랙의 모든 실습에서도 마찬가지입니다. 실제 운영 값 대신 자리표시자(`<데이터베이스 연결 문자열>` 등)를 사용합니다.
+
+## handstack encrypt/decrypt 실습
+
+[HandStack CLI 사용법](/docs/startup/HandStack-CLI-사용법)의 `encrypt`/`decrypt` 명령으로 필요한 값을 암호화해 관리할 수 있습니다.
+
+```bash
+# 연결 문자열 암호화
+handstack encrypt --format=connectionstring --value="[connection string]"
+
+# 일반 문자열 암호화(SHA256)
+handstack encrypt --format=sha256 --value="hello world"
+```
+
+암호화된 값은 설정 파일이나 배포 자동화의 자격 증명 저장소에 넣고, 필요할 때 `decrypt` 명령으로 복호화해 확인합니다.
+
+```bash
+handstack decrypt --format=sha256 --key=<암호화 키> --value=<암호화된 값>
+```
+
+## 실습: 예제 값 암호화·복호화하기
+
+1. 실습용 더미 연결 문자열(예: `Data Source=board.db`)을 하나 정합니다.
+2. `handstack encrypt --format=connectionstring`으로 암호화합니다.
+3. 결과값을 `decrypt` 명령으로 다시 복호화해 원래 값과 같은지 확인합니다.
+4. 실제 운영 연결 문자열로는 이 실습을 진행하지 않습니다.
+
+## 비밀정보 노출 점검 체크리스트
+
+- [ ] 커밋 이력에 실제 비밀번호나 API 키가 포함되지 않았는지 확인했습니다.
+- [ ] 스크린샷이나 로그 예시에 실제 토큰이 노출되지 않았는지 확인했습니다.
+- [ ] 문서의 예시 값이 모두 더미 값인지 확인했습니다.
+
+## 완료 조건 확인
+
+[11. 환경설정과 보안](/docs/tutorial/환경설정과-보안/)의 완료 조건을 확인한 뒤 [12. 모니터링과 운영 인수인계](/docs/tutorial/모니터링과-운영인수인계/)로 이동합니다.

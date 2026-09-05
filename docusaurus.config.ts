@@ -102,6 +102,12 @@ const config: Config = {
                 },
                 {
                     type: 'docSidebar',
+                    sidebarId: 'tutorialSidebar',
+                    position: 'left',
+                    label: '학습 트랙',
+                },
+                {
+                    type: 'docSidebar',
                     sidebarId: 'referenceSidebar',
                     position: 'left',
                     label: '참고하기',

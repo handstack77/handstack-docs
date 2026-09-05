@@ -1,0 +1,8 @@
+{
+    "label": "03. 프로젝트와 개발 서버",
+    "position": 3,
+    "link": {
+        "type": "generated-index",
+        "description": "새 프로젝트를 만들고 ack로 개발 서버를 실행해 화면을 띄우는 방법을 배웁니다."
+    }
+}

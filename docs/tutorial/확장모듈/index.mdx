@@ -1,0 +1,45 @@
+---
+sidebar_position: 1
+---
+
+# 09. 확장 모듈 (function·command·repository)
+
+SQL만으로 처리하기 어려운 로직을 위한 function, 파일 업로드/다운로드를 위한 repository 등 확장 모듈을 다루고 모듈 의존성을 관리하는 방법을 배웁니다.
+
+## 이 주제를 배우면
+
+거래 계약의 `CommandType`을 `F`(function)로 바꿔 서버 함수를 호출하고, 파일 첨부 기능처럼 SQL만으로 안 되는 요구사항을 어느 모듈로 풀어야 할지 판단할 수 있게 됩니다.
+
+## 선수 지식
+
+- [08. transact 거래 계약](/docs/tutorial/transact-거래계약/) 완료
+
+## 학습 목표
+
+- function/repository/command/graphclient 모듈의 역할과 사용 시점을 구분합니다.
+- function 모듈로 서버 함수를 작성하고 거래로 호출합니다.
+- 모듈 재적재 절차와 의존성 실패 시 로그 확인 순서를 정합니다.
+
+## 학습 경로
+
+| 순서 | 문서 | 완료 후 남길 결과 |
+|---|---|---|
+| 1 | [확장 모듈 개념](확장모듈-개념) | 모듈별 역할과 사용 시점을 구분한다 |
+| 2 | [function 모듈 실습](function-모듈-실습) | 서버 함수를 작성하고 거래로 호출한다 |
+| 3 | [의존성과 재적재 관리](의존성과-재적재-관리) | 재적재 절차와 장애 시 로그 확인 순서를 정한다 |
+
+## 완료 조건
+
+- [ ] function 모듈로 간단한 서버 함수를 하나 만들고 거래로 호출했습니다.
+- [ ] repository 모듈로 파일 업로드가 필요한 상황과 그렇지 않은 상황을 구분했습니다.
+- [ ] 확장 모듈 실패 시 우선 확인할 로그 순서를 정했습니다.
+
+## 연결 자료
+
+- [서버리스 Function](/docs/reference/concept/서버리스-Function)
+- [소스 디렉토리 구조](/docs/startup/learning/소스-디렉토리-구조)
+- 슬라이드: <a href="/slides/110 repository 모듈을 이용한 파일 업로드, 다운로드.html" target="_blank" rel="noopener noreferrer">110 repository 모듈을 이용한 파일 업로드, 다운로드</a>, <a href="/slides/330 function 모듈로 백엔드 기능 확장과 배포 준비.html" target="_blank" rel="noopener noreferrer">330 function 모듈로 백엔드 기능 확장과 배포 준비</a>
+
+## 이전 · 다음 주제
+
+이전: [08. transact 거래 계약](/docs/tutorial/transact-거래계약/) · 다음: [10. 테스트와 디버깅](/docs/tutorial/테스트와-디버깅/)

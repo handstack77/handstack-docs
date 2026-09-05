@@ -1,0 +1,69 @@
+---
+sidebar_position: 3
+---
+
+# 요청흐름 이해
+
+> [주제 목차](/docs/tutorial/handstack-기초개념/) · 이전: [개념과 용어](/docs/tutorial/handstack-기초개념/개념과-용어) · 다음: [도입 범위 판단](/docs/tutorial/handstack-기초개념/도입범위-판단)
+
+이 문서의 결과: 조회 버튼 클릭 한 번이 데이터베이스까지 갔다가 돌아오는 경로를 순서대로 설명한다.
+
+## 요청 한 건의 여행
+
+```text
+[사용자] 조회 버튼 클릭
+   |
+   v
+[화면 JS] syn.$w.transactionAction('LD01') 호출
+   |  화면의 입력값을 모아 요청 전문 구성
+   v
+[transact 모듈] BOD010.json 계약 확인
+   |  - 요청이 계약의 Inputs 정의와 맞는가?
+   |  - 인증이 필요한가? (Authorize)
+   |  - GlobalID 부여, 거래 로그 기록
+   v
+[dbclient 모듈] BOD010.xml 의 LD01 SQL 실행
+   |
+   v
+[transact 모듈] 결과를 Outputs 정의대로 변환
+   |
+   v
+[화면 JS] 응답을 그리드/폼 컨트롤에 표시
+```
+
+## 각 단계에서 확인할 것
+
+| 단계 | 확인 지점 | 문제가 생기면 |
+|---|---|---|
+| 화면 → transact | 요청이 서버에 도착했는가 | 브라우저 개발자 도구 네트워크 탭 |
+| transact 계약 검증 | 계약의 Inputs와 실제 요청이 일치하는가 | 거래 이력의 오류 코드 |
+| dbclient 실행 | SQL이 정상 실행됐는가 | dbclient 로그, SQL 문법 |
+| transact 응답 변환 | 응답 데이터 맵 이름이 화면과 일치하는가 | `syn-datafield` 이름 대조 |
+
+이 표는 [10. 테스트와 디버깅](/docs/tutorial/테스트와-디버깅/)에서 실제 진단 절차로 이어집니다.
+
+## 저장 위치 찾아보기
+
+실제 예제(handstack 저장소)에서 BOD 게시판 요청이 지나는 파일을 직접 찾아보면 다음과 같습니다.
+
+| 지나는 곳 | 실제 파일 |
+|---|---|
+| 화면 | `contracts/wwwroot/HDS/BOD/BOD010.html`, `BOD010.js` |
+| 거래 계약 | `contracts/transact/HDS/BOD/BOD010.json` |
+| SQL 계약 | `contracts/dbclient/HDS/BOD/BOD010.xml` |
+
+GitHub의 [BOD010.html](https://github.com/handstack77/handstack/blob/master/2.Modules/wwwroot/Contracts/wwwroot/HDS/BOD/BOD010.html)부터 열어 세 파일을 나란히 비교해 보십시오.
+
+## 자주 하는 오해
+
+**"HTTP 상태 200이면 성공 아닌가요?"**
+아닙니다. **통신은 성공(200)했지만 거래가 실패**할 수 있습니다. 응답 본문의 `message.responseStatus`, `acknowledge` 값으로 실제 성공 여부를 판단합니다. 전문 구조는 [계약 중심 거래](/docs/reference/concept/계약-중심-거래)에서 확인합니다.
+
+**"거래가 성공했는데 화면이 비어 있어요."**
+거래 성공과 화면 표시는 별개입니다. 응답 데이터 맵 이름과 화면 컨트롤의 `syn-datafield`가 같은 이름인지 확인하십시오.
+
+## 이것만 기억하세요
+
+1. **요청은 화면 → transact → dbclient(또는 function) → transact → 화면 순으로 흐른다.**
+2. **각 단계마다 확인할 근거(네트워크, 로그, 이력)가 다르다.**
+3. **200과 성공은 다르다.**

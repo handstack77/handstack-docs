@@ -1,0 +1,8 @@
+{
+    "label": "12. 모니터링과 운영 인수인계",
+    "position": 12,
+    "link": {
+        "type": "generated-index",
+        "description": "거래 이력과 서버 상태를 관측하고 운영을 인수인계하는 방법을 배웁니다."
+    }
+}

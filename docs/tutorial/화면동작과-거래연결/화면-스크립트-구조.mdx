@@ -1,0 +1,72 @@
+---
+sidebar_position: 2
+---
+
+# 화면 스크립트 구조
+
+> [주제 목차](/docs/tutorial/화면동작과-거래연결/) · 다음: [이벤트와 거래 연결](/docs/tutorial/화면동작과-거래연결/이벤트와-거래-연결)
+
+이 문서의 결과: 화면 업무 로직 객체의 각 절이 무엇을 담당하는지 설명한다.
+
+## `$` 접두어 객체
+
+화면마다 `$` 접두어 + 항목 ID로 이름 붙인 JavaScript 객체 하나를 만듭니다. 이 객체가 그 화면의 업무 로직 전체를 담습니다.
+
+```js
+'use strict';
+let $BOD010 = {
+    extends: [],
+    config: {},
+    prop: {},
+    hook: {
+        pageLoad() {
+            syn.$w.transactionAction('LD01');
+        }
+    },
+    event: {
+        btnSearch_click(evt) {
+            syn.$w.transactionAction('LD01');
+        }
+    },
+    transaction: {
+        LD01: {
+            inputs: [{ type: 'Row', dataFieldID: 'MainForm' }],
+            outputs: [{ type: 'Grid', dataFieldID: 'Board' }]
+        }
+    },
+    method: {}
+};
+```
+
+## 절별 역할
+
+| 절 | 역할 | 필수 여부 |
+|---|---|---|
+| `extends` | 공통 기능을 상속받을 대상 목록 | 필요할 때만 |
+| `config` | 화면 구성에 필요한 설정값 | 필요할 때만 |
+| `prop` | 화면 안에서만 쓰는 전역변수 | 필요할 때만 |
+| `hook` | `pageLoad` 같은 화면 생명주기 이벤트 | 대부분 사용 |
+| `event` | 버튼 클릭 등 사용자 이벤트 핸들러 | 대부분 사용 |
+| `transaction` | 이 화면이 호출할 거래(기능 ID)와 입출력 데이터 맵 정의 | 대부분 사용 |
+| `method` | 여러 이벤트에서 공용으로 쓰는 함수 | 필요할 때만 |
+
+사용하지 않는 절은 선언하지 않아도 됩니다. 필요한 절만 쓰기 때문에 화면마다 코드 길이가 자연스럽게 달라집니다.
+
+## transactionAction이 하는 일
+
+```js
+syn.$w.transactionAction('LD01');
+```
+
+이 한 줄이 하는 일은 다음과 같습니다.
+
+1. `transaction.LD01.inputs`에 정의한 데이터 맵을 화면에서 모읍니다.
+2. 서버로 거래를 요청합니다.
+3. 응답을 받으면 `transaction.LD01.outputs`에 정의한 컨트롤에 값을 채웁니다.
+
+여기서 쓰는 기능 ID(`LD01`)는 [08. transact 거래 계약](/docs/tutorial/transact-거래계약/)에서 만들 계약 파일의 `ServiceID`와 반드시 같아야 합니다.
+
+## 이것만 기억하세요
+
+1. **화면 로직은 `$` + 항목 ID로 된 객체 하나에 모인다.**
+2. **`hook`은 생명주기, `event`는 사용자 동작, `transaction`은 서버 호출을 담당한다.**

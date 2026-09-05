@@ -1,0 +1,63 @@
+---
+sidebar_position: 3
+---
+
+# 새 프로젝트 만들기
+
+> [주제 목차](/docs/tutorial/프로젝트와-개발서버/) · 이전: [프로젝트와 서버 개념](/docs/tutorial/프로젝트와-개발서버/프로젝트와-서버-개념) · 다음: [환경 구성과 기동 확인](/docs/tutorial/프로젝트와-개발서버/환경-구성과-기동확인)
+
+이 문서의 결과: BOD 게시판 프로젝트 디렉토리 골격을 만들고 `ack`로 기동해 접속을 확인한다.
+
+## 시작 조건
+
+- [빠른 시작](/docs/startup/빠른-시작)에서 안내하는 대로 `ack` 실행 환경이 준비돼 있어야 합니다.
+- 운영 시스템과 분리된 실습용 디렉토리를 사용합니다.
+
+## 디렉토리 골격 준비하기
+
+`handstack create` CLI로 템플릿 기반 생성도 가능하지만, 학습 목적으로는 다음처럼 빈 디렉토리를 직접 만들어도 충분합니다.
+
+```text
+contracts
+├─dbclient
+│  └─HDS
+│      └─BOD
+├─transact
+│  └─HDS
+│      └─BOD
+└─wwwroot
+   └─HDS
+       └─BOD
+```
+
+템플릿에서 시작하려면 [HandStack CLI 사용법](/docs/startup/HandStack-CLI-사용법)의 `create` 명령을 참고합니다.
+
+```bash
+handstack create --ack=[ack 경로] --file=[템플릿 zip] --directory=[대상 경로] --find=[template] --replace=BOD
+```
+
+## ack 실행하기
+
+```bash
+cd [HandStack 소스 기본경로]/app
+ack
+```
+
+Windows가 아닌 환경에서는 `./ack` 또는 `dotnet ack.dll`로 실행합니다. 자세한 운영체제별 절차는 [빠른 시작](/docs/startup/빠른-시작)을 따릅니다.
+
+## 정상 기동 확인하기
+
+1. 터미널에 오류 로그 없이 서버가 대기 상태로 표시되는지 확인합니다.
+2. 브라우저에서 `http://localhost:8421/checkup/account/signin.html`(포트는 환경에 따라 다를 수 있음)에 접속합니다.
+3. BOD 프로젝트 화면 파일을 아직 만들지 않았다면 이 단계에서는 로그인 화면까지만 확인해도 충분합니다. 실제 BOD010 화면 확인은 [05. 화면 저작](/docs/tutorial/화면저작/)에서 진행합니다.
+
+## 성공 증거 / 실패하면
+
+| 확인 | 성공 | 실패 시 확인할 것 |
+|---|---|---|
+| 서버 기동 | 터미널에 오류 없이 대기 | 포트 충돌, 실행 권한(Linux/macOS `chmod +x`) |
+| 브라우저 접속 | 로그인 화면 정상 표시 | 방화벽, 포트 번호, `http://localhost` 오타 |
+
+## 다음 문서
+
+[환경 구성과 기동 확인](/docs/tutorial/프로젝트와-개발서버/환경-구성과-기동확인)에서 개발/검증/운영 설정 프리셋의 차이를 배웁니다.

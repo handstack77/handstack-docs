@@ -1,0 +1,8 @@
+{
+    "label": "05. 화면 저작 (HTML/JS 작성)",
+    "position": 5,
+    "link": {
+        "type": "generated-index",
+        "description": "HTML과 JavaScript로 목록·입력 화면을 직접 작성하고 공통 컨트롤과 레이아웃을 적용하는 방법을 배웁니다."
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "label": "01. HandStack 기초 개념",
+    "position": 1,
+    "link": {
+        "type": "generated-index",
+        "description": "ack, 모듈, 계약, 화면이 각각 무슨 역할을 하는지 이해하고 요청이 데이터베이스까지 이동하는 경로를 설명할 수 있게 됩니다."
+    }
+}

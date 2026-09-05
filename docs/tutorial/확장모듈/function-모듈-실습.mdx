@@ -1,0 +1,70 @@
+---
+sidebar_position: 3
+---
+
+# function 모듈 실습
+
+> [주제 목차](/docs/tutorial/확장모듈/) · 이전: [확장 모듈 개념](/docs/tutorial/확장모듈/확장모듈-개념) · 다음: [의존성과 재적재 관리](/docs/tutorial/확장모듈/의존성과-재적재-관리)
+
+이 문서의 결과: function 모듈로 서버 함수를 작성하고 거래로 호출한다.
+
+## 시작 조건
+
+- [08. transact 거래 계약](/docs/tutorial/transact-거래계약/)에서 `CommandType: "D"` 거래를 만들어 봤습니다.
+
+## function 모듈 기본 구조
+
+```text
+contracts/function/csharp/HDS/BOD/BFN010
+├─featureMain.cs      <- 실행 로직
+└─featureMeta.json    <- 함수 메타 정보
+```
+
+`featureMain.cs`(또는 Node.js라면 `featureMain.js`)에 실제 실행 로직을 작성하고, `featureMeta.json`에 이 함수의 입출력 정보를 기술합니다.
+
+## 거래 계약에서 function 호출하기
+
+```json
+{
+    "ApplicationID": "HDS",
+    "ProjectID": "BOD",
+    "TransactionID": "BOD013",
+    "Services": [
+        {
+            "ServiceID": "FD01",
+            "Authorize": false,
+            "ReturnType": "Json",
+            "CommandType": "F",
+            "TransactionScope": false,
+            "Inputs": [
+                { "ModelID": "Dynamic", "Fields": [], "Type": "Row" }
+            ],
+            "Outputs": [
+                { "ModelID": "Dynamic", "Fields": [], "Type": "Form" }
+            ]
+        }
+    ]
+}
+```
+
+`CommandType`을 `"D"`(dbclient) 대신 `"F"`(function)로 바꾸면 이 서비스는 SQL이 아니라 `BFN010` 함수를 실행합니다. `Inputs`/`Outputs` 데이터 맵 규칙은 [08. transact 거래 계약](/docs/tutorial/transact-거래계약/데이터맵과-전문)에서 배운 것과 동일합니다.
+
+## 언제 function을 쓰는가: 실습 예시
+
+게시글 등록 시 외부 알림 서비스로 메시지를 보내야 한다고 가정합니다. 이 로직은 SQL로 표현할 수 없으므로 function으로 분리합니다.
+
+1. `BOD` 프로젝트 아래 새 기능 ID(`BFN010`)로 디렉토리를 만듭니다.
+2. `featureMain`에 외부 알림 호출 로직을 작성합니다.
+3. `featureMeta.json`에 입력(예: 게시글 제목)과 출력(성공 여부)을 정의합니다.
+4. 화면의 등록 거래(`BOD011.json`)에 이 서비스를 추가로 호출하도록 연결합니다.
+
+## 성공 증거 / 실패하면
+
+| 확인 | 성공 | 실패 시 확인할 것 |
+|---|---|---|
+| 함수 등록 | 서버 재기동 후 함수 목록에 표시됨 | `featureMeta.json` 문법, 디렉토리 경로 |
+| 함수 호출 | 거래 실행 시 함수 로직이 실행됨 | `CommandType`이 `F`인지, 기능 ID 일치 여부 |
+
+## 다음 문서
+
+[의존성과 재적재 관리](/docs/tutorial/확장모듈/의존성과-재적재-관리)에서 함수를 수정한 뒤 서버에 반영하는 절차를 배웁니다.

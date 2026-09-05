@@ -188,5 +188,5 @@ CSS/JS 분기 비교는 대소문자를 구분하므로 파일 확장자는 소�
 - 정적 파일 동기화는 운영 화면에 직접 영향을 주므로 배포 권한과 감사 로그를 함께 관리합니다.
 - 화면에서 직접 거래를 호출하는 경우 `BusinessServerUrl`, 인증 토큰, 공개 거래 범위를 `transact` 설정과 함께 점검합니다.
 - `/wwwroot/api/dev-account/sign-in`은 개발 전용입니다. 운영·스테이징 `appsettings.json`에서 `AppSettings:IsEnabledDevAutoSignIn`을 `true`로 두지 않아야 하며, `RunningEnvironment` 게이트가 2차 방어선 역할을 합니다.
-- 발급된 쿠키/BearerToken에는 `IsDevAutoSignIn` claim이 포함되어 `transact`(`TransactionController`/`WorkflowController`)가 해당 요청을 감지하고 로그로 구분합니다. `transact` 쪽 상세 동작은 [transact 운영 주의사항](/reference/api/modules/transact#운영-주의사항)을 참고합니다.
+- 발급된 쿠키/BearerToken에는 `IsDevAutoSignIn` claim이 포함되어 `transact`(`TransactionController`/`WorkflowController`)가 해당 요청을 감지하고 로그로 구분합니다. `transact` 쪽 상세 동작은 [transact 운영 주의사항](/docs/reference/api/modules/transact#운영-주의사항)을 참고합니다.
 - `wwwroot/mainframe.js`의 `hook.pageInit()`은 `HandStack.TokenID` 쿠키가 없으면 `/login.html`로 보내기 전에 `method.tryDevAutoSignIn()`으로 이 API를 먼저 호출합니다. 응답이 성공(`200`)이면 화면을 새로고침해 발급된 쿠키로 계속 진행하고, 비활성(`404`) 또는 오류면 기존처럼 `/login.html`로 이동합니다.

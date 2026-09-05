@@ -55,7 +55,6 @@ sidebar_position: 12
 | 항목 | 내용 |
 |---|---|
 | 전역 별칭 | `syn.$n` |
-| 소스 위치 | `2.Modules/wwwroot/wwwroot/js/syn.js` (약 6056~6919번째 줄) |
 | 예제 페이지 | `/sample/syn/network.html` |
 
 이 문서에서 다루지 않는 `rooms.connect()`, 채널 객체의 `bind()`/`.call()`/`.emit()`은 [iframe-main](iframe-main) / [iframe-child](iframe-child)를 참고하세요.
@@ -63,7 +62,7 @@ sidebar_position: 12
 ## 메서드
 
 ### `syn.$n.findChannel(channelID)`
-- 설명: `scope`가 `channelID`와 일치하는, 이미 연결된 채널을 `$network.connections`에서 찾습니다. 소스 위치: 약 6597~6600번째 줄.
+- 설명: `scope`가 `channelID`와 일치하는, 이미 연결된 채널을 `$network.connections`에서 찾습니다.
 - 매개변수
 
 | 이름 | 타입 | 필수 | 설명 |
@@ -110,7 +109,7 @@ const results = await syn.$n.broadCast('ping', { message: 'to all channels' });
 ```
 
 ### `syn.$n.emit(evt, params)`
-- 설명: `syn.$n.myChannelID`에 해당하는 채널을 찾아 응답을 기대하지 않는 메시지를 전송합니다. `myChannelID`가 설정되지 않았거나 해당 채널이 없으면 경고 로그 후 종료합니다. 소스 위치: 약 6646~6667번째 줄.
+- 설명: `syn.$n.myChannelID`에 해당하는 채널을 찾아 응답을 기대하지 않는 메시지를 전송합니다. `myChannelID`가 설정되지 않았거나 해당 채널이 없으면 경고 로그 후 종료합니다.
 - 매개변수
 
 | 이름 | 타입 | 필수 | 설명 |
@@ -126,7 +125,7 @@ syn.$n.emit('note', { message: 'hello parent' });
 ```
 
 ### `syn.$n.startSse(id, url, eventHandlers, options = {})`
-- 설명: `EventSource`로 SSE(Server-Sent Events) 연결을 생성합니다. 이미 같은 `id`로 연결이 있으면 기존 연결을 그대로 반환합니다. 소스 위치: 약 6687~6739번째 줄.
+- 설명: `EventSource`로 SSE(Server-Sent Events) 연결을 생성합니다. 이미 같은 `id`로 연결이 있으면 기존 연결을 그대로 반환합니다.
 - 매개변수
 
 | 이름 | 타입 | 필수 | 설명 |
@@ -147,7 +146,7 @@ syn.$n.startSse('realtime-updates', '/api/events', {
 ```
 
 ### `syn.$n.stopSse(id)`
-- 설명: `id`로 등록된 SSE 연결을 닫고 목록에서 제거합니다. 소스 위치: 약 6742~6752번째 줄.
+- 설명: `id`로 등록된 SSE 연결을 닫고 목록에서 제거합니다.
 - 매개변수: `id` (`string`, 필수)
 - 반환값: 연결을 찾아 닫았으면 `true`, 없으면 `false`
 - 예시
@@ -156,12 +155,12 @@ syn.$n.stopSse('realtime-updates');
 ```
 
 ### `syn.$n.stopAllSse()`
-- 설명: 등록된 모든 SSE 연결을 순회하며 `stopSse`를 호출합니다. 소스 위치: 약 6754~6758번째 줄.
+- 설명: 등록된 모든 SSE 연결을 순회하며 `stopSse`를 호출합니다.
 - 매개변수: 없음
 - 반환값: 없음
 
 ### `syn.$n.getSseConnection(id)`
-- 설명: `id`로 등록된 `EventSource` 인스턴스를 반환합니다. 소스 위치: 약 6760~6762번째 줄.
+- 설명: `id`로 등록된 `EventSource` 인스턴스를 반환합니다.
 - 매개변수: `id` (`string`, 필수)
 - 반환값: `EventSource` 인스턴스 또는 `undefined`
 - 예시
@@ -171,7 +170,7 @@ console.log(connection?.readyState);
 ```
 
 ### `syn.$n.startSocket(id, url, eventHandlers = {}, options = {})`
-- 설명: `WebSocket` 연결을 생성합니다. 이미 같은 `id`로 연결이 있으면 기존 소켓을 그대로 반환합니다. 소스 위치: 약 6785~6871번째 줄.
+- 설명: `WebSocket` 연결을 생성합니다. 이미 같은 `id`로 연결이 있으면 기존 소켓을 그대로 반환합니다.
 - 매개변수
 
 | 이름 | 타입 | 필수 | 설명 |
@@ -197,7 +196,7 @@ syn.$n.startSocket('chat', 'wss://example.com/chat', {
 ```
 
 ### `syn.$n.sendSocketMessage(id, message)`
-- 설명: `id`로 연결된 WebSocket이 열려 있을 때(`readyState === WebSocket.OPEN`) 메시지를 전송합니다. `options.json`이 `true`이고 `message`가 객체이면 `JSON.stringify`로 직렬화합니다. 소스 위치: 약 6874~6890번째 줄.
+- 설명: `id`로 연결된 WebSocket이 열려 있을 때(`readyState === WebSocket.OPEN`) 메시지를 전송합니다. `options.json`이 `true`이고 `message`가 객체이면 `JSON.stringify`로 직렬화합니다.
 - 매개변수
 
 | 이름 | 타입 | 필수 | 설명 |
@@ -212,17 +211,17 @@ syn.$n.sendSocketMessage('chat', { type: 'message', text: 'hello' });
 ```
 
 ### `syn.$n.stopSocket(id)`
-- 설명: `id`로 등록된 WebSocket 연결을 의도적으로 종료합니다(자동 재연결 타이머도 함께 정리). 소스 위치: 약 6893~6906번째 줄.
+- 설명: `id`로 등록된 WebSocket 연결을 의도적으로 종료합니다(자동 재연결 타이머도 함께 정리).
 - 매개변수: `id` (`string`, 필수)
 - 반환값: 없음
 
 ### `syn.$n.stopAllSockets()`
-- 설명: 등록된 모든 WebSocket 연결을 순회하며 `stopSocket`을 호출합니다. 소스 위치: 약 6908~6910번째 줄.
+- 설명: 등록된 모든 WebSocket 연결을 순회하며 `stopSocket`을 호출합니다.
 - 매개변수: 없음
 - 반환값: 없음
 
 ### `syn.$n.getSocket(id)`
-- 설명: `id`로 등록된 원시 `WebSocket` 인스턴스를 반환합니다. 소스 위치: 약 6912~6914번째 줄.
+- 설명: `id`로 등록된 원시 `WebSocket` 인스턴스를 반환합니다.
 - 매개변수: `id` (`string`, 필수)
 - 반환값: `WebSocket` 인스턴스 또는 `undefined`
 - 예시

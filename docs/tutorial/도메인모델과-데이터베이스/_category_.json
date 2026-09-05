@@ -1,0 +1,8 @@
+{
+    "label": "04. 도메인 모델과 데이터베이스",
+    "position": 4,
+    "link": {
+        "type": "generated-index",
+        "description": "업무 데이터를 모델로 설계하고 실제 데이터베이스 테이블과 연결하는 방법을 배웁니다."
+    }
+}

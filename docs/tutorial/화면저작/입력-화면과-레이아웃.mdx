@@ -1,0 +1,73 @@
+---
+sidebar_position: 4
+---
+
+# 입력 화면과 레이아웃
+
+> [주제 목차](/docs/tutorial/화면저작/) · 이전: [목록 화면 작성](/docs/tutorial/화면저작/목록-화면-작성)
+
+이 문서의 결과: `BOD011`(등록), `BOD012`(상세/수정/삭제) 입력 화면과 공통 레이아웃을 작성한다.
+
+## 시작 조건
+
+- [목록 화면 작성](/docs/tutorial/화면저작/목록-화면-작성)에서 `BOD010.html`을 완성했습니다.
+
+## 입력 폼 작성
+
+```html
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">신규 게시글 등록</h3>
+        <div class="card-actions">
+            <button type="button" id="btnConfirm" syn-events="['click']" class="btn btn-primary">저장</button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="mb-2 row">
+            <label class="col-2 col-form-label px-3 required">제목</label>
+            <div class="col">
+                <input type="text" id="txtTitle" syn-datafield="Title" class="form-control" syn-options="{belongID: ['ID01']}">
+            </div>
+        </div>
+        <div class="mb-2 row">
+            <label class="col-2 col-form-label px-3">분류</label>
+            <div class="col-4">
+                <select class="form-select" id="ddlCategory" syn-datafield="Category" syn-options="{toSynControl: false, belongID: ['ID01']}">
+                    <option value="정보">정보</option>
+                    <option value="강좌">강좌</option>
+                    <option value="소식">소식</option>
+                </select>
+            </div>
+        </div>
+        <div class="mb-2 row">
+            <label class="col-2 col-form-label px-3 required">작성자</label>
+            <div class="col">
+                <input type="text" id="txtAuthor" syn-datafield="Author" class="form-control" syn-options="{belongID: ['ID01']}">
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+`BOD011`은 새 글 등록, `BOD012`는 기존 글의 상세·수정·삭제를 담당합니다. 두 화면은 필드 구성이 비슷하지만 `belongID`에 지정하는 기능 ID(`ID01` 대신 `GD01`/`UD01`/`DD01`)가 다릅니다. 기능 ID의 의미는 [02. 프로젝트 구조와 파일 작업](/docs/tutorial/프로젝트구조와-파일작업/contracts-디렉토리-구조)에서 다룬 규칙을 따릅니다.
+
+## Tabler, Master CSS, Mustache로 레이아웃 잡기
+
+HandStack은 기본 번들로 Tabler CSS Framework를 사용하고, 유틸리티 클래스가 필요하면 Master CSS를, 템플릿 반복이 필요하면 Mustache를 함께 사용할 수 있습니다.
+
+| 도구 | 용도 |
+|---|---|
+| Tabler | 카드, 폼, 버튼 등 업무 화면에 필요한 기본 컴포넌트 |
+| Master CSS | `w:86`, `mt--2`처럼 클래스명 자체가 스타일 값인 유틸리티 CSS |
+| Mustache | 서버에서 받은 목록 데이터를 반복 HTML로 렌더링할 때 사용하는 템플릿 문법 |
+
+세 도구를 모두 써야 하는 것은 아닙니다. 화면이 단순하면 Tabler 컴포넌트만으로 충분하고, 반복되는 카드 목록처럼 동적 HTML이 필요할 때만 Mustache를 추가로 사용합니다.
+
+## 자주 하는 오해
+
+**"입력 폼과 목록 화면은 완전히 다른 코드로 짜야 하나요?"**
+아닙니다. `syn-datafield`, `syn-options` 같은 공통 속성 문법은 동일합니다. 다른 것은 컨트롤 구성(입력 필드 vs. 그리드)과 `belongID`로 지정하는 기능 ID뿐입니다.
+
+## 완료 조건 확인
+
+[05. 화면 저작](/docs/tutorial/화면저작/)의 완료 조건을 다시 확인하고 [06. 화면 동작과 거래 연결](/docs/tutorial/화면동작과-거래연결/)로 이동합니다.

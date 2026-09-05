@@ -1,0 +1,79 @@
+---
+sidebar_position: 2
+---
+
+# contracts 디렉토리 구조
+
+> [주제 목차](/docs/tutorial/프로젝트구조와-파일작업/) · 다음: [편집과 저장 규칙](/docs/tutorial/프로젝트구조와-파일작업/편집과-저장-규칙)
+
+이 문서의 결과: `contracts` 아래 5개 디렉토리의 역할과 항목 ID 규칙을 설명한다.
+
+## 5개 디렉토리
+
+`%HANDSTACK_HOME%\contracts`를 편집기로 열면 다음 디렉토리가 있습니다. 자세한 예시는 [소스 디렉토리 구조](/docs/startup/learning/소스-디렉토리-구조)에서 확인할 수 있습니다.
+
+|디렉토리|담당 모듈|설명|
+|---|---|---|
+|`wwwroot`|wwwroot|화면 HTML/JS, 공용 정적 자산|
+|`transact`|transact|거래 요청 검증·라우팅 계약 (`.json`)|
+|`dbclient`|dbclient|SQL을 XML로 관리하는 계약 (`.xml`)|
+|`function`|function|C#/Node.js 기반 서버 함수|
+|`repository`|repository|파일 업로드/다운로드 저장소 설정|
+
+## 항목 ID 규칙: 프로그램 ID &gt; 프로젝트 ID &gt; 파일 ID
+
+```text
+contracts
+├─wwwroot
+│  └─HDS          <- 프로그램 ID (ApplicationID)
+│      └─BOD      <- 프로젝트 ID (ProjectID)
+│          ├─BOD010.html   <- 파일 ID (화면/거래 단위)
+│          ├─BOD010.js
+│          ├─BOD011.html
+│          └─BOD011.js
+```
+
+같은 규칙이 `transact`, `dbclient`에도 동일하게 적용됩니다. 하나의 화면/기능은 세 모듈에서 같은 항목 ID로 관리되어 유지보수·인수인계 비용을 줄입니다.
+
+## 항목 ID 6자리 읽는 법
+
+`BOD010`처럼 6자리로 구성하는 것을 권장합니다.
+
+| 자리 | 의미 | 예 |
+|---|---|---|
+| 앞 3자리 | 업무(프로젝트) 약어 | `BOD` (게시판) |
+| 뒤 3자리 | 화면/기능 순번 | `010`, `011`, `012` |
+
+`XXX010`, `XXX020`처럼 10 단위는 주 화면을, `XXX011`, `XXX012`처럼 1 단위는 주 화면에 종속된 팝업이나 내부 기능을 의미하도록 팀 규칙을 정하는 것을 권장합니다.
+
+## 기능 ID 규칙: 명령구분 + 기능 + 순번
+
+계약 안의 개별 기능(Service/Statement)에는 4자리 기능 ID를 붙입니다.
+
+| 명령구분 | 의미 |
+|---|---|
+| D | Database (dbclient 호출) |
+| F | Function (서버 함수 실행) |
+| A | API (RESTful 호출) |
+| T | Task (배치 작업) |
+
+| 기능명 | 의미 |
+|---|---|
+| I | INSERT |
+| U | UPDATE |
+| D | DELETE |
+| G | GET ROW (단건 조회) |
+| L | LIST (목록 조회) |
+| M | MODIFY (CRUD 복합) |
+
+예: `LD01` = Database + List + 1번 = "목록 조회 SQL 1번".
+
+## 자주 하는 오해
+
+**"화면 하나에 파일이 왜 이렇게 많나요(html, js, json, xml)?"**
+역할이 다르기 때문입니다. html/js는 화면, json은 거래 계약, xml은 SQL 계약입니다. 파일이 나뉜 덕분에 화면 담당자와 서버/SQL 담당자가 같은 이름의 다른 파일을 각자 수정할 수 있습니다.
+
+## 이것만 기억하세요
+
+1. **하나의 화면/기능은 wwwroot·transact·dbclient에서 같은 항목 ID로 관리한다.**
+2. **항목 ID와 기능 ID 규칙을 팀 안에서 통일하면 유지보수 비용이 줄어든다.**

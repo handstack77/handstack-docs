@@ -1,0 +1,40 @@
+---
+sidebar_position: 4
+---
+
+# 환경 구성과 기동 확인
+
+> [주제 목차](/docs/tutorial/프로젝트와-개발서버/) · 이전: [새 프로젝트 만들기](/docs/tutorial/프로젝트와-개발서버/새-프로젝트-만들기)
+
+이 문서의 결과: 개발/검증/운영 환경 설정 프리셋의 차이를 설명하고 정상 기동을 재확인한다.
+
+## 환경 프리셋 종류
+
+[HandStack CLI 사용법](/docs/startup/HandStack-CLI-사용법)의 `configuration` 명령은 다음 4개 설정 파일을 환경별로 분리해 관리합니다.
+
+| 접미어 | 기본 URL 예 | `RunningEnvironment` |
+|---|---|---|
+| `.localhost.json` | `localhost`, `127.0.0.1` | - |
+| `.development.json` | `http://dev.example.com` | `D` |
+| `.test.json` | `https://test.example.com` | `D` |
+| `.staging.json` | `https://staging.example.com` | `S` |
+| `.production.json` | `https://app.example.com` | `P` |
+
+포트와 경로는 환경이 달라져도 유지되고, 호스트만 환경별 값으로 바뀝니다. 데이터베이스 연결 문자열처럼 URL이 아닌 값은 프리셋을 바꿔도 자동으로 바뀌지 않으므로 각 환경 설정 파일에서 직접 확인합니다.
+
+## 실습: 로컬 프리셋 적용
+
+```bash
+handstack configuration --ack=[ack 경로] --appsettings=ack.localhost.json
+```
+
+적용 후 `ack`를 다시 실행해 정상 기동을 확인합니다.
+
+## 여러 환경을 헷갈리지 않는 습관
+
+- 실습에서는 운영 값(실제 연결 문자열, API Key)을 사용하지 않습니다. 자세한 기준은 [11. 환경설정과 보안](/docs/tutorial/환경설정과-보안/)에서 다룹니다.
+- 어떤 프리셋을 적용했는지 실행 로그나 설정 파일 경로로 항상 확인하는 습관을 들입니다.
+
+## 완료 조건 확인
+
+이 문서까지 마쳤다면 [03. 프로젝트와 개발 서버](/docs/tutorial/프로젝트와-개발서버/)의 완료 조건을 다시 확인하고 [04. 도메인 모델과 데이터베이스](/docs/tutorial/도메인모델과-데이터베이스/)로 이동합니다.

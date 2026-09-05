@@ -1,0 +1,70 @@
+---
+sidebar_position: 2
+---
+
+# 거래 계약 개념
+
+> [주제 목차](/docs/tutorial/transact-거래계약/) · 다음: [데이터 맵과 전문](/docs/tutorial/transact-거래계약/데이터맵과-전문)
+
+이 문서의 결과: transact 계약이 화면과 SQL 사이에 존재하는 이유와 필드 구조를 설명한다.
+
+## 왜 한 단계를 더 두는가
+
+화면이 SQL을 직접 호출한다면 화면마다 서버 구조를 알아야 하고, 인증·로그·트랜잭션 관리를 화면 코드가 떠안게 됩니다. transact 모듈이 이를 대신 처리하도록 화면은 "이 기능을 실행해 줘"라고만 요청합니다.
+
+```text
+[화면] syn.$w.transactionAction('LD01')
+   v
+[transact] BOD010.json 계약 확인 → 인증 → GlobalID 부여 → 로그 기록
+   v
+[dbclient] BOD010.xml 의 LD01 SQL 실행
+   v
+[transact] 결과를 Outputs 정의대로 변환해 응답
+```
+
+## transact 계약 예시
+
+```json
+{
+    "ApplicationID": "HDS",
+    "ProjectID": "BOD",
+    "TransactionID": "BOD010",
+    "Services": [
+        {
+            "ServiceID": "LD01",
+            "Authorize": false,
+            "ReturnType": "Json",
+            "CommandType": "D",
+            "TransactionScope": false,
+            "Inputs": [
+                { "ModelID": "Dynamic", "Fields": [], "Type": "Row" }
+            ],
+            "Outputs": [
+                { "ModelID": "Dynamic", "Fields": [], "Type": "Grid" }
+            ]
+        }
+    ]
+}
+```
+
+| 필드 | 역할 |
+|---|---|
+| `Authorize` | 인증 필요 여부. 운영에서는 공개 거래 정책으로 명시적으로 관리 (자세한 내용은 [11. 환경설정과 보안](/docs/tutorial/환경설정과-보안/)) |
+| `CommandType` | `D`(dbclient), `F`(function) 등 실행 대상 모듈 구분 |
+| `TransactionScope` | 데이터베이스 트랜잭션 범위. 조회는 `false`, 여러 테이블을 함께 바꾸는 저장은 `true` |
+| `Inputs`/`Outputs` | 데이터 맵 정의. 종류는 [데이터 맵과 전문](/docs/tutorial/transact-거래계약/데이터맵과-전문)에서 다룹니다 |
+
+계약과 전문 전체 구조는 [계약 중심 거래](/docs/reference/concept/계약-중심-거래)에서 필드 단위로 확인할 수 있습니다.
+
+## 자주 하는 오해
+
+**"CommandType이 거래 종류를 뜻하나요?"**
+아닙니다. `CommandType`은 이 기능이 어느 모듈로 라우팅될지를 정합니다. `D`는 dbclient(SQL), `F`는 function(서버 함수)입니다. 거래 자체의 성격이 아니라 실행 대상을 고르는 스위치라고 이해하는 것이 정확합니다.
+
+**"TransactionScope를 항상 true로 두면 더 안전하지 않나요?"**
+아닙니다. 불필요하게 트랜잭션 범위를 열면 잠금 시간이 늘어나 성능이 떨어집니다. 조회처럼 데이터를 바꾸지 않는 기능은 `false`로 두고, 여러 테이블을 함께 바꾸는 저장에만 `true`를 사용합니다.
+
+## 이것만 기억하세요
+
+1. **화면은 기능 ID만 부르고, 나머지는 계약이 정한다.**
+2. **`CommandType`은 실행 대상 모듈을, `TransactionScope`는 DB 트랜잭션 범위를 정한다.**
