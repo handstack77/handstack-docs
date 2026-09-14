@@ -1,6 +1,6 @@
 ---
 slug: 개발자와-엔지니어를-위한-앱-개발-솔루션
-title: 개발자와 엔지니어를 위한 앱 개발 환경인 HandStack을 오픈 소스로 공개합니다
+title: 도메인 주도 로우코드 거버넌스를 위한 앱 개발 환경인 HandStack을 오픈 소스로 공개합니다
 authors: [handstack77]
 tags: [handstack]
 ---

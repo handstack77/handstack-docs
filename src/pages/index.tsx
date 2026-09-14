@@ -21,7 +21,7 @@ function HomepageHeader() {
                         5분 만에 개발 및 운영 환경을 만들어 보세요. Get Started !!!
                     </Link>
                 </div>
-                <h2 className="mt:24!">디지털 전환 시대에 <a href="/blog/HandStack%EC%9D%84-%EC%82%AC%EC%9A%A9-%ED%95%B4%EC%95%BC-%ED%95%98%EB%8A%94-%EC%9D%B4%EC%9C%A0" className="text-decoration-line:underline">HandStack을 사용 해야 하는 이유</a>에 대해 알아보세요</h2>
+                <h2 className="mt-10_Pvpz">디지털 전환 시대에 <a href="/blog/HandStack%EC%9D%84-%EC%82%AC%EC%9A%A9-%ED%95%B4%EC%95%BC-%ED%95%98%EB%8A%94-%EC%9D%B4%EC%9C%A0" className="text-decoration-line:underline">HandStack을 사용 해야 하는 이유</a>에 대해 알아보세요</h2>
             </div>
         </header>
     );
@@ -35,8 +35,8 @@ export default function Home(): JSX.Element {
             description="Description will go into a meta tag in <head />">
             <HomepageHeader />
 
-            <div className="container mt:32! text--center">
-                <h1 className="mt:24!">개발자와 엔지니어를 위한 앱 개발 환경</h1>
+            <div className="container mt-10_Pvpz text--center">
+                <h1>도메인 주도 로우코드 거버넌스를 위한 앱 개발 환경</h1>
                 <Link className="button button--secondary button--lg" to="https://notebooklm.google.com/notebook/02e39cd7-bd8a-48ff-8ab1-12a985660a74">
                     NotebookLM 바로가기
                 </Link>
