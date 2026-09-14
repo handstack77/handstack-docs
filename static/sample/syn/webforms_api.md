@@ -64,6 +64,43 @@
   var keys = syn.$w.getStorageKeys();
   ```
 
+### `syn.$w.createSuid(count)`
+- 설명: .NET ticks 기반의 32자리 16진수 SUID를 생성합니다. 앞 16자리는 생성 시각, 다음 10자리는 호출마다 생성한 노드 난수, 마지막 6자리는 증가값입니다. 한 번의 호출에서 여러 SUID를 생성하면 시계가 같거나 뒤로 가더라도 ticks를 단조 증가시켜 배열의 생성 순서를 보장합니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | count | `number` | N | 생성할 SUID 개수. 생략하거나 유효하지 않은 값을 지정하면 1(기본값) |
+- 반환값: `string | string[]` — `count`가 1이면 SUID 문자열, 2 이상이면 SUID 문자열 배열
+- 예시
+  ```js
+  var suid = syn.$w.createSuid();
+  var suids = syn.$w.createSuid(3);
+  ```
+
+### `syn.$w.suidToDateTime(suid)`
+- 설명: SUID 앞 16자리의 .NET ticks를 JavaScript `Date` 객체(UTC 시각)로 변환합니다. JavaScript `Date`의 해상도는 밀리초이므로, 같은 밀리초 내에서 SUID 생성 순서를 위해 보정된 ticks 단위는 복원되지 않습니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | suid | `string` | Y | 32자리 16진수 SUID |
+- 반환값: `Date | null` — 변환된 UTC 시각. 형식이 올바르지 않거나 JavaScript `Date` 범위를 벗어나면 `null`
+- 예시
+  ```js
+  var dateTime = syn.$w.suidToDateTime(suid);
+  ```
+
+### `syn.$w.dateTimeToSuid(dateTime)`
+- 설명: JavaScript `Date` 또는 `Date` 생성자에서 처리할 수 있는 시각 값을 SUID로 변환합니다. 시각은 앞 16자리 ticks에 기록하며, 나머지 16자리는 호출마다 새 난수 노드 값과 증가값으로 생성됩니다. 따라서 `suidToDateTime()`으로 얻은 시각을 다시 변환해도 원래 SUID 문자열과 같지는 않습니다.
+- 매개변수
+  | 이름 | 타입 | 필수 | 설명 |
+  |---|---|---|---|
+  | dateTime | `Date | string | number` | Y | 변환할 시각 |
+- 반환값: `string | null` — 32자리 16진수 SUID. 유효하지 않은 시각이면 `null`
+- 예시
+  ```js
+  var suid = syn.$w.dateTimeToSuid(new Date());
+  ```
+
 ## 페이지 라이프사이클
 
 ### `syn.$w.activeControl(evt)`
