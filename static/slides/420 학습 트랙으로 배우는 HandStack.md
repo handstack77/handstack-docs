@@ -140,7 +140,7 @@ section.tinytext>blockquote {
 
 7. dbclient SQL 계약
 8. transact 거래 계약
-9. 확장 모듈 (function·command·repository)
+9. 확장 모듈
 10. 테스트와 디버깅
 11. 환경설정과 보안
 12. 모니터링과 운영 인수인계
