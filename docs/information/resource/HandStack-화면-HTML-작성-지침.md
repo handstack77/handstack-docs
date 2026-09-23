@@ -188,11 +188,11 @@ Tabler는 Bootstrap 5 기반 위에 다양한 UI 컴포넌트와 유틸리티 �
     ```html
     <div class="alert alert-info alert-dismissible" role="alert">
         <div class="d-flex">
-            <div class="mr-2">
+            <div class="me-2">
                 <i class="f:20 ti ti-check"></i>
             </div>
             <div>
-                <h4 class="alert-title">작업일자통제 참고사항</h4>
+                <h4 class="alert-heading">작업일자통제 참고사항</h4>
                 <div class="text-secondary">
                     <ul class="m-0">
                         <li>이월: 현재 기수의 회계기간 말일 자로 마감일이 자동 입력되어 통제합니다.</li>
@@ -206,7 +206,7 @@ Tabler는 Bootstrap 5 기반 위에 다양한 UI 컴포넌트와 유틸리티 �
     </div>
     <div class="alert alert-success" role="alert">
         <div class="d-flex">
-            <div class="mr-2">
+            <div class="me-2">
                 <i class="f:20 ti ti-check"></i>
             </div>
             <div>
@@ -539,64 +539,100 @@ Tabler는 Bootstrap 5 기반 위에 다양한 UI 컴포넌트와 유틸리티 �
     </ul>
     ```
 
-#### 모달 (`modal`)
+#### 팝업 · 모달 (`simplemodal-data`, `modal`)
 
-- 설명: 현재 페이지 위에 뜨는 오버레이 대화상자입니다. 사용자 상호작용이 필요한 경우나 추가 정보를 표시할 때 사용합니다.
-- 클래스: `modal`, `modal-blur`, `fade`, `modal-dialog`, `modal-dialog-centered`, `modal-dialog-scrollable`, `modal-lg`, `modal-sm`, `modal-full-width`, `modal-content`, `modal-header`, `modal-title`, `modal-body`, `modal-footer`, `modal-status`
+현재 페이지 위에 뜨는 오버레이는 **두 가지 패턴**이 있습니다. 용도가 다르므로 **화면마다 하나만 선택하고 섞어 쓰지 않습니다.**
+
+| 패턴 | 기반 | 쓰는 경우 | 제어 |
+|---|---|---|---|
+| `simplemodal-data` (업무 팝업 기본) | SimpleModal (`syn.bundle.js`에 번들) | 다른 화면·화면 조각을 불러오는 업무 팝업(상세 보기, 코드도움, 결재 상신). **호출 화면으로 결과 값을 돌려줘야 할 때** | `syn.$w.showDialog` / `syn.$w.showUIDialog` / `syn.$w.closeDialog`, `syn-options`의 `triggerConfig` |
+| Bootstrap 모달 (`modal` / `modal-dialog`) | Tabler(Bootstrap) `tabler.min.js` | **한 화면 안에서 완결되는 보조 대화상자** — 확인·경고, JSON/로그 보기, 짧은 안내 | `data-bs-toggle="modal"` / `data-bs-dismiss="modal"` |
+
+공통 규칙: 팝업 위에 팝업(모달 위 모달 포함)을 띄우지 않고, 등록·수정 폼 본체는 오버레이로 옮기지 않으며, 닫기 버튼에는 한국어 `aria-label`을 붙입니다.
+
+##### 패턴 1 — 업무 팝업 (`simplemodal-data`)
+
+- 설명: 업무 화면(`view/*`)의 기본 팝업입니다. 팝업 조각은 `display:none` 상태로 두고 HandStack 런타임이 오버레이로 띄웁니다. 제목 `h3`가 드래그 이동 손잡이로도 동작하며, 크기 하한은 `syn.$w.dialogOptions`의 `minWidth`(320) / `minHeight`(240)입니다.
 - 예시:
     ```html
-    <!-- 단순 모달 -->
-    <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-simple">
-        Simple modal
-    </a>
-    <div class="modal modal-blur fade" id="modal-simple" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+    <div id="tplDetail" style="display:none" class="simplemodal-data">
+        <div class="card">
+            <div class="card-header dialog-header sticky-top p-2">
+                <h4 class="card-title">상세 정보</h4>
+                <div class="card-actions">
+                    <button type="button" class="btn btn-icon border-0" aria-label="닫기"
+                        syn-options="{triggerConfig:{triggerEvent:'click', method:'syn.$w.closeDialog'}}">
+                        <i class="f:18 ti ti-x" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-2">
+                <!-- 상세 폼 -->
+            </div>
+        </div>
+    </div>
+    ```
+- 호출 화면은 `syn.$w.showDialog(el, options, callback)`의 콜백으로 결과를 받고, 팝업은 `syn.$w.closeDialog(result)`로 값을 돌려줍니다. 다른 화면 URL을 iframe으로 띄울 때는 `syn.$w.showUIDialog(src, options, callback)`를 씁니다.
+- 이 패턴에서는 `data-bs-dismiss="modal"`을 쓰지 않습니다.
+
+##### 패턴 2 — Bootstrap 모달 (`modal`)
+
+- 설명: 한 화면 안에서 끝나는 보조 대화상자입니다. `app-settings.html`, `module-settings.html` 같은 관리·설정 화면이 이 방식을 씁니다. 동작에 `tabler.min.js`가 필요합니다.
+- 클래스: `modal`, `modal-blur`, `fade`, `modal-dialog`, `modal-dialog-centered`, `modal-dialog-scrollable`, `modal-xl`, `modal-lg`, `modal-sm`, `modal-full-width`, `modal-content`, `modal-header`, `modal-title`, `modal-body`, `modal-footer`, `modal-status`
+- 예시:
+    ```html
+    <!-- 기본 모달 -->
+    <button type="button" id="btnJsonView" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mdlJsonView">
+        <i class="f:20 mr:4 ti ti-code" aria-hidden="true"></i>JSON 보기
+    </button>
+    <div class="modal modal-blur fade" id="mdlJsonView" tabindex="-1" role="dialog"
+         aria-labelledby="mdlJsonViewTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Modal title</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="mdlJsonViewTitle">설정 JSON</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
                 </div>
                 <div class="modal-body">
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                    <!-- 조회 결과 표시 -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+                    <button type="button" class="btn bg-muted-lt me-auto" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="f:20 mr:4 ti ti-check" aria-hidden="true"></i>적용
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 성공 모달 -->
-    <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-success">
-        Success modal
-    </a>
-    <div class="modal modal-blur fade" id="modal-success" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- 확인 모달 (상태 띠 사용) -->
+    <button type="button" id="btnRemove" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#mdlConfirm">
+        <i class="f:20 mr:4 ti ti-trash" aria-hidden="true"></i>삭제
+    </button>
+    <div class="modal modal-blur fade" id="mdlConfirm" tabindex="-1" role="dialog"
+         aria-labelledby="mdlConfirmTitle" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
             <div class="modal-content">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                <div class="modal-status bg-success"></div>
+                <div class="modal-status bg-danger"></div>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mdlConfirmTitle">삭제 확인</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                </div>
                 <div class="modal-body text-center py-4">
-                    <i class="f:18 ti ti-circle-check"></i>
-                    <h3>Payment succedeed</h3>
-                    <div class="text-secondary">Your payment of $290 has been successfully submitted.</div>
+                    <i class="f:24 ti ti-alert-triangle text-danger" aria-hidden="true"></i>
+                    <h3 class="mt-2">선택한 3건을 삭제합니다</h3>
+                    <div class="text-secondary">삭제한 자료는 되돌릴 수 없습니다.</div>
                 </div>
                 <div class="modal-footer">
-                    <div class="w-100">
-                        <div class="row">
-                            <div class="col">
-                                <a href="#" class="btn w-100" data-bs-dismiss="modal">Go to dashboard</a>
-                            </div>
-                            <div class="col">
-                                <a href="#" class="btn btn-success w-100" data-bs-dismiss="modal">View invoice</a>
-                            </div>
-                        </div>
-                    </div>
+                    <button type="button" class="btn bg-muted-lt" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-danger">삭제</button>
                 </div>
             </div>
         </div>
     </div>
     ```
+- `data-bs-target`이 가리키는 `id`가 실제로 존재해야 하고, `aria-labelledby`로 제목과 연결합니다. 폭은 `modal-sm`(확인) / 기본 / `modal-lg`(상세·로그) / `modal-xl`(넓은 표), 내용이 길면 `modal-dialog-scrollable`을 붙입니다.
 
 ---
 

@@ -230,7 +230,14 @@ HandStack 화면은 완전한 HTML 문서가 아니라 `syn.loader.js`가 로드
 
 ### 6.4 팝업 화면
 
-Bootstrap `modal`/`modal-dialog`를 사용하지 않습니다. HandStack의 `simplemodal-data` 패턴을 사용합니다.
+오버레이는 두 가지 패턴이 있습니다. **화면마다 하나만 선택하고 섞지 않습니다.**
+
+| 패턴 | 쓰는 경우 | 제어 |
+|---|---|---|
+| `simplemodal-data` (업무 팝업 기본) | 다른 화면·화면 조각을 불러오고 **호출 화면으로 결과를 돌려줘야 할 때** | `syn.$w.showDialog` / `syn.$w.showUIDialog` / `syn.$w.closeDialog`, `syn-options`의 `triggerConfig` |
+| Bootstrap 모달 (`modal` / `modal-dialog`) | **한 화면 안에서 완결되는 보조 대화상자**(확인·경고, JSON/로그 보기) | `data-bs-toggle="modal"` / `data-bs-dismiss="modal"` |
+
+업무 화면(`view/*`)의 기본값은 `simplemodal-data`입니다.
 
 ```html
 <div class="simplemodal-data" style="display:none">
@@ -251,7 +258,32 @@ Bootstrap `modal`/`modal-dialog`를 사용하지 않습니다. HandStack의 `sim
 </div>
 ```
 
-- 닫기/트리거는 `syn-options="{triggerConfig:{...}}"`로 바인딩합니다. `data-bs-dismiss="modal"`은 사용하지 않습니다.
+- `simplemodal-data` 팝업의 닫기/트리거는 `syn-options="{triggerConfig:{...}}"`로 바인딩합니다. 같은 팝업에 `data-bs-dismiss="modal"`을 섞어 쓰지 않습니다.
+- Bootstrap 모달을 쓰는 경우는 Tabler 표준 마크업을 따릅니다. `data-bs-target`이 가리키는 `id`, `aria-labelledby`, 닫기 버튼의 한국어 `aria-label`을 반드시 지정합니다.
+
+```html
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mdlConfirm">확인 요청</button>
+
+<div class="modal modal-blur fade" id="mdlConfirm" tabindex="-1" role="dialog"
+     aria-labelledby="mdlConfirmTitle" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-header">
+                <h5 class="modal-title" id="mdlConfirmTitle">삭제 확인</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+            </div>
+            <div class="modal-body">선택한 3건을 삭제합니다. 되돌릴 수 없습니다.</div>
+            <div class="modal-footer">
+                <button type="button" class="btn bg-muted-lt" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-danger">삭제</button>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+- 두 패턴 모두 **팝업 위에 팝업을 띄우지 않습니다.** 등록·수정 폼 본체는 모달로 옮기지 않습니다.
 
 ### 6.5 인라인/전용 스타일이 허용되는 화면 (예외 유형)
 
@@ -301,7 +333,8 @@ Bootstrap `modal`/`modal-dialog`를 사용하지 않습니다. HandStack의 `sim
 ```md
 - container-xl을 기본 컨테이너로 사용하지 말 것 (container-fluid 사용)
 - 순수 <table>로 업무 목록을 만들지 말 것 (syn_auigrid 사용, RPT 보고서 화면만 예외)
-- Bootstrap modal을 업무 팝업에 사용하지 말 것 (simplemodal-data 패턴 사용)
+- 화면 간 호출·결과 반환이 필요한 업무 팝업을 Bootstrap modal로 만들지 말 것 (simplemodal-data 패턴 사용)
+- 한 화면에서 simplemodal-data와 Bootstrap modal을 섞어 쓰지 말 것 (닫기 방식이 엇갈림)
 - FontAwesome 등 타 아이콘 폰트를 사용하지 말 것 (ti ti-* 만 사용)
 - 임의의 HEX 색상, 인라인 색상 스타일을 사용하지 말 것 (Tabler 색상 유틸리티 사용)
 - 시각적 스타일을 인라인 style로 넣지 말 것 (display/visibility 토글만 허용)
@@ -319,7 +352,7 @@ Bootstrap `modal`/`modal-dialog`를 사용하지 않습니다. HandStack의 `sim
 | # | 검증 항목 | 확인 방법 |
 |---|---|---|
 | 1 | 타 아이콘 폰트 미사용 | 파일에서 `fa-`, `bi-` 검색 결과 0건 |
-| 2 | Bootstrap modal 미사용 | `modal-dialog` 검색 결과 0건 |
+| 2 | 팝업 패턴 일관성 | 한 화면에 `simplemodal-data`와 `modal-dialog`가 함께 있지 않음 (결과를 돌려주는 업무 팝업은 `simplemodal-data`) |
 | 3 | 기본 컨테이너 준수 | `container-xl` 검색 결과 0건 |
 | 4 | 인라인 색상 스타일 없음 | `style="` 내에 `color`, `background`, `font-size` 없음 |
 | 5 | HEX 색상 하드코딩 없음 | `#` 뒤 3~6자리 HEX가 class/style에 없음 |
