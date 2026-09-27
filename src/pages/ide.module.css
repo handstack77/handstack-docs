@@ -1,0 +1,156 @@
+.page {
+    max-width: 1140px;
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
+}
+
+.intro {
+    margin-bottom: 2.5rem;
+    text-align: center;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.eyebrow {
+    color: var(--ifm-color-primary);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+
+.intro h1 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.intro > p:last-child {
+    color: var(--ifm-color-emphasis-700);
+    line-height: 1.8;
+}
+
+.platforms {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    border: 1px solid var(--ifm-color-emphasis-300);
+    border-radius: 12px;
+    background: var(--ifm-background-surface-color);
+    min-width: 0;
+}
+
+.available {
+    border-color: var(--ifm-color-primary);
+}
+
+.cardHeading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.cardHeading h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.badge {
+    padding: 0.2rem 0.55rem;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    background: var(--ifm-color-emphasis-200);
+    color: var(--ifm-color-emphasis-800);
+}
+
+.readyBadge {
+    background: var(--ifm-color-primary);
+    color: var(--ifm-font-color-base-inverse);
+}
+
+.version {
+    font-weight: 700;
+    font-size: 1.2rem;
+    overflow-wrap: anywhere;
+    margin-bottom: 0.3rem;
+}
+
+.metadata,
+.fileInfo,
+.portable span,
+.pending {
+    color: var(--ifm-color-emphasis-700);
+    font-size: 0.9rem;
+}
+
+.metadata {
+    margin-bottom: 1.5rem;
+}
+
+.downloads {
+    margin-top: auto;
+}
+
+.downloads :global(.button) {
+    white-space: normal;
+}
+
+.fileInfo {
+    margin: 0.5rem 0 1rem;
+    text-align: center;
+}
+
+.portable {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pending {
+    margin-bottom: 0;
+    line-height: 1.8;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.releaseInfo {
+    margin-top: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--ifm-color-emphasis-100);
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.releaseInfo p {
+    margin-bottom: 0.5rem;
+}
+
+.nextSteps {
+    margin-top: 2.5rem;
+}
+
+.nextSteps h2 {
+    font-size: 1.35rem;
+}
+
+.nextSteps p {
+    margin-bottom: 0;
+}
+
+@media (max-width: 850px) {
+    .platforms {
+        grid-template-columns: 1fr;
+    }
+
+    .page {
+        padding-top: 2.5rem;
+        padding-bottom: 2.5rem;
+    }
+}

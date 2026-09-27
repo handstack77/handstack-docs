@@ -34,6 +34,21 @@ sidebar_position: 20
 - `Events/ManagedRequestHandler.cs`: 운영/관리 화면에서 전달되는 데이터 원본 변경 요청을 반영합니다.
 - `Profiler`: provider별 DB command 실행 프로파일을 수집합니다.
 
+### 결과 변환과 메모리 사용
+
+일반 SQL 실행은 `ExecuteReader` → `DataTableHelper.DataReaderToDataSet` → 관계/메타 처리 → JSON 변환 순서로 진행합니다. 다중 결과 집합, 열 이름·타입·문자열 길이, 행 순서와 null 처리를 유지하며, 반환된 DataSet은 호출자가 해제합니다.
+
+`IgnoreResult=true`인 입력은 현재 결과 집합을 끝까지 읽고 형식을 검증하면서 후속 `BaseFieldMappings`에 필요한 행만 보관합니다.
+
+| 반환 형식 | 후속 매핑에 사용할 행 |
+| --- | --- |
+| `Json`, `Scalar`, `NonQuery`, `Xml` | 마지막 행 |
+| `SchemeOnly`, `SQLText` | 첫 행 |
+
+첫 행을 보관할 때는 검증용 행 하나를 추가로 재사용합니다. 이 경로에서 다음 결과 집합으로 직접 이동하지 않으며, `NonQuery`의 영향받은 행 수는 기존과 같이 첫 `Read` 전에 누적합니다. Reader 종료와 트랜잭션 처리는 기존 실행 경로가 담당합니다.
+
+Form 출력은 첫 행의 값을 사용하고, Grid/Chart 출력은 모든 행의 순서와 값을 유지합니다. 내부 컬렉션 용량 지정과 불필요한 배열/테이블 생성 제거에는 별도 설정이 필요하지 않습니다. 일반 결과의 전체 DataSet 구성은 관계 처리와 메타 생성을 위해 유지됩니다.
+
 ## 계약과 식별자
 
 계약은 기본적으로 다음 위치에 둡니다.
@@ -50,13 +65,15 @@ ApplicationID|ProjectID|TransactionID|StatementID
 
 statement ID는 보통 `GD01`, `LD01`, `MD01`, `DD01`처럼 조회, 목록, 수정, 삭제 성격이 드러나도록 나눕니다. 계약에는 `DataSourceID`, SQL 본문, 입력 파라미터, 반환 형식을 함께 선언합니다.
 
+런타임 쿼리 ID의 마지막 항목은 XML의 `id`와 최소 두 자리로 채운 `seq`를 합친 값입니다. 예를 들어 `id="GD01"`, `seq="0"`이면 `HDS|TST|TST010|GD0100`처럼 요청합니다.
+
 ## 주요 설정
 
 | 설정 | 설명 |
 | --- | --- |
 | `ContractBasePath` | dbclient XML 계약 루트 목록입니다. |
 | `DataSource` | 애플리케이션/프로젝트별 DB provider와 연결 문자열입니다. |
-| `DefaultCommandTimeout` | statement timeout이 없을 때 적용되는 기본 SQL 제한 시간입니다. |
+| `DefaultCommandTimeout` | statement의 `timeout`이 음수일 때 적용되는 기본 SQL 제한 시간입니다. 생략하거나 파싱에 실패하면 현재 매퍼는 `0`을 사용합니다. |
 | `IsContractFileWatching` | 계약 파일 변경 감시 여부입니다. |
 | `IsTransactionLogging` | 요청/응답 거래 로그 기록 여부입니다. |
 | `IsProfileLogging` | DB provider 호출 프로파일 로그 기록 여부입니다. |

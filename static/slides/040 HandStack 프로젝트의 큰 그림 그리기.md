@@ -109,17 +109,32 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
+section.reference-page img { max-height: 440px; max-width: 100%; object-fit: contain; }
 </style>
 
 # HandStack 프로젝트 큰 그림 그리기
 
-### 주요 디렉토리 역할을 이해하고, 전체적인 구조를 파악
+솔루션의 디렉토리와 모듈 경계를 읽고, 변경할 코드의 위치를 찾습니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
 
 ---
 
 ## 잘 정리된 사무실 같은 HandStack
 
-HandStack 프로젝트는 마치 잘 정리된 사무실과 같습니다. 각 디렉토리가 명확한 역할을 가지고 있어 전체 구조를 이해하기 쉽습니다. 예를 들어 다음과 같이 설명할 수 있습니다
+먼저 소스에서 바꿀 책임을 찾습니다. 디렉토리는 다음 역할로 나뉩니다.
 
 - 1.WebHost: 회사의 정문과 안내 데스크 역할
 - 2.Modules: 각 업무를 담당하는 전문 부서들
@@ -160,13 +175,29 @@ HandStack 프로젝트는 마치 잘 정리된 사무실과 같습니다. 각 �
 
 ---
 
-## `4.Tool`: 개발 보조 도구
+## `4.Tool`: 개발 보조 도구 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 - 프로젝트 개발 및 배포, 유지보수를 위한 보조 도구와 유틸리티를 모아놓은 곳입니다.
+
 - CLI 도구, 데이터베이스 마이그레이션 스크립트 등이 포함될 수 있습니다.
+
 - 비유하자면, 업무 효율을 높여주는 ‘사무용품’ 또는 ‘공구함’과 같습니다.
+
+---
+
+## `4.Tool`: 개발 보조 도구 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - 모든 기능은 자동화와 시스템 통합을 위해 CLI 를 우선하여 개발합니다.
   - Node.js, .NET Core, Python 기반의 CLI 는 API 함수로 만드는 비용이 적습니다.
+
 ---
 
 ## `Solution Items`: 솔루션 공용 파일
@@ -202,15 +233,26 @@ HandStack 프로젝트는 마치 잘 정리된 사무실과 같습니다. 각 �
 | `4.Tool`           | 개발 보조 도구 (공구함)           |
 | `Solution Items`   | 솔루션 공용 파일 (회사 규정집)    |
 
-
 ---
 
 ## 업무의 핵심 `모듈` 라이브러리
 
 - HandStack의 백엔드는 <mark>모듈러 모놀리식 아키텍처</mark>를 기반으로 합니다.
-- 각 `모듈`은 독립적으로 개발하고 배포할 수 있는 작은 애플리케이션과 같습니다.
+- 모듈은 개발 책임을 나누는 단위입니다. 독립 배포 여부는 의존성과 호스트 구성을 확인합니다.
 - 모듈들이 모여 하나의 큰 애플리케이션(ack 서버)을 구성합니다.
 - 이 `모듈`의 서버 측 구성 요소들을 살펴보겠습니다.
+
+---
+
+## 잠깐, 구분해 보기
+
+모듈을 나누는 것과 서버를 여러 개로 나누는 것은 어떻게 다를까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: 코드 경계와 배포 경계는 별개입니다. 분리 호스트에는 통신·운영 비용도 생깁니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
 
 ---
 
@@ -232,10 +274,25 @@ HandStack은 모놀리식의 단순함과 마이크로서비스의 장점을 결
 
 ---
 
-## 여러 개의 독립된 모듈로 구분된 애플리케이션
+## 여러 개의 독립된 모듈로 구분된 애플리케이션 (1/2)
+
+<!-- _class: reference-page -->
+
+
+<style scoped>
+  img { width: 60%; display: inline; margin-left:220px; }
+</style>
 
 - 모듈러 모놀리식은 애플리케이션의 도메인을 더 작고 관리하기 쉬운 컴포넌트 또는 모듈로 나누는 아키텍처 접근법 입니다.
+
 - 코드베이스를 논리적이고 구조적인 디렉토리로 구성해서, 시스템 기능 간의 관심사를 분리하고 경계를 명확하게 합니다.
+
+---
+
+## 여러 개의 독립된 모듈로 구분된 애플리케이션 (2/2)
+
+<!-- _class: reference-page -->
+
 
 <style scoped>
   img { width: 60%; display: inline; margin-left:220px; }
@@ -243,26 +300,35 @@ HandStack은 모놀리식의 단순함과 마이크로서비스의 장점을 결
 
 ![](img/modulr-architecture.png)
 
-
 ---
 
-## 애플리케이션 아키텍처 예시
+## 애플리케이션 아키텍처 예시 (1/2)
 
-<style scoped>
-  li { font-size: 28px }
-</style>
+<!-- _class: reference-page -->
+
+
 
 - 단일 호스트
   - ack + (wwwroot/transact/dbclient/graphclient/function/command/prompter/repository/logger/checkup/forwarder)
+
 - 2 개 호스트
   - ack + (wwwroot/transact/checkup)
   - ack + (dbclient/graphclient/function/command/prompter/repository/logger/forwarder)
+
+---
+
+## 애플리케이션 아키텍처 예시 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - 3 개 호스트
   - ack + (wwwroot/transact)
   - ack + (dbclient/graphclient/function/command/prompter)
   - ack + (repository/logger/checkup/forwarder)
 
-> 고성능의 단일 호스트에 Port 를 다르게 구성하여 마이크로서비스 구성이 가능합니다.
+> 한 머신에서도 포트를 나눠 여러 호스트를 실행할 수 있습니다. 프로세스 분리만으로 데이터·배포·장애 경계가 자동 분리되지는 않습니다.
 
 ---
 
@@ -286,29 +352,55 @@ HandStack은 모놀리식의 단순함과 마이크로서비스의 장점을 결
 
 ---
 
-## 애플리케이션을 위해 필요한 주요 기능
+## 애플리케이션을 위해 필요한 주요 기능 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 비즈니스 요구사항에 맞게 기능을 개발 하기 위해 다음의 기능들을 하나 또는 각각의 module 단위로 개발 할 수 있습니다.
 
 - Database CRUD 거래
+
 - Graph 데이터 조회와 관계 분석
+
 - 외부 시스템과 연동을 위한 기능 개발
+
 - CLI, Web URL, LLM 프롬프트 호출
+
 - 클라이언트 인증 및 권한
+
+---
+
+## 애플리케이션을 위해 필요한 주요 기능 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - 파일 업로드/다운로드 기능
+
 - 화면 개발에 필요한 UI 컴포넌트
 
 > 이외에도 모니터링, 장애 확인등등 안정적인 운영을 위해 다양한 부가 기능들을 고려해야 합니다.
 
 ---
 
-## 공식 modules
+## 공식 modules (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 HandStack은 이러한 애플리케이션을 개발하기 위한 부분을 논리적으로 추상화하여 module로 개발 및 제공합니다.
 
-<style scoped>
-  table { font-size: 24px; }  
-</style>
+---
+
+## 공식 modules (2/3)
+
+<!-- _class: reference-page -->
+
+
 
 |module명|설명|
 |---|---|
@@ -319,6 +411,17 @@ HandStack은 이러한 애플리케이션을 개발하기 위한 부분을 논�
 |function|C# 또는 Node.js 기반 Function 개발 기능 관리|
 |graphclient|Neo4j, Memgraph 기반 Cypher 실행 관리|
 |logger|module 요청/응답 구간 주요 이벤트 로그 수집 관리|
+
+---
+
+## 공식 modules (3/3)
+
+<!-- _class: reference-page -->
+
+
+
+|module명|설명|
+|---|---|
 |prompter|LLM 프롬프트 계약 실행 및 도구 호출 관리|
 |repository|단일, 다중, 이미지, 첨부파일 등등 파일 업로드/다운로드 관리|
 |transact|거래 요청 검증 및 접근 제어 관리와 요청 정보를 dbclient, function 등등 module로 라우팅 기능 관리|
@@ -326,13 +429,21 @@ HandStack은 이러한 애플리케이션을 개발하기 위한 부분을 논�
 
 ---
 
-## 규모에 따른 어플리케이션 모듈 구성
+## 규모에 따른 어플리케이션 모듈 구성 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 느슨하게 결합된 모듈을 만들 수 있고, 인터페이스를 일관되게 유지 할 수 있으며, 향후 마이크로서비스 아키텍처로 전환 할 경우에도 유리하게 작용될 수 있습니다.
 
-<style scoped>
-  img { width: 60%; display: inline; margin-left:220px; }
-</style>
+---
+
+## 규모에 따른 어플리케이션 모듈 구성 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ![](img/handstack-monolith-architecture.png)
 
@@ -340,21 +451,21 @@ HandStack은 이러한 애플리케이션을 개발하기 위한 부분을 논�
 
 ## 개발/운영 비용 간 균형 잡기
 
-기술의 상향 평준화는 개발 비용이 낮아지고, 운영 비용이 증가합니다.
+개발 자동화의 효과와 운영 비용을 별도로 측정합니다.
 
-- 개발 단계: .NET Core의 크로스플랫폼, CLI, SDK 프로젝트, 최신 언어 기능, AI 지원원 → 저비용, 고속 개발 가능
+- 개발 단계: .NET Core의 크로스플랫폼, CLI, SDK 프로젝트, 최신 언어 기능, AI 지원 → 저비용, 고속 개발 가능
 - 운영 단계: 사용자가 늘어날수록 인프라, 모니터링, 백업, 스케일링, 보안, 법적 대응 등 운영비용 지속 증가
 
 > 고객의 요구에 맞춰 셀프 호스트, 클라우드, 하이브리드 방식의 개발과 운영을 해야합니다.
 
 ---
 
-## 요약 정리 및 Q&A
+## 구조를 읽는 기준
 
-- 모듈은 완전히 독립적이지 않습니다. 
-- 다른 모듈과의 종속성은 프로그램 수준에서 관리되어야 합니다.
-- 모듈 코드를 재사용할 수 있습니다.
-- 기존의 모놀리식보다 유지 관리하고 개발하기가 쉽습니다.
-- 배포를 위해 전체 프로젝트를 단일 단위로 유지할 수 있습니다.
-- 기존의 모놀리식보다 확장성이 뛰어납니다.
-- 마이크로서비스 아키텍처보다 덜 복잡합니다.
+- 호스트·업무 모듈·공통 기반·도구·솔루션 공용 파일을 구분합니다.
+- 모듈 종속성과 배포 단위를 확인합니다.
+- 확장성만 보지 않고 운영 복잡성과 비용을 함께 비교합니다.
+
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->

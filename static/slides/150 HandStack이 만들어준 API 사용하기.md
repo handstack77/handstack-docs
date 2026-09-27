@@ -109,11 +109,27 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
+section.reference-page img { max-height: 440px; max-width: 100%; object-fit: contain; }
 </style>
 
 # HandStack API 사용하기
 
-### `transact` 모듈로 자동화된 API 경험하기
+transact 계약의 식별자·권한·입출력을 읽고 같은 엔드포인트로 거래를 호출합니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
+
 ---
 
 ## 전달하려는 주요 내용
@@ -126,16 +142,24 @@ section.tinytext>blockquote {
 
 ---
 
-## `transact` 모듈이란?
+## `transact` 모듈이란? (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 HandStack에서 비즈니스 로직의 핵심 관문 역할을 하는 모듈입니다.
 
-<style scoped>
-  li { font-size: 28px; }
-</style>
+- <mark>공통 실행 엔드포인트</mark>
+    - 같은 HTTP POST 주소에서 요청의 식별자로 업무 계약을 찾아 실행합니다. 계약마다 별도 URL을 만들지 않습니다.
 
-- <mark>API 자동 관리</mark>
-    - 업무 계약(Contract) JSON 파일을 생성하거나 변경하면, 해당 계약을 위한 HTTP POST 엔드포인트를 자동으로 생성하고 관리합니다.
+---
+
+## `transact` 모듈이란? (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 - <mark>주요 기능</mark>
     - 요청 데이터 검증 (Validation)
@@ -147,26 +171,41 @@ HandStack에서 비즈니스 로직의 핵심 관문 역할을 하는 모듈입�
 
 ---
 
-## 거래 데이터 흐름
+## 거래 데이터 흐름 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 모든 거래 요청은 단 하나의 Endpoint로 수신합니다.
 
-<style scoped>
-  img { width: 76%; display: inline; margin-left:120px; }
-</style>
+---
+
+## 거래 데이터 흐름 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ![](img/transact-architecture.png)
 
-
 ---
 
-## 계약(Contract) 문서 살펴보기
+## 계약(Contract) 문서 살펴보기 (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 `transact` 모듈은 모든 것을 이 계약 문서에 기반하여 처리합니다.
 
-<style scoped>
-  marp-pre code { font-size: 17px; }
-</style>
+---
+
+## 계약(Contract) 문서 살펴보기 (2/3)
+
+<!-- _class: reference-page -->
+
+
 
 ```json
 {
@@ -183,6 +222,19 @@ HandStack에서 비즈니스 로직의 핵심 관문 역할을 하는 모듈입�
             "CommandType": "D",
             "SequentialOption": [...],
             "AccessScreenID": [ "TST010" ],
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## 계약(Contract) 문서 살펴보기 (3/3)
+
+<!-- _class: reference-page -->
+
+
+
+```json
             "TransactionScope": false,
             "Inputs": [ { "ModelID": "Dynamic", "Type": "Row", ... } ],
             "Outputs": [ { "ModelID": "Dynamic", "Type": "Grid" } ]
@@ -191,14 +243,31 @@ HandStack에서 비즈니스 로직의 핵심 관문 역할을 하는 모듈입�
 }
 ```
 
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
 ---
 
-## 계약(Contract) 문서 해부하기 (1/2)
+## 계약(Contract) 문서 해부하기 (1/2) · 세부 1/2
+
+<!-- _class: reference-page -->
+
+
 
 - `ApplicationID`, `ProjectID`, `TransactionID`
     - `HDS` 앱의 `TST` 프로젝트에 속한 `TST010` 거래를 의미합니다.
+
 - ServiceID: `TST010` 거래 내에서 `LD01`이라는 서비스 ID로 요청을 식별합니다.
-- Authorize: 별도의 인증 절차 없이 누구나 호출할 수 있는 공개된 서비스입니다.
+
+- Authorize: 인증 요구 여부입니다. 예제의 false와 서버의 공개 거래 정책을 함께 확인합니다.
+
+---
+
+## 계약(Contract) 문서 해부하기 (1/2) · 세부 2/2
+
+<!-- _class: reference-page -->
+
+
+
 - CommandType: D, F
     - D: 데이터베이스 관련 명령을 수행합니다.
     - F: 함수 관련 명령을 수행합니다.
@@ -213,9 +282,14 @@ HandStack에서 비즈니스 로직의 핵심 관문 역할을 하는 모듈입�
 - SequentialOption: 여러 거래를 순차적으로 한번에 수행합니다.
 - Inputs: 여러 요청을 처리하는 정보를 포함하는 배열입니다.
 - Outputs: 여러 응답을 처리하는 정보를 포함하는 배열입니다.
+
 ---
 
-## 설계 사상: 책임의 분리
+## 설계 사상: 책임의 분리 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 `transact` 모듈은 역할과 책임(R&R)이 분리된 구조를 지향합니다.
 
@@ -228,21 +302,62 @@ HandStack에서 비즈니스 로직의 핵심 관문 역할을 하는 모듈입�
 - <mark>업무 개발</mark>
     - 계약에 연결될 실제 비즈니스 로직(DB 쿼리, Function 등) 개발에 집중
 
+---
+
+## 설계 사상: 책임의 분리 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 더 알아보기: [계약 중심 거래](https://handstack.kr/docs/reference/concept/계약-중심-거래#요청-거래-전문정보)
 
 ---
 
-## 핸즈온: 계약 목록 조회하고 정보 확인하기
+## 핸즈온: 계약 목록 조회하고 정보 확인하기 (1/2) · 세부 1/3
 
-transact 모듈의 module.json 의 다음 보안 항목에 해당하는 클라이언트만 가능
+<!-- _class: reference-page -->
+
+
+
+관리 API 실습은 로컬·격리 환경에서만 수행합니다. 예제 키와 `*` 허용 범위를 운영에 복사하지 않습니다.
+
+transact 모듈의 module.json에서 허용한 클라이언트만 호출합니다.
+
+
+
+---
+
+## 핸즈온: 계약 목록 조회하고 정보 확인하기 (1/2) · 세부 2/3
+
+<!-- _class: reference-page -->
+
+
+
 - AuthorizationKey: 기본값 (SystemID + RunningEnvironment + HostName == HANDSTACKDHOSTNAME)
+
 - AllowClientIP: *
+
+---
+
+## 핸즈온: 계약 목록 조회하고 정보 확인하기 (1/2) · 세부 3/3
+
+<!-- _class: reference-page -->
+
 
 
 ```http
 # `transact` 모듈이 관리하는 계약 목록 정보를 조회하는 기본 API입니다.
 http://localhost:8421/transact/api/transaction/meta
 ```
+
+---
+
+## 핸즈온: 계약 목록 조회하고 정보 확인하기 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```http
 # 특정 계약 상세 정보를 조회하는 기본 API입니다.
@@ -251,24 +366,60 @@ http://localhost:8421/transact/api/transaction/retrieve?applicationID=HDS&projec
 
 ---
 
-## 핸즈온: 데이터 연동 실습
+## 잠깐, 구분해 보기
+
+계약을 추가할 때마다 새 URL도 생길까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: 공통 실행 URL에 계약 식별자를 보냅니다. 거래별 URL을 새로 만드는 구조와 구분합니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
+
+---
+
+## 핸즈온: 데이터 연동 실습 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 이제 직접 화면과 서버의 데이터 연동 과정을 체험해 봅시다.
 
 - 1단계: 페이지 자바스크립트 파일에 거래(transaction) 함수 정의하기
+
 - 2단계: HTML 요소에 `syn-datafield` 속성으로 데이터 Key 연결하기
+
 - 3단계: 조회 버튼에 `onclick` 이벤트를 연결하여 거래 함수 호출하기
+
 - 4단계: `beforeTransaction` Hook으로 조회 전 조건을, `afterTransaction` Hook으로 조회 후 결과를 확인하기
+
+---
+
+## 핸즈온: 데이터 연동 실습 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - 5단계: 브라우저에서 버튼을 클릭하고 개발자 도구(F12) 네트워크 탭에서 실제 통신 데이터 확인하기
 
 ---
 
 ## 결과 확인 및 장점
 
-> 계약 파일 하나 만들었을 뿐인데,
-> HandStack이 알아서 복잡한 API 엔드포인트를
-> 자동으로 만들어 줬어요!
->
-> 백엔드 개발 시간이 획기적으로 줄어듭니다.
+같은 실행 주소에 거래 식별자를 보내면 계약이 실행 대상과 입출력을 결정합니다. 별도 Controller를 반복 작성하는 작업을 줄일 수 있습니다.
 
 - 이제 우리는 `http://localhost:8421/transact/api/transaction/execute` 주소로 `TST010` 거래를 요청할 수 있는 준비가 완료되었습니다.
+
+---
+
+## API 연동의 완료 기준
+
+- ApplicationID·ProjectID·TransactionID·ServiceID를 맞춥니다.
+- 권한·입출력·CommandType과 연결된 실행 계약을 확인합니다.
+- Network 요청과 응답으로 화면 바인딩 결과를 검증합니다.
+
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->

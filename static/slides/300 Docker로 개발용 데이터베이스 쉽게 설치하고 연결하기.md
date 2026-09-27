@@ -109,22 +109,45 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
 </style>
 
 # Docker로 데이터베이스 쉽게 설치하고 연결하기
 
-### 개발 환경을 간편하게 구축하는 방법
+실습 DB의 컨테이너와 연결 문자열을 맞추고, SQLite와의 차이를 확인합니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
 
 ---
 
-## 1. Docker Desktop 설치하기
+## 1. Docker Desktop 설치하기 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 - 개발용 로컬 환경에 Docker를 설치하기 위해 Docker Desktop 설치를 권장합니다.
 
-- 지원 운영체제
-    - Windows 10 이상
-    - macOS 10.14 이상
-    - Linux (Ubuntu, Debian, Fedora)
+- 설치 전 OS 버전·CPU·가상화 지원을 확인합니다. 지원 조건은 아래 공식 설치 문서를 기준으로 합니다.
+
+---
+
+## 1. Docker Desktop 설치하기 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 - 설치 가이드
     - [Windows에 Docker Desktop 설치](https://docs.docker.com/desktop/install/windows-install/)
@@ -135,10 +158,23 @@ section.tinytext>blockquote {
 
 ---
 
+## 잠깐, 구분해 보기
+
+컨테이너를 지운 뒤에도 데이터가 남으려면 무엇이 필요할까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: DB 저장소의 볼륨·바인드 마운트와 백업을 별도로 준비해야 합니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
+
+---
+
 ## 2. 로컬 데이터베이스 설치하기
 
-- 다음 스크립트를 실행하여 원하는 데이터베이스를 로컬에 설치하고 실행할 수 있습니다.
-- `Strong@Passw0rd` 부분은 원하는 비밀번호로 변경하여 사용하세요.
+- 아래 태그는 기존 교육용 고정 버전입니다. 신규 환경의 최신·권장 버전을 뜻하지 않습니다.
+- 실습용 DB와 새 비밀번호를 사용하고 포트는 localhost에만 공개합니다.
+- 예제에는 영속화 볼륨이 없습니다. 보관할 데이터에는 볼륨과 백업을 먼저 설정합니다.
 
 > 처음 스크립트를 실행하면 대용량의 Docker 이미지를 다운로드하므로 네트워크 환경에 따라 시간이 소요될 수 있습니다.
 
@@ -148,7 +184,7 @@ section.tinytext>blockquote {
 
 - 설치 명령어
 ```bash
-docker run --name mssql -p 1433:1433 -d -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Strong@Passw0rd' mcr.microsoft.com/mssql/server:2017-latest
+docker run --name mssql -p 127.0.0.1:1433:1433 -d -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Strong@Passw0rd' mcr.microsoft.com/mssql/server:2017-latest
 ```
 
 <br>
@@ -160,16 +196,32 @@ Data Source=localhost;Initial Catalog=master;User ID=sa;Password=Strong@Passw0rd
 
 ---
 
-### Oracle 19c
+### Oracle 19c (1/2)
+
+<!-- _class: reference-page -->
+
+
+
+> 아래는 제3자 이미지 예시입니다. 실행 전에 출처·라이선스·CPU 지원을 검토합니다. [Oracle 공식 컨테이너 자료](https://github.com/oracle/docker-images/tree/main/OracleDatabase)를 우선 참고합니다.
 
 - 설치 명령어
+
 ```bash
-docker run --name oracle -p 1521:1521 -d -e ORACLE_SID=ORCL -e ORACLE_PWD=Strong@Passw0rd -e ORACLE_CHARACTERSET=KO16MSWIN949 doctorkirk/oracle-19c
+docker run --name oracle -p 127.0.0.1:1521:1521 -d -e ORACLE_SID=ORCL -e ORACLE_PWD=Strong@Passw0rd -e ORACLE_CHARACTERSET=KO16MSWIN949 doctorkirk/oracle-19c
 ```
 
 <br>
 
 - 연결 문자열
+
+---
+
+### Oracle 19c (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 ```plaintext
 Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SID=ORCL)));User Id=system;Password=Strong@Passw0rd;
 ```
@@ -180,7 +232,7 @@ Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CON
 
 - 설치 명령어
 ```bash
-docker run --name mariadb -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=Strong@Passw0rd mariadb:10.3
+docker run --name mariadb -d -p 127.0.0.1:3306:3306 -e MYSQL_ROOT_PASSWORD=Strong@Passw0rd mariadb:10.3
 ```
 
 <br>
@@ -196,7 +248,7 @@ Server=localhost;Port=3306;Uid=root;Pwd=Strong@Passw0rd;PersistSecurityInfo=True
 
 - 설치 명령어
 ```bash
-docker run --name postgres -d -p 5432:5432 -e POSTGRES_PASSWORD=Strong@Passw0rd postgres:16
+docker run --name postgres -d -p 127.0.0.1:5432:5432 -e POSTGRES_PASSWORD=Strong@Passw0rd postgres:16
 ```
 
 <br>
@@ -222,10 +274,12 @@ URI=file:../sqlite/HDS/dbclient/HDS.db;Journal Mode=MEMORY;Cache Size=4000;Synch
 
 ---
 
-## 요약
+## DB 준비의 완료 기준
 
-- Docker Desktop을 설치하여 개발 환경을 준비합니다.
-- 간단한 `docker run` 명령어로 SQL Server, Oracle, MariaDB, PostgreSQL 등 다양한 데이터베이스를 로컬에 설치할 수 있습니다.
-- SQLite는 별도 설치 없이 파일 기반으로 동작합니다.
+- OS와 CPU에 맞는 Docker 및 DB 이미지를 확인합니다.
+- 포트·계정·DB 이름을 연결 문자열과 맞춥니다.
+- 데이터 영속화와 재시작 후 조회를 확인합니다. SQLite는 파일 경로를 확인합니다.
 
-> 이제 필요한 데이터베이스를 빠르게 준비하고 HandStack 프로젝트 개발을 시작할 수 있습니다.
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->

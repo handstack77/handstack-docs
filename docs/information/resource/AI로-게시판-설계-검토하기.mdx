@@ -1,0 +1,104 @@
+---
+description: 게시판 테이블과 SQL을 생성형 AI로 검토한 선택 학습 자료입니다.
+---
+
+# AI로 게시판 설계 검토하기
+
+게시판을 이미 실행한 뒤 설계를 검토할 때 읽는 선택 자료입니다. 아래는 기존 문서에서 분리한 Copilot 대화 예시이며, 모델·계정·시점에 따라 결과가 달라집니다. 생성된 SQL은 실행 전 스키마와 실제 계약에 맞춰 검토하세요.
+
+[첫 조회 실습](/docs/tutorial/첫-조회) · [게시판 구현 예제](/docs/startup/handsonlab/게시판-프로젝트-시작하기)
+
+## Copilot으로 관리 데이터 생각 정리하기
+
+HandStack은 공식적으로 SQL Server, Oracle, MySQL/MariaDB, PostgreSQL, SQLite 데이터베이스를 지원합니다. 게시판 프로젝트에서 사용하는 데이터베이스는 SQLite 입니다. SQLite는 개발자에게 다음과 같은 장점을 제공합니다.
+
+* 최신 ANSI SQL 준수: 표준 SQL 문법을 사용 가능합니다. 고유 기능을 제외한 호환성이 높은 SQL을 다른 데이터베이스에 재사용 가능합니다.
+* 서버가 필요 없습니다: SQLite는 서버 프로세스를 시작, 중지 또는 구성할 필요가 없습니다.
+* 간단한 데이터베이스 파일: SQLite 데이터베이스는 단일 일반 디스크 파일로, 백업 및 복구가 간단합니다.
+
+게시판을 만드는 데 필요한 데이터 항목을 Copilot에게 다음과 같이 활용해서 만들어 보겠습니다.
+
+> 동일한 프롬프트 스크립트여도 로그인 계정의 작업 이력에 따라 다른 결과가 나올수 있고 출력 결과는 검증되지 않았기 때문에 참고용으로 사용 해야 합니다.
+
+### 테이블 및 DDL 쿼리 작성 도움받기
+
+게시판 테이블 및 쿼리 작성을 위해 Copilot에게 질문한 스크립트와 결과는 다음과 같습니다.
+
+> ```
+> 간단한 분류 게시판 데이터베이스 테이블 정보 (컬럼명, 데이터 타입, 설명)를 SQLite 기준으로 MarkDown 문법으로 만들어줘. 그리고 실행 결과에서 테이블을 생성 하는 ddl 문법에서 ID를 자동 증가 키 컬럼으로 구성하고 기존 테이블이 없으면 CREATE 하는 예제를 알려줘
+> ```
+
+---
+
+> SQLite 기준으로 분류 게시판 데이터베이스 테이블을 만들었습니다. 아래는 간단한 분류 게시판 테이블의 구조입니다:
+> 
+> | 컬럼명 | 데이터 타입 | 설명 |
+> |--------|-------------|------|
+> | ID | INTEGER | 게시글의 고유 번호 (기본 키) |
+> | Category | TEXT | 게시글의 카테고리 |
+> | Title | TEXT | 게시글의 제목 |
+> | Content | TEXT | 게시글의 내용 |
+> | Author | TEXT | 게시글 작성자의 이름 |
+> | DatePosted | TEXT | 게시글이 작성된 날짜와 시간 |
+> 
+> 이 테이블은 게시판의 기본적인 기능을 수행할 수 있습니다. 필요에 따라 추가적인 컬럼을 추가하거나 수정할 수 있습니다. 이 정보를 CSV 파일에 입력하면 SQLite 기준의 분류 게시판 데이터베이스 테이블 정보를 CSV 형식으로 만들 수 있습니다. 
+> 
+> 참고로, SQLite에서 테이블을 생성하는 SQL 쿼리는 다음과 같습니다:
+> 
+> ```sql
+> CREATE TABLE IF NOT EXISTS Board (
+>   ID INTEGER PRIMARY KEY AUTOINCREMENT,
+>   Category TEXT,
+>   Title TEXT,
+>   Content TEXT,
+>   Author TEXT,
+>   DatePosted TEXT
+> );
+> ```
+
+
+### 게시판 CRUD 쿼리 작성 도움받기
+
+> ```
+> 위의 Board 테이블 결과에서 SQLite 기준으로 CRUD 쿼리를 만들어줘
+> ```
+
+---
+
+> 네, Board 테이블에 대한 CRUD(Create, Read, Update, Delete) 쿼리를 SQLite 기준으로 작성해드리겠습니다.
+> 
+> 1. **Create (생성)**: 새로운 게시글을 추가합니다.
+> ```sql
+> INSERT INTO Board (ID, Category, Title, Content, Author, DatePosted)
+> VALUES (1, '카테고리', '제목', '내용', '작성자', datetime('now'));
+> ```
+> 
+> 2. **Read (조회)**: 게시글을 조회합니다.
+> ```sql
+> -- 모든 게시글 조회
+> SELECT * FROM Board;
+> 
+> -- 특정 ID의 게시글 조회
+> SELECT * FROM Board WHERE ID = 1;
+> 
+> -- 특정 카테고리의 게시글 조회
+> SELECT * FROM Board WHERE Category = '카테고리';
+> ```
+> 
+> 3. **Update (수정)**: 기존 게시글을 수정합니다.
+> ```sql
+> UPDATE Board
+> SET Title = '새 제목', Content = '새 내용'
+> WHERE ID = 1;
+> ```
+> 
+> 4. **Delete (삭제)**: 게시글을 삭제합니다.
+> ```sql
+> DELETE FROM Board WHERE ID = 1;
+> ```
+> 
+> 위의 쿼리들은 간단한 예시이며, 실제 사용 시에는 필요에 따라 적절히 수정하여 사용하시면 됩니다. 또한, 데이터베이스 작업을 할 때는 항상 주의를 기울여야 합니다. 특히, `UPDATE`와 `DELETE` 쿼리는 신중하게 사용해야 합니다. 잘못 사용하면 예상치 못한 데이터 손실이 발생할 수 있습니다.
+
+---
+
+게시판을 만들고 관리하기 위해 참고용 SQL이 충분히 만들어져 있지만 업무에 맞게 조금 다듬어 이후 예제에 활용 하겠습니다.

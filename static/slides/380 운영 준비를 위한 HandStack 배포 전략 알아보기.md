@@ -109,16 +109,31 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
+section.reference-page img { max-height: 440px; max-width: 100%; object-fit: contain; }
 </style>
 
 # 배포 준비를 위한 HandStack 설정 파일 (config) 깊이 파보기
-### 기본 설정
+환경별 설정과 배포 방식의 차이를 비교하고, 기동·검증·복구 절차를 정합니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
 
 ---
 
-## 설정 파일은 우리 앱의 '규칙서'
+## 설정으로 바꿀 것과 코드로 바꿀 것
 
-- HandStack 프로젝트의 모든 동작 규칙은 설정 파일에 정의됩니다.
+- 서버 주소·포트·로드 모듈은 설정 파일에서 관리합니다. 업무 로직은 코드·계약으로 구현합니다.
 - 코드를 직접 수정하지 않고, 설정 값 변경만으로 앱의 환경을 제어할 수 있습니다.
 
 > 설정 파일은 우리 앱의 '규칙서' 같아요.
@@ -128,10 +143,23 @@ section.tinytext>blockquote {
 
 ---
 
-## 설정 파일 구조 살펴보기
+## 설정 파일 구조 살펴보기 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 - `ack` 호스트는 기본 `appsettings.json`과, `ACK_ENVIRONMENT` 환경 변수 값에 해당하는 `appsettings.{ACK_ENVIRONMENT}.json`, 환경 변수를 순서대로 병합해 최종 설정을 만듭니다.
+
 - 화면(프론트엔드) 쪽 설정은 `wwwroot` 모듈의 `syn.config.json`이 담당하며, `ack`의 `appsettings.json`과는 별개 파일입니다.
+
+---
+
+## 설정 파일 구조 살펴보기 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```text
 1.WebHost/ack
@@ -147,14 +175,34 @@ section.tinytext>blockquote {
 
 ---
 
-## 핵심 설정 파일의 역할
+## 핵심 설정 파일의 역할 (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 - `1.WebHost/ack/appsettings.json`
     - HandStack 서버의 <mark>기본이 되는 핵심 설정 파일</mark>입니다.
     - `AppSettings:LoadModules`로 로드할 모듈 목록을, `AppSettings:DomainAPIServer`로 거래 API 서버 접속 정보를 담고 있습니다.
 
+---
+
+## 핵심 설정 파일의 역할 (2/3)
+
+<!-- _class: reference-page -->
+
+
+
 - `appsettings.{ACK_ENVIRONMENT}.json`
     - `ACK_ENVIRONMENT` 환경 변수 값에 해당하는 파일이 있으면 기본 `appsettings.json` 위에 <mark>설정 값을 재정의(Override)</mark>합니다.
+
+---
+
+## 핵심 설정 파일의 역할 (3/3)
+
+<!-- _class: reference-page -->
+
+
 
 - `2.Modules/wwwroot/wwwroot/syn.config.json`
     - 화면이 거래를 요청할 서버 정보(`DomainAPIServer.Protocol/IP/Port/Path`)와 캐싱, 디버그 모드 등 화면 동작을 정의합니다.
@@ -192,7 +240,11 @@ dotnet run --project 1.WebHost/ack/ack.csproj -- --port=8521 --modules=wwwroot,t
 
 ---
 
-### 2단계: 서버 확인 및 테스트
+### 2단계: 서버 확인 및 테스트 (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 - 브라우저 또는 curl로 변경된 포트의 상태를 확인합니다.
 
@@ -200,8 +252,24 @@ dotnet run --project 1.WebHost/ack/ack.csproj -- --port=8521 --modules=wwwroot,t
 curl http://localhost:8521/checkip
 ```
 
+---
+
+### 2단계: 서버 확인 및 테스트 (2/3)
+
+<!-- _class: reference-page -->
+
+
+
 - **변경 전 (Before)**
     - `syn.config.json`의 `DomainAPIServer.Port`가 `"8421"`이면 화면은 계속 8421 포트로 거래를 요청합니다.
+
+---
+
+### 2단계: 서버 확인 및 테스트 (3/3)
+
+<!-- _class: reference-page -->
+
+
 
 - **변경 후 (After)**
     - `DomainAPIServer.Port`를 `"8521"`로 맞추면 화면이 새로 기동한 8521 포트의 `ack`로 정상적으로 거래를 요청합니다.
@@ -237,17 +305,17 @@ curl http://localhost:8521/checkip
 
 ### HandStack과 모노레포
 
-- HandStack은 이미 `server`와 `client`를 한 프로젝트 내에서 관리하는 모노레포 형태의 구조를 가지고 있습니다.
+- HandStack 소스는 `1.WebHost`, `2.Modules`, `3.Infrastructure`, `4.Tool` 등 여러 프로젝트를 한 저장소에서 관리합니다.
 - 다중 클라이언트 확장
-    - `client-admin` (관리자 페이지), `client-user` (사용자 페이지)와 같이 클라이언트 디렉토리를 추가하여 관리할 수 있습니다.
+    - 별도 프론트엔드 프로젝트를 추가한다면 `client-admin`·`client-user`처럼 나눌 수 있습니다. 기본 HandStack 경로는 아닙니다.
 - 공유 라이브러리
-    - `server/src/shared` 또는 별도의 공통 패키지 디렉토리에서 공통 로직(데이터 모델, 유틸리티 함수 등)을 관리할 수 있습니다.
+    - 실제 공통 기반은 `3.Infrastructure`를 확인합니다. 별도 패키지로 분리할 때는 의존성과 배포 순서를 정합니다.
 
 ---
 
 ### 핸즈온 (개념 이해)
 
-- `client` 디렉토리 옆에 `client-admin`이라는 새 디렉토리를 만들어 보세요.
+- 다음은 별도 Node 프론트엔드 프로젝트를 추가할 때의 개념 예제입니다. 기본 저장소에 해당 경로가 있다고 가정하지 않습니다.
 - `package.json`의 `scripts` 부분을 어떻게 수정하면 두 클라이언트를 동시에 또는 개별적으로 빌드하고 실행할 수 있을지 상상해 보세요.
 
 ```json
@@ -268,10 +336,22 @@ curl http://localhost:8521/checkip
 
 ---
 
-## HandStack 프로젝트 간단 배포 (1)
-### 로컬 서버에 PM2로 배포하기 (Node.js)
+## 잠깐, 구분해 보기
 
-- 목표: 5개월차에 배운 PM2를 활용하여 HandStack `ack`(ASP.NET Core) 백엔드 애플리케이션을 로컬 환경에서 안정적으로 실행하고 관리하는 방법을 실습합니다.
+프로세스 등록이 끝나면 운영 배포도 끝난 것일까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: 설정·모듈·계약·정적 파일·권한과 실제 거래를 확인하고 복구 경로까지 준비해야 합니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
+
+---
+
+## HandStack 프로젝트 간단 배포 (1)
+### PM2로 ack(.NET) 프로세스 관리하기
+
+- ack 실행 파일과 작업 폴더를 지정하고 시작·로그·중지·재시작을 확인합니다.
 
 ---
 
@@ -279,21 +359,42 @@ curl http://localhost:8521/checkip
 
 PM2는 Node.js 애플리케이션을 위한 프로덕션 프로세스 매니저입니다.
 
-- 무중단 서비스 (0-downtime reloads)
-- 자동 재시작 (애플리케이션 충돌 시)
-- 클러스터링 (CPU 코어 최대 활용)
-- 로그 관리 (편리한 로그 모니터링 및 저장)
+- 프로세스 시작·중지와 로그 관찰
+- 설정에 따른 자동 재시작
+- Node.js의 클러스터·무중단 reload 기능이 .NET ack에도 그대로 적용된다고 가정하지 않습니다.
 
 ---
 
-### PM2로 HandStack 실행하기
+### PM2 실행 예제의 전제 (1/3)
+
+<!-- _class: reference-page -->
+
+
+
+아래 `YourApp.dll`·`dist`는 일반 .NET 예시 이름입니다. HandStack 배포에는 ack뿐 아니라 로드 모듈·계약·정적 파일·설정·필요 런타임을 함께 준비합니다.
 
 - PM2 설치 (글로벌)
   `npm install -g pm2`
 
+---
+
+### PM2 실행 예제의 전제 (2/3)
+
+<!-- _class: reference-page -->
+
+
+
 - HandStack 빌드 결과물 실행
   - `dotnet publish -c Release -o dist` 명령으로 `dist` 디렉토리 생성
   - `pm2 start dist/YourApp.dll --interpreter dotnet --name my-handstack-app`
+
+---
+
+### PM2 실행 예제의 전제 (3/3)
+
+<!-- _class: reference-page -->
+
+
 
 - 주요 PM2 명령어
     - `pm2 list`: 실행 중인 앱 목록 확인
@@ -304,9 +405,21 @@ PM2는 Node.js 애플리케이션을 위한 프로덕션 프로세스 매니저�
 
 ---
 
-### `ecosystem.config.js` 활용
+### `ecosystem.config.js` 활용 (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 배포 설정을 파일로 관리하면 더 체계적이고 재사용 가능한 배포가 가능합니다.
+
+---
+
+### `ecosystem.config.js` 활용 (2/3)
+
+<!-- _class: reference-page -->
+
+
 
 ```javascript
 // ecosystem.config.js
@@ -324,6 +437,15 @@ module.exports = {
   }]
 };
 ```
+
+---
+
+### `ecosystem.config.js` 활용 (3/3)
+
+<!-- _class: reference-page -->
+
+
+
 - 실행: `pm2 start ecosystem.config.js`
 
 ---
@@ -340,7 +462,7 @@ module.exports = {
 
 ### HandStack 장점
 
-> HandStack은 PM2와 같은 강력한 프로세스 관리 도구와 쉽게 연동되어, Node.js 기반 백엔드를 안정적으로 운영할 수 있도록 돕습니다.
+> ack는 ASP.NET Core 프로세스입니다. PM2 실행 계정·작업 폴더·재시작 정책과 실제 거래 응답을 확인합니다.
 
 ---
 
@@ -362,9 +484,21 @@ module.exports = {
 
 ---
 
-### `.service` 파일 생성
+### `.service` 파일 생성 (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 서비스 정의 파일을 `/etc/systemd/system/` 경로에 생성합니다.
+
+---
+
+### `.service` 파일 생성 (2/3)
+
+<!-- _class: reference-page -->
+
+
 
 ```ini
 # /etc/systemd/system/mywebapp.service
@@ -381,9 +515,24 @@ SyslogIdentifier=mywebapp
 User=www-data
 Environment=ASPNETCORE_ENVIRONMENT=Production
 
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+### `.service` 파일 생성 (3/3)
+
+<!-- _class: reference-page -->
+
+
+
+```ini
 [Install]
 WantedBy=multi-user.target
 ```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
 
 ---
 
@@ -398,20 +547,37 @@ WantedBy=multi-user.target
 
 ---
 
-### 핸즈온 (WSL2/VM)
+### 핸즈온 (WSL2/VM) (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 1. `dotnet publish`로 ASP.NET Core 프로젝트를 빌드합니다.
+
 2. 빌드 결과물을 Ubuntu 서버의 특정 경로(예: `/var/www/mywebapp`)에 업로드합니다.
+
 3. `/etc/systemd/system/mywebapp.service` 파일을 생성하고 위 예시처럼 설정합니다.
+
 4. `sudo systemctl daemon-reload`로 서비스 파일을 리로드합니다.
+
 5. `sudo systemctl start mywebapp`으로 서비스를 시작하고 `status`로 상태를 확인합니다.
+
+---
+
+### 핸즈온 (WSL2/VM) (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 6. `journalctl` 명령으로 로그를 확인합니다.
 
 ---
 
 ### HandStack 장점
 
-> HandStack은 ASP.NET Core 백엔드를 리눅스 환경에서 `systemctl` 서비스로 쉽게 배포할 수 있도록 지원하여, 안정적인 서버 운영이 가능합니다.
+> systemd에서는 서비스 계정의 읽기·쓰기 권한과 `WorkingDirectory`, 환경 변수, 재부팅 후 기동을 확인합니다.
 
 ---
 
@@ -422,24 +588,48 @@ WantedBy=multi-user.target
 
 ---
 
-### Windows 서비스의 필요성
+### Windows 서비스의 필요성 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 - 서버 재부팅 시 자동 시작
+
 - 사용자가 로그인하지 않은 상태에서도 백그라운드에서 지속적으로 실행
-- 안정적인 서비스 운영 보장
+
+- 서비스 계정·복구 정책을 통한 운영 제어
 
 ### 서비스 등록 및 관리
 
-- 등록: `sc.exe` (명령 프롬프트) 또는 `New-Service` (PowerShell)를 사용하여 서비스를 생성합니다.
+- 먼저 Windows 서비스 호스팅 통합 또는 검증된 서비스 래퍼가 준비되어야 합니다. 일반 콘솔 실행 파일을 등록하기만 하면 동작하는 것은 아닙니다.
+
+---
+
+### Windows 서비스의 필요성 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
+- 등록: `sc.exe` 또는 `New-Service`를 사용합니다.
+
 - 관리: `services.msc` (서비스 관리자) 콘솔 또는 `net start/stop` 명령어로 서비스를 제어합니다.
+
 - 로그 확인: Windows 이벤트 뷰어 또는 자체적으로 구성한 파일 로그를 통해 확인합니다.
 
 ---
 
-### 핸즈온
+### 핸즈온 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 1. ASP.NET Core 프로젝트를 `dotnet publish` 명령어로 빌드합니다.
+
 2. 관리자 권한으로 PowerShell을 실행합니다.
+
 3. `sc.exe` 명령어를 사용하여 서비스를 등록합니다.
 
 ```powershell
@@ -447,13 +637,22 @@ sc.exe create MyWebApp binPath="C:\path\to\publish\YourApp.exe" DisplayName="My 
 ```
 
 4. `services.msc`를 실행하여 "My HandStack App" 서비스가 등록되었는지 확인합니다.
+
+---
+
+### 핸즈온 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 5. 서비스를 시작, 중지, 재시작 해보며 정상 동작하는지 테스트합니다.
 
 ---
 
 ### HandStack 장점
 
-> HandStack ASP.NET Core 백엔드는 Windows 서비스로 쉽게 배포되어, Windows 서버 환경에서도 안정적인 서비스 운영을 보장합니다.
+> 서비스 등록 후 로그인하지 않은 상태·재부팅·장애 복구를 시험합니다. 설치 성공과 정상 서비스 응답을 구분합니다.
 
 ---
 
@@ -488,7 +687,7 @@ sc.exe create MyWebApp binPath="C:\path\to\publish\YourApp.exe" DisplayName="My 
 ### 핸즈온
 
 1. Windows 서버 기능에서 IIS를 설치합니다.
-2. 최신 ASP.NET Core Hosting Bundle을 다운로드하여 설치합니다.
+2. 배포 대상 .NET 버전에 맞는 ASP.NET Core Hosting Bundle을 공식 문서에서 확인해 설치합니다.
 3. `dotnet publish`로 HandStack 프로젝트를 빌드합니다.
 4. IIS 관리자에서 새 웹 사이트를 생성하고, 실제 경로를 빌드 결과 폴더로 지정합니다.
 5. 웹 브라우저에서 설정한 주소(예: http://localhost:8080)로 접속하여 앱이 실행되는지 확인합니다.
@@ -497,7 +696,7 @@ sc.exe create MyWebApp binPath="C:\path\to\publish\YourApp.exe" DisplayName="My 
 
 ### HandStack 장점
 
-> HandStack ASP.NET Core 앱은 IIS와 완벽하게 호환되어, 기존 Windows 서버 환경에서도 고성능 웹 서비스를 쉽게 구축할 수 있습니다.
+> IIS에서는 호스팅 모델·web.config·앱 풀 계정·파일 권한을 확인합니다. 정적 페이지뿐 아니라 실제 거래도 시험합니다.
 
 ---
 
@@ -516,9 +715,23 @@ sc.exe create MyWebApp binPath="C:\path\to\publish\YourApp.exe" DisplayName="My 
 
 ---
 
-### `Dockerfile` 작성 예시 (ASP.NET Core)
+### `Dockerfile` 작성 예시 (ASP.NET Core) (1/2)
 
-멀티스테이지 빌드를 사용하여 최종 이미지 크기를 최적화합니다.
+<!-- _class: reference-page -->
+
+
+
+일반 .NET 앱의 멀티스테이지 예시입니다. 실제 HandStack의 모듈·계약·정적 파일과 런타임을 추가해야 하며 이 Dockerfile만으로 전체 배포가 완성되지는 않습니다.
+
+> 아래 포트 80 매핑은 컨테이너 앱이 실제로 80에서 수신하도록 설정한 경우에만 유효합니다. 런타임 기본 포트를 가정하지 않습니다.
+
+---
+
+### `Dockerfile` 작성 예시 (ASP.NET Core) (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```dockerfile
 # 1. Build Stage
@@ -545,7 +758,7 @@ ENTRYPOINT ["dotnet", "YourApp.dll"]
   - `-t` 옵션으로 이미지에 이름(태그)을 지정합니다.
 
 - 컨테이너 실행
-  - `docker run -p 8080:80 my-handstack-app`
+  - `docker run -p 127.0.0.1:8080:80 my-handstack-app`
   - `-p` 옵션으로 호스트의 8080 포트와 컨테이너의 80 포트를 매핑합니다.
 
 ---
@@ -555,11 +768,23 @@ ENTRYPOINT ["dotnet", "YourApp.dll"]
 1. 프로젝트 루트 디렉토리에 위 예시를 참고하여 `Dockerfile`을 작성합니다.
 2. `docker build -t my-handstack-app .` 명령어로 이미지를 빌드합니다.
 3. `docker images` 명령어로 생성된 이미지를 확인합니다.
-4. `docker run -d -p 5000:80 my-handstack-app` 명령어로 컨테이너를 백그라운드에서 실행합니다.
+4. `docker run -d -p 127.0.0.1:5000:80 my-handstack-app` 명령어로 컨테이너를 백그라운드에서 실행합니다.
 5. 웹 브라우저에서 `http://localhost:5000`으로 접속하여 컨테이너화된 앱을 확인합니다.
 
 ---
 
 ### HandStack 장점
 
-> HandStack은 Docker와의 연동이 뛰어나, 개발부터 배포까지 일관된 컨테이너 환경을 통해 어떤 서버에서도 동일하게 동작하는 앱을 만들 수 있게 합니다.
+> Docker에서는 이미지 태그·CPU·수신 포트·영속화 볼륨을 확인합니다. 비밀 값은 이미지에 넣지 말고 실행 환경에서 주입합니다.
+
+---
+
+## 배포 승인에 필요한 결과
+
+- ack와 syn.config.json의 서버 주소·포트를 맞춥니다.
+- PM2·systemd·Windows 서비스·IIS·Docker 중 환경에 맞는 방식을 선택합니다.
+- 기동·재시작·거래 시험과 이전 버전 복구 절차를 기록합니다.
+
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->

@@ -109,16 +109,31 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
 </style>
 
 # Tabler, Master CSS, Mustache 로 만드는 화면 레이아웃
 
-### 기본에 충실한 바닐라 HTML, CSS, JavaScript 문법
+Tabler·Master CSS·Mustache의 역할을 나눠 데이터가 표시되는 레이아웃을 만듭니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
+
 ---
 
 ## 디자인 시스템이란 무엇일까요?
 
-> 디자인 시스템은 UI(사용자 인터페이스) 및 UX(사용자 경험) 디자인 원칙과 규격을 정의하고, 재사용 가능한 UI 컴포넌트를 제공하여 다양한 제품(PC, 모바일 등)에 일관성 있게 대응할 수 있도록 하는 체계입니다.
+> 디자인 시스템은 화면의 원칙·규격과 재사용 컴포넌트를 함께 관리하는 체계입니다.
 
 - **주요 요소**
   - UI, UX 디자인 원칙 및 규격 정의
@@ -139,13 +154,11 @@ section.tinytext>blockquote {
 
 ---
 
-## 화면 레이아웃을 위한 삼총사
+## 세 도구의 연결 순서
 
-세 가지 도구를 조합하여 빠르고 유연한 화면 개발을 할 수 있습니다.
-
-- `Tabler` : 뼈대를 만드는 건축가
-- `Master CSS` : 스타일을 입히는 디자이너
-- `Mustache` : 데이터를 채우는 이야기꾼
+1. `Tabler`로 카드·폼 등 화면 구조를 고릅니다.
+2. `Master CSS`로 간격·색상·반응형 스타일을 조정합니다.
+3. `Mustache`로 템플릿에 데이터를 넣습니다.
 
 ---
 
@@ -169,7 +182,11 @@ section.tinytext>blockquote {
 
 ---
 
-## 디자인 시스템 기반 환경
+## 디자인 시스템 기반 환경 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 HandStack은 다음과 같은 검증된 도구들을 기반으로 디자인 시스템을 구축합니다.
 
@@ -179,6 +196,14 @@ HandStack은 다음과 같은 검증된 도구들을 기반으로 디자인 시�
 - **Tabler**
   - Bootstrap 기반의 현대적이고 깔끔한 UI 컴포넌트 라이브러리입니다.
 
+---
+
+## 디자인 시스템 기반 환경 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - **Tabler Icons**
   - UI 디자인을 풍부하게 만드는 다양한 아이콘을 제공합니다.
 
@@ -187,10 +212,22 @@ HandStack은 다음과 같은 검증된 도구들을 기반으로 디자인 시�
 
 ---
 
-## Bootstrap, Tabler 샘플 및 예제 참고하기
+## Bootstrap, Tabler 샘플 및 예제 참고하기 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 HandStack은 Bootstrap 기반의 Tabler 테마를 기본 CSS 프레임워크로 사용합니다.
 아래 사이트들에서 다양한 컴포넌트와 레이아웃 예제를 확인해 보세요.
+
+---
+
+## Bootstrap, Tabler 샘플 및 예제 참고하기 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 - **디자인 컴포넌트 예제**
   - [Bootstrap 5 Examples](https://getbootstrap.com/docs/5.3/examples/)
@@ -222,9 +259,33 @@ Master CSS 는 TailwindCSS 와 같이 유틸리티 클래스 처럼 동작하지
 
 ---
 
-## mustache.js 템플릿 엔진 샘플 및 예제 참고하기
+## 잠깐, 구분해 보기
+
+카드 모양은 맞는데 제목이 비어 있다면 무엇을 확인할까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: 스타일보다 Mustache의 데이터 키와 템플릿 표현식을 먼저 대조합니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
+
+---
+
+## mustache.js 템플릿 엔진 샘플 및 예제 참고하기 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 Mustache는 로직이 없는(logic-less) 템플릿 엔진으로, JavaScript를 포함한 다양한 언어로 구현되어 있습니다. JavaScript 버전의 Mustache는 일반적으로 "Mustache.js"로 불립니다.
+
+---
+
+## mustache.js 템플릿 엔진 샘플 및 예제 참고하기 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```js
 var template = "Hello, {{name}}! You have {{calc}} new messages.";
@@ -240,11 +301,23 @@ var rendered = Mustache.render(template, data);
 document.getElementById('output').innerHTML = rendered;
 ```
 
-- [Getting started with Master CSS](https://github.com/janl/mustache.js)
+- [Mustache.js 사용법](https://github.com/janl/mustache.js)
 
 ---
 
 # 실습 시간
 ## Tabler, Master CSS, Mustache로 화면 레이아웃 만들기
 
-이제 직접 코드를 작성하며 세 가지 도구를 통합하는 방법을 체험해 보겠습니다.
+Tabler 카드에 Master CSS로 간격을 적용하고, Mustache로 제목·목록을 표시합니다. 데이터가 0건일 때와 여러 건일 때를 비교합니다.
+
+---
+
+## 레이아웃 실습의 완료 기준
+
+- Tabler는 구조, Master CSS는 스타일, Mustache는 템플릿 데이터에 사용합니다.
+- 빈 데이터와 여러 건의 데이터로 결과를 비교합니다.
+- 외부 예제는 적용 버전과 라이선스를 확인해 가져옵니다.
+
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->

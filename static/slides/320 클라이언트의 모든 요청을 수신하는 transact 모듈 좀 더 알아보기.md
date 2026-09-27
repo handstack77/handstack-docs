@@ -109,23 +109,55 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
+section.reference-page img { max-height: 440px; max-width: 100%; object-fit: contain; }
 </style>
 
 # HandStack transact 모듈
-### 클라이언트와 서버의 통신 마스터하기
+transact의 실행 모듈 선택과 입출력 규칙을 일반 REST 개념과 구분합니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
 
 ---
 
-## transact 모듈이란?
+## transact 모듈이란? (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 클라이언트의 모든 거래 요청을 수신하는 관문입니다.
 
 - 데이터베이스 조회/수정
+
 - 그래프 데이터 조회
+
 - 서버리스 함수 호출
+
 - CLI 명령과 Web URL 호출
+
 - LLM 프롬프트 실행
+
 - 외부 API 연동
+
+---
+
+## transact 모듈이란? (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 `transact` 모듈은 이 모든 요청을 처리하고, 약속된 형식으로 결과를 반환하는 핵심적인 역할을 수행합니다.
 
@@ -154,95 +186,114 @@ section.tinytext>blockquote {
 
 ---
 
-### 데이터 형식: Row vs List
+### 데이터 형식: Row·List는 거래의 입력
 
-- 단일 건 (Row) 응답
-  - `GET /api/products/1`
-  - 특정 객체 하나를 요청하며, JSON 객체 `{}`로 응답합니다.
-  - 프론트엔드의 <mark>상세 페이지</mark>나 <mark>수정 폼</mark>에 사용됩니다.
-  - 예시: `{ "id": 1, "name": "노트북", "price": 1500000 }`
+- `Row`: 검색 조건이나 입력 폼처럼 한 건의 값을 보냅니다.
+- `List`: 여러 행을 묶어 보냅니다.
+- 출력은 `Form`(한 건), `Grid`(목록) 등으로 지정합니다.
 
-- 여러 건 (List) 응답
-  - `GET /api/products`
-  - 객체 목록을 요청하며, JSON 배열 `[]`로 응답합니다.
-  - 프론트엔드의 <mark>목록 페이지</mark>나 <mark>데이터 그리드</mark>에 사용됩니다.
-  - 예시: `[ { "id": 1, ... }, { "id": 2, ... } ]`
+**비교: 일반 REST API**
+`GET /api/products/1` → 객체, `GET /api/products` → 배열은 별도 Controller를 만든 경우의 예입니다. transact 계약을 등록한다고 이 URL이 생기지는 않습니다.
 
 ---
 
-### UI 매핑: Form 과 Grid
+### UI 매핑: 입력과 출력을 나눠 읽기
 
-- Form 데이터 (입력)
-  - 클라이언트에서 서버로 데이터를 보낼 때 사용합니다. (`POST`, `PUT`)
-  - 보통 JSON 객체 `{}` 형태로 서버에 전송됩니다.
+| 방향 | 거래 설정 | 화면에서 확인할 것 |
+|---|---|---|
+| 입력 | `Row` / `List` | 보낼 폼·목록의 필드와 데이터 타입 |
+| 출력 | `Form` / `Grid` | 결과를 받을 폼·그리드와 반환 컬럼 |
 
-- Grid 데이터 (출력)
-  - 서버에서 받은 배열 `[]` 형태의 데이터를 표(테이블/그리드) 형태로 표시합니다.
+화면 `transaction`의 매핑과 서버 계약의 `Inputs`·`Outputs`를 함께 대조합니다.
 
-> HandStack은 이러한 표준 RESTful 형식을 기본으로 지원하여, 백엔드와 프론트엔드의 협업을 매우 효율적으로 만듭니다.
-
----
-
-### 핸즈온: 데이터 구조 확인하기
-
-- Postman 또는 Thunder Client를 사용해 API에 요청을 보내봅니다.
-  - `GET /api/products/1` 요청을 보내 단일 건 `{}` 응답 확인
-  - `GET /api/products` 요청을 보내 여러 건 `[]` 응답 확인
-
-- 클라이언트 코드에서 데이터가 어떻게 사용되는지 확인합니다.
-  - 단일 건 데이터는 각 입력 필드에 직접 바인딩
-  - 여러 건 데이터는 `v-for` 와 같은 반복문으로 그리드/리스트 생성
+[HandStack 거래 호출 레퍼런스](/docs/reference/거래-호출)
 
 ---
 
-## 2. API 유효성 검사 (Server-side Validation)
+### 핸즈온: 요청과 결과 한 쌍 비교하기
 
-- 목표: 잘못된 데이터가 시스템에 저장되는 것을 방지하기 위해 서버에서 데이터를 검증하는 방법을 배웁니다.
+1. 실습 화면에서 조회하고 Network의 거래 요청을 캡처합니다.
+2. Postman 또는 Thunder Client로 같은 `POST /transact/api/transaction/execute` 요청을 재현합니다.
+3. 한 건 출력은 폼 필드, 목록 출력은 그리드에 연결되는지 확인합니다.
 
-> 💡 API 유효성 검사는 마치 물건을 배송하기 전에 내용물을 검사하는 것과 같아요. 깨지거나 잘못된 물건을 보내지 않기 위함이죠. DB에 저장하기 전에 데이터를 한 번 더 확인하는 과정입니다.
-
----
-
-### 유효성 검사, 왜 서버에서 해야 할까요?
-
-- 클라이언트(브라우저) 검증은 쉽게 우회될 수 있습니다.
-- 악의적인 사용자가 조작된 데이터를 직접 API로 전송할 수 있습니다.
-- 클라이언트 코드의 버그로 인해 잘못된 데이터가 전송될 수 있습니다.
-
-- HandStack의 유효성 검사
-  - Node.js: `class-validator`와 같은 라이브러리 사용
-  - ASP.NET Core: `DataAnnotations` 애트리뷰트 사용
+일반 REST/Vue 예제에서는 객체를 입력 필드에, 배열을 `v-for`에 연결할 수 있습니다. 이는 HandStack의 기본 화면 문법과는 별도입니다.
 
 ---
 
-### 핸즈온: 유효성 규칙 추가 및 테스트
+## 잠깐, 구분해 보기
 
-1. 모델(DTO)에 유효성 검사 규칙을 추가합니다.
-    - 예시: `Product` 모델의 `name` 필드는 비어있을 수 없고(`@IsNotEmpty()`), `price` 필드는 양수여야 합니다.
+Row|Grid에서 Row와 Grid는 각각 어느 방향의 데이터일까요?
 
-2. Postman으로 유효하지 않은 데이터를 전송해봅니다.
-    - `name` 필드를 비워서 `POST` 요청
-    - `price`에 음수 값을 넣어서 `PUT` 요청
-
-3. 서버의 응답을 확인합니다.
-    - `400 Bad Request` 상태 코드와 함께 어떤 규칙을 위반했는지에 대한 에러 메시지가 반환되는 것을 확인합니다.
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: Row는 요청 입력 한 건, Grid는 응답 출력 목록을 뜻합니다. 서버 계약과 화면 매핑을 함께 읽습니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
 
 ---
 
-## 3. API 에러 처리와 응답 (HTTP Status Codes)
+## 2. 저장 전에 서버에서 검증하기
 
-- 목표: API 호출 시 발생 가능한 다양한 에러 상황을 처리하고, 약속된 HTTP 상태 코드로 응답하는 방법을 배웁니다.
+브라우저 검증은 입력을 돕고, 서버 검증은 조작된 요청을 막습니다.
 
-> 💡 API는 마치 통역사와 같아요. 올바른 메시지뿐만 아니라, 문제가 생겼을 때 '나 이런 문제가 생겼어!'라고 올바르게 알려주는 것도 중요하죠. HTTP 상태 코드가 바로 그 에러 메시지의 종류를 나타냅니다.
+- 계약: 필드·타입·입출력 구조를 확인합니다.
+- 업무 로직: 필수 값·금액 범위·업무 상태를 검증합니다.
+- 권한: 요청자의 작업·데이터 접근 범위를 확인합니다.
 
 ---
 
-### 주요 HTTP 상태 코드
+### 검증 위치를 구분하기
+
+클라이언트 검증은 우회될 수 있습니다. 화면 버그·직접 API 호출에도 서버 규칙이 적용되어야 합니다.
+
+- HandStack: 거래 계약과 실제 실행 모듈의 검증 로직을 확인합니다.
+- 별도 Node.js 서비스: `class-validator` 등의 선택적 라이브러리를 사용할 수 있습니다.
+- ASP.NET Core Controller/DTO: `DataAnnotations`를 적용할 수 있습니다.
+
+뒤의 두 방식이 transact 계약에 자동 적용되는 것은 아닙니다.
+
+---
+
+### 핸즈온: 정상 값에서 경계값으로
+
+1. 상품명 필수, 가격 양수 규칙을 실행 모듈에 구현합니다.
+2. 정상 값 → 빈 상품명 → 음수 가격 순으로 같은 거래를 보냅니다.
+3. HTTP 상태와 거래 응답의 오류 정보, DB 저장 여부를 함께 확인합니다.
+
+별도 REST Controller 실습에서는 DTO의 `@IsNotEmpty()` 등과 `400 Bad Request` 응답을 확인합니다. HandStack 거래 오류도 반드시 HTTP 400일 것이라 가정하지 않습니다.
+
+---
+
+## 3. 전송 오류와 거래 오류 구분하기
+
+HTTP 상태는 전송·엔드포인트 처리 상태를, 거래 응답은 업무 실행 결과를 알려줍니다.
+
+- HTTP 200만으로 저장 성공을 판단하지 않습니다.
+- 사용자에게는 해결 가능한 메시지를 보여줍니다.
+- 개발자는 GlobalID로 상세 서버 로그를 확인합니다.
+
+---
+
+### 주요 HTTP 상태 코드 (1/2) · 세부 1/2
+
+<!-- _class: reference-page -->
+
+
 
 - `2xx` (성공)
   - `200 OK`: 요청 성공 (조회)
   - `201 Created`: 리소스 생성 성공 (생성)
   - `204 No Content`: 성공했으나 반환할 내용 없음 (삭제)
+
+
+
+---
+
+### 주요 HTTP 상태 코드 (1/2) · 세부 2/2
+
+<!-- _class: reference-page -->
+
+
 
 - `4xx` (클라이언트 오류)
   - `400 Bad Request`: 잘못된 요청 (예: 유효성 검사 실패)
@@ -250,68 +301,67 @@ section.tinytext>blockquote {
   - `403 Forbidden`: 권한 없음
   - `404 Not Found`: 요청한 리소스 없음
 
+---
+
+### 주요 HTTP 상태 코드 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - `5xx` (서버 오류)
   - `500 Internal Server Error`: 서버 내부에서 예측하지 못한 오류 발생
 
 ---
 
-### 핸즈온: 에러 상황별 응답 확인
+### 핸즈온: 세 가지 실패를 분리해서 확인하기
 
-- Postman으로 다양한 에러 상황을 시뮬레이션 해봅니다.
+- **라우팅**: 존재하지 않는 경로의 HTTP 응답을 확인합니다.
+- **검증**: 앞서 만든 빈 값·음수 요청의 거래 오류를 확인합니다.
+- **서버**: 격리된 테스트 코드에서 의도적인 예외를 발생시킵니다.
 
-  - `404 Not Found` 확인
-    - `GET /api/products/9999` (존재하지 않는 ID) 요청
-
-  - `400 Bad Request` 확인
-    - 이전 단계에서 실습한 유효성 검사 실패 요청 재현
-
-  - `500 Internal Server Error` 확인
-    - 백엔드 코드에 의도적으로 에러 유발 코드(예: 정의되지 않은 변수 접근) 삽입 후 API 호출
+일반 REST 예제 `GET /api/products/9999`의 404는 Controller 구현에 따라 달라집니다. 400·404·500을 모든 거래에 기계적으로 대응시키지 않습니다.
 
 ---
 
-## 4. 쿼리 파라미터 활용하기
+## 4. 검색 조건을 SQL까지 전달하기
 
-- 목표: URL의 쿼리 파라미터를 사용하여 데이터를 필터링하고 검색하는 기능을 구현합니다.
-- HandStack 키워드: `BaseFieldMappings`, `Pretreatment`, `$Variable`
+목표: 검색 입력 → 거래 매개변수 → 바인딩 SQL → 결과를 추적합니다.
 
----
-
-### 쿼리 파라미터란?
-
-URL 주소 뒤에 `?`를 붙여 `key=value` 형태로 데이터를 전달하는 방법입니다.
-주로 데이터 목록을 조회(`GET`)할 때 정렬, 필터링, 페이징 등의 조건을 전달하는 데 사용됩니다.
-
-- 예시: `GET /api/products?category=electronics&minPrice=100`
-  - `category`가 `electronics` 이고
-  - `minPrice`가 `100` 이상인 상품을 조회
-
-HandStack은 쿼리 파라미터를 SQL 조건으로 자동 매핑하는 강력한 기능을 제공합니다.
+- URL 쿼리: 별도 GET API에서 쓰는 전달 방식
+- `BaseFieldMappings`: 앞선 실행 결과 필드를 후속 입력에 연결
+- `pretreatment`: 본 SQL 전에 실행할 쿼리
+- `$Variable`: 서버가 부여한 세션 변수
 
 ---
 
-### 핸즈온: 검색 기능 구현하기
+### URL의 쿼리와 SQL 매개변수는 다릅니다
 
-1. 백엔드에서 쿼리 파라미터를 처리하는 로직을 추가합니다.
-   - HandStack 설정 파일에서 `BaseFieldMappings` 등을 사용하여 URL의 `name` 파라미터를 SQL의 `WHERE name LIKE ...` 조건과 연결합니다.
+일반 GET API는 `?key=value`로 정렬·필터·페이징 조건을 전달할 수 있습니다.
 
-2. Postman으로 쿼리 파라미터를 포함한 요청을 보냅니다.
-   - `GET /api/products?name=노트북`
-   - `GET /api/products?category=가전`
+예: `GET /api/products?category=electronics&minPrice=100`
 
-3. 응답 결과가 쿼리 파라미터 조건에 맞게 필터링되는지 확인합니다.
-
-> HandStack을 사용하면 복잡한 SQL 쿼리를 직접 작성할 필요 없이, 간단한 설정만으로 강력한 검색 기능을 쉽게 구현할 수 있습니다.
+이 URL 자체가 SQL WHERE 절을 만들지는 않습니다. HandStack 거래에서는 입력 계약과 dbclient SQL을 작성하고, 값을 바인딩합니다.
 
 ---
 
-<!-- _class: lead -->
-## 정리
+### 핸즈온: 검색 조건 하나부터 연결하기
 
-- transact 모듈은 클라이언트와 서버 통신의 핵심입니다.
-- `CommandType`으로 `dbclient`, `graphclient`, `function`, `command`, `prompter` 실행을 라우팅합니다.
-- Row/List, Form/Grid는 데이터와 UI의 기본 약속입니다.
-- 서버 측 유효성 검사는 시스템 안정성의 필수 요소입니다.
-- HTTP 상태 코드는 API의 상태를 알려주는 중요한 신호입니다.
-- 쿼리 파라미터와 HandStack 설정을 통해 강력한 검색 기능을 쉽게 구현할 수 있습니다.
+1. 화면의 상품명·분류를 거래의 `Row` 입력에 매핑합니다.
+2. dbclient 계약에 바인딩 매개변수와 필요한 `<if>` 조건을 작성합니다.
+3. 전체 조회 → 상품명 → 분류 → 결과 없음 순으로 비교합니다.
+
+`BaseFieldMappings`는 URL-to-WHERE 자동 변환 설정이 아닙니다. 선행 실행 결과를 후속 매개변수로 넘길 때만 사용합니다.
+
+---
+
+## transact 검증의 기준
+
+- CommandType과 실행 모듈의 연결을 확인합니다.
+- 요청 Row·List와 응답 Form·Grid를 맞춥니다.
+- 서버 검증·거래 오류·검색 조건을 성공 및 실패 요청으로 확인합니다.
+
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->
 

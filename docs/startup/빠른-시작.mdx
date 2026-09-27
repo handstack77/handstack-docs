@@ -1,108 +1,120 @@
 ---
 sidebar_position: 20
+title: 내 PC에서 실행하기
+description: HandStack 배포본을 구성하고 ack 서버와 게시판 예제에 접속합니다.
+pagination_prev: startup/install/필수-프로그램-설치하기
+pagination_next: tutorial/첫-조회
+toc_max_heading_level: 2
 ---
 
-# 빠른 시작
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
-> [중요] ack 실행 환경 설정을 위해 [패키지 관리자 설치하기](/docs/startup/install/패키지-관리자-설치하기), [필수 프로그램 설치하기](/docs/startup/install/필수-프로그램-설치하기) 문서의 내용을 먼저 수행 해야합니다.
+# 내 PC에서 실행하기
 
-## ack 실행 환경 설정
+HandStack 배포본으로 서버를 실행합니다. 이 단계의 완료 기준은 브라우저에서 관리 화면에 접속하는 것입니다. 도구 설치와 다운로드 시간은 PC와 네트워크에 따라 달라집니다.
 
-화면/기능 개발자의 PC 와 개발, 운영 서버에 HandStack 실행 환경 설정을 설명합니다. HandStack은 Windows 10+, Linux, macOS 운영체제에서 실행할 수 있습니다.
+## 준비 확인 {#ack-실행-환경-설정}
 
-https://github.com/handstack77/handstack/releases/latest 에서 운영체제에 적합한 프로그램 압축 파일을 다운로드 후 적절한 경로에 압축을 해제합니다.
+[필수 프로그램 안내](/docs/startup/install/필수-프로그램-설치하기)에서 .NET SDK, Node.js·npm, gulp-cli, curl을 확인하세요. `install.bat`과 `install.sh`는 이 도구를 이용해 HandStack의 패키지와 화면 자원을 구성합니다. 기본 도구 설치와는 다른 단계입니다.
 
-* linux-x64.zip: 리눅스 운영체제
-* osx-x64.zip: Intel CPU 기반 macOS 운영체제
-* win-x64.zip: Windows 10 이상 운영체제
+기존 프로젝트와 분리된 실습 디렉터리를 사용하세요. 여기서는 압축 안의 `handstack` 디렉터리를 Windows의 `C:/projects/handstack`, Linux·macOS의 사용자 디렉터리 아래 `projects/handstack`에 둡니다.
 
-다운로드 한 압축 파일을 다음의 경로에 해제 하는 것을 권장합니다. 다른 경로에 배치해도 경로가 다른 것외에 동일하게 작업합니다.
+## 배포본 받기
 
-- Windows 10+: `C:/projects/handstack`
-- Linux 또는 macOS: `/home/[사용자 ID]/projects/handstack`
+[HandStack 릴리스](https://github.com/handstack77/handstack/releases/latest)에서 OS와 CPU에 맞는 파일을 내려받으세요. 파일명에 `win`, `linux`, `osx`와 `x64`, `arm64` 등의 대상이 표시됩니다. 실제 제공되는 파일과 요구사항은 해당 릴리스 설명을 따릅니다.
 
-압축을 해제 한후 [HandStack 소스 기본경로]로 이동하면 다음과 같은 디렉토리 구조를 확인할 수 있습니다.
+압축을 풀고 아래 항목이 있는 디렉터리를 찾으세요. 이 문서에서는 그 위치를 **HandStack 기본 경로**라고 부릅니다.
 
-```bash
-HandStack 압축 해제 경로
-├─app
-│  ├─ack <- ack 서버 프로그램
-│  └─cli <- handstack CLI 도구
-├─contracts <- 화면/기능 소스
-├─forbes <- 업무 앱 템플릿
-└─modules <- 업무 단위 모듈
-```
+~~~text
+handstack/
+├─ app/       # ack 실행 파일과 설정
+├─ modules/   # 서버 모듈과 화면 자원
+├─ install.bat
+└─ install.sh
+~~~
 
-터미널 또는 명령 프롬프트를 열고 curl 명령어를 사용하여 최신 HandStack 압축 파일을 다운로드 할 수 있습니다. Windows, macOS, Linux에서 기본적으로 동일한 방식으로 활용할 수 있습니다. HandStack 압축 파일을 다운로드 할 적절한 디렉토리로 이동하고 다음의 명령어를 실행합니다.
+운영체제와 배포본의 아키텍처를 맞추는 방법은 [지원 환경 확인](/docs/startup/install/지원-운영체제)을 참고하세요.
 
-## Windows 운영체제에서 실행하기
+## 구성하고 실행하기
 
-```bash
-cd C:/projects
-curl -L -o handstack-win-x64.zip https://github.com/handstack77/handstack/releases/latest/download/win-x64.zip
-powershell Expand-Archive -Path handstack-win-x64.zip -DestinationPath .
-cd handstack
-install.bat
-```
+<span id="windows-운영체제에서-실행하기" />
+<span id="linux-또는-macos-운영체제에서-실행하기" />
 
-압축을 해제 한후 `C:/projects/handstack` 로 이동하여 install.bat 배치 스크립트를 실행합니다.
+<Tabs groupId="operating-system" queryString="os">
+<TabItem value="windows" label="Windows" default>
 
-실행에 필요한 필수 설치 프로그램과 환경을 자동으로 구성합니다. 서버 사양과 네트워크 상태에 따라 10분 이상 소요될 수 있습니다.
+### Windows에서 실행
 
-설정이 완료되면 app 디렉토리로 이동하여 ack 프로그램을 실행합니다.
+PowerShell에서 HandStack 기본 경로로 이동해 구성 스크립트를 실행합니다.
 
-```bash
-cd C:/projects/handstack/app
-ack
-```
+~~~powershell
+Set-Location C:/projects/handstack
+.\install.bat
+~~~
 
-## Linux 또는 macOS 운영체제에서 실행하기
+완료 메시지를 확인한 뒤 서버를 실행하세요. 오류가 나면 먼저 누락된 도구나 다운로드 실패를 해결합니다.
 
+~~~powershell
+Set-Location C:/projects/handstack/app
+.\ack.exe
+~~~
 
-```bash
-cd /home/[사용자 ID]/projects
-curl -L -o handstack-linux-x64.zip https://github.com/handstack77/handstack/releases/latest/download/linux-x64.zip
-unzip -q -o handstack-linux-x64.zip -d handstack
-tr -d '\r' < install.sh > install_fixed.sh && mv install_fixed.sh install.sh
-chmod +x install.sh
-sudo ./install.sh
-```
+</TabItem>
+<TabItem value="linux" label="Linux">
 
-> macOS 운영체제에서 실행하려면 `handstack-osx-x64.zip` 파일을 다운로드하고 압축을 해제합니다. macOS M1 기반에서 .NET Core로 빌드된 프로그램을 실행 하려면 로제타를 이용하여 실행 해야합니다.
-> ```bash
-> curl -L -o handstack-osx-x64.zip https://github.com/handstack77/handstack/releases/latest/download/osx-x64.zip
-> unzip -q -o handstack-osx-x64.zip -d handstack
-> ```
+### Linux에서 실행
 
-압축을 해제 한후 `/home/[사용자 ID]/projects/handstack` 로 이동하여 install.sh 배치 스크립트를 실행합니다.
+일반 사용자 터미널에서 구성합니다. 압축을 다른 위치에 풀었다면 첫 경로를 바꾸세요.
 
-실행에 필요한 필수 설치 프로그램과 환경을 자동으로 구성합니다. 서버 사양과 네트워크 상태에 따라 10분 이상 소요될 수 있습니다.
+~~~bash
+cd ~/projects/handstack
+bash ./install.sh
+~~~
 
-ack, handstack 실행 파일에 권한을 부여하여 실행이 가능합니다. 다음과 같이 실행 권한을 부여합니다.
+완료 후 서버를 실행합니다.
 
-```bash
-cd /home/[사용자 ID]/projects/handstack/app
+~~~bash
+cd ~/projects/handstack/app
 chmod +x ack
-
-cd /home/[사용자 ID]/projects/handstack/app/cli
-chmod +x handstack
-```
-
-설정이 완료되면 app 디렉토리로 이동하여 ack 프로그램을 실행합니다.
-
-```bash
-cd /home/[사용자 ID]/projects/handstack/app
 ./ack
-# 또는
-dotnet ack.dll
-```
+~~~
 
-## 웹 브라우저로 HandStack 실행 확인하기
+배포본에 `ack.dll`이 있으면 `dotnet ack.dll`로도 실행할 수 있습니다.
 
-ack 프로그램을 처음 실행하면 Administrator Email ID, Key를 확인할 수 있습니다. 이 정보는 checkup 모듈의 사용자 인증에 사용됩니다.
+</TabItem>
+<TabItem value="macos" label="macOS">
 
-> checkup 인증 정보는 [HandStack 소스 기본경로]/sqlite/HDS/dbclient/checkup.db SQLite 파일에 저장됩니다.
+### macOS에서 실행 {#macos에서-실행}
 
-![](img/start-ack.png)
+일반 사용자 터미널에서 구성합니다. Apple Silicon과 Intel용 배포본·.NET의 아키텍처가 맞는지 먼저 확인하세요.
 
-웹 브라우저를 열고 http://localhost:8421/checkup/account/signin.html 에 접속하여 HandStack을 실행합니다.
+~~~bash
+cd ~/projects/handstack
+bash ./install.sh
+~~~
+
+완료 후 서버를 실행합니다.
+
+~~~bash
+cd ~/projects/handstack/app
+chmod +x ack
+./ack
+~~~
+
+배포본에 `ack.dll`이 있으면 `dotnet ack.dll`로도 실행할 수 있습니다.
+
+</TabItem>
+</Tabs>
+
+## 브라우저에서 확인하기 {#웹-브라우저로-handstack-실행-확인하기}
+
+서버 터미널을 열어 둔 채 [관리 화면](http://localhost:8421/checkup/account/signin.html)에 접속하세요. 기본 포트는 `8421`이며 설정을 바꿨다면 실행 로그에 표시된 주소를 사용합니다.
+
+로그인 화면이 표시되고 서버에 기동 오류가 없으면 이 단계가 완료됩니다. 관리 화면에 로그인할 때는 최초 실행 로그에 안내된 Administrator Email ID와 Key를 사용합니다.
+
+![ack 실행 로그와 관리 계정 안내](img/start-ack.png)
+
+접속되지 않으면 [실행·화면·거래 문제 해결](/docs/guides/문제-해결#서버에-접속되지-않음)을 확인하세요.
+
+다음은 [게시판 첫 조회](/docs/tutorial/첫-조회)입니다.

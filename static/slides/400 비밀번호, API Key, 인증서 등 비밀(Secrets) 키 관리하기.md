@@ -109,11 +109,25 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
 </style>
 
 # 비밀번호, API Key, 인증서 등 비밀(Secrets) 키 관리하기
 
-### ack 서버를 이용하는 간단한 KVS (Key Vault Secret) RESTFul API
+KVS의 관리·수급 API를 구분하고, 비밀정보의 접근·교체·삭제를 검증합니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
 
 ---
 
@@ -123,26 +137,43 @@ section.tinytext>blockquote {
 - 개발, 테스트, 프로덕션 환경마다 다른 비밀 데이터를 사용해야 하며, 이를 안전하게 관리할 방법이 필요합니다.
 - 비밀 데이터는 앱과 함께 배포되어서는 안 되며, KVS(Key Vault Secret)나 KMS(Key Management Server)와 같은 제어된 수단을 통해 접근해야 합니다.
 
-> HandStack은 ack 서버를 통해 간단하면서도 강력한 KVS RESTFul API를 제공하여 이러한 문제를 해결합니다.
+> ack의 KVS API로 키를 관리·수급합니다. 통신 보호·파일 권한·호출자 인증을 별도로 설계해야 합니다.
 
 ---
 
-## HandStack KVS 인증 및 인가 방식
+## HandStack KVS 인증 및 인가 방식 (1/2)
 
-HandStack은 HTTP 요청 헤더를 통해 클라이언트를 식별하고 인가를 제어합니다.
+<!-- _class: reference-page -->
+
+
+
+이 구현은 HTTP 헤더를 등록 정보와 비교합니다. 헤더 값은 호출자가 조작할 수 있으므로, 그 자체를 강한 신원 증명으로 신뢰하지 않습니다.
 
 - API 요청 시 특정 헤더 값을 서버로 전송합니다.
     - `HandStack-MachineID`: 클라이언트 하드웨어 고유 ID
     - `HandStack-IP`: 클라이언트 IP 주소
     - `HandStack-HostName`: 클라이언트 호스트 이름
     - `HandStack-Environment`: 실행 환경 (e.g., Development, Production)
+
+---
+
+## HandStack KVS 인증 및 인가 방식 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - 서버는 수신된 헤더 값을 `handstack-secrets.json` 파일의 등록 정보와 비교하여 요청을 처리합니다.
 
 ---
 
-## 데이터 저장 구조: `handstack-secrets.json`
+## 데이터 저장 구조: `handstack-secrets.json` (1/2)
 
-모든 비밀 데이터는 ack 서버의 `handstack-secrets.json` 파일에 저장됩니다.
+<!-- _class: reference-page -->
+
+
+
+이 예제의 비밀 데이터는 ack 서버의 `handstack-secrets.json`에 저장됩니다. 파일·백업 접근을 제한하고 TLS와 별도 인증·네트워크 통제를 적용합니다. 전문 비밀 저장소의 보호 기능과 동일하다고 가정하지 않습니다.
 
 ```json
 {
@@ -151,6 +182,14 @@ HandStack은 HTTP 요청 헤더를 통해 클라이언트를 식별하고 인가
 }
 ```
 
+---
+
+## 데이터 저장 구조: `handstack-secrets.json` (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - `ManagementHost`
   - 비밀 키를 관리(등록, 삭제)할 수 있는 관리자 클라이언트 정보를 정의합니다.
 
@@ -158,8 +197,12 @@ HandStack은 HTTP 요청 헤더를 통해 클라이언트를 식별하고 인가
   - 각 클라이언트의 요청 조건과 일치하는 비밀 키 정보를 관리합니다.
 
 ---
-<!--_class: tinytext -->
-## `handstack-secrets.json` 상세 구조
+
+## `handstack-secrets.json` 상세 구조 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```json
 {
@@ -178,13 +221,37 @@ HandStack은 HTTP 요청 헤더를 통해 클라이언트를 식별하고 인가
 }
 ```
 
+---
+
+## `handstack-secrets.json` 상세 구조 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - `Secrets`의 키는 `MachineID`, `IP`, `HostName`을 `|`로 조합하여 사용하며, 이 값과 일치하는 클라이언트만 접근할 수 있습니다.
 
 ---
 
-## KVS RESTFul API 소개
+## 잠깐, 구분해 보기
 
-웹 브라우저가 아닌 클라이언트(서버 애플리케이션, CLI 도구 등)에서 다음 API를 사용하여 비밀 데이터를 안전하게 관리할 수 있습니다.
+MachineID·IP·HostName 헤더가 같으면 요청자를 신뢰해도 될까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: 클라이언트가 보낸 헤더만으로 강한 신원을 증명할 수 없습니다. TLS·네트워크 제한·신뢰 경계를 함께 검토합니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
+
+---
+
+## KVS RESTFul API 소개 (1/2)
+
+<!-- _class: reference-page -->
+
+
+
+서버 애플리케이션·CLI에서 사용하는 관리·수급 API입니다. 아래 localhost·예제 키는 실습용이며 운영 값으로 재사용하지 않습니다.
 
 - **키 목록 API** `GET /secrets`
   - 수급 가능한 전체 키 목록을 조회합니다.
@@ -194,6 +261,14 @@ HandStack은 HTTP 요청 헤더를 통해 클라이언트를 식별하고 인가
 
 - **키 삭제 API** `DELETE /secrets/{name}`
   - 등록된 키를 삭제합니다.
+
+---
+
+## KVS RESTFul API 소개 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 - **키 수급 API** `GET /secrets/{name}`
   - 특정 키의 값을 가져옵니다.
@@ -215,11 +290,24 @@ curl --location "http://localhost:8421/secrets" \
 
 ---
 
-## 키 등록 API: `POST /secrets`
+## 키 등록 API: `POST /secrets` (1/2)
 
-ManagementHost에 등록된 관리자만 사용 가능합니다. 새로운 키를 등록하거나 기존 키를 덮어씁니다.
+<!-- _class: reference-page -->
+
+
+
+관리자 조건을 확인한 뒤 등록합니다. 같은 이름은 덮어쓰므로 대상 환경·키 이름과 교체 후 의존 서비스의 동작을 먼저 확인합니다.
 
 - **요청 예제**
+
+---
+
+## 키 등록 API: `POST /secrets` (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 ```bash
 curl --location 'http://localhost:8421/secrets' \
 --header 'HandStack-MachineID: [Current Hardware ID]' \
@@ -241,7 +329,7 @@ curl --location 'http://localhost:8421/secrets' \
 
 ## 키 삭제 API: `DELETE /secrets/{name}`
 
-ManagementHost에 등록된 관리자만 사용 가능합니다. 지정된 이름의 키를 삭제합니다.
+관리자 조건을 확인한 뒤 지정한 키를 삭제합니다. 사용 중인 서비스 영향과 복구 수단을 확인하고 실습 키로 시험합니다.
 
 - **요청 예제**
 ```bash
@@ -270,10 +358,22 @@ curl --location "http://localhost:8421/secrets/[name]" \
 - 요청하는 클라이언트의 헤더 정보와 `Secrets`에 등록된 키가 일치해야 값을 반환합니다.
 
 ---
-<!--_class: tinytext -->
-## 애플리케이션 적용 예제 (C#)
+
+## 애플리케이션 적용 예제 (C#) (1/4)
+
+<!-- _class: reference-page -->
+
+
 
 ASP.NET Core 애플리케이션에서 HttpClient를 사용하여 ack 서버로부터 비밀 키를 가져오는 예제입니다.
+
+---
+
+## 애플리케이션 적용 예제 (C#) (2/4)
+
+<!-- _class: reference-page -->
+
+
 
 ```csharp
 // http://localhost:8421/wwwroot/api/index/get-secret?keyName=MySecret
@@ -290,6 +390,19 @@ public async Task<string> GetSecret(string? baseUrl, string keyName)
     using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
 
     // KVS 서버에 전달할 클라이언트 식별 헤더 추가
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## 애플리케이션 적용 예제 (C#) (3/4)
+
+<!-- _class: reference-page -->
+
+
+
+```csharp
     request.Headers.Add("HandStack-MachineID", GlobalConfiguration.HardwareID);
     request.Headers.Add("HandStack-IP", GlobalConfiguration.ServerLocalIP);
     request.Headers.Add("HandStack-HostName", GlobalConfiguration.HostName);
@@ -304,18 +417,36 @@ public async Task<string> GetSecret(string? baseUrl, string keyName)
     // IsEncryption이 'Y'인 경우, 복호화하여 원본 값 반환
     string systemVaultKey = "[Strong@Passw0rd]"; // 실제로는 안전한 곳에서 로드
     var vaultKey = (systemVaultKey + "|" + keyItem.Key.PadRight(32, '0')).Substring(0, 32);
-    var content = keyItem.IsEncryption.ToBoolean() == true ? 
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## 애플리케이션 적용 예제 (C#) (4/4)
+
+<!-- _class: reference-page -->
+
+
+
+```csharp
+    var content = keyItem.IsEncryption.ToBoolean() == true ?
         keyItem.Value.DecryptAES(vaultKey) : keyItem.Value;
 
     return content;
 }
 ```
 
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
 ---
 
-## 요약
+## 비밀정보 관리의 기준
 
-- HandStack의 `ack` 서버를 활용하여 소스 코드에서 민감한 정보를 분리하고 안전하게 관리할 수 있습니다.
-- HTTP 헤더 기반의 간단한 인증 방식으로 클라이언트를 식별하고 접근을 제어합니다.
-- 직관적인 RESTFul API를 통해 개발 및 운영 환경에서 필요한 비밀 데이터를 손쉽게 등록, 조회, 삭제, 수급할 수 있습니다.
-- 이를 통해 보안성을 강화하고 애플리케이션 배포 및 관리의 효율성을 높일 수 있습니다.
+- 관리자와 수급 클라이언트의 권한을 분리합니다.
+- 환경별 키의 등록·조회·교체·삭제와 거절 요청을 시험합니다.
+- handstack-secrets.json·로그·백업의 접근 권한을 제한합니다.
+
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->

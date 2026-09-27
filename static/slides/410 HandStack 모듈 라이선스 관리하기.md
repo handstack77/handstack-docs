@@ -109,11 +109,26 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
+section.reference-page img { max-height: 440px; max-width: 100%; object-fit: contain; }
 </style>
 
 # HandStack 모듈 라이선스 관리 지침
 
-### 소스 코드 보호 및 라이선스 발급/검증
+어셈블리 서명·난독화·계약 암호화·라이선스 검증의 역할을 구분합니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
 
 ---
 
@@ -126,33 +141,55 @@ section.tinytext>blockquote {
 
 ---
 
-## Eazfuscator.NET 설정 1: 어셈블리 서명
+## Eazfuscator.NET 설정 1: 어셈블리 서명 (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 라이선스 발급 및 난독화를 위해 어셈블리 서명이 필요합니다.
 
 1. 서명 파일 생성 (`.snk`)
    - 프로젝트 루트 위치에서 모듈명과 동일하게 생성합니다.
-   ```bash
-   sn -k modulename.snk
-   ```
+
+---
+
+## Eazfuscator.NET 설정 1: 어셈블리 서명 (2/3)
+
+<!-- _class: reference-page -->
+
+
+
+```bash
+sn -k modulename.snk
+```
 
 2. 프로젝트 파일(`.csproj`)에 설정 추가
-   ```xml
-   <PropertyGroup>
-       <SignAssembly>True</SignAssembly>
-       <AssemblyOriginatorKeyFile>modulename.snk</AssemblyOriginatorKeyFile>
-   </PropertyGroup>
-   ```
+
+---
+
+## Eazfuscator.NET 설정 1: 어셈블리 서명 (3/3)
+
+<!-- _class: reference-page -->
+
+
+
+```xml
+<PropertyGroup>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>modulename.snk</AssemblyOriginatorKeyFile>
+</PropertyGroup>
+```
 
 ---
 
 ## 어셈블리 서명(Strong-Name)의 중요성
 
-- 고유한 신원 보장 및 이름 충돌 방지
-- 무결성 보장 (코드가 변경되지 않았음을 확인)
-- 신뢰의 원천 제공
-- GAC (Global Assembly Cache) 등록 시 필수 조건
-- 버전 관리 및 Side-by-Side 실행 지원
+- 이름·버전·공개 키로 어셈블리 식별에 사용합니다.
+- Strong Name 자체는 게시자 신뢰나 보안 경계가 아닙니다.
+- GAC·버전별 병존은 .NET Framework 맥락입니다. 현대 .NET과 구분합니다.
+
+[Microsoft: Strong-named assemblies](https://learn.microsoft.com/dotnet/standard/assembly/strong-named)
 
 `.snk` 파일은 공개 키와 개인 키를 포함하며, 유출 시 어셈블리 위변조가 가능해집니다.
 
@@ -164,7 +201,7 @@ section.tinytext>blockquote {
 >
 > 비밀 관리 시스템이나 안전한 위치에 보관하고 필요할 때만 사용해야 합니다.
 >
-> 만약 유출되거나 분실한 경우, 해당 서명으로 된 어셈블리를 더 이상 업데이트 할 수 없으므로, 새로운 키 쌍을 생성하고 어셈블리를 다시 서명해야 합니다.
+> 분실 시 기존 키로 재서명할 수 없습니다. 유출 시 키를 교체하고 참조·라이선스·배포 영향과 재발급 절차를 점검합니다.
 
 ---
 
@@ -184,14 +221,34 @@ section.tinytext>blockquote {
 
 ---
 
-## 모듈 라이선스 키란?
+## 모듈 라이선스 키란? (1/3)
 
-모듈을 특정 고객사에게 독점적으로 사용 허가하는 고유한 암호화 키입니다.
+<!-- _class: reference-page -->
+
+
+
+모듈의 허용 대상·조건을 검증하는 키입니다. 실제 사용 권리는 해당 라이선스 계약으로 정합니다.
+
+---
+
+## 모듈 라이선스 키란? (2/3)
+
+<!-- _class: reference-page -->
+
+
 
 - 역할
   - 모듈의 Contract 코드 및 설정을 암호화합니다.
   - 라이선스 키가 없으면 모듈 사용이 불가능합니다.
-  - 무단 복제 및 배포를 방지하고 기술을 보호합니다.
+  - 무단 사용을 제한하는 통제 중 하나이며 복제·분석을 완전히 막지는 못합니다.
+
+---
+
+## 모듈 라이선스 키란? (3/3)
+
+<!-- _class: reference-page -->
+
+
 
 - 참고
   - HandStack 플랫폼 자체의 MIT 라이선스와는 별개입니다.
@@ -199,13 +256,21 @@ section.tinytext>blockquote {
 
 ---
 
-## 서버 측 라이선스 키 예제
+## 서버 측 라이선스 키 예제 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 `appsettings.json` 파일에 모듈별 라이선스 정보를 설정합니다. `ack` 서버가 시작될 때 이 정보를 읽어 모듈을 로드하며 검증합니다.
 
-<style scoped>
-  marp-pre code { font-size: 22px; }
-</style>
+---
+
+## 서버 측 라이선스 키 예제 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```json
 {
@@ -245,15 +310,23 @@ if (typeof window !== "undefined") window.customApiModuleLicense = customApiModu
 
 ---
 
-## 모듈 라이선스 키 발급하기 (1/3) - 공개 키 확인
+## 모듈 라이선스 키 발급하기 (1/3) - 공개 키 확인 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 `handstack` CLI 도구를 사용하여 서명된 어셈블리의 공개 키 정보를 확인합니다.
 
 - 경로: `handstack/4.Tool/CLI/handstack`
 
-<style scoped>
-  marp-pre code { font-size: 22px; }
-</style>
+---
+
+## 모듈 라이선스 키 발급하기 (1/3) - 공개 키 확인 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```bash
 handstack publickey --file="C:\..\modulename.dll"
@@ -267,13 +340,18 @@ handstack publickey --file="C:\..\modulename.dll"
 e066b046f40c9f1fd0c263265227be9e068a73be1f403e482f484fbc450148b9
 ...
 ```
+
 이 공개 키 정보는 라이선스 생성에 사용됩니다.
 
 ---
 
-## 모듈 라이선스 키 발급하기 (2/3) - 개발사 정보 변경
+## 모듈 라이선스 키 발급하기 (2/3) - 개발사 정보 변경 (1/2)
 
-`license-manager.js` 파일에 개발사 고유 정보를 설정하여 지적 재산권을 보호합니다.
+<!-- _class: reference-page -->
+
+
+
+`license-manager.js`에 발급자 정보를 설정합니다. 설정만으로 법적 권리나 독점 사용권이 생기는 것은 아닙니다.
 
 - 경로: `handstack/4.Tool/CLI/node-cli/license-cli/license-manager.js`
 
@@ -284,19 +362,35 @@ this.allowedDomains = ['localhost', '127.0.0.1']; // 기본 허용 도메인
 this.currentUser = 'your-name'; // 생성자 정보
 ```
 
+---
+
+## 모듈 라이선스 키 발급하기 (2/3) - 개발사 정보 변경 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - `saltValue`: 이전 단계에서 확인한 모듈의 공개 키(SHA256)를 사용합니다.
 
 ---
 
-## 모듈 라이선스 키 발급하기 (3/3) - `license-cli.js` 사용
+## 모듈 라이선스 키 발급하기 (3/3) - `license-cli.js` 사용 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 `license-cli.js` 도구를 사용하여 최종 라이선스 키를 생성합니다.
 
 - 경로: `handstack/4.Tool/CLI/node-cli/license-cli`
 
-<style scoped>
-  marp-pre code { font-size: 22px; }
-</style>
+---
+
+## 모듈 라이선스 키 발급하기 (3/3) - `license-cli.js` 사용 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```bash
 npm install
@@ -309,6 +403,7 @@ node license-cli.js create --module-id "custom-api-module" `
   --expires "2026-07-01T23:59:59.000Z" `
   --gen-js --js-dir "./generated-licenses"
 ```
+
 - `--gen-js`: 클라이언트용 JavaScript 라이선스 파일도 함께 생성합니다.
 
 ---
@@ -392,6 +487,18 @@ HandStack은 오픈소스로서 투명성과 협력을 장려합니다.
 
 ---
 
+## 잠깐, 구분해 보기
+
+브라우저의 라이선스 검증만으로 서버 기능까지 보호할 수 있을까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: 클라이언트 코드는 사용자가 제어할 수 있습니다. 서버의 검증과 배포·키 관리가 함께 필요합니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
+
+---
+
 ## 모듈 라이선스 키 검증 흐름
 
 1. `ack` 서버 시작
@@ -427,4 +534,16 @@ node license-cli.js validate `
 
 2. 데모 페이지에서 확인
    - `license-validation-demo.html` 파일에 발급받은 JS 라이선스 파일을 포함시킨 후, 브라우저에서 열어 검증 로직을 테스트할 수 있습니다.
+
+---
+
+## 라이선스 관리의 완료 기준
+
+- 개인 키를 보호하고 개발사·모듈 식별 정보를 맞춥니다.
+- 서버·계약·브라우저의 검증 경로를 각각 시험합니다.
+- 정상 키와 만료·변조·대상 불일치 사례를 비교합니다.
+
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->
 

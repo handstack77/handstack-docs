@@ -28,11 +28,13 @@ SQL 문자열만 있으면 어떤 프로그램이 이 SQL을 실행할지, 어�
             <![CDATA[
 SELECT B.ID, B.Category, B.Title, B.Author, B.DatePosted
 FROM Board B
-WHERE B.DatePosted BETWEEN @StartDate AND (@EndDate || '23:59:59')
+WHERE B.DatePosted BETWEEN @StartDate AND (@EndDate || ' 23:59:59')
     AND CASE WHEN @Category = '' THEN @Category ELSE B.Category END = @Category
+    AND (@Title = '' OR B.Title LIKE '%' || @Title || '%')
 ORDER BY B.ID DESC;
             ]]>
             <param id="@Category" type="String" length="-1" value="" />
+            <param id="@Title" type="String" length="-1" value="" />
             <param id="@StartDate" type="String" length="-1" value="" />
             <param id="@EndDate" type="String" length="-1" value="" />
         </statement>
@@ -52,7 +54,7 @@ ORDER BY B.ID DESC;
 
 ## 파라미터 바인딩과 SQL 인젝션
 
-`@Category`, `@StartDate`처럼 `param`으로 선언한 값은 문자열을 그대로 이어붙이는 것이 아니라 매개변수로 바인딩되어 실행됩니다. 사용자가 `Category` 입력값에 SQL 구문을 넣더라도 데이터 값으로만 처리되어 SQL 인젝션으로부터 안전합니다.
+`@Category`, `@StartDate`처럼 `param`으로 선언한 값은 SQL 문자열에 직접 이어붙이지 않고 매개변수로 바인딩합니다. 이 예제의 입력값은 SQL 구문이 아닌 데이터로 처리됩니다. 컬럼명·정렬 방향처럼 바인딩할 수 없는 구문을 동적으로 만들 때는 별도의 허용 목록 검증이 필요합니다.
 
 ## 자주 하는 오해
 
@@ -62,7 +64,6 @@ ORDER BY B.ID DESC;
 **"datasource에 실제 연결 문자열을 적어야 하나요?"**
 아닙니다. `datasource`는 `DB01`처럼 서버에 등록된 데이터 원본의 ID일 뿐입니다. 실제 연결 정보는 서버 설정에서 관리하며, 계약 파일에는 절대 적지 않습니다.
 
-## 이것만 기억하세요
+<span id="이것만-기억하세요" />
 
-1. **하나의 `statement`가 하나의 기능 ID에 대응한다.**
-2. **파라미터는 값 치환이 아니라 바인딩으로 처리되어 안전하다.**
+[CRUD 계약 작성](/docs/tutorial/dbclient-SQL계약/CRUD-계약-작성)에서 다른 SQL 계약을 추가합니다. 식별자의 정확한 의미는 [식별자와 파일 경로](/docs/reference/식별자와-파일-경로)를 참고하세요.

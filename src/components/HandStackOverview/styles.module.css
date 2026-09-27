@@ -1,0 +1,168 @@
+.overview {
+    padding: 4rem 0 3rem;
+    border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.introduction {
+    max-width: 52rem;
+    margin: 0 auto 2rem;
+    text-align: center;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.eyebrow {
+    margin-bottom: 0.75rem;
+    color: var(--ifm-color-primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+}
+
+.introduction h2 {
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    line-height: 1.4;
+}
+
+.lead {
+    margin-bottom: 0;
+    color: var(--ifm-color-emphasis-700);
+    line-height: 1.8;
+}
+
+.architecture {
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--ifm-color-emphasis-200);
+    border-radius: 1rem;
+    background: var(--ifm-background-surface-color);
+}
+
+.architecture img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #f5f9fc;
+}
+
+.caption {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    padding: 1rem 1.25rem;
+    font-size: 0.85rem;
+    line-height: 1.7;
+}
+
+.caption a {
+    flex-shrink: 0;
+}
+
+.moduleLinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin: 1.25rem 0 0.75rem;
+    padding: 0;
+    list-style: none;
+}
+
+.moduleLinks li {
+    flex: 1 1 11rem;
+}
+
+.moduleLinks a {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 0.75rem;
+    height: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--ifm-color-emphasis-300);
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.moduleLinks code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.moduleLinks a:hover {
+    border-color: var(--ifm-color-primary);
+}
+
+.note {
+    margin: 0.75rem 0 0;
+    color: var(--ifm-color-emphasis-700);
+    font-size: 0.8rem;
+    line-height: 1.7;
+}
+
+.why {
+    margin-top: 3rem;
+}
+
+.reasons {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.reason {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: 1.25rem;
+    border-top: 2px solid var(--ifm-color-primary);
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.number {
+    margin-bottom: 0.75rem;
+    color: var(--ifm-color-primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.reason h3 {
+    font-size: 1.15rem;
+    line-height: 1.5;
+}
+
+.reason p {
+    color: var(--ifm-color-emphasis-700);
+    font-size: 0.95rem;
+    line-height: 1.8;
+}
+
+.reason > a {
+    margin-top: auto;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 767px) {
+    .overview {
+        padding: 2.5rem 0;
+    }
+
+    .reasons {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .caption {
+        padding: 1rem;
+    }
+
+    .moduleLinks li {
+        flex-basis: calc(50% - 0.65rem);
+    }
+}

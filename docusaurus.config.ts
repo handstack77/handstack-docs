@@ -4,9 +4,9 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-    title: `HandStack 의 목표는 개발자가 좋아하고 기업이 신뢰하는 비즈니스 앱 '시스템'을 제공 하는 것입니다.`,
-    tagline: '',
-    favicon: '/favicon.ico',
+    title: 'HandStack',
+    tagline: 'HTML·JavaScript·SQL로 업무 웹 앱을 만드세요.',
+    favicon: 'img/logo.ico',
 
     // Set the production url of your site here
     url: 'https://handstack.kr',
@@ -20,7 +20,6 @@ const config: Config = {
     projectName: 'handstack', // Usually your repo name.
 
     onBrokenLinks: 'throw',
-    onBrokenMarkdownLinks: 'warn',
 
     // Even if you don't use internationalization, you can use this field to set
     // useful metadata like html lang. For example, if your site is Chinese, you
@@ -30,7 +29,13 @@ const config: Config = {
         locales: ['ko'],
     },
     themes: ['@docusaurus/theme-mermaid'],
+    plugins: [
+        [require.resolve('./plugins/ide-downloads/index.cjs'), {
+            serverUrl: process.env.HANDSTACK_IDE_RELEASE_SERVER_URL || 'https://stavlo.qrame.kr',
+        }],
+    ],
     markdown: {
+        hooks: { onBrokenMarkdownLinks: 'warn' },
         format: 'detect',
         mermaid: true,
         mdx1Compat: {
@@ -92,48 +97,27 @@ const config: Config = {
             logo: {
                 alt: 'HandStack Logo',
                 src: 'img/logo.jpg',
+                width: 32,
+                height: 32,
             },
             items: [
+                { type: 'doc', docId: 'startup/개요', position: 'left', label: '시작하기' },
+                { type: 'doc', docId: 'tutorial/index', position: 'left', label: '따라 만들기' },
+                { type: 'doc', docId: 'guides/index', position: 'left', label: '작업별 가이드' },
+                { type: 'doc', docId: 'reference/index', position: 'left', label: 'API·설정 참조' },
+                { type: 'doc', docId: 'reference/concept/index', position: 'left', label: '개념 이해' },
+                { type: 'doc', docId: 'ide/index', position: 'left', label: 'IDE 사용하기' },
                 {
-                    type: 'docSidebar',
-                    sidebarId: 'startupSidebar',
-                    position: 'left',
-                    label: '시작하기',
+                    type: 'dropdown', label: '더보기', position: 'right',
+                    items: [
+                        { to: '/docs/category/커뮤니티', label: '커뮤니티·추가 자료' },
+                        { to: '/docs/category/바이브-코딩-지침', label: 'AI 활용 자료' },
+                        { to: '/docs/category/강연세미나-문서', label: '발표 자료' },
+                        { href: 'https://notebooklm.google.com/notebook/02e39cd7-bd8a-48ff-8ab1-12a985660a74', label: 'NotebookLM' },
+                    ],
                 },
-                {
-                    type: 'docSidebar',
-                    sidebarId: 'tutorialSidebar',
-                    position: 'left',
-                    label: '학습 트랙',
-                },
-                {
-                    type: 'docSidebar',
-                    sidebarId: 'referenceSidebar',
-                    position: 'left',
-                    label: '참고하기',
-                },
-                {
-                    type: 'docSidebar',
-                    sidebarId: 'informationSidebar',
-                    position: 'left',
-                    label: '추가정보',
-                },
-                {
-                    type: 'docSidebar',
-                    sidebarId: 'twelvefactorSidebar',
-                    position: 'left',
-                    label: '12-Factors',
-                },
-                {
-                    to: '/blog',
-                    label: '블로그',
-                    position: 'left'
-                },
-                {
-                    href: 'https://github.com/handstack77/handstack',
-                    label: 'GitHub',
-                    position: 'right',
-                },
+                { to: '/blog', label: '블로그', position: 'right' },
+                { href: 'https://github.com/handstack77/handstack', label: 'GitHub', position: 'right' },
             ],
         },
         footer: {
@@ -147,12 +131,12 @@ const config: Config = {
                             to: '/docs/startup/개요',
                         },
                         {
-                            label: '참고하기',
-                            to: '/docs/category/환경설정',
+                            label: 'API·설정 참조',
+                            to: '/docs/reference/',
                         },
                         {
-                            label: '커뮤니티',
-                            to: '/docs/category/커뮤니티',
+                            label: '따라 만들기',
+                            to: '/docs/tutorial/',
                         },
                         {
                             label: '블로그',

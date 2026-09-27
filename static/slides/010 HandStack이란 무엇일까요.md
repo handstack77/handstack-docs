@@ -109,11 +109,26 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
+section.reference-page img { max-height: 440px; max-width: 100%; object-fit: contain; }
 </style>
 
 # HandStack이란 무엇일까요?
 
-### 개발자의 워크플로우를 높이는 통합 플랫폼
+HandStack의 역할과 한계를 구분하고, 게시판 학습을 시작할 경로를 고릅니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
 
 ---
 
@@ -125,15 +140,36 @@ section.tinytext>blockquote {
 
 ---
 
-## HandStack 소개
+## HandStack 소개 (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 - HandStack은 <mark>풀 스택(Full-Stack) 개발 프레임워크</mark>입니다.
+
 - 표준 기술로 <mark>프론트엔드</mark>(사용자 화면)와 <mark>백엔드</mark>(서버 로직)를 모두 만들 수 있습니다.
+
+---
+
+## HandStack 소개 (2/3)
+
+<!-- _class: reference-page -->
+
+
 
 - 주요 기술
     - 백엔드: ASP.NET Core, Node.js
     - 데이터베이스: SQL Server, Oracle, PostgreSQL, MySQL/MariaDB, SQLite 기반 제품 및 서비스
     - 라이선스: 오픈소스 (MIT License)
+
+---
+
+## HandStack 소개 (3/3)
+
+<!-- _class: reference-page -->
+
+
 
 - 누구나 자유롭게 사용하고 기여할 수 있습니다.
 
@@ -153,9 +189,8 @@ section.tinytext>blockquote {
 
 ## 장점: 빠른 시작 (1/4)
 
-- HandStack은 <mark>CLI (명령줄 도구)</mark>를 제공하여 복잡한 초기 설정을 자동화합니다.
-- 터미널에 명령어 몇 줄만 입력하면 프로젝트가 바로 생성됩니다.
-- 프로젝트 생성, 모듈 관리, 빌드, 배포까지 CLI로 간편하게 해결할 수 있습니다.
+- CLI와 스크립트로 설치·모듈 관리·빌드·배포를 자동화합니다.
+- 아래는 Windows 배포본을 받아 설치하는 예입니다. 기존 작업 폴더와 분리해 실행합니다.
 
 
 ```bash
@@ -171,10 +206,9 @@ install.bat
 
 ---
 
-## 장점: 놀라운 생산성 (2/4)
+## 계약 기반의 반복 작업 감소 (2/4)
 
-- <mark>반복적인 작업을 자동화</mark>하여 개발자가 핵심 로직에만 집중하게 합니다.
-- 적은 코드로 더 많은 기능을 구현할 수 있습니다.
+- 공통 거래 처리와 데이터 바인딩을 재사용해 반복 코드를 줄입니다.
 
 - 대표적인 예: <mark>단일 엔드포인트 API</mark>
   - 복잡한 API 코드를 직접 작성할 필요 없이, SQL 쿼리와 백엔드의 실행 코드를 연계하는 데이터 조회/수정 API가 만들어집니다.
@@ -206,6 +240,18 @@ install.bat
 
 ---
 
+## 잠깐, 구분해 보기
+
+단일 엔드포인트를 쓰면 SQL과 권한 설계도 없어질까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: 연결 코드를 줄여도 업무 SQL, 인증·인가, 테스트는 설계해야 합니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
+
+---
+
 ## 고려해야 할 단점
 
 - <mark>HandStack 고유의 학습 곡선</mark>
@@ -219,56 +265,105 @@ install.bat
 
 ## HandStack, 한마디로?
 
-- 특정 기술을 강요하지 않고, 오픈소스 생태계의 통합을 
-- HandStack은 마치 <mark>조립식 블록</mark> 같아요.
-- 이미 만들어진 편리한 블록(기능)들을 가져와 <mark>백엔드와 프론트엔드를 한 번에 뚝딱</mark> 만들 수 있게 도와주는 멋진 도구입니다!
+- 표준 웹 기술과 오픈소스 모듈을 연결하는 프레임워크입니다.
+- 화면·SQL·함수는 직접 작성하고, 공통 연결 구조는 재사용합니다.
 
 ---
 
-## 1일차 학습 과정
+## 1일차 학습 과정 (1/2)
 
-<style scoped>
-  li { font-size: 0.8rem; }
-</style>
+<!-- _class: reference-page -->
+
+
 
 - HandStack이란 무엇일까요
+
 - 내 컴퓨터에 개발 환경 꾸미기
+
 - HandStack으로 첫 프로젝트 실행하기
+
 - HandStack 프로젝트의 큰 그림 그리기
+
 - 업무 모듈 디렉토리 깊게 파헤치기
+
 - HandStack 라우팅의 마법
+
 - 클라이언트 디렉토리와 화면 구조 이해하기
+
+---
+
+## 1일차 학습 과정 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - 나만의 첫 화면 만들기 (클라이언트 사이드)
+
 - 화면의 동작과 업무 구현을 위한 공통 라이브러리
+
 - 화면의 공통 UI UX 제공을 위한 공통 컨트롤
+
 - repository 모듈을 이용한 파일 업로드, 다운로드
 
 ---
 
-## 2일차 학습 과정
+## 2일차 학습 과정 (1/2)
 
-<style scoped>
-  li { font-size: 0.8rem; }
-</style>
+<!-- _class: reference-page -->
+
+
 
 - 기초코드와 코드도움을 이용한 화면 데이터 관리
+
 - 클라이언트와 서버 데이터 연동 테스트
+
 - 데이터 거래란 무엇인가요
+
 - HandStack이 만들어준 API 사용하기
+
 - 데이터베이스 쿼리 계약 관리하기
+
 - SQL 처리를 위한 다양한 확장 기능
+
 - 거래 로그 데이터베이스 설정하기
+
+---
+
+## 2일차 학습 과정 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - HTTP 클라이언트로 거래 데이터 및 SQL 테스트 하기
+
 - Tabler, Master CSS, Mustache 로 만드는 화면 레이아웃
+
 - 화면 UI 레이아웃 템플릿 사용하기
+
 - UI 화면과 거래 로그로 디버깅하기
+
 - tasks 작업 스크립트로 반복 작업 관리하기
 
 ---
 
-## 우리가 함께 만들 첫 프로젝트
+## 우리가 함께 만들 첫 프로젝트 (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 - 간단한 "나만의 게시판" 만들기
+
+---
+
+## 우리가 함께 만들 첫 프로젝트 (2/3)
+
+<!-- _class: reference-page -->
+
+
+
 - HandStack을 이용해 다음 기능들을 구현해 볼 거예요.
   - 데이터베이스 스키마 관리
   - AI 를 이용한 CRUD 쿼리 작성
@@ -276,15 +371,23 @@ install.bat
   - 새로운 글 작성하기
   - 글 내용 보기
 
+---
+
+## 우리가 함께 만들 첫 프로젝트 (3/3)
+
+<!-- _class: reference-page -->
+
+
+
 - 이 과정을 통해 HandStack의 강력하고 편리한 기능들을 자연스럽게 익히게 될 것입니다.
 
 ---
 
 ## 오픈소스 생태계는 함께할 때 더 가치가 있습니다
 
-- HandStack은 기술을 넘어, 개발자 중심의 오픈소스 생태계를 함께 만들어가는 것을 지향합니다.
-- 실제 운영 중인 사례를 중심으로 기능과 안정성을 계속 발전시키고 있습니다.
-- HandStack에 대한 모든 소스와 문서는 GitHub 에서 관리되고 있으며 GitHub 이슈 등록, 개선 제안, 활용 사례 공유, 소스 병합 요청 등 개발자 들의 참여와 피드백을 통해 더 나은 방향으로 나아가고자 합니다.
+- 소스와 문서는 GitHub에서 관리합니다.
+- 이슈·개선 제안·활용 사례·병합 요청으로 참여할 수 있습니다.
+- 운영 중 발견한 문제는 재현 절차와 함께 공유합니다.
 
 ---
 
@@ -297,3 +400,15 @@ install.bat
 - 공식 문서 GitHub
   - `https://github.com/handstack77/handstack-docs`
 - https://handstack.kr
+
+---
+
+## 시작할 준비
+
+- 화면·거래·실행 모듈의 역할을 설명할 수 있습니다.
+- 장점과 학습 비용을 비교해 적용할 업무를 고릅니다.
+- 게시판 예제로 목록·등록·상세 조회를 이어서 익힙니다.
+
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->

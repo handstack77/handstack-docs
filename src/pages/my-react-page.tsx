@@ -1,11 +1,16 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 
+type IFrameWindow = Window & {
+    iFrameResize?: (options: { log: boolean }, target: string) => unknown;
+};
+
 export default function MyReactPage() {
     React.useEffect(function () {
         setTimeout(() => {
-            if (window.iFrameResize) {
-                iFrameResize({ log: true }, 'iframe');
+            const resize = (window as IFrameWindow).iFrameResize;
+            if (resize) {
+                resize({ log: true }, 'iframe');
             }
         });
     }, []);

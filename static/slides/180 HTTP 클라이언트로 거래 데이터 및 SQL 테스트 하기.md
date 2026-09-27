@@ -109,21 +109,51 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
+section.reference-page img { max-height: 440px; max-width: 100%; object-fit: contain; }
 </style>
 
 # 클라이언트 도구로 거래 및 SQL 테스트 하기
 
-### Postman과 CLI 도구를 활용한 HandStack API 테스트
+Postman과 .http 파일로 같은 거래를 재현하고, 요청·응답과 저장 결과를 비교합니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
 
 ---
 
-## 왜 HTTP 클라이언트가 필요한가?
+## 왜 HTTP 클라이언트가 필요한가? (1/2)
 
-HandStack으로 개발한 애플리케이션은 HTTP 기반의 단일 엔드포인트의 API를 사용합니다.
+<!-- _class: reference-page -->
+
+
+
+HandStack의 거래 요청은 보통 `transact`의 단일 실행 엔드포인트를 사용합니다. 모듈 관리 API·사용자 정의 Controller와 구분합니다.
 
 - UI 화면 없이도 백엔드의 기능이 올바르게 동작하는지 확인해야 합니다.
+
 - HTTP 클라이언트는 서버에 직접 요청을 보내고 응답을 확인할 수 있는 도구입니다.
+
 - 이를 통해 개발 초기 단계에서 빠르게 API를 테스트하고 디버깅할 수 있습니다.
+
+---
+
+## 왜 HTTP 클라이언트가 필요한가? (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - 대표적인 도구로 <mark>Postman</mark>이 있으며, 터미널 환경을 위한 <mark>CLI 도구</mark>도 있습니다.
 
 ---
@@ -142,16 +172,29 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
 
 `transact` 모듈의 비즈니스 거래를 테스트합니다.
 
-- 사전 설정: `transact` 모듈의 `module.json` 에서 `IsValidationRequest` 값을 `false`로 변경합니다.
+- 격리된 로컬 실습에서만 `IsValidationRequest: false`를 사용합니다.
+- 운영 서버에서는 검증을 끄지 않습니다. 실습 후 원래 값을 복원합니다.
 - Method: `POST`
 - URL: `http://localhost:8421/transact/api/transaction/execute`
 - Headers: `Content-Type: application/json`
 
 ---
 
-## `transact` 모듈 테스트 (2/2)
+## `transact` 모듈 테스트 (2/2) · 세부 1/3
+
+<!-- _class: reference-page -->
+
+
 
 [transact-payload.json 다운로드](assets/transact-payload.json) 후에 다음의 항목을 변경하여 요청을 실행합니다.
+
+---
+
+## `transact` 모듈 테스트 (2/2) · 세부 2/3
+
+<!-- _class: reference-page -->
+
+
 
 ```json
 {
@@ -168,6 +211,19 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
         "property": {},
         "dataMapInterface": "Row|Form,Grid",
         "dataMapCount": [
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## `transact` 모듈 테스트 (2/2) · 세부 3/3
+
+<!-- _class: reference-page -->
+
+
+
+```json
             1
         ],
         "dataMapSet": [
@@ -183,22 +239,37 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
 }
 ```
 
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
 ---
 
 ## `dbclient` 모듈 테스트 (1/2)
 
 `dbclient` 모듈을 통해 직접 SQL을 실행하고 테스트합니다.
 
-- 사전 설정: `dbclient` 모듈의 `module.json` 에서 `AuthorizationKey` 값을 `HANDSTACKDHOSTNAME`으로 설정합니다.
+- `dbclient`의 `AuthorizationKey`와 요청의 인증 값을 일치시킵니다.
+- 예제 키 `HANDSTACKDHOSTNAME`은 로컬 실습용입니다. 운영 키로 사용하지 않습니다.
 - Method: `POST`
 - URL: `http://localhost:8421/dbclient/api/query`
 - Headers: `Content-Type: application/json`
 
 ---
 
-## `dbclient` 모듈 테스트 (2/2)
+## `dbclient` 모듈 테스트 (2/2) · 세부 1/4
+
+<!-- _class: reference-page -->
+
+
 
 [dbclient-payload.json 다운로드](assets/dbclient-payload.json) 후에 다음의 항목을 변경하여 요청을 실행합니다.
+
+---
+
+## `dbclient` 모듈 테스트 (2/2) · 세부 2/4
+
+<!-- _class: reference-page -->
+
+
 
 ```json
 {
@@ -215,6 +286,19 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
         {
             "QueryID": "HDS|TST|SQS010|GD0100",
             "JsonObject": 0,
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## `dbclient` 모듈 테스트 (2/2) · 세부 3/4
+
+<!-- _class: reference-page -->
+
+
+
+```json
             "JsonObjects": [
                 0
             ],
@@ -229,11 +313,26 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
             "DecryptParameters": [],
             "BaseFieldMappings": [],
             "IgnoreResult": false
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## `dbclient` 모듈 테스트 (2/2) · 세부 4/4
+
+<!-- _class: reference-page -->
+
+
+
+```json
         }
     ]
     ...
 }
 ```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
 
 ---
 
@@ -241,16 +340,29 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
 
 `function` 모듈을 통해 직접 Function 을 실행하고 테스트합니다.
 
-- 사전 설정: `function` 모듈의 `module.json` 에서 `AuthorizationKey` 값을 `HANDSTACKDHOSTNAME`으로 설정합니다.
+- `function`의 `AuthorizationKey`와 요청의 인증 값을 일치시킵니다.
+- 예제 키는 로컬 실습용이며 외부에 노출하지 않습니다.
 - Method: `POST`
 - URL: `http://localhost:8421/function/api/execution`
 - Headers: `Content-Type: application/json`
 
 ---
 
-## `function` 모듈 테스트 (2/2)
+## `function` 모듈 테스트 (2/2) · 세부 1/4
+
+<!-- _class: reference-page -->
+
+
 
 [function-payload.json 다운로드](assets/function-payload.json) 후에 다음의 항목을 변경하여 요청을 실행합니다.
+
+---
+
+## `function` 모듈 테스트 (2/2) · 세부 2/4
+
+<!-- _class: reference-page -->
+
+
 
 ```json
 {
@@ -267,6 +379,19 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
         {
             "QueryID": "HDS|HED|HED010|GF0100",
             "JsonObject": 0,
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## `function` 모듈 테스트 (2/2) · 세부 3/4
+
+<!-- _class: reference-page -->
+
+
+
+```json
             "JsonObjects": [
                 0
             ],
@@ -281,11 +406,26 @@ Postman은 API 개발 및 테스트를 위한 강력한 GUI 도구입니다.
             "DecryptParameters": [],
             "BaseFieldMappings": [],
             "IgnoreResult": false
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## `function` 모듈 테스트 (2/2) · 세부 4/4
+
+<!-- _class: reference-page -->
+
+
+
+```json
         }
     ]
     ...
 }
 ```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
 
 ---
 
@@ -298,25 +438,60 @@ HandStack transact, dbclient, function API 테스트에서 거래 항목을 수�
 
 ---
 
-## 방법 2: CLI (Command-Line Interface) 활용
+## 방법 2: CLI (Command-Line Interface) 활용 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 인터넷 연결이 제한되거나 GUI 환경이 없는 서버 터미널에서는 어떻게 테스트할까요?
 
 - 이때 <mark>명령줄 인터페이스(CLI)</mark> 도구를 사용합니다.
+
 - 미리 작성된 요청 파일을 실행하여 API를 테스트할 수 있습니다.
+
 - 스크립트에 포함하여 테스트를 자동화하기에도 용이합니다.
+
 - 여기서는 JetBrains에서 제공하는 <mark>IntelliJ HTTP Client CLI</mark>를 사용해 보겠습니다.
+
+---
+
+## 방법 2: CLI (Command-Line Interface) 활용 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 > ijhttp는 IntelliJ IDEA의 HTTP Client 플러그인과 동일한 .http 파일 형식을 사용하기 때문에, IDE에서 작성한 요청 파일을 터미널에서도 그대로 활용할 수 있다는 장점이 있습니다
 
 ---
 
-## `.http` 파일 만들기
+## `.http` 파일 만들기 (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 CLI 도구에서 사용하기 위해, Postman 에서 요청 정보를 `.http` 파일 형식으로 저장합니다.
 
+---
+
+## `.http` 파일 만들기 (2/3)
+
+<!-- _class: reference-page -->
+
+
+
 - Postman 의 Code snippet 에서 HTTP 를 선택합니다.
   - `transact.http`, `dbclient.http`, `function.http` 파일을 각각 `C:/tmp/handstack` 디렉토리에 생성합니다.
+
+---
+
+## `.http` 파일 만들기 (3/3)
+
+<!-- _class: reference-page -->
+
+
 
 - 파일 내용은 다음과 같은 형식으로 작성합니다.
     - 요청 메서드와 URL
@@ -326,36 +501,84 @@ CLI 도구에서 사용하기 위해, Postman 에서 요청 정보를 `.http` �
 
 ---
 
-## IntelliJ HTTP Client CLI 설치하기 (1/2)
+## IntelliJ HTTP Client CLI 설치하기 (1/2) · 세부 1/2
+
+<!-- _class: reference-page -->
+
+
 
 - JDK 17+ 설치
     - `ijhttp` CLI는 JDK 17 이상이 필요합니다.
     - Windows에서는 `winget`을 사용하여 쉽게 설치할 수 있습니다.
 
-    ```bash
-    winget install Microsoft.OpenJDK.17
-    ```
-
-- JDK 21 설치
-    ```bash
-    winget install Microsoft.OpenJDK.21
-    ```
+```bash
+winget install Microsoft.OpenJDK.17
+```
 
 ---
 
-## IntelliJ HTTP Client CLI 설치하기 (2/2)
+## IntelliJ HTTP Client CLI 설치하기 (1/2) · 세부 2/2
+
+<!-- _class: reference-page -->
+
+
+
+- JDK 21 설치
+
+```bash
+winget install Microsoft.OpenJDK.21
+```
+
+---
+
+## IntelliJ HTTP Client CLI 설치하기 (2/2) · 세부 1/2 (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 - `ijhttp` 다운로드 및 압축 해제
     - [JetBrains 공식 웹사이트](https://www.jetbrains.com/ko-kr/ijhttp/download/)에서 직접 다운로드하거나, 터미널에서 `curl` 명령을 사용합니다.
-    ```bash
-    curl -f -L -o ijhttp.zip "https://jb.gg/ijhttp/latest"
-    ```
+
+
+
+---
+
+## IntelliJ HTTP Client CLI 설치하기 (2/2) · 세부 1/2 (2/3)
+
+<!-- _class: reference-page -->
+
+
+
+```bash
+curl -f -L -o ijhttp.zip "https://jb.gg/ijhttp/latest"
+```
+
     - 다운로드한 `ijhttp.zip` 파일의 압축을 해제합니다.
 
-- 명령 프롬프트를 관리자 권한으로 실행하여 다음 명령어로 환경변수에 등록합니다.
-  ```cmd
-  setx PATH "%PATH%;[압축 해제 경로]\ijhttp\bin" /M
-  ```
+---
+
+## IntelliJ HTTP Client CLI 설치하기 (2/2) · 세부 1/2 (3/3)
+
+<!-- _class: reference-page -->
+
+
+
+- PATH 등록은 선택 사항입니다. 먼저 압축을 푼 폴더의 실행 파일을 직접 호출합니다.
+
+---
+
+## IntelliJ HTTP Client CLI 설치하기 (2/2) · 세부 2/2
+
+<!-- _class: reference-page -->
+
+
+
+- 아래 `setx` 예시는 기존 PATH를 바꿀 수 있습니다. 시스템 환경변수 편집 UI에서 해당 폴더만 추가하는 방법을 권장합니다.
+
+```cmd
+setx PATH "%PATH%;[압축 해제 경로]\ijhttp\bin" /M
+```
 
 ---
 
@@ -363,7 +586,7 @@ CLI 도구에서 사용하기 위해, Postman 에서 요청 정보를 `.http` �
 
 `ijhttp` 명령을 실행하여 사전에 만든 .http 파일로 요청을 실행합니다.
 
-- `-L VERBOSE` 옵션은 요청과 응답의 상세 정보(헤더, 본문)를 모두 출력합니다.
+- `-L VERBOSE`는 헤더·본문을 출력합니다. 토큰과 개인정보가 있는 로그는 저장·공유 전에 마스킹합니다.
 
 - `transact.http` 파일 테스트
     ```bash
@@ -372,7 +595,23 @@ CLI 도구에서 사용하기 위해, Postman 에서 요청 정보를 `.http` �
 
 ---
 
-## 핸즈온: 직접 테스트 해보기
+## 잠깐, 구분해 보기
+
+HTTP 200이면 저장까지 성공했다고 판단해도 될까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: 거래 응답의 오류 정보와 후속 조회 결과를 함께 확인합니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
+
+---
+
+## 핸즈온: 직접 테스트 해보기 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 이제 배운 내용을 바탕으로 직접 실습해 봅시다.
 
@@ -383,15 +622,25 @@ CLI 도구에서 사용하기 위해, Postman 에서 요청 정보를 `.http` �
     - HandStack으로 만든 목록 조회 화면에서 데이터가 정상적으로 저장되었는지 확인합니다.
     - 또는, `dbclient` 요청을 보내 데이터베이스에서 직접 조회하여 확인합니다.
 
+---
+
+## 핸즈온: 직접 테스트 해보기 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - 3. 응용하기
     - `.http` 파일이나 Postman의 Body 내용을 수정하여 다른 데이터를 입력해 보고 결과를 다시 확인합니다.
 
 ---
 
-## 요약 정리 및 Q&A
+## API 테스트의 완료 기준
 
-> HandStack이 자동으로 만들어준 API 덕분에, 데이터베이스에 직접 접근할 필요 없이 웹 요청만으로 데이터를 넣고 뺄 수 있어요. 정말 편리하죠?
+- transact·dbclient·function의 URL과 인증 조건을 구분합니다.
+- 같은 payload를 Postman·CLI에서 재현합니다.
+- 실습용 보안 완화 설정을 복원하고 정상·실패 결과를 기록합니다.
 
-- 이처럼 HandStack은 복잡한 설정 없이 표준화된 방식으로 데이터를 처리하는 API를 제공합니다.
-- 개발자는 비즈니스 로직에만 집중할 수 있어 생산성이 크게 향상됩니다.
-- 프론트엔드와 백엔드 개발자 간의 협업이 매우 명확하고 간단해집니다.
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->

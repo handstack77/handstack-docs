@@ -1,0 +1,51 @@
+---
+description: HDS, BOD, BOD010, LD01의 의미와 화면·거래·SQL 계약 파일을 대조합니다.
+---
+
+# 식별자와 파일 경로
+
+게시판 예제는 같은 화면의 HTML·JavaScript·거래 계약·SQL 계약을 `BOD010`이라는 이름으로 연결합니다.
+
+## 식별자
+
+| 값 | 항목 | 게시판에서의 의미 |
+|---|---|---|
+| `HDS` | `ApplicationID` | 애플리케이션 |
+| `BOD` | `ProjectID` | 게시판 업무 프로젝트 |
+| `BOD010` | `TransactionID` | 게시글 목록 화면·거래 |
+| `LD01` | `ServiceID` / SQL `statement id` | 목록 조회 기능 |
+| `DB01` | SQL `datasource` | 서버에 등록된 데이터 원본 |
+
+`BOD`는 이 예제의 프로젝트 ID입니다. SQL을 실행하는 서버 모듈 이름은 `dbclient`이며 서로 다른 개념입니다.
+
+`LD01`은 예제의 명명 관례로 **L(List) + D(Database) + 01(순번)**입니다. 명명 관례와 거래 계약의 `CommandType`은 구분하세요. 서버 라우팅은 실제 `CommandType` 설정으로 결정됩니다.
+
+## 파일 배치
+
+아래는 기본 contracts 경로를 사용하는 BOD 예제입니다.
+
+~~~text
+contracts/
+├─ wwwroot/HDS/BOD/BOD010.html
+├─ wwwroot/HDS/BOD/BOD010.js
+├─ transact/HDS/BOD/BOD010.json
+└─ dbclient/HDS/BOD/BOD010.xml
+~~~
+
+| 파일 | 확인할 값 |
+|---|---|
+| `BOD010.js` | 화면 객체 `$BOD010`, `transaction.LD01` |
+| `BOD010.json` | `ApplicationID`, `ProjectID`, `TransactionID`, `Services[].ServiceID` |
+| `BOD010.xml` | `header`의 application/project/transaction/datasource, `statement id` |
+
+이 예제의 거래 계약은 JSON입니다. 현재 `transact` 로더는 `.json`과 `.txn` 확장자를 읽습니다. SQL 계약의 `.xml`과 혼동하지 마세요.
+
+## 소스와 실행 경로
+
+소스 저장소의 원본 예제는 `2.Modules/wwwroot/Contracts` 아래에 있습니다. 배포본에서는 모듈의 계약 복사·경로 설정에 따라 `contracts`에 복사되어 사용됩니다.
+
+편집했는데 결과가 바뀌지 않으면 원본과 실행 중인 계약 경로를 비교하세요. 경로와 복사 설정은 [wwwroot](/docs/reference/api/modules/wwwroot), [transact](/docs/reference/api/modules/transact), [dbclient](/docs/reference/api/modules/dbclient)에서 확인합니다.
+
+기본 BOD 화면 접속 주소는 `http://localhost:8421/view/BOD/BOD010.html`입니다. 파일 시스템 경로를 브라우저 주소로 그대로 사용하지 않습니다.
+
+실습은 [게시판 첫 조회](/docs/tutorial/첫-조회), 호출 규칙은 [거래 호출](/docs/reference/거래-호출)로 이어집니다.

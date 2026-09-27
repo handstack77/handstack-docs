@@ -11,11 +11,13 @@ sidebar_position: 3
 ## 시작 조건
 
 - [04. 도메인 모델과 데이터베이스](/docs/tutorial/도메인모델과-데이터베이스/)에서 설계한 `Board` 테이블 컬럼표를 준비합니다.
-- `contracts/wwwroot/HDS/BOD/BOD010.html` 파일을 만듭니다.
+- 별도의 실습 환경에서 `contracts/wwwroot/HDS/BOD/BOD010.html`을 준비합니다. 이미 완성 예제를 사용 중이면 변경 전 파일을 보관하세요.
+- [화면의 기본 골격](/docs/tutorial/화면저작/화면-저작-개념#화면의-기본-골격)을 복사하고, 아래 조각들을 `<!-- 화면 내용 -->` 위치에 차례대로 넣습니다. `form`과 `syn.loader.js`는 유지합니다.
+- 이 문서의 완료 기준은 입력과 빈 목록의 표시입니다. 조회·저장 왕복은 SQL·거래 계약까지 연결한 뒤 확인합니다.
 
 ## 조회 조건 작성
 
-분류·기간·제목 조건을 입력받는 영역을 만듭니다.
+제목과 분류 조건을 입력받는 영역을 만듭니다. 기간은 아래 별도 입력으로 추가합니다.
 
 ```html
 <div class="row mt--2">
@@ -41,6 +43,21 @@ sidebar_position: 3
 
 `syn-options`의 `belongID: ['LD01']`은 이 입력값이 `LD01` 거래를 호출할 때 함께 전송된다는 뜻입니다. [06. 화면 동작과 거래 연결](/docs/tutorial/화면동작과-거래연결/)에서 `LD01` 호출 코드를 작성할 때 이 값들이 실제로 전달됩니다.
 
+### 조회 기간 추가
+
+뒤에서 작성할 SQL은 `StartDate`와 `EndDate`를 사용합니다. 같은 폼 안에 날짜 입력도 넣습니다.
+
+```html
+<div class="input-group">
+    <label for="dtpStartDate">시작일</label>
+    <syn_datepicker id="dtpStartDate" syn-datafield="StartDate"
+        syn-options="{value: 'month:-1', belongID: ['LD01']}"></syn_datepicker>
+    <label for="dtpEndDate">종료일</label>
+    <syn_datepicker id="dtpEndDate" syn-datafield="EndDate"
+        syn-options="{value: 'now', belongID: ['LD01']}"></syn_datepicker>
+</div>
+```
+
 ## 목록 그리드 작성
 
 ```html
@@ -56,11 +73,11 @@ sidebar_position: 3
             , ['EditPost', '상세', 80, false, 'button', true, 'center']
         ]
         , readOnly: true
-    }" syn-events="['afterSelectionEnd']"></syn_grid>
+    }"></syn_grid>
 </div>
 ```
 
-컬럼 배열의 각 항목은 `[컬럼명, 표시명, 너비, 편집가능여부, 타입, 정렬가능여부, 정렬방향]` 순서입니다. `ID`, `Category`, `Title` 등 컬럼명은 [04. 도메인 모델과 데이터베이스](/docs/tutorial/도메인모델과-데이터베이스/)에서 설계한 `Board` 테이블 컬럼명과 맞춰 둡니다. 실제로 이 이름이 서버 응답과 일치해야 하는 이유는 [07. dbclient SQL 계약](/docs/tutorial/dbclient-SQL계약/)에서 확인합니다.
+컬럼 옵션의 정확한 순서는 [WebGrid 레퍼런스](/docs/startup/learning/uicontrols/web-grid)에서 확인하세요. `ID`, `Category`, `Title` 등 컬럼명은 [04. 도메인 모델과 데이터베이스](/docs/tutorial/도메인모델과-데이터베이스/)에서 설계한 `Board` 테이블 컬럼명과 맞춰 둡니다. 실제로 이 이름이 서버 응답과 일치해야 하는 이유는 [07. dbclient SQL 계약](/docs/tutorial/dbclient-SQL계약/)에서 확인합니다.
 
 ## 버튼 영역
 
@@ -79,8 +96,10 @@ sidebar_position: 3
 
 ## 성공 증거
 
-- [ ] 브라우저에서 `BOD010.html`을 열었을 때 조회 조건과 빈 그리드가 레이아웃 깨짐 없이 표시됩니다.
+- [ ] 서버가 실행된 상태에서 `http://localhost:8421/view/BOD/BOD010.html`에 접속하면 제목·분류·기간과 그리드가 표시됩니다. 파일 탐색기에서 HTML을 직접 열지 않습니다.
 - [ ] `syn-datafield` 이름(`Title`, `Category`, `Board` 등)을 표로 정리했습니다.
+
+편집한 내용이 보이지 않으면 [실행 파일 경로](/docs/reference/식별자와-파일-경로)를 확인하세요. 전체 예제와 비교할 때는 [BOD010.html 원본](https://github.com/handstack77/handstack/blob/master/2.Modules/wwwroot/Contracts/wwwroot/HDS/BOD/BOD010.html)을 사용합니다.
 
 ## 다음 문서
 

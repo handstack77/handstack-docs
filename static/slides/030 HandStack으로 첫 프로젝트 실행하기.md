@@ -109,21 +109,49 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
 </style>
 
 # HandStack으로 첫 프로젝트 실행하기
 
-### Windows 에서 프로젝트를 빌드하고, 결과를 확인합니다.
+Windows에서 빌드·게시·실행을 구분하고, 브라우저의 변경 결과까지 확인합니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
 
 ---
 
-## 프로젝트 빌드하기
+## 프로젝트 빌드하기 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 > [내 컴퓨터에 개발 환경 꾸미기](https://handstack.kr/slides/020%20내%20컴퓨터에%20개발%20환경%20꾸미기.html) 에서 설치 과정에서 `install.bat` 스크립트가 실행 되면 호스트에 <mark>HANDSTACK_SRC</mark>, <mark>HANDSTACK_HOME</mark> 환경변수가 설정됩니다.
 
 - 먼저 프로젝트 소스 코드를 빌드하여 컴파일합니다.
+
 - HandStack 소스 디렉토리로 이동하여 `build.bat` 명령어를 실행합니다.
-- 이 과정은 모든 프로젝트를 개발 환경에 적합한 Debug 모드로 모든 코드를 컴파일 하고 실행 가능한 상태로 만듭니다.
+
+- Debug 빌드 결과를 만든 뒤 오류 없이 완료됐는지 확인합니다.
+
+---
+
+## 프로젝트 빌드하기 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```bash
 cd %HANDSTACK_SRC%
@@ -132,10 +160,23 @@ build.bat
 
 ---
 
-## 프로젝트 게시(Publish)하기
+## 프로젝트 게시(Publish)하기 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 - 빌드가 완료되면, 운영 환경에 적합한 실행 가능한 형태로 배포 파일을 생성합니다.
+
 - HandStack은 다양한 운영체제와 환경에 맞춰 게시할 수 있는 `publish.bat` 스크립트를 제공합니다.
+
+---
+
+## 프로젝트 게시(Publish)하기 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```bash
 cd %HANDSTACK_SRC%
@@ -168,6 +209,7 @@ cd %HANDSTACK_SRC%/../publish/[운영체제 ID]/handstack
 cd app
 ack.exe
 ```
+
 ---
 
 ## 브라우저에서 확인하기
@@ -193,15 +235,47 @@ Ctrl + C
 
 ---
 
-## 핸즈온: 첫 프로젝트 실행
+## 핸즈온: 첫 프로젝트 실행 (1/2)
+
+<!-- _class: reference-page -->
+
+
+
+아래 명령은 Windows 명령 프롬프트(CMD) 기준입니다. 환경 변수와 결과물 경로를 확인한 뒤 실행합니다.
 
 1. `cd %HANDSTACK_SRC%`
+
 2. `build.bat`
+
 3. `publish.bat win build Debug x64`
+
 4. `cd %HANDSTACK_SRC%/../publish/win-x64/handstack/app`
+
 5. `ack.exe`
+
+---
+
+## 핸즈온: 첫 프로젝트 실행 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 6. 브라우저에서 `http://localhost:8421` 접속
+
 7. `Ctrl+C` 로 종료
+
+---
+
+## 잠깐, 구분해 보기
+
+소스를 수정했는데 화면이 그대로라면 어느 디렉토리를 먼저 확인할까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: 현재 ack가 실행하는 build 또는 publish 경로와 수정한 소스의 복사 경로를 비교합니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
 
 ---
 
@@ -226,7 +300,7 @@ Ctrl + C
 2. `module.html` 파일의 내용을 수정합니다.
    - "hello module wwwroot" -> "Welcome to HandStack!"
 
-3. 웹 브라우저에서 결과를 확인합니다.
+3. 수정 파일을 현재 실행 중인 배포본에 반영한 뒤 웹 브라우저에서 확인합니다.
    - `http://localhost:8421/module.html`
 
 ---
@@ -238,7 +312,7 @@ Ctrl + C
 HandStack은 웹 개발 프레임워크 기능을 제공하는 업무 모듈을 다음과 같이 제공합니다.
 
 <style scoped>
-  table { font-size: 22px; }  
+  table { font-size: 22px; }
 </style>
 
 |module명|설명|
@@ -253,8 +327,12 @@ HandStack은 웹 개발 프레임워크 기능을 제공하는 업무 모듈을 
 
 ---
 
-## 요약 정리 및 Q&A
+## 직접 확인할 결과
 
-- 처음 소스를 내려받으면 솔루션 빌드와 게시를 해보세요.
-- 화면/기능 개발을 위해 기본 모듈이 실행되는지 확인하세요.
-- 각 모듈의 기본 페이지 확인하며 UI 파일이 어떻게 보이는지 생각해보세요.
+- ack의 실행 경로와 포트를 기록합니다.
+- module.html의 문구를 바꾸고 브라우저에서 확인합니다.
+- 서버를 종료한 뒤 같은 절차로 다시 실행할 수 있어야 합니다.
+
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->

@@ -349,18 +349,8 @@ syn.$w.stopAllIntersections();
   ```
 
 ### `syn.$w.transactionAction(transactConfigInput, options)`
-- 설명: `functionID` 문자열 또는 거래 설정 객체를 받아 `tryAddFunction()`으로 등록 후 `transaction()`을 실행하는 상위 래퍼입니다. 완료/실패 시 화면 모듈의 `hook.afterTransaction(error, functionID, result, additionalData, correlationID)`을 호출합니다.
-- 매개변수
-  | 이름 | 타입 | 필수 | 설명 |
-  |---|---|---|---|
-  | transactConfigInput | `string \\| object` | Y | `functionID` 문자열 또는 거래 설정 객체 |
-  | options | `object` | N | `message`, `dynamic`, `authorize`, `commandType`, `returnType`, `transactionScope`, `transactionLog`, `endpoint` 등 공통 옵션 |
-- 반환값: 없음(결과는 `hook.afterTransaction` 콜백으로 전달)
-- 예시
-  ```js
-  syn.$w.transactionAction('GD01', { message: '조회 중...' });
-  ```
-- 참고: 실제 서버 응답을 받으려면 HandStack 백엔드/거래 모듈 연결이 필요합니다. 연결되어 있지 않으면 `hook.afterTransaction`의 `error` 값이 채워지는 것이 정상입니다.
+
+화면 거래 설정을 이용해 입력 수집, 서버 요청, 출력 매핑을 시작합니다. [거래 호출 레퍼런스](/docs/reference/거래-호출)에서 구문·기본 옵션·콜백과 오류 동작을 확인하세요.
 
 ### `syn.$w.transaction(functionID, callback, options)`
 - 설명: `transactionAction()` 내부에서 사용하는 저수준 함수로, 화면 컨트롤에서 입력값을 수집해 서버에 거래를 요청하고 응답을 컨트롤에 매핑합니다.

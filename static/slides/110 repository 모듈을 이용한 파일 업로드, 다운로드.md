@@ -109,11 +109,26 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
+section.reference-page img { max-height: 440px; max-width: 100%; object-fit: contain; }
 </style>
 
 # HandStack 파일 처리 심화
 
-### repository 모듈을 이용한 파일 업로드, 다운로드
+repository 설정과 파일 컨트롤을 연결하고, 저장·조회·삭제의 책임을 구분합니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
 
 ---
 
@@ -156,23 +171,39 @@ HandStack은 이러한 모든 시나리오를 효율적으로 지원합니다.
 
 ---
 
-## 클라우드 스토리지의 장점
+## 클라우드 스토리지의 장점 (1/2)
 
-- <mark>사실상 무제한의 저장 공간</mark>
-  - 용량 걱정 없이 파일을 저장할 수 있습니다.
+<!-- _class: reference-page -->
 
-- <mark>높은 내구성과 가용성</mark>
-  - 데이터가 여러 곳에 자동 복제되어 유실 위험이 거의 없습니다.
+
+
+- <mark>용량 확장</mark>
+  - 서비스 한도와 비용을 확인하며 용량을 늘릴 수 있습니다.
+
+- <mark>복제·가용성 옵션</mark>
+  - 선택한 서비스와 복제 정책을 확인합니다. 삭제·오염에 대비한 백업도 필요합니다.
 
 - <mark>CDN 연동 용이성</mark>
   - 전 세계 사용자에게 파일을 빠르고 안정적으로 전송할 수 있습니다.
+
+---
+
+## 클라우드 스토리지의 장점 (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 - <mark>비용 효율성</mark>
   - 사용한 만큼만 비용을 지불하여 초기 투자 비용이 적습니다.
 
 ---
 
-## Azure Blob Storage 개념 살짝 맛보기
+## Azure Blob Storage 개념 살짝 맛보기 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 HandStack이 연동할 수 있는 대표적인 클라우드 스토리지입니다.
 
@@ -185,6 +216,14 @@ HandStack이 연동할 수 있는 대표적인 클라우드 스토리지입니�
 - <mark>Blob (객체)</mark>
   - 이미지, 문서 등 실제 '파일'을 의미합니다.
 
+---
+
+## Azure Blob Storage 개념 살짝 맛보기 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 - <mark>권한 설정</mark>
   - 컨테이너나 개별 Blob에 대해 접근 권한을 세밀하게 제어할 수 있습니다.
 
@@ -194,8 +233,8 @@ HandStack이 연동할 수 있는 대표적인 클라우드 스토리지입니�
 
 HandStack은 복잡한 과정을 단순화합니다.
 
-- 개발자는 파일 저장 위치가 로컬 디스크인지, 클라우드 스토리지인지 신경 쓸 필요가 없습니다.
-- `repository` 모듈이 이 모든 것을 추상화하여 처리합니다.
+- 화면에서는 공통 파일 API를 사용합니다.
+- 운영자는 저장소별 권한·URL·비용·복구 정책을 관리합니다.
 - `storage.json` 설정 변경만으로 로컬 저장소와 클라우드 저장소 간 선택이 가능합니다.
 - 클라우드 스토리지 서비스(Azure Blob, AWS S3, Google Cloud Storage)에 파일 업로드를 연동하기 위해 필요한 각 항목 별로 설정을 해야합니다.
 
@@ -211,13 +250,38 @@ HandStack은 복잡한 과정을 단순화합니다.
 
 ---
 
-## AWS S3 연동 정보
+## AWS S3 연동 정보 (1/3)
+
+<!-- _class: reference-page -->
+
+
+
+키는 소스·슬라이드·로그에 넣지 않습니다. 조직의 자격 증명 정책에 따라 발급·회전·폐기합니다.
+
+---
+
+## AWS S3 연동 정보 (2/3)
+
+<!-- _class: reference-page -->
+
+
 
 | 항목 | 설명 | 얻는 위치/방법 |
 |---|---|---|
 | AwsBucketName | S3 버킷 이름 | AWS Management Console > S3 > Buckets 리스트에서 해당 버킷 이름 |
 | AwsRegion | S3 버킷이 위치한 리전 | AWS Management Console > S3 > 버킷 상세 > 버킷 리전 |
 | AwsAccessKey | AWS 접근 키(Access Key ID) | AWS Management Console > IAM > Users > (사용자 선택) > Security credentials > Create access key |
+
+---
+
+## AWS S3 연동 정보 (3/3)
+
+<!-- _class: reference-page -->
+
+
+
+| 항목 | 설명 | 얻는 위치/방법 |
+|---|---|---|
 | AwsSecretKey | AWS 비밀 접근 키(Secret Access Key) | 위와 동일. Access key 생성 시 함께 제공됨 (반드시 복사 후 안전하게 보관!) |
 | AwsServiceUrl | S3 서비스 엔드포인트 URL (일반적으로 기본값 사용) | 일반적으로 생략 가능. 필요 시: `https://s3.<region>.amazonaws.com` (예: `https://s3.ap-northeast-2.amazonaws.com`) |
 
@@ -233,9 +297,21 @@ HandStack은 복잡한 과정을 단순화합니다.
 
 ---
 
-## storage.json 내 저장소 설정
+## storage.json 내 저장소 설정 (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 StorageType(FileSystem, AzureBlob, AwsS3, GoogleCloudStorage) 항목에 따라 파일 저장소가 설정됩니다.
+
+---
+
+## storage.json 내 저장소 설정 (2/3)
+
+<!-- _class: reference-page -->
+
+
 
 ```json
 {
@@ -252,19 +328,34 @@ StorageType(FileSystem, AzureBlob, AwsS3, GoogleCloudStorage) 항목에 따라 �
     "AwsBucketName": "",
     "AwsRegion": "",
     "AwsAccessKey": "",
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## storage.json 내 저장소 설정 (3/3)
+
+<!-- _class: reference-page -->
+
+
+
+```json
     "AwsSecretKey": "",
     "AwsServiceUrl": "",
     ...
 }
 ```
 
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
 ---
 
-## 파일 정보 테이블 스키마
+## 파일 정보 테이블 스키마 (1/3)
 
-<style scoped>
-  table { font-size: 16px; }
-</style>
+<!-- _class: reference-page -->
+
+
 
 | 컬럼 ID | 컬럼명 | 데이터 타입 | 길이 | Null유무 |
 |---|---|---|---|---|
@@ -275,6 +366,17 @@ StorageType(FileSystem, AzureBlob, AwsS3, GoogleCloudStorage) 항목에 따라 �
 | PhysicalPath | 물리경로 | String | 1000 | YES |
 | AbsolutePath | 절대경로 | String | 1000 | YES |
 | RelativePath | 상대경로 | String | 1000 | YES |
+
+---
+
+## 파일 정보 테이블 스키마 (2/3)
+
+<!-- _class: reference-page -->
+
+
+
+| 컬럼 ID | 컬럼명 | 데이터 타입 | 길이 | Null유무 |
+|---|---|---|---|---|
 | Extension | 확장자 | String | 50 | YES |
 | Size | 파일크기 | Number | -1 | YES |
 | MD5 | MD5 | String | 50 | YES |
@@ -282,6 +384,17 @@ StorageType(FileSystem, AzureBlob, AwsS3, GoogleCloudStorage) 항목에 따라 �
 | CustomPath2 | 사용자경로2 | String | 50 | YES |
 | CustomPath3 | 사용자경로3 | String | 50 | YES |
 | PolicyPath | 정책경로여부 | String | 1 | YES |
+
+---
+
+## 파일 정보 테이블 스키마 (3/3)
+
+<!-- _class: reference-page -->
+
+
+
+| 컬럼 ID | 컬럼명 | 데이터 타입 | 길이 | Null유무 |
+|---|---|---|---|---|
 | SortingNo | 정렬번호 | Number | -1 | YES |
 | Comment | 비고 | String | 200 | YES |
 | CreatedMemberNo | 생성자회원번호 | String | 32 | YES |
@@ -289,19 +402,43 @@ StorageType(FileSystem, AzureBlob, AwsS3, GoogleCloudStorage) 항목에 따라 �
 
 ---
 
-## 파일 정보 관리 쿼리 및 거래 ID
+## 잠깐, 구분해 보기
+
+파일을 지웠는데 업무 첨부 목록에 남아 있다면 무엇을 확인할까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: 실제 객체와 파일 메타데이터, DependencyID 연결을 함께 확인합니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
+
+---
+
+## 파일 정보 관리 쿼리 및 거래 ID (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 > $(HANDSTACK_SRC)/2.Modules/repository/Contracts/dbclient/HDS/STR
 
-<style scoped>
-  li { font-size: 20px; }
-</style>
-
 - MYS010.xml: MySQL / MariaDB
+
 - ORA010.xml: Oracle
+
 - PGS010.xml: PostgreSQL
+
 - SLT010.xml: SQLite
+
 - SQS010.xml: SQL Server
+
+---
+
+## 파일 정보 관리 쿼리 및 거래 ID (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```json
 {
@@ -318,11 +455,10 @@ StorageType(FileSystem, AzureBlob, AwsS3, GoogleCloudStorage) 항목에 따라 �
 
 ## `$fileclient` 컨트롤 살펴보기
 
-HandStack은 파일 처리를 위한 강력한 UI 컨트롤 `$fileclient`를 제공합니다.
+`$fileclient`는 `repository` 모듈과 통신하는 파일 UI입니다.
 
-- `$fileclient`는 파일 업로드, 다운로드, 삭제 등의 기능을 UI 상에서 쉽게 구현할 수 있도록 돕습니다.
-- 내부적으로 `repository` 모듈과 통신하여 실제 파일 작업을 수행합니다.
-- 모든 과정은 `repository` 모듈을 통해 서버와 통신하며 이루어집니다.
+- 업로드·다운로드·삭제를 같은 컨트롤에서 연결합니다.
+- 저장소 ID와 업무 항목의 연결을 샘플에서 확인합니다.
 
 http://localhost:8421/sample/uicontrol/files.html
 
@@ -336,10 +472,12 @@ http://localhost:8421/sample/uicontrol/files.html
 
 ---
 
-## 요약 정리 및 Q&A
+## 파일 처리의 완료 기준
 
-> 화면 개발에 필요한 파일 제어를 <mark>repository 모듈</mark>을 이용하여 간단하게 처리하세요.
+- 저장소 유형과 자격 증명을 환경별로 설정합니다.
+- 업로드한 파일의 메타데이터와 다운로드 결과를 대조합니다.
+- 삭제·이미지 변환·업무 연계는 필요한 후처리까지 검증합니다.
 
-- 로컬 파일 저장은 간단하지만 확장성에 한계가 있습니다.
-- 클라우드 스토리지는 대규모 서비스를 위한 표준 파일 저장 방식입니다.
-- HandStack은 `$fileclient`와 `repository` 모듈을 통해 파일 처리를 추상화하여, 개발자가 비즈니스 로직에만 집중할 수 있도록 돕습니다.
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->

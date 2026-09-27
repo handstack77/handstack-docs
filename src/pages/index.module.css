@@ -18,8 +18,29 @@
 
 .buttons {
   display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
   align-items: center;
   justify-content: center;
+}
+
+@media screen and (max-width: 480px) {
+  .heroBanner {
+    padding: 2.5rem 1rem;
+  }
+
+  .heroBanner :global(.hero__title) {
+    font-size: clamp(1.15rem, 5.9vw, 1.5rem);
+    line-height: 1.4;
+    word-break: keep-all;
+    overflow-wrap: normal;
+  }
+
+  .heroBanner :global(.hero__subtitle) {
+    font-size: 1.1rem;
+    line-height: 1.65;
+    word-break: keep-all;
+  }
 }
 
 :root {
@@ -4768,3 +4789,10 @@ a[href="#"] {
 a[href="#"]:hover {
     text-decoration: none;
 }
+
+.setupNote { margin: 1.25rem 0 0; font-size: 0.95rem; }
+.learningPaths { padding-top: 3rem; padding-bottom: 3rem; }
+.learningPaths h2 { margin-bottom: 1.5rem; }
+.pathColumn { margin-bottom: 1rem; }
+.pathCard { height: 100%; border: 1px solid var(--ifm-color-emphasis-200); }
+.moreLinks { margin: 1.5rem 0 0; }

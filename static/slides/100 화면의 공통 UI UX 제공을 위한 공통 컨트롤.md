@@ -109,25 +109,45 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
+section.reference-page img { max-height: 440px; max-width: 100%; object-fit: contain; }
 </style>
 
 # 화면의 공통 UI/UX 제공을 위한 공통 컨트롤
 
+화면의 입력·조회·편집 요구에 맞는 UI 컨트롤을 고르고 샘플로 검증합니다.
+
 상용 제품 및 오픈소스 기반 UI 라이브러리 살펴보기
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
 
 ---
 
 ## 일관된 사용자 경험의 중요성
 
-- HandStack은 `syn.js` 와 `uicontrol` 라이브러리를 통해 일관되고 편리한 UI/UX를 제공합니다.
-- 이 라이브러리들은 화면의 공통 로직을 처리하고, 개발자가 비즈니스 로직에 집중할 수 있도록 돕습니다.
+- 같은 입력·선택·표시 규칙을 여러 화면에서 재사용합니다.
+- 컨트롤 이름보다 업무 요구와 데이터 구조를 먼저 확인합니다.
 
-> 큰 힘에는 큰 책임이 따릅니다.
-> 화면의 동작과 업무 구현을 위한 공통 라이브러리를 이해하고 커스터마이징하여 프로젝트의 완성도를 높여보세요.
+> 목록은 선택용 색인입니다. 실습에서는 컨트롤 하나의 옵션·이벤트·반환값을 확인합니다.
 
 ---
 
-## 기본 공통 컨트롤 (1/3)
+## 기본 공통 컨트롤 (1/3) · 세부 1/2
+
+<!-- _class: reference-page -->
+
+
 
 | 약어 | 컴포넌트명 | 설명 |
 | :--- | :--- | :--- |
@@ -138,11 +158,26 @@ section.tinytext>blockquote {
 | `$data` | DataSource | 단일/여러 건의 데이터 소스 객체 기능을 제공합니다. |
 | `$datepicker` | DatePicker | 날짜 선택 기능을 제공합니다. |
 | `$dateperiodpicker` | DatePeriodPicker | 시작 및 종료 기간 날짜 선택 기능을 제공합니다. |
+
+---
+
+## 기본 공통 컨트롤 (1/3) · 세부 2/2
+
+<!-- _class: reference-page -->
+
+
+
+| 약어 | 컴포넌트명 | 설명 |
+| :--- | :--- | :--- |
 | `$select` | DropDownList | 단일 항목 선택 콤보박스를 제공합니다. |
 
 ---
 
-## 기본 공통 컨트롤 (2/3)
+## 기본 공통 컨트롤 (2/3) · 세부 1/2
+
+<!-- _class: reference-page -->
+
+
 
 | 약어 | 컴포넌트명 | 설명 |
 | :--- | :--- | :--- |
@@ -153,6 +188,17 @@ section.tinytext>blockquote {
 | `$guide` | Guide | 화면 내 표시되는 도움말 기능을 제공합니다. |
 | `$htmleditor`| HtmlEditor | 파일 업로드/다운로드 통합 HTML 편집기를 제공합니다. |
 | `$organization`| OrganizationView | 조직도 데이터를 직관적으로 편집하는 기능을 제공합니다. |
+
+---
+
+## 기본 공통 컨트롤 (2/3) · 세부 2/2
+
+<!-- _class: reference-page -->
+
+
+
+| 약어 | 컴포넌트명 | 설명 |
+| :--- | :--- | :--- |
 | `$radio` | RadioButton | 브라우저마다 다른 라디오버튼을 일관되게 표현합니다. |
 | `$sourceeditor`| SourceEditor | 소스 편집에 특화된 에디터 기능을 제공합니다. |
 
@@ -169,7 +215,7 @@ section.tinytext>blockquote {
 | `$grid` | WebGrid | 대량 편집 그리드 기능을 제공합니다. (Handsontable 라이선스) |
 | `$auigrid` | AUIGrid | 대량 편집 그리드 기능을 제공합니다. (AUISoft 라이선스) |
 
-> 그리드는 상용 라이선수 구매 필수
+> WebGrid·AUIGrid는 적용 버전과 사용 목적에 맞는 라이선스를 확인합니다.
 
 ---
 
@@ -185,11 +231,25 @@ section.tinytext>blockquote {
 
 ---
 
-## 업무 화면에 필요한 공통 기능 제공
+## 업무 화면에 필요한 공통 기능 제공 (1/2)
+
+<!-- _class: reference-page -->
+
+
+<style scoped>
+  img { width: 80%; display: inline; margin-left:120px; }
+</style>
 
 HandStack 기반 에서는 비즈니스 앱 화면 개발에 필요한 다음과 같은 UI 컴포넌트을 **wwwroot 모듈**에서 제공합니다.
 
-화면 개발자는 다양한 화면 컨트롤을 일관된 속성, 메서드, 이벤트 사용법으로 각 컴포넌트의 사용 유무는 환경설정에서 정의하여 syn.loader.js 에 의해 사용됩니다.
+환경설정에서 사용할 컨트롤을 정하고 syn.loader.js로 로드합니다. 속성·메서드·이벤트는 해당 컨트롤의 예제를 확인합니다.
+
+---
+
+## 업무 화면에 필요한 공통 기능 제공 (2/2)
+
+<!-- _class: reference-page -->
+
 
 <style scoped>
   img { width: 80%; display: inline; margin-left:120px; }
@@ -221,11 +281,11 @@ HandStack 기반 에서는 비즈니스 앱 화면 개발에 필요한 다음과
 ### 사용법
 ```html
 <syn_codepicker id="chpSubjectID" syn-datafield="SubjectID"
-syn-options="{belongID: 'LD01', 
-  dataSourceID: 'CHP005', 
-  local: false, 
-  isMultiSelect: false, 
-  textBelongID: ['LD01', 'MD01'], 
+syn-options="{belongID: 'LD01',
+  dataSourceID: 'CHP005',
+  local: false,
+  isMultiSelect: false,
+  textBelongID: ['LD01', 'MD01'],
   textDataFieldID: 'CodeText'}">
 </syn_codepicker>
 ```
@@ -265,11 +325,24 @@ syn-options="{belongID: 'LD01',
 
 ---
 
-## DataSource
+## DataSource (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 단일 또는 여러 데이터 건의 데이터 소스 객체 기능을 제공합니다.
 
 ### 사용법
+
+---
+
+## DataSource (2/3)
+
+<!-- _class: reference-page -->
+
+
+
 ```html
 <syn_data id="srcForm1" syn-options="{
     dataSourceID: 'StoreForm',
@@ -285,22 +358,49 @@ syn-options="{belongID: 'LD01',
         { data: 'CreatePersonID', dataType: 'string', belongID: ['LD02', 'MD01'] },
         { data: 'CreateDateTime', dataType: 'string', belongID: ['LD02', 'MD01'] }
     ]
-}"></syn_data>
 ```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
 
 ---
 
-## DatePicker, DatePeriodPicker
+## DataSource (3/3)
+
+<!-- _class: reference-page -->
+
+
+
+```html
+}"></syn_data>
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## DatePicker, DatePeriodPicker (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 날짜, 기간 선택 기능을 제공합니다.
 
 ### 다운로드: https://github.com/Pikaday/Pikaday, https://github.com/moment/moment
 ### 공식예제: https://pikaday.com/
 
+---
+
+## DatePicker, DatePeriodPicker (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 ```html
 <syn_datepicker id="dtpDatePicker" syn-options="{format: 'YYYY-MM-DD'}"></syn_datepicker>
-<syn_datepicker id="dtpStartDatePicker" syn-options="{format: 'YYYY-MM-DD', 
-useRangeSelect: true, 
+<syn_datepicker id="dtpStartDatePicker" syn-options="{format: 'YYYY-MM-DD',
+useRangeSelect: true,
 rangeEndControlID: 'dtpEndDatePicker'}">
 </syn_datepicker>
 <syn_dateperiodpicker id="dtpInputRangeAt" syn-datafield="InputRangeAt" syn-options="{value: 'day:-7',
@@ -310,23 +410,35 @@ belongID: ['LD01']}">
 
 ---
 
-## DropDownCheckList, DropDownList
+## DropDownCheckList, DropDownList (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 여러 개의 항목을 선택 할 수 있는 콤보박스를 제공합니다.
 
 ### 다운로드: https://github.com/wolffe/tail.select.js
 ### 공식예제: https://getbutterfly.com/tail-select
 
+---
+
+## DropDownCheckList, DropDownList (2/2)
+
+<!-- _class: reference-page -->
+
+
+
 ```html
-<select id="ddlFileExtension" syn-options="{dataSourceID: 'CH000', 
-parameters: '@GROUPCODE:MS001;', 
-local: false, 
-toSynControl: true, 
+<select id="ddlFileExtension" syn-options="{dataSourceID: 'CH000',
+parameters: '@GROUPCODE:MS001;',
+local: false,
+toSynControl: true,
 required: false}"></select>
-<select id="ddlBusinessRank" syn-options="{dataSourceID: 'CH000', 
-parameters: '@GROUPCODE:MS002;', 
-local: false, 
-toSynControl: true, 
+<select id="ddlBusinessRank" syn-options="{dataSourceID: 'CH000',
+parameters: '@GROUPCODE:MS002;',
+local: false,
+toSynControl: true,
 required: false}" multiple></select>
 ```
 
@@ -364,14 +476,14 @@ required: false}" multiple></select>
 브라우저마다 다르게 표시되는 라디오버튼을 일관되게 표현합니다.
 
 ```html
-<input id="rdoUseYN1" name="rdoUseYN" type="radio" 
-syn-datafield="RadioUseYN" value="value 1" syn-options="{textContent: '사용', 
+<input id="rdoUseYN1" name="rdoUseYN" type="radio"
+syn-datafield="RadioUseYN" value="value 1" syn-options="{textContent: '사용',
 toSynControl: true}">
-<input id="rdoUseYN2" name="rdoUseYN" type="radio" 
-syn-datafield="RadioUseYN" value="value 2" syn-options="{textContent: '미사용', 
+<input id="rdoUseYN2" name="rdoUseYN" type="radio"
+syn-datafield="RadioUseYN" value="value 2" syn-options="{textContent: '미사용',
 toSynControl: true}">
-<input id="rdoUseYN3" name="rdoUseYN" type="radio" 
-syn-datafield="RadioUseYN" value="value 3" checked="checked" syn-options="{textContent: '알수없음', 
+<input id="rdoUseYN3" name="rdoUseYN" type="radio"
+syn-datafield="RadioUseYN" value="value 3" checked="checked" syn-options="{textContent: '알수없음',
 toSynControl: true}">
 ```
 
@@ -385,21 +497,33 @@ toSynControl: true}">
 ### 공식예제: https://microsoft.github.io/monaco-editor/
 
 ```html
-<syn_sourceeditor id="txtEditor1" syn-datafield="Editor1" 
-syn-options="{contents: 'hello world', 
-language:'javascript', 
+<syn_sourceeditor id="txtEditor1" syn-datafield="Editor1"
+syn-options="{contents: 'hello world',
+language:'javascript',
 minimap: {enabled: true}}">
 </syn_sourceeditor>
 ```
 
 ---
 
-## TextArea
+## TextArea (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 여러 텍스트 줄을 관리하기 위한 추가 기능을 제공합니다.
 
 ### 다운로드: https://github.com/codemirror/codemirror5
 ### 공식예제: https://codemirror.net/5/
+
+---
+
+## TextArea (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```html
 <textarea id="txtTextArea" syn-datafield="TextArea" syn-options="{width: '800px'}">
@@ -416,12 +540,24 @@ namespace Example
 
 ---
 
-## TextBox
+## TextBox (1/3)
 
-단일 텍스트을 관리하기 위한 추가 기능을 제공합니다.
+<!-- _class: reference-page -->
+
+
+
+단일 텍스트를 관리하기 위한 추가 기능을 제공합니다.
 
 ### 다운로드: https://github.com/uNmAnNeR/ispinjs, https://github.com/chinchang/superplaceholder.js, https://github.com/vanilla-masker/vanilla-masker
 ### 공식예제: https://unmanner.github.io/ispinjs/, https://vanilla-masker.github.io/vanilla-masker/
+
+---
+
+## TextBox (2/3)
+
+<!-- _class: reference-page -->
+
+
 
 ```html
 txtApplicationID - <input id="txtApplicationID" type="text" syn-options="{editType: 'numeric', formatNumber: false, dataType: 'int'}" value="0">
@@ -435,19 +571,46 @@ txtMobilePhone - <input id="txtMobilePhone" type="text" syn-options="{editType: 
 txtEmail - <input id="txtEmail" type="text" syn-options="{editType: 'email'}">
 txtCodeGroupID - <input id="txtCodeGroupID" type="text" syn-options="{editType: 'text'}">
 txtJuminID - <input id="txtJuminID" type="text" syn-options="{editType: 'juminno'}">
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## TextBox (3/3)
+
+<!-- _class: reference-page -->
+
+
+
+```html
 txtBusinessID - <input id="txtBusinessID" type="text" syn-options="{editType: 'businessno'}">
 txtCustomFormat - <input id="txtCustomFormat" type="text" syn-options="{editType: 'text', maskPattern: '(99) SSSS-AAAA'}">
 txtMaxLength - <input id="txtMaxLength" maxlengthB="10" type="text" syn-options="{editType: 'text'}">
 ```
 
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
 ---
 
-## WebGrid (유료 라이선스 필요)
+## WebGrid (유료 라이선스 필요) (1/4)
+
+<!-- _class: reference-page -->
+
+
 
 대량 편집에 가능한 그리드 컴포넌트 기능을 제공합니다.
 
 ### 다운로드: https://github.com/handsontable/handsontable
 ### 공식예제: https://handsontable.com/demo
+
+---
+
+## WebGrid (유료 라이선스 필요) (2/4)
+
+<!-- _class: reference-page -->
+
+
 
 ```html
 <syn_grid id="grdGrid" syn-options="{autoColumnSize: true,
@@ -463,6 +626,19 @@ txtMaxLength - <input id="txtMaxLength" maxlengthB="10" type="text" syn-options=
         }, false, 'center'],
         ['SUBJECTID', '학과코드ID', 140, true, 'text', false, 'left','M01'],
         ['SUBJECTNAME', '학과명', 160, false, {
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## WebGrid (유료 라이선스 필요) (3/4)
+
+<!-- _class: reference-page -->
+
+
+
+```html
             columnType: 'codehelp',
             dataSourceID: 'CH005',
             local: false,
@@ -477,18 +653,45 @@ txtMaxLength - <input id="txtMaxLength" maxlengthB="10" type="text" syn-options=
     dropdownMenu: true,
     autoInsertRow: true,
     controlText: '데모예제',
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## WebGrid (유료 라이선스 필요) (4/4)
+
+<!-- _class: reference-page -->
+
+
+
+```html
     importFileColumns: 'all',
 }" syn-events="['afterSelectionEnd', 'beforeKeyDown', 'afterCreateRow']"></syn_grid>
 ```
 
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
 ---
 
-## AUIGrid (유료 라이선스 필요)
+## AUIGrid (유료 라이선스 필요) (1/3)
+
+<!-- _class: reference-page -->
+
+
 
 대량 편집에 가능한 그리드 컴포넌트 기능을 제공합니다.
 
 ### 다운로드: https://www.auisoft.net
 ### 공식예제: https://www.auisoft.net/documentation/auigrid/index.html, https://www.auisoft.net/demo/auigrid/index.html
+
+---
+
+## AUIGrid (유료 라이선스 필요) (2/3)
+
+<!-- _class: reference-page -->
+
+
 
 ```html
 <syn_auigrid id="grdFeatureTransactItem" syn-options="{
@@ -505,6 +708,19 @@ txtMaxLength - <input id="txtMaxLength" maxlengthB="10" type="text" syn-options=
     ['CommandType', '실행대상', 100, false, 'dropdown', false, 'left', null, {
         dataSourceID: 'ExecuteType',
         required: true,
+```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
+
+---
+
+## AUIGrid (유료 라이선스 필요) (3/3)
+
+<!-- _class: reference-page -->
+
+
+
+```html
         local: true
     }],
     ['TransactionScope', 'T/S', 60, false, 'checkbox', false, 'center'],
@@ -512,6 +728,8 @@ txtMaxLength - <input id="txtMaxLength" maxlengthB="10" type="text" syn-options=
   ]
 }" syn-events="['afterSelectionEnd']"></syn_auigrid>
 ```
+
+<!-- 이어지는 코드 조각입니다. 앞뒤 페이지를 순서대로 읽으며 전체 예제의 일부임을 설명합니다. -->
 
 ---
 
@@ -521,11 +739,11 @@ txtMaxLength - <input id="txtMaxLength" maxlengthB="10" type="text" syn-options=
 
 ### 사용법
 ```html
-<div id="divElement1" syn-datafield="Element1" 
+<div id="divElement1" syn-datafield="Element1"
 syn-options="{belongID: 'LD01', content: 'value'}" value="div value 1"></div>
-<span id="lblElement2" syn-datafield="Element2" 
+<span id="lblElement2" syn-datafield="Element2"
 syn-options="{belongID: 'LD01', content: 'content'}">span value 1</span>
-<label id="lblElement3" syn-datafield="Element3" 
+<label id="lblElement3" syn-datafield="Element3"
 syn-options="{belongID: 'LD01', content: 'html'}">blabla</label>
 ```
 
@@ -544,12 +762,24 @@ syn-options="{belongID: 'LD01', content: 'html'}">blabla</label>
 
 ---
 
-## GridList
+## GridList (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 데이터 조회에 특화된 기능을 제공합니다.
 
 ### 다운로드: https://github.com/DataTables/DataTables
 ### 공식예제: https://www.datatables.net/examples/index
+
+---
+
+## GridList (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```html
 <syn_list id="lstDataTable" syn-options="{
@@ -569,12 +799,24 @@ syn-options="{belongID: 'LD01', content: 'html'}">blabla</label>
 
 ---
 
-## TreeView
+## TreeView (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 재귀적으로 트리 구조를 표현하는 기능을 제공합니다.
 
 ### 다운로드: https://github.com/mar10/fancytree
 ### 공식예제: https://wwwendt.de/tech/fancytree/demo/
+
+---
+
+## TreeView (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```html
 <syn_tree id="tvlTreeView" syn-options="{
@@ -607,11 +849,23 @@ JSON 데이터를 직관적으로 편집하는 기능을 제공합니다.
 
 ---
 
-## OrganizationView
+## OrganizationView (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 조직도 데이터를 직관적으로 편집하는 기능을 제공합니다.
 
 ### 다운로드: https://github.com/dabeng/OrgChart
+
+---
+
+## OrganizationView (2/2)
+
+<!-- _class: reference-page -->
+
+
 
 ```html
 <syn_organization id="orgChartView" syn-options="{
@@ -630,6 +884,18 @@ JSON 데이터를 직관적으로 편집하는 기능을 제공합니다.
 
 ---
 
+## 잠깐, 구분해 보기
+
+조회 전용 목록과 대량 편집 화면에 같은 그리드가 필요할까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: 조회·편집 기능, 데이터량, 라이선스 조건을 비교해 선택합니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
+
+---
+
 ## 핸즈온: UI 컨트롤 사용 현황 분석
 
 - 프로젝트에서 어떤 UI 컨트롤이 얼마나 사용되고 있는지 CLI 명령으로 분석할 수 있습니다.
@@ -645,9 +911,12 @@ JSON 데이터를 직관적으로 편집하는 기능을 제공합니다.
 
 ---
 
-## 요약 정리 및 Q&A
+## 컨트롤 선택의 기준
 
-- HandStack에서는 일관된 UI/UX 제공을 위해 `syn.js`와 `uicontrol` 라이브러리를 통해 다양한 공통 컨트롤을 제공합니다.
-- 주요 컨트롤로는 CheckBox, CodePicker, ColorPicker, DatePicker, DropDownList, FileClient, HtmlEditor, TextBox, TreeView 등이 있으며, 각각 브라우저 호환성과 일관된 사용법을 보장합니다.
-- 대량 데이터 처리를 위한 WebGrid(Handsontable)와 AUIGrid는 유료 라이선스가 필요하지만 강력한 편집 기능을 제공합니다.
-- 모든 컨트롤은 `$(HANDSTACK_SRC)/2.Modules/wwwroot/wwwroot/uicontrols` 위치에서 소스 코드를 직접 수정할 수 있으며, 빌드 시 `syn.controls.js` 파일로 번들링되어 성능을 최적화합니다.
+- 입력·선택·파일·편집·시각화 요구에 맞는 컨트롤을 고릅니다.
+- syn-options와 syn-events를 샘플에서 한 항목씩 바꿉니다.
+- 사용 버전의 라이선스와 번들 반영 결과를 확인합니다.
+
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->

@@ -109,10 +109,24 @@ section.tinytext>ul,
 section.tinytext>blockquote {
   font-size: 0.65em;
 }
+
+/* Long examples are paginated; keep reference text readable. */
+section.reference-page { justify-content: flex-start; }
+section.reference-page pre,
+section.reference-page marp-pre,
+section.reference-page pre code,
+section.reference-page marp-pre code { font-size: 24px; line-height: 1.25; }
+section.reference-page table { font-size: 25px; }
 </style>
 
 # HandStack 라우팅의 마법
-### URL과 페이지의 연결
+Controller·Razor Pages의 URL 규칙을 읽고 실제 요청 주소를 확인합니다.
+
+
+<!--
+발표: 첫 화면의 목표를 말한 뒤 핵심 개념과 예제로 진행합니다. 확인 질문 뒤에는 답할 시간을 주고, 마지막 완료 기준을 남겨 질문을 받습니다.
+발표 구성 참고: MIT OpenCourseWare, Patrick Winston, How to Speak (2018), https://ocw.mit.edu/courses/res-tll-005-how-to-speak-january-iap-2018/pages/how-to-speak/
+-->
 
 ---
 
@@ -128,7 +142,11 @@ section.tinytext>blockquote {
 
 ---
 
-## Controller 라우팅: C# 코드가 URL로
+## Controller 라우팅: C# 코드가 URL로 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 - HandStack은 C# Controller의 이름과 메서드(Action) 이름을 조합하여 API 주소를 자동으로 만듭니다.
 
@@ -138,22 +156,35 @@ section.tinytext>blockquote {
   - 변환된 URL: `/transact/api/transaction/execute`
 
 - 코드에서는 다음과 같은 속성(Attribute)으로 정의됩니다.
-  ```csharp
-  [Area("[모듈 ID]")]
-  [Route("[area]/api/[controller]")]
-  public class UserManagementController : Controller
-  {
-      [HttpGet("[action]")]
-      public async Task<object> GetUserProfile()
-      {
-          // ... 로직 ...
-      }
-  }
-  ```
 
 ---
 
-## Razor Pages 라우팅: 파일 경로가 URL로
+## Controller 라우팅: C# 코드가 URL로 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
+```csharp
+[Area("[모듈 ID]")]
+[Route("[area]/api/[controller]")]
+public class UserManagementController : Controller
+{
+    [HttpGet("[action]")]
+    public async Task<object> GetUserProfile()
+    {
+        // ... 로직 ...
+    }
+}
+```
+
+---
+
+## Razor Pages 라우팅: 파일 경로가 URL로 (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 - 웹 페이지를 만드는 Razor Pages의 경우, 파일과 폴더의 경로가 그대로 URL 주소가 됩니다.
 
@@ -162,13 +193,22 @@ section.tinytext>blockquote {
   - 변환된 URL: `/user-profile/edit-profile`
 
 - 페이지 상단에는 어떤 모듈에 속하는지 명시합니다.
-  ```csharp
-  @page
-  @model [모듈 ID].Areas.[모듈 ID].Pages.UserProfile.EditProfileModel
-  @{
-      // ... 페이지 내용 ...
-  }
-  ```
+
+---
+
+## Razor Pages 라우팅: 파일 경로가 URL로 (2/2)
+
+<!-- _class: reference-page -->
+
+
+
+```csharp
+@page
+@model [모듈 ID].Areas.[모듈 ID].Pages.UserProfile.EditProfileModel
+@{
+    // ... 페이지 내용 ...
+}
+```
 
 ---
 
@@ -185,21 +225,48 @@ section.tinytext>blockquote {
 
 ---
 
-## 라우팅 규칙을 직접 바꿀 수도 있나요?
+## 잠깐, 구분해 보기
+
+Action 이름만 알면 전체 URL을 결정할 수 있을까요?
+
+<!--
+질문 후 잠시 기다립니다. 답이 없으면 앞에서 본 예제를 다시 가리킵니다.
+확인할 답: Area, Controller의 Route 접두사, Action 경로를 함께 읽어야 합니다.
+다음 주제로 넘어가기 전에 차이를 청중의 표현으로 한 번 확인합니다.
+-->
+
+---
+
+## 라우팅 규칙을 직접 바꿀 수도 있나요? (1/2)
+
+<!-- _class: reference-page -->
+
+
 
 - 네, 가능합니다.
+
 - HandStack은 자동 `kebab-case` 라우팅을 기본으로 제공하지만, 필요에 따라 URL을 직접 지정할 수도 있습니다.
 
 - Controller Action에 `[Route]` 속성을 사용하면 원하는 주소로 변경할 수 있습니다.
-  ```csharp
-  [HttpGet]
-  [Route("get-my-special-user")] // URL을 직접 지정
-  public async Task<object> GetUserProfile()
-  {
-      // ... 로직 ...
-  }
-  ```
-- 이렇게 하면 `/user-management/get-my-special-user` 와 같이 고정된 주소를 사용할 수 있습니다.
+
+---
+
+## 라우팅 규칙을 직접 바꿀 수도 있나요? (2/2)
+
+<!-- _class: reference-page -->
+
+
+
+```csharp
+[HttpGet]
+[Route("get-my-special-user")] // URL을 직접 지정
+public async Task<object> GetUserProfile()
+{
+    // ... 로직 ...
+}
+```
+
+- Action 경로는 Controller의 Route 접두사 뒤에 붙습니다. 앞의 `[area]/api/[controller]` 예제라면 `/[모듈 ID]/api/user-management/get-my-special-user`가 됩니다.
 
 ---
 
@@ -207,12 +274,12 @@ section.tinytext>blockquote {
 
 | HTTP Verb | API | 설명 | 요청 메시지 본문 | 응답 본문 |
 | --- | --- | --- | --- | --- |
-| HttpGet | `GET /api/todoitems` | 할 일 항목 모두 가져오기 | 없음 | 할 일 | HTTP Verb 항목의 배열 |
+| HttpGet | `GET /api/todoitems` | 할 일 항목 모두 가져오기 | 없음 | 할 일 항목의 배열 |
 | HttpGet | `GET /api/todoitems/{id}` | ID로 항목 가져오기 | 없음 | 할 일 항목 |
 | HttpPost | `POST /api/todoitems` | 새 항목 추가 | 할 일 항목 | 할 일 항목 |
 | HttpPut | `PUT /api/todoitems/{id}` | 기존 항목 업데이트 | 할 일 항목 | 없음 |
 | HttpDelete | `DELETE /api/todoitems/{id}` | 항목 삭제 | 없음 | 없음 |
-| HttpHead | `HEAD /api/todoitems` | 헤더 정보만 조회 | 없음 | 지원되는 헤더 목록 |
+| HttpHead | `HEAD /api/todoitems` | 헤더 정보만 조회 | 없음 | 없음. 응답 헤더만 반환 |
 
 ---
 
@@ -226,9 +293,12 @@ section.tinytext>blockquote {
 
 ---
 
-## 요약 정리 및 Q&A
+## 라우팅 확인의 기준
 
-- 라우팅은 URL과 실제 처리 로직(Controller) 또는 페이지(Razor Page)를 연결하는 규칙입니다.
-- HandStack Controller: `클래스명` + `메서드명` -> `/클래스명/메서드명` (kebab-case)
-- HandStack Razor Page: `폴더/파일명` -> `/폴더/파일명` (kebab-case)
-- 이 자동화된 방식 덕분에 개발자는 라우팅 설정의 부담 없이 핵심 기능 개발에만 집중할 수 있습니다.
+- Controller는 Area·Route·HTTP 메서드를 함께 확인합니다.
+- Razor Pages는 실제 모듈 경로와 라우팅 설정을 대조합니다.
+- 주소를 추측한 뒤 브라우저나 HTTP 클라이언트로 확인합니다.
+
+<!--
+질문을 받는 동안 이 확인 기준을 화면에 남깁니다. 청중이 자신의 업무에 적용할 다음 행동 하나를 고르게 합니다.
+-->

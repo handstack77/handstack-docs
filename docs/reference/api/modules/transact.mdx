@@ -40,7 +40,7 @@ sidebar_position: 60
 계약은 기본적으로 다음 위치에 둡니다.
 
 ```txt
-contracts/transact/{ApplicationID}/{ProjectID}/{TransactionID}.xml
+contracts/transact/{ApplicationID}/{ProjectID}/{TransactionID}.json
 ```
 
 거래 ID는 다음 형식입니다.
@@ -50,6 +50,8 @@ ApplicationID|ProjectID|TransactionID|ServiceID
 ```
 
 거래 계약에는 `CommandType`, `ReturnType`, `TransactionScope`, 입력/출력 모델, 캐시와 검증 정보가 포함됩니다.
+
+단일 거래와 workflow 단계 실행에서 Bearer 토큰의 `Variable` 항목은 `$` 접두사가 붙은 입력 필드로 거래 입력 묶음에 추가됩니다. 요청 데이터맵 입력이 없어도 `Variable`이 있으면 Bearer 필드용 입력 묶음 하나를 생성합니다. Bearer 토큰의 정책 claim은 `#` 접두사로 같은 묶음에 추가됩니다.
 
 ## CommandType 라우팅
 

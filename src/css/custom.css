@@ -19,3 +19,32 @@
 .hero {
     background-color: #0054a6;
 }
+
+.navbar__logo {
+    height: 32px;
+}
+
+.navbar__brand {
+    flex-shrink: 0;
+}
+
+.navbar__link {
+    white-space: nowrap;
+}
+
+@media (min-width: 997px) and (max-width: 1200px) {
+    .navbar {
+        --ifm-navbar-item-padding-horizontal: 0.4rem;
+        font-size: 0.9rem;
+    }
+
+    .navbar__brand {
+        margin-right: 0.5rem;
+    }
+}
+
+/* A saved "system" theme can leave both themed logo variants hidden.
+ * Both variants use the same image; show only the first to avoid SSR duplicates. */
+html[data-theme='system'] .navbar__logo img:first-child {
+    display: block;
+}

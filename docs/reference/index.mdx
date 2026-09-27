@@ -1,0 +1,37 @@
+---
+sidebar_position: 0
+description: HandStack의 API, 계약, 식별자, 설정과 UI 컨트롤을 작업 또는 정확한 이름으로 찾습니다.
+---
+
+# API·설정 참조
+
+HandStack 고유 기능의 정확한 사용법을 찾는 곳입니다. 처음 실행하려면 [시작하기](/docs/startup/개요), 순서대로 배우려면 [따라 만들기](/docs/tutorial/)로 이동하세요.
+
+## 하려는 작업으로 찾기
+
+| 하려는 일 | 참조 |
+|---|---|
+| 화면에서 조회·저장 요청 보내기 | [거래 호출: transactionAction](/docs/reference/거래-호출) |
+| 계약 파일과 ID 맞추기 | [식별자와 파일 경로](/docs/reference/식별자와-파일-경로) |
+| 서버 실행 인자 확인 | [ack](/docs/reference/api/ack-프로그램), [HandStack CLI](/docs/startup/HandStack-CLI-사용법) |
+| SQL 연결·데이터 원본 설정 | [dbclient](/docs/reference/api/modules/dbclient) |
+| 거래 라우팅·인증 설정 | [transact](/docs/reference/api/modules/transact) |
+| 정적 화면·계약 경로 설정 | [wwwroot](/docs/reference/api/modules/wwwroot) |
+| 화면의 서버 연결 설정 | [syn.config.json](/docs/reference/api/syn.config.json-환경설정) |
+| 그리드·입력·날짜 컨트롤 찾기 | [UI 컨트롤 빠른 안내](/docs/startup/learning/uicontrols/uicontrols-퀵-가이드) |
+
+## 이름으로 찾기
+
+| 이름·검색어 | 대표 문서 |
+|---|---|
+| `syn.$w`, webform, 화면 수명 주기 | [webform API](/docs/startup/learning/syn/webform) |
+| `syn.$w.transactionAction`, 거래 호출 | [구문·옵션·입출력](/docs/reference/거래-호출) |
+| `ApplicationID`, `ProjectID`, `TransactionID`, `ServiceID` | [식별자와 경로](/docs/reference/식별자와-파일-경로) |
+| `syn-datafield`, `dataFieldID`, `belongID` | [거래 입출력 연결](/docs/reference/거래-호출#입출력-연결) |
+| `syn.js`, 문자열·날짜·요청 유틸리티 | [라이브러리 빠른 안내](/docs/startup/learning/syn/syn.js-라이브러리-퀵-가이드) |
+| `syn.controls.js`, UI 컨트롤 | [컨트롤 소개](/docs/startup/learning/uicontrols/uicontrols-소개) |
+| `function` / `command` | [서버 함수](/docs/reference/api/modules/function) / [명령 실행](/docs/reference/api/modules/command) |
+| `repository` / `logger` | [파일 저장소](/docs/reference/api/modules/repository) / [로그](/docs/reference/api/modules/logger) |
+| `graphclient` / `prompter` | [그래프 DB](/docs/reference/api/modules/graphclient) / [프롬프트](/docs/reference/api/modules/prompter) |
+
+세부 옵션은 각 대표 문서에서 확인하세요. 이 색인은 옵션을 중복 관리하지 않습니다. 오류 문구로 찾는 경우에는 [증상별 문제 해결](/docs/guides/문제-해결)을 이용하세요.
