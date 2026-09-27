@@ -14,7 +14,7 @@ description: 여러 개발 도구를 함께 준비하는 기존 OS별 자동 설
 | 대상 | 파일 | 준비 사항 |
 |---|---|---|
 | Windows 11 x64 | [windows-bootstrapper.ps1](/install/windows-bootstrapper.ps1) | Windows PowerShell 5.1, WinGet |
-| macOS 14·15·26 | [macos-bootstrapper.sh](/install/macos-bootstrapper.sh) | 현재 사용자로 실행, 스크립트 내 OS·CPU 확인 |
+| macOS 14 이상 | [macos-bootstrapper.sh](/install/macos-bootstrapper.sh) | 현재 사용자로 실행, Apple Silicon(arm64) 또는 Intel(x64) |
 | Ubuntu 26.04 amd64 | [ubuntu-bootstrapper.sh](/install/ubuntu-bootstrapper.sh) | 현재 사용자로 실행, 필요한 패키지 설치 시 sudo |
 
 기존 설치 문서의 스크립트를 별도 파일로 제공합니다. .NET SDK, Node.js, Git, curl, gulp-cli, LibMan, PowerShell과 PATH를 구성하므로 실행 전에 내용을 확인하세요. 대상 OS가 다르거나 도구 버전을 직접 관리한다면 공식 설치 방법을 사용합니다.
@@ -34,6 +34,10 @@ macOS:
 ~~~bash
 bash ./macos-bootstrapper.sh
 ~~~
+
+[.NET 10 지원 OS](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md)의 최소 macOS 버전인 14를 기준으로, 그 이상은 상한 없이 설치를 시도합니다. 이후 macOS 버전을 허용하는 것이 .NET·Homebrew·개별 도구의 공식 지원이나 설치 성공을 보장하지는 않습니다.
+
+Rosetta 터미널에서 아키텍처 안내가 나오면 `arch -arm64 /bin/bash ./macos-bootstrapper.sh`로 실행하세요. Intel Mac에서는 기존 x64 설치 경로를 사용합니다.
 
 Ubuntu:
 

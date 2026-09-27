@@ -3,6 +3,7 @@
 set -Eeuo pipefail
 
 readonly NODE_LTS_FORMULA="node@24"
+readonly DOTNET_MIN_MACOS_MAJOR=14
 
 on_error() {
     local exit_code=$?
@@ -41,14 +42,16 @@ if [[ ${EUID} -eq 0 ]]; then
 fi
 
 macos_version="$(sw_vers -productVersion)"
+if [[ ! $macos_version =~ ^[0-9]+([.][0-9]+){0,2}$ ]]; then
+    echo "macOS 버전을 확인할 수 없습니다: $macos_version" >&2
+    exit 1
+fi
+
 macos_major_version="${macos_version%%.*}"
-case "$macos_major_version" in
-    14|15|26) ;;
-    *)
-        echo "macOS 14, 15 또는 26 전용 스크립트입니다. 현재 버전: $macos_version" >&2
-        exit 1
-        ;;
-esac
+if (( 10#$macos_major_version < DOTNET_MIN_MACOS_MAJOR )); then
+    echo ".NET 10 SDK 설치에는 macOS $DOTNET_MIN_MACOS_MAJOR 이상이 필요합니다. 현재 버전: $macos_version" >&2
+    exit 1
+fi
 
 machine_architecture="$(uname -m)"
 case "$machine_architecture" in
@@ -57,6 +60,11 @@ case "$machine_architecture" in
         homebrew_binary="/opt/homebrew/bin/brew"
         ;;
     x86_64)
+        if [[ $(sysctl -in sysctl.proc_translated 2>/dev/null || true) == "1" ]]; then
+            echo "Rosetta 모드로 실행 중입니다. Apple Silicon 네이티브(arm64) 모드로 다시 실행하세요:" >&2
+            echo "  arch -arm64 /bin/bash ./macos-bootstrapper.sh" >&2
+            exit 1
+        fi
         dotnet_architecture="x64"
         homebrew_binary="/usr/local/bin/brew"
         ;;
