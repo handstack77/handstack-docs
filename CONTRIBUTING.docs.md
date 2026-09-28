@@ -150,7 +150,6 @@ description: 이 실습으로 만들 결과 한 문장
 - `reference/`는 메뉴, 확장자, 저장 위치, 설정, 단축키와 증상별 진단의 대표 설명입니다. 같은 표를 학습 문서에 복제하지 않습니다.
 - HandStack 자체 API·서버 명세와 일반 도구 설치는 기존 문서에 연결합니다. IDE 생성 템플릿과 기존 게시판 예제의 DB·경로를 혼용하지 않습니다.
 - `/ide`는 설치 파일, `/docs/ide/`는 사용법입니다. navbar의 `개념 이해 → IDE 사용하기` 순서와 설치 후 안내 링크를 함께 검증합니다.
-- `npm run typecheck`, `npm run build`, `node tests/docs-navigation.mjs` 후 브라우저에서 메뉴·학습 순서·참조 절 이동과 모바일 표시를 확인합니다.
 
 qcn.winform 루트 `AGENTS.md`·`CLAUDE.md`에도 교육 문서 변경 시 이 영역을 함께 검토·갱신하도록 같은 지침을 둡니다. 자동 복사나 자동 배포를 의미하지 않습니다.
 
@@ -173,5 +172,3 @@ npm run start
 # 검증 후 기본 공식 서버로 복원
 Remove-Item Env:HANDSTACK_IDE_RELEASE_SERVER_URL
 ```
-
-검증: `node --test tests/ide-downloads.test.cjs`, `npm run typecheck`, `npm run build`, `node tests/docs-navigation.mjs`. 실제 설치 파일을 내려받거나 실행할 필요는 없습니다.
