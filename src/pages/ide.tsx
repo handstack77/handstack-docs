@@ -87,7 +87,7 @@ function PlatformCard({ platform }: { platform: Platform }): JSX.Element {
 export default function IdeDownloads(): JSX.Element {
     const catalog = usePluginData('handstack-ide-downloads') as Catalog;
     return (
-        <Layout title="HandStack IDE 설치하기" description="Windows, macOS, Linux용 HandStack IDE의 최신 배포 정보와 설치 파일을 확인하세요.">
+        <Layout title="HandStack IDE 설치하기" description="Windows, macOS용 HandStack IDE의 최신 배포 정보와 설치 파일을 확인하세요.">
             <main className={clsx('container', styles.page)}>
                 <header className={styles.intro}>
                     <p className={styles.eyebrow}>HANDSTACK IDE</p>
@@ -95,7 +95,7 @@ export default function IdeDownloads(): JSX.Element {
                     <p>작업영역 편집부터 화면 개발과 계약 관리까지.<br />내 운영체제에 맞는 HandStack IDE를 내려받으세요.</p>
                 </header>
                 <div className={styles.platforms}>
-                    {catalog.platforms.map(platform => <PlatformCard platform={platform} key={platform.channel} />)}
+                    {catalog.platforms.filter(platform => platform.channel !== 'linux').map(platform => <PlatformCard platform={platform} key={platform.channel} />)}
                 </div>
                 <aside className={styles.releaseInfo} aria-label="배포 정보 안내">
                     <p>
