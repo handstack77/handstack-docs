@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace handstack_docs
 {
@@ -42,7 +43,14 @@ namespace handstack_docs
                     DefaultFileNames = new List<string> { "index.html" }
                 });
 
-                app.UseStaticFiles();
+                // 설치 스크립트는 기본 MIME 매핑에 없으므로 다운로드 파일로 제공합니다.
+                var contentTypeProvider = new FileExtensionContentTypeProvider();
+                contentTypeProvider.Mappings[".ps1"] = "application/octet-stream";
+                contentTypeProvider.Mappings[".sh"] = "application/octet-stream";
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    ContentTypeProvider = contentTypeProvider
+                });
             }
             else
             {
