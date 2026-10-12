@@ -84,8 +84,8 @@
                 items: [{
                     helpType: 'U',
                     selector: '',
-                    subject: '제목입니다.',
-                    sentence: 'https://handstack.kr/docs/startup/install/필수-프로그램-설치하기#공식-설치-안내',
+                    subject: 'HandStack 공식 문서.',
+                    sentence: 'https://handstack.kr',
                     options: '{&#34;contentType&#34;: &#34;link&#34;}',
                 },{
                     helpType: 'U',

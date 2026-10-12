@@ -81,7 +81,7 @@ syn.uicontrols.$organization.setValue('orgChartView', [
 - API 상세는 같은 폴더의 `API.md`를 참고하세요.
 - 실제 소스: `wwwroot/uicontrols/OrganizationView/OrganizationView.js`, `OrganizationView.css`
 - 기존 샘플: `wwwroot/sample/uicontrol/organization.html`, `organization.js`
-- 실사용 예: qcn.groupware의 조직도 화면 — `nodeTemplate`/`createNode`로 노드 안에 아이콘을 추가하고, 그 아이콘 클릭 시 `syn.uicontrols.$contextmenu.open(...)`으로 메뉴를 여는 패턴, `nodedrop` 이벤트에서 `getRelatedNodes(elID, dropZone, 'children')`로 드롭된 노드의 하위 조직을 다시 조회하는 흐름을 참고할 수 있습니다.
+- 실사용 패턴: 조직도 화면 — `nodeTemplate`/`createNode`로 노드 안에 아이콘을 추가하고, 그 아이콘 클릭 시 `syn.uicontrols.$contextmenu.open(...)`으로 메뉴를 여는 패턴, `nodedrop` 이벤트에서 `getRelatedNodes(elID, dropZone, 'children')`로 드롭된 노드의 하위 조직을 다시 조회하는 흐름을 참고할 수 있습니다.
 - ContextMenu와 함께 쓰는 방법: `../ContextMenu/README.md`, `../ContextMenu/API.md`
 - OrgChart 원본 문서: https://github.com/dabeng/OrgChart
 
@@ -119,6 +119,28 @@ syn.uicontrols.$organization.setValue('orgChartView', [
   height="640"
   style={{ border: '1px solid #ccc', borderRadius: '8px' }}
   title="OrganizationView events 실전 예제"
+  allow="fullscreen">
+</iframe>
+
+### features.html
+
+<iframe
+  src="/uicontrols/OrganizationView/example/features.html"
+  width="100%"
+  height="640"
+  style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+  title="OrganizationView features 실전 예제"
+  allow="fullscreen">
+</iframe>
+
+### practical.html
+
+<iframe
+  src="/uicontrols/OrganizationView/example/practical.html"
+  width="100%"
+  height="640"
+  style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+  title="OrganizationView practical 실전 예제"
   allow="fullscreen">
 </iframe>
 

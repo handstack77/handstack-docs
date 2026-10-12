@@ -80,7 +80,7 @@ let $samplePage = {
 - API 상세는 같은 폴더의 `API.md`를 참고하세요.
 - 실제 소스: `wwwroot/uicontrols/Calendar/Calendar.js`, `Calendar.css`
 - FullCalendar 에셋 위치: `wwwroot/lib/fullcalendar/`(`index.global.min.js`, `core/locales/ko.global.min.js` 등)
-- 실사용 예: qcn.groupware 매장 스케줄 화면의 `syn_calendar` 사용 패턴(월간 일정을 그리고, `datesSet`으로 조회 기간이 바뀔 때마다 서버에서 다시 데이터를 받아오는 흐름) — `eventMapping`으로 `ShopDailyTaskID`/`EventName`/`StartDate`/`EndDate` 등 실제 컬럼명을 매핑하고, `eventDidMount`로 이벤트 DOM을 커스터마이징합니다.
+- 실사용 패턴: 팀 일정 화면의 `syn_calendar` 사용 패턴(월간 일정을 그리고, `datesSet`으로 조회 기간이 바뀔 때마다 서버에서 다시 데이터를 받아오는 흐름) — `eventMapping`으로 `ScheduleID`/`Title`/`StartDate`/`EndDate` 등 실제 컬럼명을 매핑하고, `eventDidMount`로 이벤트 DOM을 커스터마이징합니다.
 - FullCalendar 원본 문서: https://fullcalendar.io/docs
 
 ## 실전 예제 페이지
@@ -106,6 +106,28 @@ let $samplePage = {
   height="640"
   style={{ border: '1px solid #ccc', borderRadius: '8px' }}
   title="Calendar events 실전 예제"
+  allow="fullscreen">
+</iframe>
+
+### features.html
+
+<iframe
+  src="/uicontrols/Calendar/example/features.html"
+  width="100%"
+  height="640"
+  style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+  title="Calendar features 실전 예제"
+  allow="fullscreen">
+</iframe>
+
+### practical.html
+
+<iframe
+  src="/uicontrols/Calendar/example/practical.html"
+  width="100%"
+  height="640"
+  style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+  title="Calendar practical 실전 예제"
   allow="fullscreen">
 </iframe>
 
@@ -180,7 +202,7 @@ let $samplePage = {
 | `color` | `'Color'` | 배경/테두리를 한 번에 지정하는 색상 컬럼명 |
 | `classNames` | `'ClassNames'` | 이벤트 DOM에 추가할 CSS 클래스 컬럼명 |
 
-매핑에 없는 나머지 컬럼(예: `ShopDailyTaskID`, `Memo` 등 업무 데이터 고유 컬럼)은 자동으로 FullCalendar 이벤트의 `extendedProps`에 들어갑니다. 즉 `event.extendedProps.Memo`처럼 접근합니다.
+매핑에 없는 나머지 컬럼(예: `TaskCode`, `Memo` 등 업무 데이터 고유 컬럼)은 자동으로 FullCalendar 이벤트의 `extendedProps`에 들어갑니다. 즉 `event.extendedProps.Memo`처럼 접근합니다.
 
 ## 메서드
 

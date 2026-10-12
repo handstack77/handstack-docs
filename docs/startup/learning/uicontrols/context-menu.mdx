@@ -64,7 +64,7 @@ let $samplePage = {
 `example/` 폴더의 각 HTML 파일을 handstack의 wwwroot 정적 서버(예: rdy 프로젝트) 경로 아래에 두고 브라우저로 열면 바로 동작을 확인할 수 있습니다.
 
 - `basic.html` : 일반 `div`에 우클릭 메뉴를 붙이는 가장 단순한 예제
-- `nested-menu.html` : `children`으로 하위 메뉴(서브 메뉴)를 구성하는 예제
+- `nestedmenu.html` : `children`으로 하위 메뉴(서브 메뉴)를 구성하는 예제
 - `events.html` : `beforeOpen`/`select` 등 이벤트를 로그로 확인하는 예제
 
 각 예제는 화면 하단 로그 영역(`syn.$l.eventLog` 출력)에서 이벤트 발생 순서와 전달값을 확인할 수 있습니다.
@@ -103,14 +103,36 @@ let $samplePage = {
   allow="fullscreen">
 </iframe>
 
-### nested-menu.html
+### nestedmenu.html
 
 <iframe
-  src="/uicontrols/ContextMenu/example/nested-menu.html"
+  src="/uicontrols/ContextMenu/example/nestedmenu.html"
   width="100%"
   height="640"
   style={{ border: '1px solid #ccc', borderRadius: '8px' }}
-  title="ContextMenu nested-menu 실전 예제"
+  title="ContextMenu nestedmenu 실전 예제"
+  allow="fullscreen">
+</iframe>
+
+### features.html
+
+<iframe
+  src="/uicontrols/ContextMenu/example/features.html"
+  width="100%"
+  height="640"
+  style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+  title="ContextMenu features 실전 예제"
+  allow="fullscreen">
+</iframe>
+
+### practical.html
+
+<iframe
+  src="/uicontrols/ContextMenu/example/practical.html"
+  width="100%"
+  height="640"
+  style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+  title="ContextMenu practical 실전 예제"
   allow="fullscreen">
 </iframe>
 

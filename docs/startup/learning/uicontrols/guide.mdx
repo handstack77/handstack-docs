@@ -71,7 +71,7 @@ let $samplePage = {
 `example/` 폴더의 각 HTML 파일을 handstack의 wwwroot 정적 서버(예: rdy 프로젝트) 경로 아래에 두고 브라우저로 열면 바로 동작을 확인할 수 있습니다.
 
 - `basic.html` : 화면 요소 3개를 순서대로 안내하는 intro.js 투어(`helpType: 'I'`) 예제. 버튼을 눌러 투어를 시작하고, `complete`/`exit` 이벤트를 로그로 확인합니다.
-- `help-types.html` : 툴팁(`T`), 입력창 placeholder 애니메이션(`P`), 도움말 링크/팝업(`U`)까지 나머지 3가지 `helpType`을 한 화면에서 비교하는 예제.
+- `helptypes.html` : 툴팁(`T`), 입력창 placeholder 애니메이션(`P`), 도움말 링크/팝업(`U`)까지 나머지 3가지 `helpType`을 한 화면에서 비교하는 예제.
 
 각 예제는 화면 하단 로그 영역(`syn.$l.eventLog` 출력)에서 이벤트 발생 순서와 전달값을 확인할 수 있습니다.
 
@@ -79,7 +79,7 @@ let $samplePage = {
 
 - API 상세는 같은 폴더의 `API.md`를 참고하세요.
 - 실제 소스: `wwwroot/uicontrols/Guide/Guide.js`, `Guide.css`
-- 이 컨트롤은 `wwwroot/sample/uicontrol/` 에 별도 샘플 페이지가 없습니다. 이 문서의 API 내용은 `Guide.js` 소스 코드를 직접 읽고 확정한 것이며, 마크업 형태는 qcn.groupware 프로젝트의 실사용 코드를 참고했습니다.
+- 이 컨트롤은 `wwwroot/sample/uicontrol/` 에 별도 샘플 페이지가 없습니다. 이 문서의 API 내용은 `Guide.js` 소스 코드를 직접 읽고 확정한 것이며, 마크업 형태는 실제 업무 화면의 사용 패턴을 참고했습니다.
 - intro.js 옵션/API 원본 문서: https://introjs.com/docs/intro/api
 - tippy.js 옵션 원본 문서: https://atomiks.github.io/tippyjs/v6/all-props/
 - superplaceholder 옵션 원본 문서: https://github.com/fabiospampinato/superplaceholder.js
@@ -99,14 +99,36 @@ let $samplePage = {
   allow="fullscreen">
 </iframe>
 
-### help-types.html
+### helptypes.html
 
 <iframe
-  src="/uicontrols/Guide/example/help-types.html"
+  src="/uicontrols/Guide/example/helptypes.html"
   width="100%"
   height="640"
   style={{ border: '1px solid #ccc', borderRadius: '8px' }}
-  title="Guide help-types 실전 예제"
+  title="Guide helptypes 실전 예제"
+  allow="fullscreen">
+</iframe>
+
+### features.html
+
+<iframe
+  src="/uicontrols/Guide/example/features.html"
+  width="100%"
+  height="640"
+  style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+  title="Guide features 실전 예제"
+  allow="fullscreen">
+</iframe>
+
+### practical.html
+
+<iframe
+  src="/uicontrols/Guide/example/practical.html"
+  width="100%"
+  height="640"
+  style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+  title="Guide practical 실전 예제"
   allow="fullscreen">
 </iframe>
 
@@ -236,7 +258,7 @@ let $samplePage = {
 ## 참고
 
 - 이 컨트롤은 `wwwroot/sample/uicontrol/`에 별도 샘플 페이지가 없습니다. 위 Options/메서드/이벤트 표는 모두 `wwwroot/uicontrols/Guide/Guide.js` 소스 코드(`defaultSetting`, `itemTemplate`, `controlLoad`, `introStart`, `openUIHelp`, `dataRefresh`, `clear` 함수)를 직접 읽고 확정한 내용입니다.
-- 마크업 형태(`items` 배열에 `helpType`/`selector`/`subject`/`sentence`를 넣는 방식)는 실사용 프로젝트인 qcn.groupware의 코드 패턴을 참고했습니다.
+- 마크업 형태(`items` 배열에 `helpType`/`selector`/`subject`/`sentence`를 넣는 방식)는 실제 업무 화면에서 쓰는 코드 패턴을 참고했습니다.
 - `helpType: 'I'`/`'T'`/`'P'`가 동작하려면 각각 `window.introJs`, `window.tippy`, `window.superplaceholder`가 로드되어 있어야 합니다. `syn.loader.js`가 `syn_guide` 태그를 인식하면 `intro.js`, `tippy.js`(+`popper.js`), `superplaceholder`, `Guide.js`/`Guide.css`를 자동으로 함께 로드하므로 별도 설정 없이 사용할 수 있습니다.
 - intro.js 옵션/API 원본 문서: https://introjs.com/docs/intro/api
 - tippy.js 옵션 원본 문서: https://atomiks.github.io/tippyjs/v6/all-props/

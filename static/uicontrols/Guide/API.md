@@ -12,7 +12,7 @@
         { helpType: 'I', selector: '#lstDataSource', subject: '연결 가능한 데이터 원본입니다.', sentence: '앱에서 데이터베이스 요청을 실행하는 dbclient 모듈의 계약 정보에 사용하는 DataSourceID 목록입니다.', sortingNo: 2 },
         { helpType: 'T', selector: 'span.badge.bg-primary', subject: '앱에서 사용하는 기본 데이터베이스 입니다.', sentence: '기본 데이터 원본 정보는 제공자와 연결 문자열을 편집할 수 없습니다.', applyDelay: 1000 },
         { helpType: 'P', selector: '#txtConnectionString', subject: '중요', sentence: '개발 및 테스트 목적의 데이터베이스 연결문자열을 입력해야 합니다.' },
-        { helpType: 'U', subject: '설치 가이드', sentence: 'https://handstack.kr/docs/startup/install/필수-프로그램-설치하기#공식-설치-안내', options: '{"contentType": "link"}' }
+        { helpType: 'U', subject: 'HandStack 공식 문서', sentence: 'https://handstack.kr', options: '{"contentType": "link"}' }
     ]
 }" syn-events="['complete', 'exit']"></syn_guide>
 ```
@@ -114,7 +114,7 @@ let $samplePage = {
 ## 참고
 
 - 이 컨트롤은 `wwwroot/sample/uicontrol/`에 별도 샘플 페이지가 없습니다. 위 Options/메서드/이벤트 표는 모두 `wwwroot/uicontrols/Guide/Guide.js` 소스 코드(`defaultSetting`, `itemTemplate`, `controlLoad`, `introStart`, `openUIHelp`, `dataRefresh`, `clear` 함수)를 직접 읽고 확정한 내용입니다.
-- 마크업 형태(`items` 배열에 `helpType`/`selector`/`subject`/`sentence`를 넣는 방식)는 실사용 프로젝트인 qcn.groupware의 코드 패턴을 참고했습니다.
+- 마크업 형태(`items` 배열에 `helpType`/`selector`/`subject`/`sentence`를 넣는 방식)는 실제 업무 화면에서 쓰는 코드 패턴을 참고했습니다.
 - `helpType: 'I'`/`'T'`/`'P'`가 동작하려면 각각 `window.introJs`, `window.tippy`, `window.superplaceholder`가 로드되어 있어야 합니다. `syn.loader.js`가 `syn_guide` 태그를 인식하면 `intro.js`, `tippy.js`(+`popper.js`), `superplaceholder`, `Guide.js`/`Guide.css`를 자동으로 함께 로드하므로 별도 설정 없이 사용할 수 있습니다.
 - intro.js 옵션/API 원본 문서: https://introjs.com/docs/intro/api
 - tippy.js 옵션 원본 문서: https://atomiks.github.io/tippyjs/v6/all-props/
