@@ -135,8 +135,9 @@ const enabled = await syn.$r.isCorsEnabled('https://example.com/api/data');
 호출 시 실제 요청이 수행됩니다. `raw`가 문자열이 아니고 null/undefined도 아니면 POST 방식 본문으로
 전송하고, 그 외에는 GET 방식으로 요청합니다. 응답의 `Content-Type`에 따라 json/text/blob 중 알맞은
 형태로 자동 파싱하여 반환합니다. 기본 fetch 옵션은 CORS 모드, 동일 출처 자격 증명, JSON 요청/응답
-헤더, 리다이렉트 추적과 `no-referrer-when-downgrade` Referrer Policy를 사용합니다. 호출 시 전달한
-`options`로 기본값을 재정의할 수 있습니다.
+헤더와 리다이렉트 추적을 사용합니다. `referrerPolicy`는 기본 옵션에 지정하지 않아 페이지에 설정된
+정책을 따르며, 별도 정책이 없으면 현대 브라우저의 기본값인 `strict-origin-when-cross-origin`이
+적용됩니다. 호출 시 전달한 `options`로 `referrerPolicy`를 포함한 기본 옵션을 재정의할 수 있습니다.
 
 ```js
 const result = await syn.$r.httpFetch('/api/users').send();

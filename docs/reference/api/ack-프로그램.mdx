@@ -49,6 +49,15 @@ DLL 추가·교체 및 로딩 설정 변경에는 프로세스 재시작이 필�
 
 네트워크 공유나 컨테이너에서 파일 변경 알림이 불안정하면 `DOTNET_USE_POLLING_FILE_WATCHER=1`을 설정하고 재시작할 수 있습니다. 폴링에는 반영 지연이 있으므로 운영 파일 시스템에서 확인합니다. [파일 변경 감시 설명](https://learn.microsoft.com/aspnet/core/fundamentals/file-providers?view=aspnetcore-10.0#watch-for-changes)
 
+## Referrer Policy 기본 동작
+
+`ack`와 `rdy`는 보안 헤더 기능이 활성화되어 있어도 `Referrer-Policy` 응답 헤더를 기본으로 추가하지 않습니다.
+공용 JavaScript의 fetch 요청도 `referrerPolicy` 기본 옵션을 지정하지 않습니다. 페이지, 프록시 또는 개별
+요청에서 별도 정책을 지정하지 않으면 현대 브라우저의 기본값인 `strict-origin-when-cross-origin`이 적용됩니다.
+이 정책은 동일 출처 요청에 페이지 URL의 경로와 쿼리를 포함하고, 다른 출처 요청에는 출처만 전달하며,
+HTTPS에서 일반 HTTP로 보내는 요청에는 `Referer`를 생략합니다. 민감한 페이지는 별도로 `no-referrer`를
+지정할 수 있으며, URL에 토큰이나 개인정보를 넣지 않습니다.
+
 ## appsettings.json 파일 내용
 
 ```json
