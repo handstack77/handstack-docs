@@ -1,0 +1,116 @@
+---
+sidebar_position: 21.5
+---
+
+# SignaturePad
+
+마우스·터치·펜으로 서명을 입력받는 컨트롤입니다. 오픈소스 [signature_pad](https://github.com/szimek/signature_pad)(szimek, MIT, v5.1.4)를 감싸며, 획의 속도에 따라 굵기가 달라지는 자연스러운 선으로 그려집니다.
+
+값은 **base64 data URL 문자열**(`data:image/png;base64,iVBOR...`)로 주고받습니다. 서명을 일반 문자열 필드처럼 JSON에 담아 서버로 보내거나 `img` 요소의 `src`에 바로 넣어 보여줄 수 있습니다.
+
+- `getValue`: 서명이 있으면 data URL 문자열, 없으면 빈 문자열(`''`)
+- `setValue`: data URL 또는 접두사 없는 순수 base64 문자열을 받아 그림. 빈 값이면 지움
+
+## 빠른 시작
+
+```html
+<syn_signaturepad id="sigReceiver" syn-datafield="ReceiverSignature" syn-events="['change']" syn-options="{
+    height: '200px',
+    penColor: '#1e3a8a'
+}"></syn_signaturepad>
+```
+
+```javascript
+'use strict';
+let $mypage = {
+    event: {
+        sigReceiver_change(evt) {
+            // 사용자가 획을 그리거나 undo 했을 때 발생. evt.detail.value 는 getValue() 와 같은 값
+        },
+
+        btnSave_click() {
+            if (syn.uicontrols.$signaturepad.isEmpty('sigReceiver') == true) {
+                return;
+            }
+
+            // 'data:image/png;base64,...' 문자열
+            var signature = syn.uicontrols.$signaturepad.getValue('sigReceiver');
+        },
+
+        async btnLoad_click() {
+            // 저장해 둔 값을 복원합니다. 이미지 로딩이 끝나면 완료되는 Promise<boolean> 을 반환합니다.
+            await syn.uicontrols.$signaturepad.setValue('sigReceiver', savedSignature);
+        }
+    }
+}
+```
+
+`/js/syn.loader.js`가 `syn_signaturepad` 태그를 인식해 signature_pad 라이브러리(`/lib/signature_pad/dist/signature_pad.umd.min.js`)와 컨트롤 파일을 자동으로 불러옵니다. 라이브러리는 `libman.json`에 등록되어 있으며 `libman restore`로 내려받습니다.
+
+## 값 형식
+
+| 입력 값 | `setValue` 처리 |
+| --- | --- |
+| `data:image/png;base64,iVBOR...` | 그대로 사용(png/jpeg/gif/webp/svg+xml, base64 인코딩만 지원) |
+| `iVBOR...` (접두사 없는 base64) | 앞부분으로 형식을 판별해 접두사를 붙임(`iVBOR`=png, `/9j/`=jpeg, `R0lGOD`=gif, `UklGR`=webp, `PHN2Zy`/`PD94bW`=svg). 모르면 png |
+| `''`, `null`, `undefined` | 서명을 지움 |
+| 그 외(이미지가 아닌 data URL, 객체, 깨진 문자열) | 값을 바꾸지 않고 경고 로그 후 `false` 반환 |
+
+`getBase64(elID)`는 `data:image/...;base64,` 접두사를 뺀 본문만 반환합니다.
+
+## 옵션
+
+| 옵션 | 기본값 | 설명 |
+| --- | --- | --- |
+| `width` / `height` | `'100%'` / `'200px'` | 서명 영역 크기(CSS 값) |
+| `placeholder` | `'여기에 서명해 주세요'` | 비어 있을 때 안내 문구. 빈 문자열이면 표시하지 않음 |
+| `penColor` | `'#000000'` | 펜 색상 |
+| `backgroundColor` | `'rgba(0,0,0,0)'` | 캔버스 배경색(기본 투명) |
+| `minWidth` / `maxWidth` | `0.5` / `2.5` | 선 굵기 범위(px) |
+| `dotSize` | `null` | 점 하나의 크기. `null`이면 라이브러리 기본값 |
+| `minDistance` | `5` | 이 거리(px)보다 가까운 점은 무시 |
+| `velocityFilterWeight` | `0.7` | 속도 필터 가중치(0~1) |
+| `throttle` | `16` | 점 처리 간격(ms) |
+| `compositeOperation` | `'source-over'` | 캔버스 `globalCompositeOperation` |
+| `imageType` | `'image/png'` | `getValue` 이미지 형식. JPEG은 투명 배경이면 흰색으로 자동 변경 |
+| `imageQuality` | `null` | JPEG/WebP 품질(0~1) |
+| `readOnly` | `false` | `true`이면 입력을 막음(값은 `setValue`로만 변경) |
+
+공통 옵션(`dataType`, `belongID`, `getter`, `setter`, `controlText`, `validators`, `transactConfig`, `triggerConfig`)은 다른 컨트롤과 같습니다.
+
+## 메서드
+
+| 메서드 | 설명 |
+| --- | --- |
+| `getValue(elID)` | data URL 반환. 서명이 없으면 `''` |
+| `getBase64(elID)` | 접두사를 뺀 base64 본문 반환 |
+| `setValue(elID, value)` | data URL/순수 base64를 그림(기존 내용 교체). `Promise<boolean>` 반환. `change` 이벤트 없음 |
+| `clear(elID)` | 서명을 모두 지움. `change` 이벤트 없음 |
+| `isEmpty(elID)` | 서명이 비어 있으면 `true` |
+| `undo(elID)` | 마지막 획 취소(불러온 이미지는 대상 아님). 취소하면 `change` 발생 |
+| `setPenColor(elID, color)` | 이후 획의 색상 변경 |
+| `setReadOnly(elID, isReadOnly)` / `setDisabled(elID, isDisabled)` | 읽기 전용 / 비활성화 전환 |
+| `resize(elID)` | 캔버스를 영역 크기에 즉시 맞춤(보통은 자동 감지) |
+| `destroy(elID)` | 이벤트와 캔버스를 정리 |
+| `getControl(elID)` | 내부 항목 `{ id, host, canvas, pad, ... }` 반환. `pad`는 signature_pad 인스턴스 |
+
+## 이벤트
+
+| 이벤트 | 시점 | `evt.detail` |
+| --- | --- | --- |
+| `beginStroke` | 사용자가 획을 시작할 때 | `{ originalEvent }` |
+| `endStroke` | 사용자가 획을 끝낼 때 | `{ originalEvent }` |
+| `change` | 획이 끝났을 때, `undo` 했을 때 | `{ value }` (`getValue()`와 같은 data URL) |
+
+`setValue`/`clear` 같은 코드 호출로는 `change`가 발생하지 않습니다.
+
+## 예제 실행하기
+
+`/uicontrols/SignaturePad/example/` 폴더에 다음 예제가 있습니다.
+
+- `basic.html` — 기본 서명 입력, `getValue`로 값을 읽어 미리보기
+- `getset.html` — `getValue`/`getBase64`/`setValue`/`clear`(순수 base64, 잘못된 값 처리 포함)
+- `features.html` — 전체 옵션/메서드/이벤트 확인
+- `practical.html` — 물품 수령 확인(입력 검증, 저장, 불러오기)
+
+별도 샘플 페이지는 `/sample/uicontrol/signaturepad.html`입니다. 전체 옵션/메서드 목록은 `/uicontrols/SignaturePad/API.md`를 참고하세요.

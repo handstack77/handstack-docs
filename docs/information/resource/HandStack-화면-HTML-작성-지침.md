@@ -130,6 +130,8 @@ ID 속성 및 헝가리안 표기법:
 | `clp` | `syn_colorpicker` (커스텀 태그) | 색상 팔레트 |
 | `dtp` | `syn_datepicker`, `syn_dateperiodpicker` (커스텀 태그) | 날짜/기간 선택 |
 | `edt` | `syn_htmleditor`, `syn_sourceeditor` (커스텀 태그) | HTML/소스 코드 편집기 |
+| `sig` | `syn_signaturepad` (커스텀 태그) | 서명 입력 (값은 base64 data URL 문자열) |
+| `fdz` | `syn_filedropzone` (커스텀 태그) | 파일 끌어놓기 업로드/다운로드 (값은 파일 항목 객체 배열) |
 | `lst` | `syn_list` (커스텀 태그) | DataTable 기반 목록 그리드 |
 | `tvl` | `syn_tree` (커스텀 태그) | Fancytree 기반 트리 뷰 |
 | `org` | `syn_organization` (커스텀 태그) | 조직도 뷰 |
@@ -746,6 +748,18 @@ required: false}" multiple></select>
 }"></syn_fileclient>
 ```
 
+#### FileDropZone (`<syn_filedropzone>`)
+
+파일을 끌어다 놓아 repository 모듈로 업로드하고 목록에서 다운로드/삭제하며, [Dropzone](https://github.com/enyo/dropzone)을 기반으로 합니다. 값(`getValue`/`setValue`)은 업로드가 끝난 파일 항목 객체 배열입니다.
+
+```html
+<syn_filedropzone id="fdzAttach" syn-datafield="Attachments"
+syn-options="{repositoryID: 'TSTLM01', applicationID: 'HDS',
+dependencyID: 'POST_0001'}"
+syn-events="['change']">
+</syn_filedropzone>
+```
+
 #### HtmlEditor (`<syn_htmleditor>`)
 
 파일 업로드/다운로드 기능이 통합된 HTML 편집기 기능을 제공하며, [TinyMCE](https://www.tiny.cloud/docs/demo/)를 기반으로 합니다.
@@ -771,6 +785,17 @@ toSynControl: true}">
 <input id="rdoUseYN3" name="rdoUseYN" type="radio"
 syn-datafield="RadioUseYN" value="value 3" checked="checked" syn-options="{textContent: '알수없음',
 toSynControl: true}">
+```
+
+#### SignaturePad (`<syn_signaturepad>`)
+
+마우스·터치로 서명을 입력받으며, [signature_pad](https://github.com/szimek/signature_pad)를 기반으로 합니다. 값(`getValue`/`setValue`)은 `data:image/png;base64,...` 형식의 base64 data URL 문자열입니다.
+
+```html
+<syn_signaturepad id="sigReceiver" syn-datafield="ReceiverSignature"
+syn-options="{height: '200px', penColor: '#1e3a8a'}"
+syn-events="['change']">
+</syn_signaturepad>
 ```
 
 #### SourceEditor (`<syn_sourceeditor>`)

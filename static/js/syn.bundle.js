@@ -31057,6 +31057,461 @@ return DataTable.select;
  * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
  */
 !function(e,t){"object"==typeof exports&&"object"==typeof module?module.exports=t():"function"==typeof define&&define.amd?define([],t):"object"==typeof exports?exports["@master/css"]=t():e["@master/css"]=t()}(this,(function(){return(()=>{var e={642:e=>{e.exports={"3xs":360,"2xs":480,xs:600,sm:768,md:1024,lg:1280,xl:1440,"2xl":1600,"3xl":1920,"4xl":2560}},580:e=>{e.exports={fade:{10:"131518",20:"24262d",30:"363944",40:"4c515f",50:"63697c",60:"878d9f",70:"a6abb8",80:"c3c6cf",90:"f4f4f6"},gray:{10:"151515",20:"242424",30:"39393b",40:"515153",50:"6a6a6c",60:"8d8d8f",70:"aaaaac",80:"c6c6c8",90:"f4f4f6"},brown:{10:"1c130f",20:"31221b",30:"4b3429",40:"6a4a3a",50:"8a604c",60:"af836e",70:"c4a394",80:"d8c2b8",90:"f8f3f1"},orange:{10:"221205",20:"3a1f08",30:"582f0d",40:"7c4312",50:"a15717",60:"d5731e",70:"e79855",80:"efbd92",90:"fcf1e7"},gold:{10:"1e1400",20:"342300",30:"4e3400",40:"6e4900",50:"906000",60:"c08000",70:"e89a00",80:"ffba30",90:"fff3da"},yellow:{10:"1b1500",20:"2f2500",30:"473800",40:"634f00",50:"806700",60:"ac8a00",70:"d0a700",80:"f0c100",90:"fff5ca"},grass:{10:"101803",20:"1c2a05",30:"2a4008",40:"3c5a0b",50:"4e750e",60:"689c13",70:"7dbc17",80:"92da1a",90:"ebfad4"},green:{10:"011a0b",20:"022d13",30:"03441d",40:"055f28",50:"067b34",60:"08a345",70:"0ac553",80:"0be561",90:"d5fde5"},beryl:{10:"001912",20:"002b1f",30:"00432f",40:"005d41",50:"007954",60:"00a170",70:"00c387",80:"00e19c",90:"c9ffee"},teal:{10:"001918",20:"002b28",30:"00413d",40:"005b55",50:"00776f",60:"009f94",70:"00bfb2",80:"00ddce",90:"c5fffb"},cyan:{10:"00181f",20:"002a35",30:"003f51",40:"005973",50:"007391",60:"0099c1",70:"00b9e9",80:"3dd7ff",90:"dff8ff"},sky:{10:"021726",20:"032841",30:"043c61",40:"065489",50:"086eb3",60:"0b92ee",70:"4db3f7",80:"8ccefa",90:"eaf6fe"},blue:{10:"051338",20:"09205e",30:"0d318d",40:"1344c4",50:"175fe9",60:"538cee",70:"81acf3",80:"a5c7fd",90:"edf4fe"},indigo:{10:"161031",20:"24195e",30:"332592",40:"4835cc",50:"5a5bd5",60:"7d84e8",70:"a1a5ee",80:"bfc2f4",90:"f1f2ff"},violet:{10:"1f0839",20:"310e63",30:"491595",40:"641ed2",50:"7949e5",60:"9e77f5",70:"b89bf9",80:"d0bdfb",90:"f5f1ff"},purple:{10:"220736",20:"390c5b",30:"551287",40:"7719bd",50:"9832e4",60:"b56cec",70:"ca96f1",80:"dcbaf6",90:"f9f0ff"},fuchsia:{10:"2b0720",20:"470b3d",30:"68105f",40:"8e1691",50:"b61cbb",60:"e04ee5",70:"ea86ed",80:"f1b1f3",90:"feefff"},pink:{10:"2d0519",20:"4c082b",30:"720c40",40:"9d1059",50:"ca1473",60:"ee52a3",70:"f388c0",80:"f7b2d6",90:"fff0f8"},crimson:{10:"33020f",20:"500317",30:"780522",40:"a20d35",50:"ce1a4b",60:"ea5b82",70:"f58ba7",80:"ffb1c6",90:"fff1f4"},red:{10:"350001",20:"530001",30:"780506",40:"a60708",50:"d11a1e",60:"eb5f63",70:"fa8b8d",80:"fdb3b5",90:"fff1f1"},black:"000000",white:"ffffff"}},989:(e,t,s)=>{const i=s(824),r=s(860);s(580);e.exports=function(e){"string"==typeof e&&(e={"":e});const t=""in e;let s=!1;for(const t in e)if(t&&+t>=100){s=!0;break}if(!s&&(!t||Object.keys(e).length>1)){let t,s,n=0,a="0"in e?i(e[0]):[0,0,0];const c=[],l=()=>{const i=t-n,l=s.map(((e,t)=>(e-a[t])/i));for(const t of c){const s=t-n,i=a.map(((e,t)=>Math.round(e+l[t]*s)));e[t]=r.call(this,...i)}};for(let r=1;r<100;r++){const o=r%2==0;r in e?(c.length?(t=r,s=i(e[r]),l(),c.length=0,a=s):a=i(e[r]),n=r):o&&c.push(r)}c.length&&(t=100,s="100"in e?i(e[100]):[255,255,255],l())}return t||(e[""]=e[s?"500":"50"]),e}},824:e=>{e.exports=function(e){const t=e.match(/.{1,2}/g);return[parseInt(t[0],16),parseInt(t[1],16),parseInt(t[2],16)]}},860:e=>{e.exports=function(e,t,s){return((1<<24)+(e<<16)+(t<<8)+s).toString(16).slice(1)}}},t={};function s(i){var r=t[i];if(void 0!==r)return r.exports;var n=t[i]={exports:{}};return e[i](n,n.exports,s),n.exports}s.n=e=>{var t=e&&e.__esModule?()=>e.default:()=>e;return s.d(t,{a:t}),t},s.d=(e,t)=>{for(var i in t)s.o(t,i)&&!s.o(e,i)&&Object.defineProperty(e,i,{enumerable:!0,get:t[i]})},s.o=(e,t)=>Object.prototype.hasOwnProperty.call(e,t),s.r=e=>{"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})};var i={};return(()=>{"use strict";function e(e,t){return e+":"+(t.unit?t.value+t.unit:t.value)+(t.important?"!important":"")}s.r(i),s.d(i,{Style:()=>$t,StyleSheet:()=>Ct,Styles:()=>qn,breakpoints:()=>Qn,colors:()=>Fn,init:()=>Zn,sheets:()=>Nt});const t=/^([+-.]?\d+(\.?\d+)?)(.*)?/;function r(e,s,i,r,n){let a=r?r[e]:"",c="",l="";if(a)return{value:a,unit:c,unitToken:l};if("number"==typeof e)a=e,c=s||"";else{if(i){const t=Object.keys(i);e=e.replace(new RegExp(`(^|,| |\\()(${t.join("|")})(?:-([0-9]+))?(?:\\/(\\.?[0-9]+))?(?=(\\)|\\}|,| |$))`,"gm"),((e,t,s,r,n,a)=>{const c=i[s][r||""];if(c){let e="#"+c;if(n){let t=+n;t=isNaN(t)?1:Math.min(Math.max(t,0),1),e+=Math.round(255*t).toString(16).toUpperCase().padStart(2,"0")}return t+e}return e}))}if(s){const i=e.match(t);if(i){if(e.includes("/")){const t=e.split("/");return{value:+t[0]/+t[1]*100+"%",unit:c,unitToken:l}}return a=+i[1],c=l=i[3]||"",c||("rem"!==s&&"em"!==s||(a/=n),c=s||""),{value:a,unit:c,unitToken:l}}}a=(-1===e.indexOf("calc(")?e:function(e){const t=e=>"+"===e||"-"===e||"*"===e||"/"===e;let s,i="",r="",n=!1;function a(){s=null,r=""}for(let c=0;c<e.length;c++){const l=e[c];if("("===l||")"===l)n=")"===l,i+=r+l,a();else if(","===l)i+=r+l+" ",a();else{switch(s){case 1:break;case 2:if(t(l)){i+=r+" "+l+" ",a();continue}break;default:n&&(r+=" "),isNaN(+l)?t(l)||(s=1):s=2}r+=l}}return r&&(i+=r),i}(e)).replace(/\$\(((\w|-)+)\)/g,"var(--$1)")}return{value:a,unit:c,unitToken:l}}const n=[":disabled",":active",":focus",":hover"],a={"(":")","'":"'","{":"}"};var c=s(642),l=s.n(c);const o=(...e)=>e.join("-"),d="border",h="radius",u="margin",f="padding",m="font",p="currentColor",x=",",b="flow",g="template",y="column",k="columns",v="gap",w="row",O="rows",j="shadow",S="user",N="content",$="image",I="stroke",R="filter",z="blend",W="background",A="repeat",C="color",E="scroll",M="animation",V="direction",_="mode",L="behavior",T=o("overscroll",L),q="y",P="x",Z="height",F="width",Q="max",U="min",X="block",Y="inline",B="flex",D="grid",G="transition",H="origin",J="delay",K="rotate",ee="deg",te="timing-function",se="duration",ie="display",re="hidden",ne="box",ae="fill",ce="clip",le="none",oe="text",de="align",he="transform",ue="vertical",fe="word",me="space",pe="decoration",xe="break",be="size",ge="auto",ye="line",ke="object",ve="position",we="rem",Oe="style",je="smoothing",Se="antialiased",Ne="spacing",$e=o("letter",Ne),Ie=o(Q,F),Re=o(U,F),ze=o(Q,Z),We=o(U,Z),Ae="table",Ce="group",Ee="list",Me="item",Ve="span",_e="justify",Le="items",Te="self",qe="place",Pe="type",Ze="offset",Fe="outline",Qe="snap",Ue="shape",Xe="view",Ye="area",Be="start",De="blur",Ge="drop",He={full:"100%",fit:o("fit",N),max:o(Q,N),min:o(U,N)};for(const e in l())He[e]=l()[e]/16+"rem";const Je=s(989),Ke="matches",et="semantics",tt="symbol",st="max-width",it="min-width",rt="motion",nt="reduce",at="reduced-motion",ct="::scrollbar",lt="::slider-thumb",ot="::slider-runnable-track",dt="::search",ht="::meter",ut="::resizer",ft="::progress",mt="px",pt=["!","*",">","+","~",":","[","@","_"],xt=[...pt,void 0,"."],bt=new RegExp(ct,"g"),gt=new RegExp(dt,"g"),yt=new RegExp(ht,"g"),kt=new RegExp(ot,"g"),vt=new RegExp(lt,"g"),wt=new RegExp(ut,"g"),Ot=new RegExp(ft,"g"),jt=/(\\'(?:.*?)[^\\]\\')(?=[*_>~+,)])|(\[[^=]+='(?:.*?)[^\\]'\])/,St=e=>e.split(jt).map(((e,t)=>t%3?e:e.replace(/\_/g," "))).join(""),Nt=[];class $t{constructor(t,s){this.name=t,this.matching=s,this.at={},this.prioritySelectorIndex=-1;const i=this.constructor;if(void 0===s&&!(s=i.match(t)))return;let c,l,o,{id:d,semantics:h,unit:u,colors:f,key:m,values:p,colorful:x,breakpoints:b,mediaQueries:g,colorSchemes:y,rootSize:k}=i,v=t;if(x||(f=null),s.origin===et)c=s.value,o=v.slice(s.value.length),this.value=h[s.value];else{if(s.origin===Ke)if(d===Ce){let e=0;for(;e<v.length&&("{"!==v[e]||"\\"===v[e-1]);e++);l=v.slice(0,e),c=v.slice(e)}else{const e=v.indexOf(":");this.prefix=v.slice(0,e+1),this.prefix.includes("(")?(this.prefix=void 0,c=v):c=v.slice(e+1)}else s.origin===tt&&(this.symbol=v[0],c=v.slice(1));let e,t="",i=[],n=0;!function s(l,o,d=""){let h,m=!1;for(l&&(")"===l&&"$"===t.slice(-1)?h=t.length-1:"'"===l&&(m=!0),t+=c[n++]);n<c.length;n++){const x=c[n];if(x===l){if(t+=x,m){let e=0;for(let s=t.length-2;"\\"===t[s];s--)e++;if(e%2)continue}void 0!==h&&(t=t.slice(0,h)+t.slice(h).replace(/\$\((.*)\)/,"var(--$1)")),o||(m?i.push(t):(e=r(t,u,f,p,k),i.push(e.value+e.unit)),d="",t="");break}if(!m&&x in a)s(a[x],void 0===o?0:o+1,d);else if("|"!==x||"}"===l||m&&"path"!==d){if(!l){if("."===x){if(isNaN(+c[n+1]))break;"-"===c[n-1]&&(t+="0")}else{if(","===x){e=r(t,u,f,p,k),i.push(e.value+e.unit,","),t="";continue}if("#"===x&&(t||i.length&&"|"!==c[n-1])||pt.includes(x))break}d+=x}t+=x}else l?t+=" ":(e=r(t,u,f,p,k),i.push(e.value+e.unit),t="")}}(),t&&(e=r(t,u,f,p,k),i.push(e.value+e.unit)),o=c.slice(n),1===i.length?e?(this.value=e.value,this.unit=e.unit):(this.value=i[0],this.unit=""):this.value=i.reduce(((e,t,s)=>e+t+(","===t||","===i[s+1]||s===i.length-1?"":" ")),"")}o.includes(ct)&&(o=o.replace(bt,"::-webkit-scrollbar")),o.includes(dt)&&(o=o.replace(gt,"::-webkit-search")),o.includes(lt)&&(o=o.replace(vt,"::-webkit-slider-thumb")),o.includes(ot)&&(o=o.replace(kt,"::-webkit-slider-runnable-track")),o.includes(ht)&&(o=o.replace(yt,"::-webkit-meter")),o.includes(ut)&&(o=o.replace(wt,"::-webkit-resizer")),o.includes(ft)&&(o=o.replace(Ot,"::-webkit-progress")),o.includes(":first")&&(o=o.replace(/:first(?![a-z-])/g,":first-child")),o.includes(":last")&&(o=o.replace(/:last(?![a-z-])/g,":last-child")),o.includes(":even")&&(o=o.replace(/:even(?![a-z-])/g,":nth-child(2n)")),o.includes(":odd")&&(o=o.replace(/:odd(?![a-z-])/g,":nth-child(odd)")),o.includes(":nth(")&&(o=o.replace(/:nth\(/g,":nth-child(")),this.parseValue&&(this.value=this.parseValue),p&&this.value in p&&(this.value=p[this.value]),"!"===o[0]&&(this.important=!0,o=o.slice(1)),this.prefixSelector=l?St(l):"";const w=o.split("@");let O=w[0];if(O){O=St(O),this.hasWhere=O.includes(":where(");for(let e=0;e<n.length;e++)if(O.includes(n[e])){this.prioritySelectorIndex=e;break}}this.suffixSelector=O;for(let e=1;e<w.length;e++){const t=w[e];if(t)if(y.includes(t))this.colorScheme=t;else if("rtl"===t||"ltr"===t)this.direction=t;else{let e,s;const i=t.indexOf("_");if(-1!==i)e=t.slice(0,i),s=t.slice(i);else{const i=t.indexOf("(");-1!==i&&(e=t.slice(0,i),s=t.slice(i))}if(!e){e="media";const i=[];this.media={token:t,features:{}};const n=t.split("&");for(const e of n)if("all"===e||"print"===e||"screen"===e||"speech"===e)this.media.type=e;else if("🖨"===e)this.media.type="print";else if("landscape"===e||"portrait"===e)i.push("(orientation:"+e+")");else if(e===rt||e===at)i.push("(prefers-reduced-motion:"+(e===rt?"no-preference":nt)+")");else if(e in g)i.push(g[e]);else{const t={token:e};let s="",n="",a=0;switch(e.startsWith("<=")?(n="<=",s=st):e.startsWith(">=")||b[e]?(n=">=",s=it):e.startsWith(">")?(n=">",s=it,a=.02):e.startsWith("<")&&(n="<",s=st,a=-.02),s){case st:case it:const c=n?e.replace(n,""):e,l=b[c];l?Object.assign(t,r(l,mt)):Object.assign(t,r(c,mt)),t.unit===mt&&(t.value+=a),this.media.features[s]=t,i.push("("+s+":"+(t.value+t.unit)+")")}}s="",this.media.type&&(s=this.media.type),i.length&&(s+=(s?" and ":"")+i.join(" and "))}s&&(this.at[e]=(e in this.at?this.at[e]+" and ":"")+s.replace(/\_/g," "))}}let j="";this.colorScheme&&(j+="."+this.colorScheme+" "),this.prefixSelector&&(j+=this.prefixSelector),this.direction&&(j+="[dir="+this.direction+"] "),this.text=j+"."+CSS.escape(this.name)+this.suffixSelector+(this.name in $t.relations?$t.relations[this.name].map((e=>", "+j+"."+CSS.escape(e)+this.suffixSelector)).join(""):"")+"{"+("object"==typeof this.value?Object.keys(this.value).map((t=>e(t,Object.assign(Object.assign({},this),{unit:"",value:this.value[t]})))).join(";"):this.props?Object.keys(this.props).map((t=>e(t,this.props[t]))).join(";"):e(m,this))+"}";for(const e of Object.keys(this.at).sort(((e,t)=>"supports"===t?-1:1)))this.text="@"+e+" "+this.at[e]+"{"+this.text+"}";void 0===this.order&&(this.order=0)}static match(e){if(this.matches&&this.matches.test(e))return{origin:Ke};if(this.semantics)for(const t in this.semantics)if(e===t||e.startsWith(t)&&xt.includes(e[t.length]))return{origin:et,value:t};return this.colorStarts&&(e.match("^"+this.colorStarts+"(#|(rgb|hsl)\\(.*\\))((?!\\|).)*$")||this.colorNames.length&&e.match("^"+this.colorStarts+"("+this.colorNames.join("|")+")")&&-1===e.indexOf("|"))?{origin:Ke}:this.symbol&&e.startsWith(this.symbol)?{origin:tt}:this.key&&e.startsWith(this.key+":")?{origin:Ke}:void 0}static extend(e,...t){if(!t.length)return this;const s=Object.assign({},...t),i=(e,t,i)=>{var r;for(const n in s){const a=s[n];null==a?n in e&&(null==i||i(n),delete e[n]):e[n]=null!==(r=null==t?void 0:t(n,a))&&void 0!==r?r:a}};switch(e){case"classes":i(this.classes,((e,t)=>{if(e in this.classes)for(const t in this.relations){const s=this.relations[t],i=s.indexOf(e);-1!==i&&(s.length>1?s.splice(i,1):delete this.relations[t])}const s=Array.isArray(t)?t:t.replace(/(?:\n(?:\s*))+/g," ").trim().split(" ");for(const t of s)t in this.relations?this.relations[t].push(e):this.relations[t]=[e];return s}),(e=>{for(const t of this.classes[e]){const s=this.relations[t];s.length>1?s.splice(s.indexOf(e),1):delete this.relations[t]}}));break;case"colors":i(this.colors,((e,t)=>(-1===this.colorNames.indexOf(e)&&this.colorNames.push(e),Je(t))),(e=>{const t=this.colorNames.indexOf(e);-1!==t&&this.colorNames.splice(t,1)}));break;default:let t=this[e];t||(t=this[e]={}),i(t)}return this}}$t.unit="rem",$t.rootSize=16,$t.mediaQueries={},$t.sheets=Nt,$t.colors={},$t.classes={},$t.colorNames=[],$t.relations={},$t.colorSchemes=["dark","light"],"undefined"!=typeof window&&(window.MasterStyle=$t);const It=[",",".","#","[","!","*",">","+","~",":","@"],Rt="undefined"!=typeof document;let zt;Rt&&(zt=document.createElement("style"),zt.id="master-css");const Wt="undefined"!=typeof window,At=Wt?window.MutationObserver:Object;class Ct extends At{constructor(e){if(super((e=>{const t={},s=[],i=[],r=[],n=(e,t)=>{t?e.classList.forEach(c):e.classList.forEach(a);const s=e.children;for(let e=0;e<s.length;e++){const r=s[e];r.classList&&(i.push(r),n(r,t))}},a=e=>{e in t?t[e]++:t[e]=1},c=e=>{e in t?t[e]--:e in this.countOfName&&(t[e]=-1)},l=(e,t)=>{for(let s=0;s<e.length;s++){const a=e[s];!a.classList||i.includes(a)||r.includes(a)||(a.isConnected!==t?(i.push(a),n(a,t)):r.push(a))}};for(let t=0;t<e.length;t++){const r=e[t],{addedNodes:n,removedNodes:a,type:c,target:o,oldValue:d}=r;if("attributes"===c){if(s.find((e=>e.target===o)))continue;s.push(r)}else l(n,!1),o.isConnected&&i.includes(o)||l(a,!0)}if(s.length||Object.keys(t).length){for(const{oldValue:e,target:t}of s){const s=i.includes(t),r=t.classList,n=e?e.split(" "):[];if(s){if(t.isConnected)continue;for(const e of n)r.contains(e)||c(e)}else if(t.isConnected){r.forEach((e=>{n.includes(e)||a(e)}));for(const e of n)r.contains(e)||c(e)}}for(const e in t){const s=t[e],i=(this.countOfName[e]||0)+s;0===i?(delete this.countOfName[e],this.delete(e)):(e in this.countOfName||this.findAndInsert(e),this.countOfName[e]=i)}}})),this.container=e,this.styles=[],this.styleOfName={},this.countOfName={},Rt){if(e){const t=e.querySelector('[id="master-css"]');if(t){this.element=t;const e=(t,s)=>{if(t.selectorText){const e=t.selectorText.split(", ")[0].split(" ");for(let i=0;i<e.length;i++){const r=e[i];if("."===r[0]){const e=r.slice(1);let i="";for(let t=0;t<e.length;t++){const s=e[t],r=e[t+1];if("\\"===s){if(t++,"\\"!==r){i+=r;continue}}else if(It.includes(s))break;i+=s}if(!(i in this.styleOfName)&&!(i in $t.classes)){const e=Ct.findAndNew(i);e&&(e.cssRule=null!=s?s:t,this.styles.push(e),this.styleOfName[e.name]=e)}}}}else if(t.cssRules)for(let i=0;i<t.cssRules.length;i++)e(t.cssRules[i],null!=s?s:t.cssRules[i])};e(t.sheet,void 0)}else this.element=zt.cloneNode(),null==e||e.prepend(this.element)}Nt.push(this)}}observe(e,t={subtree:!0,childList:!0}){const s=e=>{e.forEach((e=>{e in this.countOfName?this.countOfName[e]++:(this.countOfName[e]=1,this.findAndInsert(e))}))};return s(e.classList),t.subtree&&e.querySelectorAll("[class]").forEach((e=>s(e.classList))),super.observe(e,Object.assign(Object.assign({},t),{attributes:!0,attributeOldValue:!0,attributeFilter:["class"]})),this}disconnect(){super.disconnect(),this.styleOfName={},this.countOfName={},this.styles.length=0;const e=this.element.sheet;if(e)for(let t=e.cssRules.length-1;t>=0;t--)e.deleteRule(t)}static findAndNew(e){const t=e=>{for(const t of this.Styles){const s=t.match(e);if(s)return new t(e,s)}};return e in $t.classes?$t.classes[e].map(t).filter((e=>e)):t(e)}static find(e){const t=e=>{for(const t of this.Styles){if(t.match(e))return t}};return e in $t.classes?$t.classes[e].map(t).filter((e=>e)):t(e)}static refresh(){for(const e of Nt)e.refresh()}refresh(){if(!this.element)return;const e=zt.cloneNode();this.element.replaceWith(e),this.element=e,this.styles.length=0,this.styleOfName={};for(const e in this.countOfName)this.findAndInsert(e)}destroy(){this.disconnect(),Nt.splice(Nt.indexOf(this),1),this.element.remove()}insert(e){if(this.styleOfName[e.name])return;const t=e.text;let s;const i=this.styles.length-1,r=e.media,n=e.order,a=e.prioritySelectorIndex,c=e.hasWhere,l=(e,t,s,i)=>{let r,l,o=0;t&&(o=e.findIndex(t)),s&&(l=e.findIndex(s)),-1===o&&(o=e.length),void 0!==l&&-1!==l||(l=e.length),r=e.slice(o,l);for(let e=0;e<r.length;e++){const t=r[e];if(!(-1===t.prioritySelectorIndex||i&&i(t))&&(t.prioritySelectorIndex<a||t.prioritySelectorIndex===a&&(c&&!t.hasWhere||t.order>=n)))return o+e}return o+r.length};if(r){const e=this.styles.findIndex((e=>e.media));if(-1!==e){const t=r.features["max-width"],o=r.features["min-width"];if(t&&o){const r=t.value-o.value;for(let t=i;t>=e;t--){s=t;const i=this.styles[t],n=i.media,o=n.features["max-width"],d=n.features["min-width"];if(!o||!d){s++;break}const h=o.value-d.value;if(h===r){if(c!==i.hasWhere)continue;if(-1!==a){const i=[this.styles[t]];for(let s=t-1;s>=e;s--){const e=this.styles[s];if(e.hasWhere!==c)break;const t=e.media,r=t.features["max-width"],n=t.features["min-width"];if(!r||!n||r.value-n.value!==h)break;i.unshift(this.styles[s])}s=l(this.styles,(e=>e.media&&-1!==e.prioritySelectorIndex&&e.media.features["min-width"]&&e.media.features["max-width"]))}break}if(h>r)break}}else if(o)for(let t=e;t<=i;t++){s=t;const e=this.styles[t],r=e.media,d=r.features["max-width"],h=r.features["min-width"];if(d){if(h)break;continue}const u=null==h?void 0:h.value;if(u===o.value){if(!c&&e.hasWhere){s++;continue}if(-1!==a)s=l(this.styles,(e=>e.media),(e=>e.media&&-1!==e.prioritySelectorIndex&&e.media.features["min-width"]&&e.media.features["max-width"]),(e=>!e.media.features["min-width"]&&!e.media.features["max-width"]));else for(let e=t;e<=i;e++){const t=this.styles[e],i=t.media,r=i.features["min-width"];if(!i.features["max-width"]){if(t.hasWhere!==c||r.value!==u||t.order>=n)break;s=e+1}}break}if(u>o.value)break;s++}else if(t)for(let r=i;r>=e;r--){s=r;const i=this.styles[r],o=i.media,d=o.features["max-width"];if(o.features["min-width"])continue;const h=null==d?void 0:d.value;if(!h||h>t.value){s++;break}if(h===t.value){if(c&&!i.hasWhere)continue;if(-1!==a)s=l(this.styles,(e=>e.media),(e=>e.media&&-1!==e.prioritySelectorIndex&&e.media.features["min-width"]&&e.media.features["max-width"]),(e=>!e.media.features["min-width"]&&!e.media.features["max-width"]));else{const t=[this.styles[r]];for(let s=r-1;s>=e;s--){const e=this.styles[s],i=e.media,r=i.features["min-width"],n=i.features["max-width"];if(!(r||n&&n.value===h&&e.hasWhere===c))break;t.unshift(e)}for(let e=0;e<t.length;e++){const i=t[e];if(!i.media.features["min-width"]){if(i.order>=n)break;s=r-t.length+2+e}}}break}}}if(void 0===s)if(-1===e)s=i+1;else if(-1!==a)s=e+l(this.styles.slice(e),void 0,(e=>e.media.features["max-width"]||e.media.features["min-width"]));else if(c){let t=e;for(;t<this.styles.length;t++){const e=this.styles[t];if(-1!==e.prioritySelectorIndex||!e.hasWhere||e.order>=n){s=t;break}}void 0===s&&(s=t)}else for(let t=e;t<=i;t++){s=t;const e=this.styles[t],i=e.media;if(-1!==e.prioritySelectorIndex||i.features["max-width"]||i.features["min-width"])break;if(e.hasWhere)s++;else if(e.order>=n)break}}else if(-1===a)if(c)s=this.styles.findIndex((e=>!e.hasWhere||e.media||-1!==e.prioritySelectorIndex||e.order>=n)),-1===s&&(s=i+1);else{let e=0;for(;e<this.styles.length;e++){const t=this.styles[e];if(t.media||!t.hasWhere&&(t.order>=n||-1!==t.prioritySelectorIndex)){s=e;break}}void 0===s&&(s=e)}else s=l(this.styles,void 0,(e=>e.media));try{if(this.element){const i=this.element.sheet;i.insertRule(t,s),e.cssRule=i.cssRules[s]}this.styles.splice(s,0,e),this.styleOfName[e.name]=e}catch(e){}}delete(e){const t=this.element.sheet,s=e=>{const s=this.styleOfName[e];if(!(!(null==s?void 0:s.cssRule)||e in $t.relations&&$t.relations[e].some((e=>e in this.countOfName))))for(let e=0;e<t.cssRules.length;e++){t.cssRules[e]===s.cssRule&&(t.deleteRule(e),this.styles.splice(e,1),delete this.styleOfName[s.name])}};if(e in $t.classes)for(const t of $t.classes[e])t in this.countOfName||s(t);else s(e)}findAndInsert(e){const t=Ct.findAndNew(e);if(Array.isArray(t))for(const e of t)this.insert(e);else t&&this.insert(t)}}Ct.Styles=[],Wt&&(window.MasterStyleSheet=Ct);class Et extends $t{}Et.matches=/^f(ont)?:(thin|extralight|light|regular|medium|semibold|bold|bolder|extrabold|heavy)(?!\|)/,Et.key=o(m,"weight"),Et.unit="",Et.values={thin:100,extralight:200,light:300,regular:400,medium:500,semibold:600,bold:700,extrabold:800,heavy:900};const Mt="var(--font-";class Vt extends $t{}Vt.matches=/^f(ont)?:(mono|sans|serif)(?!\|)/,Vt.key=o(m,"family"),Vt.values={mono:Mt+"mono)",sans:Mt+"sans)",serif:Mt+"serif)"};class _t extends $t{}_t.matches=/^f(ont)?:([0-9]|(max|min|calc|clamp)\(.*\))((?!\|).)*$/,_t.key=o(m,be);const Lt="top",Tt="bottom",qt="left",Pt="right",Zt="l",Ft="r",Qt="t",Ut="b",Xt="x",Yt="y";class Bt extends $t{get props(){const e="m"===this.prefix[0]?u:f,t=o(e,qt),s=o(e,Pt),i=o(e,Lt),r=o(e,Tt);switch(this.prefix[1]){case Xt:return{[t]:this,[s]:this};case Yt:return{[i]:this,[r]:this};case Zt:return{[t]:this};case Ft:return{[s]:this};case Qt:return{[i]:this};case Ut:return{[r]:this};default:return{[e]:this}}}get order(){return"p:"===this.prefix||"m:"===this.prefix?-1:0}}Bt.id="spacing",Bt.matches=/^[pm][xytblr]?:./;class Dt extends $t{}Dt.matches=/^w:./,Dt.key=F,Dt.values=He;class Gt extends $t{}Gt.matches=/^h:./,Gt.key=Z,Gt.values=He;class Ht extends $t{}Ht.matches=/^min-w:./,Ht.key=Re,Ht.values=He;class Jt extends $t{}Jt.matches=/^min-h:./,Jt.key=We,Jt.values=He;class Kt extends $t{}Kt.matches=/^ls:./,Kt.key=$e,Kt.unit="em";const es=o("subpixel",Se),ts=o("-webkit-font",je),ss=o("-moz-osxfont",je);class is extends $t{get props(){const e={};switch(this.value){case es:e[ts]=e[ss]=Object.assign(Object.assign({},this),{value:ge});break;case Se:e[ts]=Object.assign(Object.assign({},this),{value:Se}),e[ss]=Object.assign(Object.assign({},this),{value:"grayscale"})}return e}}is.id="fontSmoothing",is.matches=/^f(ont)?:(antialiased|subpixel-antialiased)(?!\|)/,is.unit="";class rs extends $t{}rs.matches=/^f(ont)?:(normal|italic|oblique)(?!\|)/,rs.key=o(m,Oe),rs.unit="deg",rs.semantics={italic:"italic",oblique:"oblique"};class ns extends $t{}ns.matches=/^f(ont)?:(ordinal|slashed-zero|lining-nums|oldstyle-nums|proportional-nums|tabular-nums|diagonal-fractions|stacked-fractions)(?!\|)/,ns.key=o(m,"variant","numeric");class as extends $t{}as.matches=/^lh:./,as.key=o(ye,Z),as.unit="";class cs extends $t{}cs.matches=/^(object|obj):(contain|cover|fill|scale-down)/,cs.key=o(ke,"fit");class ls extends $t{}ls.matches=/^(object|obj):(top|bottom|right|left|center)/,ls.key=o(ke,ve);class os extends $t{}os.matches=/^t(ext)?:(justify|center|left|right|start|end)(?!\|)/,os.key=o(oe,de);class ds extends $t{constructor(){super(...arguments),this.order=-1}}ds.matches=/^t(ext)?:(underline|line-through|overline)/,ds.key=o(oe,pe),ds.colorful=!0;class hs extends $t{}hs.matches=/^t(ext)?:(uppercase|lowercase|capitalize)(?!\|)/,hs.key=o(oe,he),hs.semantics={uppercase:"uppercase",lowercase:"lowercase",capitalize:"capitalize"};class us extends $t{}us.matches=/^(?:v|vertical):./,us.key=o(ue,de);class fs extends $t{get props(){return{overflow:Object.assign(Object.assign({},this),{value:re}),display:Object.assign(Object.assign({},this),{value:"-webkit-box"}),"overflow-wrap":Object.assign(Object.assign({},this),{value:o(xe,fe)}),"text-overflow":Object.assign(Object.assign({},this),{value:"ellipsis"}),"-webkit-box-orient":Object.assign(Object.assign({},this),{value:ue}),"-webkit-line-clamp":this}}}fs.id="lines",fs.matches=/^lines:./,fs.unit="";class ms extends $t{}ms.matches=/^transform:((top|bottom|right|left|center)|\d)/,ms.key=o(he,H),ms.unit="px";class ps extends $t{}ps.matches=/^transform:(flat|preserve-3d)(?!\|)/,ps.key=o(he,Oe);class xs extends $t{}xs.matches=/^transform:(content|border|fill|stroke|view)(?!\|)/,xs.key=o(he,ne),xs.values={content:o(N,ne),border:o(d,ne),fill:o(ae,ne),stroke:o(I,ne),view:o(Xe,ne)};class bs extends $t{get parseValue(){return this.value.replace(/(translate|scale|skew|rotate|perspective|matrix)(3d|[XYZ])?\((.*?)\)/g,((e,t,s,i)=>{let r,n;switch(t){case"translate":r=we;break;case"skew":r=ee;break;case K:"3d"===s&&(n=!0),r=ee;break;default:return e}const a=i.split(",");return e.replace(i,a.map(((e,t)=>{if(n&&a.length-1!==t)return e;return Number.isNaN(+e)?e:e/(r===we?16:1)+r})).join(","))}))}}bs.matches=/^(translate|scale|skew|rotate|perspective|matrix)(3d|[XYZ])?\(/,bs.key=he,bs.unit="";class gs extends $t{constructor(){super(...arguments),this.order=-1}}gs.symbol="~",gs.key=G;class ys extends $t{}ys.matches=/^~delay:./,ys.key=o(G,J),ys.unit="ms";class ks extends $t{}ks.matches=/^~duration:./,ks.key=o(G,se),ks.unit="ms";class vs extends $t{}vs.matches=/^~property:./,vs.key=o(G,"property");class ws extends $t{}ws.matches=/^~easing:./,ws.key=o(G,te);class Os extends $t{}Os.matches=/^max-h:./,Os.key=ze,Os.values=He;class js extends $t{}js.matches=/^max-w:./,js.key=Ie,js.values=He;class Ss extends $t{}Ss.matches=/^d:./,Ss.key=ie,Ss.semantics={hidden:le,hide:le,block:X,table:Ae,flex:B,grid:D,contents:"contents",inline:Y,"inline-block":o(Y,X),"inline-flex":o(Y,B),"inline-grid":o(Y,D),"inline-table":o(Y,Ae),"table-cell":o(Ae,"cell"),"table-caption":o(Ae,"caption"),"flow-root":o(b,"root"),"list-item":o(Ee,Me),"table-row":o(Ae,w),"table-column":o(Ae,y),"table-row-group":o(Ae,w,Ce),"table-column-group":o(Ae,y,Ce),"table-header-group":o(Ae,"header",Ce),"table-footer-group":o(Ae,"footer",Ce)};class Ns extends $t{}Ns.matches=/^box:(content|border)(?!\|)/,Ns.key=o(ne,"sizing"),Ns.values={content:o(N,ne),border:o(d,ne)};class $s extends $t{}$s.key="opacity",$s.unit="";class Is extends $t{}Is.key="visibility",Is.semantics={visible:"visible",invisible:re};class Rs extends $t{}Rs.key="clear";class zs extends $t{}zs.key="float";class Ws extends $t{}Ws.key="isolation",Ws.semantics={isolate:"isolate"};class As extends $t{get props(){if(this.prefix)switch(this.prefix.slice(-2,-1)){case P:return{"overflow-x":this};case q:return{"overflow-y":this}}return{overflow:this}}get order(){if(this.prefix)switch(this.prefix.slice(-2,-1)){case P:case q:return 0}return-1}}As.id="overflow",As.matches=/^overflow(-x|-y)?:(?:visible|overlay|hidden|scroll|auto|clip|inherit|initial|revert|revert-layer|unset|\$|var)/,As.semantics={overflow:"visible"};class Cs extends $t{get props(){switch(this.prefix.slice(-2,-1)){case P:return{[o(T,P)]:this};case q:return{[o(T,q)]:this};default:return{[T]:this}}}}Cs.id="overscrollBehavior",Cs.matches=/^overscroll-behavior(?:-[xy])?:/;class Es extends $t{}Es.matches=/^z:./,Es.key="z-index",Es.unit="";class Ms extends $t{}Ms.matches=/^\@delay:./,Ms.key=o(M,J),Ms.unit="ms";class Vs extends $t{}Vs.matches=/^\@direction:./,Vs.key=o(M,V);class _s extends $t{}_s.matches=/^\@fill-mode:./,_s.key=o(M,ae,_);class Ls extends $t{}Ls.matches=/^\@iteration-count:./,Ls.key=o(M,"iteration","count"),Ls.unit="";class Ts extends $t{}Ts.matches=/^\@name:./,Ts.key=o(M,"name");class qs extends $t{}qs.matches=/^\@play-state:./,qs.key=o(M,"play-state");class Ps extends $t{}Ps.matches=/^\@easing:./,Ps.key=o(M,te);class Zs extends $t{constructor(){super(...arguments),this.order=-1}}Zs.symbol="@",Zs.key=M,Zs.unit="";function Fs(e,t,s=""){s&&(s="-"+s);const i="border-left"+s,r="border-right"+s,n="border-top"+s,a="border-bottom"+s;switch(/^b(order)?-?(.)?/.exec(e)[2]){case Xt:return{[i]:t,[r]:t};case Yt:return{[n]:t,[a]:t};case Zt:return{[i]:t};case Ft:return{[r]:t};case Qt:return{[n]:t};case Ut:return{[a]:t};default:return{[d+s]:t}}}class Qs extends $t{get props(){return Fs(this.prefix,this,C)}get order(){return this.prefix===o(d,C)+":"||"b:"===this.prefix||"border:"===this.prefix?-1:0}}Qs.id="borderColor",Qs.matches=/^border(-(left|right|top|bottom))?-color:./,Qs.colorStarts="b([xytblr]|(order(-(left|right|top|bottom))?))?:",Qs.colorful=!0,Qs.values={current:p};const Us=o(d,Lt,qt,h),Xs=o(d,Lt,Pt,h),Ys=o(d,Tt,qt,h),Bs=o(d,Tt,Pt,h),Ds=o(d,h),Gs=[Us,Xs,Ys,Bs];class Hs extends $t{get props(){var e;if(this.prefix){let e="";const t=this.prefix.split("-");if(t.length>1)for(let s=1;s<t.length-1;s++)e+=t[s][0];else e=this.prefix.slice(1,-1);switch(e){case Qt:return{[Us]:this,[Xs]:this};case"tl":case"lt":return{[Us]:this};case"rt":case"tr":return{[Xs]:this};case Ut:return{[Ys]:this,[Bs]:this};case"bl":case"lb":return{[Ys]:this};case"br":case"rb":return{[Bs]:this};case Zt:return{[Us]:this,[Ys]:this};case Ft:return{[Xs]:this,[Bs]:this};default:return{[Ds]:this}}}const t=null===(e=this.prefix)||void 0===e?void 0:e.slice(0,-1);return{[Gs.includes(t)?t:Ds]:this}}get order(){return this.prefix===o(d,h)+":"||"r:"===this.prefix?-1:0}}Hs.id="borderRadius",Hs.matches=/^((r[tblr]?[tblr]?|border(-(top|bottom)-(left|right))?-radius):.)/,Hs.semantics={rounded:"1e9em",round:"50%"};class Js extends $t{get props(){return Fs(this.prefix,this,Oe)}get order(){return this.prefix===o(d,Oe)+":"||"b:"===this.prefix||"border:"===this.prefix?-1:0}}Js.id="borderStyle",Js.matches=/^(border(-(left|right|top|bottom))?-style:.|b([xytblr]|order(-(left|right|top|bottom))?)?:(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)(?!\|))/;class Ks extends $t{get props(){return Fs(this.prefix,this,F)}get order(){return this.prefix===o(d,F)+":"||"b:"===this.prefix||"border:"===this.prefix?-1:0}}Ks.id="borderWidth",Ks.matches=/^(border(-(left|right|top|bottom))?-width:.|b([xytblr]|order(-(left|right|top|bottom))?)?:(([0-9]|(max|min|calc|clamp)\(.*\))|(max|min|calc|clamp)\(.*\))((?!\|).)*$)/;class ei extends $t{get props(){return Fs(this.prefix,this)}get order(){return"border:"===this.prefix||"b:"===this.prefix?-2:-1}}ei.id="border",ei.matches=/^b([xytblr]?|order(-(left|right|top|bottom))?):./,ei.colorful=!0;class ti extends $t{}ti.matches=/^(bg|background):(fixed|local|scroll)(?!\|)/,ti.key=o(W,"attachment");class si extends $t{}si.key=o(W,z,_);class ii extends $t{get props(){return{"-webkit-background-clip":this,"background-clip":this}}}ii.matches=/^(bg|background):text(?!\|)/,ii.key=o(W,ce),ii.values={content:o(N,ne),border:o(d,ne),padding:o(f,ne)};class ri extends $t{}ri.matches=/^(bg|background):transparent(?!\|)/,ri.colorStarts="(bg|background):",ri.key=o(W,C),ri.unit="",ri.colorful=!0,ri.values={current:p};class ni extends $t{}ni.matches=/^(bg|background):(content|border|padding)(?!\|)/,ni.key=o(W,H),ni.values={content:o(N,ne),border:o(d,ne),padding:o(f,ne)};class ai extends $t{}ai.matches=/^(bg|background):(top|bottom|right|left|center)(?!\|)/,ai.key=o(W,ve),ai.unit="px";class ci extends $t{}ci.matches=/^(bg|background):(space|round|repeat|no-repeat|repeat-x|repeat-y)(?![;a-zA-Z])/,ci.key=o(W,A);class li extends $t{}li.matches=/^(bg|background):((auto|cover|contain)(?!\|)|\.?\d((?!\|).)*$)/,li.key=o(W,be);class oi extends $t{}oi.matches=/^(bg|background):(url|linear-gradient|radial-gradient|repeating-linear-gradient|repeating-radial-gradient|conic-gradient)\(.*\)((?!\|).)*$/,oi.key=o(W,$),oi.colorful=!0;class di extends $t{constructor(){super(...arguments),this.order=-1}}di.matches=/^bg:./,di.key=W,di.colorful=!0;class hi extends $t{}hi.matches=/^blend:./,hi.key=o("mix",z,_);class ui extends $t{}ui.key=ve,ui.values={abs:"absolute",rel:"relative"},ui.semantics={static:"static",fixed:"fixed",abs:"absolute",rel:"relative",sticky:"sticky"};class fi extends $t{get props(){const e=this.prefix.slice(0,-1);switch(e){case Lt:case qt:case Pt:case Tt:return{[e]:this};case"center":return{left:this,right:this,"margin-left":Object.assign(Object.assign({},this),{unit:""}),"margin-right":Object.assign(Object.assign({},this),{unit:""})};case"middle":return{top:this,bottom:this,"margin-top":Object.assign(Object.assign({},this),{unit:""}),"margin-bottom":Object.assign(Object.assign({},this),{unit:""})}}}}function mi(e,t){let s="",i=0;return function r(n,a){let c="";const l=a?t(a):"",o=()=>{c&&(s+=!l||Number.isNaN(+c)?c:+c/(l===we?16:1)+l,c="")};for(;i<e.length;i++){const t=e[i];if(t===n&&("'"!==n||")"===e[i+1])){o(),s+=t;break}","===t||" "===t?(o(),s+=t):c||"'"!==t?c&&"("===t?(s+=c+t,i++,r(")",c),c=""):c+=t:(s+=t,i++,r(t),c="")}o()}(),s}fi.matches=/^(top|left|right|bottom|center|middle):./;class pi extends $t{get props(){return{"backdrop-filter":this,"-webkit-backdrop-filter":this}}get parseValue(){return mi(this.value,(e=>{switch(e){case De:case o(Ge,j):return we;case o("hue",K):return ee}return""}))}}pi.matches=/^bd:./,pi.key=o("backdrop",R),pi.colorful=!0;class xi extends $t{}xi.key=ae,xi.colorStarts="fill:",xi.colorful=!0,xi.values={current:p};class bi extends $t{}bi.key=I,bi.colorful=!0;class gi extends $t{}gi.matches=/^stroke:([0-9]|(max|min|calc|clamp)\(.*\))((?!\|).)*$/,gi.key=o(I,F);class yi extends $t{get parseValue(){return mi(this.value,(e=>{switch(e){case De:case o(Ge,j):return we;case o("hue",K):return ee}return""}))}}yi.matches=/^(blur|brightness|contrast|drop-shadow|grayscale|hue-rotate|invert|opacity|saturate|sepia)\(/,yi.key=R,yi.colorful=!0;class ki extends $t{}ki.key="cursor";class vi extends $t{}vi.key=o("pointer","events"),vi.semantics={untouchable:"none"};class wi extends $t{}wi.key="resize";class Oi extends $t{}Oi.key=o("touch","action");class ji extends $t{get props(){return{"user-drag":this,"-webkit-user-drag":this}}}ji.key=o(S,"drag");class Si extends $t{get props(){return{"user-select":this,"-webkit-user-select":this}}}Si.key=o(S,"select");class Ni extends $t{}Ni.matches=/^s(?:hadow)?:./,Ni.key=o(ne,j),Ni.colorful=!0;class $i extends $t{}$i.key=o(oe,j),$i.colorful=!0;class Ii extends $t{get props(){return{"font-size":this,"line-height":Object.assign(Object.assign({},this),{value:this.unit===we?this.value+.375+this.unit:"calc("+this.value+this.unit+" + .375rem)",unit:""})}}}Ii.id="textSize",Ii.matches=/^t(ext)?:([0-9]|(max|min|calc|clamp)\(.*\))((?!\|).)*$/;class Ri extends $t{}Ri.key=o(fe,xe),Ri.unit="";class zi extends $t{get props(){return{[ie]:Object.assign(Object.assign({},this),{value:D}),[o(D,g,k)]:Object.assign(Object.assign({},this),{value:"repeat("+this.value+x+U+"max(0"+",1fr))"})}}}zi.matches=/^grid-cols:./,zi.key=o(D,k),zi.unit="";class Wi extends $t{get props(){return{[ie]:Object.assign(Object.assign({},this),{value:D}),[o(D,ge,b)]:Object.assign(Object.assign({},this),{value:y}),[o(D,g,O)]:Object.assign(Object.assign({},this),{value:"repeat("+this.value+x+U+"max(0"+",1fr))"})}}}Wi.key=o(D,O),Wi.unit="";class Ai extends $t{constructor(){super(...arguments),this.order=-1}get props(){switch(this.prefix[4]){case P:return{[o(y,v)]:this};case q:return{[o(w,v)]:this};default:return{[v]:this}}}}Ai.id="gap",Ai.matches=/^gap(-x|-y)?:./;class Ci extends $t{}Ci.key=o(fe,Ne);class Ei extends $t{get props(){return{["--"+this.prefix.slice(1,-1)]:this}}}Ei.id="variable",Ei.matches=/^\$.+:./,Ei.unit="";class Mi extends $t{}Mi.matches=/^aspect:./,Mi.key=o("aspect","ratio"),Mi.unit="",Mi.semantics={square:"1/1",video:"16/9"};class Vi extends $t{get props(){return{"box-decoration-break":this,"-webkit-box-decoration-break":this}}}Vi.matches=/^box:(slice|clone)(?!\|)/,Vi.key=o(ne,pe,xe);class _i extends $t{}_i.key=o(xe,"after");class Li extends $t{}Li.key=o(xe,"before");class Ti extends $t{}Ti.key=o(xe,"inside");class qi extends $t{}qi.key=o(B,"shrink"),qi.unit="";class Pi extends $t{}Pi.matches=/^flex:((row|col|column)(-reverse)?)(?!\|)/,Pi.key=o(B,V),Pi.values={col:y,"col-reverse":o(y,"reverse")};class Zi extends $t{}Zi.key=o(B,"grow"),Zi.unit="";class Fi extends $t{}Fi.matches=/^flex:(wrap(-reverse)?|nowrap)(?!\|)/,Fi.key=o(B,"wrap");class Qi extends $t{}Qi.key=o(B,"basis"),Qi.values=He;class Ui extends $t{constructor(){super(...arguments),this.order=-1}}Ui.key=B,Ui.unit="";const Xi="999999";class Yi extends $t{}Yi.matches=/^o:./,Yi.key="order",Yi.values={first:"-999999",last:Xi},Yi.unit="";class Bi extends $t{constructor(){super(...arguments),this.order=-1}get parseValue(){return"span"===this.prefix.slice(-5,-1)&&"auto"!==this.value?"span "+this.value+"/"+"span "+this.value:this.value}}Bi.matches=/^grid-col(?:umn)?(?:-span)?:./,Bi.key=o(D,y),Bi.unit="";class Di extends $t{}Di.matches=/^col-span:./,Di.key=o(y,Ve);class Gi extends $t{constructor(){super(...arguments),this.order=-1}get parseValue(){return"span"===this.prefix.slice(-5,-1)&&"auto"!==this.value?"span "+this.value+"/"+"span "+this.value:this.value}}Gi.matches=/^grid-row-span:./,Gi.key=o(D,w),Gi.unit="";class Hi extends $t{}Hi.matches=/^(font-color:.|font:current)/,Hi.colorStarts="(?:f(ont)?|color):",Hi.colorful=!0,Hi.key=C,Hi.unit="",Hi.values={current:p};class Ji extends $t{}Ji.matches=/^ac:./,Ji.key=o(de,N);class Ki extends $t{}Ki.matches=/^ai:./,Ki.key=o(de,Le);class er extends $t{}er.matches=/^as:./,er.key=o(de,Te);class tr extends $t{}tr.matches=/^grid-auto-cols:./,tr.key=o(D,ge,k),tr.values={min:o(U,N),max:o(Q,N)};class sr extends $t{}sr.matches=/^grid-flow:./,sr.key=o(D,ge,b);class ir extends $t{}ir.key=o(D,ge,O),ir.values={min:o(U,N),max:o(Q,N)};class rr extends $t{}rr.matches=/^jc:./,rr.key=o(_e,N);class nr extends $t{}nr.matches=/^ji:./,nr.key=o(_e,Le);class ar extends $t{}ar.matches=/^js:./,ar.key=o(_e,Te);class cr extends $t{constructor(){super(...arguments),this.order=-1}}cr.key=o(qe,N);class lr extends $t{constructor(){super(...arguments),this.order=-1}}lr.key=o(qe,Le);class or extends $t{constructor(){super(...arguments),this.order=-1}}or.key=o(qe,Te);class dr extends $t{get props(){return{[this.prefix.slice(0,-1)]:this}}get order(){return"padding:"===this.prefix?-1:0}}dr.id="padding",dr.matches=/^padding(?:-(?:left|right|top|bottom))?:./;class hr extends $t{get props(){return{[this.prefix.slice(0,-1)]:this}}get order(){return"margin:"===this.prefix?-1:0}}hr.id="margin",hr.matches=/^margin(-(left|right|top|bottom))?:./;class ur extends $t{}ur.matches=/^(text-(overflow|ovf):.|t(ext)?:(ellipsis|clip)(?!\|))/,ur.key=o(oe,"overflow");class fr extends $t{}fr.matches=/^list-style:(inside|outside)(?!\|)/,fr.key=o(Ee,Oe,ve);class mr extends $t{}mr.matches=/^list-style:(disc|decimal)(?!\|)/,mr.key=o(Ee,Oe,Pe);class pr extends $t{constructor(){super(...arguments),this.order=-1}}pr.key=o(Ee,Oe);class xr extends $t{}xr.key=o(oe,pe,C),xr.colorStarts="text-decoration:",xr.colorful=!0,xr.values={current:p};class br extends $t{}br.matches=/^t(ext)?:(solid|double|dotted|dashed|wavy)(?!\|)/,br.key=o(oe,pe,Oe);class gr extends $t{}gr.matches=/^text-decoration:(from-font(?!\|)|([0-9]|(max|min|calc|clamp)\(.*\))((?!\|).)*$)/,gr.key=o(oe,pe,"thickness"),gr.unit="em";class yr extends $t{}yr.key=o(oe,"indent");class kr extends $t{}kr.key=N;class vr extends $t{}vr.key=o(Fe,C),vr.colorStarts="outline:",vr.colorful=!0,vr.values={current:p};class wr extends $t{}wr.key=o(Fe,Ze);class Or extends $t{}Or.matches=/^outline:(none|dotted|dashed|solid|double|groove|ridge|inset|outset)(?!\|)/,Or.key=o(Fe,Oe);class jr extends $t{}jr.matches=/^outline:(medium|thick|thin|[0-9]|(max|min|calc|clamp)\(.*\))((?!\|).)*$/,jr.key=o(Fe,F);class Sr extends $t{constructor(){super(...arguments),this.order=-1}}Sr.key=Fe,Sr.colorful=!0;class Nr extends $t{}Nr.matches=/^b(order)?:(collapse|separate)(?!\|)/,Nr.key=o(d,"collapse");class $r extends $t{}$r.key=o(d,Ne);class Ir extends $t{}Ir.key=o(Ae,"layout");class Rr extends $t{}Rr.key=o("accent",C),Rr.colorStarts="accent:",Rr.colorful=!0;class zr extends $t{}zr.key="appearance";class Wr extends $t{}Wr.key=o("caret",C),Wr.matches=/^caret:transparent(?!\|)/,Wr.colorStarts="caret:",Wr.colorful=!0,Wr.values={current:p};class Ar extends $t{}Ar.key=o(E,L);class Cr extends $t{get props(){if("m"!==this.prefix.slice(-3,-2))return{[this.prefix.replace(/-m(?!argin)/,"-margin").slice(0,-1)]:this};{const e=o(E,u)+"-",t=e+qt,s=e+Pt,i=e+Lt,r=e+Tt;switch(this.prefix.slice(-2,-1)){case Xt:return{[t]:this,[s]:this};case Yt:return{[i]:this,[r]:this};case Zt:return{[t]:this};case Ft:return{[s]:this};case Qt:return{[i]:this};case Ut:return{[r]:this}}}}get order(){return this.prefix===o(E,u)+":"||this.prefix===o(E,"m:")?-1:0}}Cr.id="scrollMargin",Cr.matches=/^scroll-m([xytblr]|argin(-(top|bottom|left|right))?)?:./;class Er extends $t{get props(){if("p"!==this.prefix.slice(-3,-2))return{[this.prefix.replace(/-p(?!adding)/,"-padding").slice(0,-1)]:this};{const e=o(E,f)+"-",t=e+qt,s=e+Pt,i=e+Lt,r=e+Tt;switch(this.prefix.slice(-2,-1)){case Xt:return{[t]:this,[s]:this};case Yt:return{[i]:this,[r]:this};case Zt:return{[t]:this};case Ft:return{[s]:this};case Qt:return{[i]:this};case Ut:return{[r]:this}}}}get order(){return this.prefix===o(E,f)+":"||this.prefix===o(E,"p:")?-1:0}}Er.id="scrollPadding",Er.matches=/^scroll-p([xytblr]|adding(-(top|bottom|left|right))?)?:./;class Mr extends $t{}Mr.matches=/^scroll-snap:(start|end|center)/,Mr.key=o(E,Qe,de);class Vr extends $t{}Vr.matches=/^scroll-snap:(normal|always)(?!\|)/,Vr.key=o(E,Qe,"stop");class _r extends $t{}_r.matches=/^scroll-snap:(([xy]|block|inline|both)(\|(proximity|mandatory))?)(?!\|)/,_r.key=o(E,Qe,Pe);class Lr extends $t{}Lr.key="will-change";class Tr extends $t{}Tr.key=o(oe,"underline",Ze);class qr extends $t{get props(){return{[this.prefix.slice(0,-1)]:this}}}qr.matches=/^(?:top|bottom|left|right):./,qr.key="inset";class Pr extends $t{constructor(){super(...arguments),this.order=-1}}Pr.matches=/^(columns|cols):./,Pr.key=k,Pr.unit="";class Zr extends $t{}Zr.key=o("white",me),Zr.unit="";class Fr extends $t{}Fr.matches=/^t(ext)?:(mixed|upright|sideways-right|sideways|use-glyph-orientation)(?!\|)/,Fr.key=o(oe,"orientation");class Qr extends $t{}Qr.matches=/^writing:./,Qr.key=o("writing",_);class Ur extends $t{}Ur.key="contain";class Xr extends $t{}Xr.matches=/^\@duration:./,Xr.key=o(M,se),Xr.unit="ms";class Yr extends $t{}Yr.matches=/^t(ext)?:(optimizeSpeed|optimizeLegibility|geometricPrecision)(?!\|)/,Yr.key=o(oe,"rendering");class Br extends $t{}Br.key=V;class Dr extends $t{}Dr.matches=/^t(ext)?:(none|underline|overline|line-through)(?!\|)/,Dr.key=o(oe,pe,ye);class Gr extends $t{}Gr.matches=/^grid-col-start:./,Gr.key=o(D,y,Be),Gr.unit="";class Hr extends $t{}Hr.matches=/^list-style:(url|linear-gradient|radial-gradient|repeating-linear-gradient|repeating-radial-gradient|conic-gradient)\(.*\)((?!\|).)*$/,Hr.key=o(Ee,Oe,$);class Jr extends $t{}Jr.matches=/^shape:((margin|content|border|padding)(?!\|)|(inset|circle|ellipse|polygon|url|linear-gradient)\(.*\)((?!\|).)*$)/,Jr.key=o(Ue,"outside"),Jr.values={content:o(N,ne),border:o(d,ne),padding:o(f,ne),margin:o(u,ne)};class Kr extends $t{}Kr.matches=/^shape:([0-9]|(max|min|calc|clamp)\(.*\))((?!\|).)*$/,Kr.key=o(Ue,u);class en extends $t{}en.key=o(Ue,$,"threshold"),en.unit="";class tn extends $t{}tn.matches=/^clip:./,tn.key=o(ce,"path"),tn.values={content:o(N,ne),border:o(d,ne),padding:o(f,ne),margin:o(u,ne),fill:o(ae,ne),stroke:o(I,ne),view:o(Xe,ne)};class sn extends $t{constructor(){super(...arguments),this.order=-1}}sn.key=D;class rn extends $t{constructor(){super(...arguments),this.order=-1}}rn.matches=/^f:./,rn.key=m,rn.unit="",rn.colorful=!0;class nn extends $t{}nn.key="quotes";class an extends $t{constructor(){super(...arguments),this.order=-1}}an.key=o(D,g);class cn extends $t{}cn.key=o(D,w,Be),cn.unit="";class ln extends $t{}ln.key=o(D,g,Ye)+"s";class on extends $t{}on.matches=/^grid-template-cols:./,on.key=o(D,g,k),on.values={min:o(U,N),max:o(Q,N)};class dn extends $t{}dn.key=o(D,g,O),dn.values={min:o(U,N),max:o(Q,N)};class hn extends $t{constructor(){super(...arguments),this.order=-1}}hn.key=o(D,Ye),hn.unit="";class un extends $t{}un.matches=/^grid-col-end:./,un.key=o(D,y,"end"),un.unit="";class fn extends $t{}fn.key=o(D,w,"end"),fn.unit="";class mn extends $t{get props(){return{"mask-image":this,"-webkit-mask-image":this}}}mn.key=o("mask",$);class pn extends $t{get props(){return{"-webkit-text-fill-color":this}}}pn.id="textFillColor",pn.matches=/^text-fill-color:./,pn.colorStarts="text-fill:",pn.colorful=!0,pn.values={current:p};class xn extends $t{get props(){return{"-webkit-text-stroke":this}}}xn.id="textStroke",xn.matches=/^text-stroke:./;class bn extends $t{get props(){return{"-webkit-text-stroke-width":this}}}bn.id="textStrokeWidth",bn.matches=/^text-stroke(:((thin|medium|thick)(?!\|)|\.?\d((?!\|).)*$)|-width:.)/;class gn extends $t{get props(){return{"-webkit-text-stroke-color":this}}}gn.id="textStrokeColor",gn.matches=/^text-stroke-color:./,gn.colorStarts="text-stroke:",gn.colorful=!0,gn.values={current:p};class yn extends $t{}yn.key=o(I,"dasharray");class kn extends $t{}kn.key=o(I,"dash")+Ze;class vn extends $t{}vn.key="x",vn.unit="";class wn extends $t{}wn.key="y",wn.unit="";class On extends $t{}On.key="cx",On.unit="";class jn extends $t{}jn.key="cy",jn.unit="";class Sn extends $t{}Sn.key="rx",Sn.unit="";class Nn extends $t{}Nn.key="ry",Nn.unit="";class $n extends $t{}$n.key=o(d,$,"outset");class In extends $t{}In.matches=/^border-image:(?:stretch|repeat|round|space)(?:(?!\|).)*$/,In.key=o(d,$,A);class Rn extends $t{}Rn.key=o(d,$,"slice"),Rn.unit="";class zn extends $t{}zn.matches=/^border-image:(?:url|linear-gradient|radial-gradient|repeating-linear-gradient|repeating-radial-gradient|conic-gradient)\(.*\)(?:(?!\|).)*$/,zn.key=o(d,$,"source");class Wn extends $t{}Wn.matches=/^border-image:(?:\.?[0-9]|(max|min|calc|clamp)\(.*\))(?:(?!\|).)*$/,Wn.key=o(d,$,F);class An extends $t{}An.key=o(d,$),An.unit="";const Cn=/\{(.*)\}/;class En extends $t{get props(){const e={},t=t=>{const s=t.indexOf(":");if(-1!==s){const i=t.slice(0,s);i in e||(e[i]={value:t.slice(s+1)})}},s=e=>{const s=e.text.slice(CSS.escape(e.name).length).match(Cn)[1].split(";");for(const e of s)t(e)},i=[];let r="";const n=()=>{r&&(i.push(r),r="")};let c=1;const l=e=>{for(;c<this.value.length;c++){const t=this.value[c];if(!e){if(";"===t){n();continue}if("}"===t)break}if(r+=t,e===t){if("'"===e){let e=0;for(let t=r.length-2;"\\"===r[t];t--)e++;if(e%2)continue}break}t in a&&"'"!==e&&(c++,l(a[t]))}};l(void 0),n();for(const e of i){const i=Ct.findAndNew(e);if(Array.isArray(i))for(const e of i)s(e);else i?s(i):t(e)}return e}}En.id=Ce,En.matches=/^(?:.+?[*_>~+])?\{.+?\}/,En.unit="";class Mn extends $t{}Mn.key="counter-increment",Mn.unit="";var Vn=s(580),_n=s.n(Vn);class Ln extends $t{}Ln.semantics={"center-content":{"justify-content":"center","align-items":"center"},"sr-only":{position:"absolute",width:"1px",height:"1px",padding:"0",margin:"-1px",overflow:"hidden",clip:"rect(0,0,0,0)","white-space":"nowrap","border-width":"0"},full:{width:"100%",height:"100%"},center:{left:0,right:0,"margin-left":ge,"margin-right":ge},middle:{top:0,bottom:0,"margin-top":ge,"margin-bottom":ge},"break-spaces":{"white-space":o(xe,me)+"s"},"break-word":{"overflow-wrap":o(xe,fe),overflow:re}};const Tn="undefined"!=typeof window,qn=[Ln,En,Ei,Et,Vt,Hi,Bt,hr,dr,_t,Qi,Fi,Zi,qi,Pi,Ui,Ss,Dt,Gt,Ht,Jt,Ur,kr,Mn,Kt,is,rs,ns,rn,as,cs,ls,os,xr,br,gr,Dr,ds,Tr,ur,Fr,hs,Yr,yr,us,Pr,Zr,qr,fs,Os,js,Ns,$s,Is,Rs,zs,Ws,As,Cs,Es,ui,fi,ki,vi,wi,Oi,Ri,Ci,ji,Si,$i,Ii,pn,bn,gn,xn,Ni,Ir,xs,ps,ms,bs,vs,ws,ks,ys,gs,Ms,Vs,Xr,_s,Ls,Ts,qs,Ps,Zs,Qs,Hs,Js,Ks,Nr,$r,ei,$n,In,Rn,zn,Wn,An,ti,si,ii,ri,ni,ai,ci,li,oi,di,hi,pi,yi,xi,yn,kn,gi,bi,vn,wn,On,jn,Sn,Nn,Gr,un,Bi,zi,cn,fn,Gi,Wi,tr,sr,ir,ln,on,dn,an,hn,sn,Ai,Yi,Ti,Li,_i,Vi,Mi,Di,Ji,Ki,er,rr,nr,ar,cr,lr,or,fr,mr,Hr,pr,vr,wr,Or,jr,Sr,Rr,zr,Wr,Ar,Cr,Er,Mr,Vr,_r,Lr,Qr,Br,Jr,Kr,en,tn,nn,mn],Pn=qn.get=e=>qn.find((t=>{var s;return e===t.id||e===(null===(s=t.key)||void 0===s?void 0:s.replace(/-./g,(e=>e[1].toUpperCase())))||e===t.key}));function Zn(){if(Tn){const e=new Ct(document.head);Ct.root=e,e.observe(document.documentElement)}}qn.extend=function(e,...t){const s=Object.assign({},...t);for(const t in s){const i=Pn(t);if(i){const r=s[t];i.extend(e,r)}}return this},$t.extend("colors",_n()).extend("breakpoints",l()),Ct.Styles.push(...qn);Tn&&(window.initMasterCSS=Zn,window.MasterStyles=qn,window.MasterCSSManual||Zn());const Fn=s(580),Qn=s(642)})(),i})()}));
+/**
+* Tom Select v2.6.2
+* Licensed under the Apache License, Version 2.0 (the "License");
+*/
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self).TomSelect=t()}(this,function(){"use strict"
+function e(e,t){e.split(/\s+/).forEach(e=>{t(e)})}class t{constructor(){this._events={}}on(t,i){e(t,e=>{const t=this._events[e]||[]
+t.push(i),this._events[e]=t})}off(t,i){var s=arguments.length
+0!==s?e(t,e=>{if(1===s)return void delete this._events[e]
+const t=this._events[e]
+void 0!==t&&(t.splice(t.indexOf(i),1),this._events[e]=t)}):this._events={}}trigger(t,...i){var s=this
+e(t,e=>{const t=s._events[e]
+void 0!==t&&t.forEach(e=>{e.apply(s,i)})})}}const i=e=>(e=e.filter(Boolean)).length<2?e[0]||"":1==l(e)?"["+e.join("")+"]":"(?:"+e.join("|")+")",s=e=>{if(!o(e))return e.join("")
+let t="",i=0
+const s=()=>{i>1&&(t+="{"+i+"}")}
+return e.forEach((n,o)=>{n!==e[o-1]?(s(),t+=n,i=1):i++}),s(),t},n=e=>{let t=Array.from(e)
+return i(t)},o=e=>new Set(e).size!==e.length,r=e=>(e+"").replace(/([\$\(\)\*\+\.\?\[\]\^\{\|\}\\])/gu,"\\$1"),l=e=>e.reduce((e,t)=>Math.max(e,a(t)),0),a=e=>Array.from(e).length,c=e=>{if(1===e.length)return[[e]]
+let t=[]
+const i=e.substring(1)
+return c(i).forEach(function(i){let s=i.slice(0)
+s[0]=e.charAt(0)+s[0],t.push(s),s=i.slice(0),s.unshift(e.charAt(0)),t.push(s)}),t},d=[[0,65535]]
+let u,p
+const h={},g={"/":"⁄∕",0:"߀",a:"ⱥɐɑ",aa:"ꜳ",ae:"æǽǣ",ao:"ꜵ",au:"ꜷ",av:"ꜹꜻ",ay:"ꜽ",b:"ƀɓƃ",c:"ꜿƈȼↄ",d:"đɗɖᴅƌꮷԁɦ",e:"ɛǝᴇɇ",f:"ꝼƒ",g:"ǥɠꞡᵹꝿɢ",h:"ħⱨⱶɥ",i:"ɨı",j:"ɉȷ",k:"ƙⱪꝁꝃꝅꞣ",l:"łƚɫⱡꝉꝇꞁɭ",m:"ɱɯϻ",n:"ꞥƞɲꞑᴎлԉ",o:"øǿɔɵꝋꝍᴑ",oe:"œ",oi:"ƣ",oo:"ꝏ",ou:"ȣ",p:"ƥᵽꝑꝓꝕρ",q:"ꝗꝙɋ",r:"ɍɽꝛꞧꞃ",s:"ßȿꞩꞅʂ",t:"ŧƭʈⱦꞇ",th:"þ",tz:"ꜩ",u:"ʉ",v:"ʋꝟʌ",vy:"ꝡ",w:"ⱳ",y:"ƴɏỿ",z:"ƶȥɀⱬꝣ",hv:"ƕ"}
+for(let e in g){let t=g[e]||""
+for(let i=0;i<t.length;i++){let s=t.substring(i,i+1)
+h[s]=e}}const f=new RegExp(Object.keys(h).join("|")+"|[̀-ͯ·ʾʼ]","gu"),m=(e,t="NFKD")=>e.normalize(t),v=e=>Array.from(e).reduce((e,t)=>e+O(t),""),O=e=>(e=m(e).toLowerCase().replace(f,e=>h[e]||""),m(e,"NFC"))
+const b=e=>{const t={},i=(e,i)=>{const s=t[e]||new Set,o=new RegExp("^"+n(s)+"$","iu")
+i.match(o)||(s.add(r(i)),t[e]=s)}
+for(let t of function*(e){for(const[t,i]of e)for(let e=t;e<=i;e++){let t=String.fromCharCode(e),i=v(t)
+i!=t.toLowerCase()&&(i.length>3||0!=i.length&&(yield{folded:i,composed:t,code_point:e}))}}(e))i(t.folded,t.folded),i(t.folded,t.composed)
+return t},y=e=>{const t=b(e),s={}
+let o=[]
+for(let e in t){let i=t[e]
+i&&(s[e]=n(i)),e.length>1&&o.push(r(e))}o.sort((e,t)=>t.length-e.length)
+const l=i(o)
+return p=new RegExp("^"+l,"u"),s},w=(e,t=1)=>(t=Math.max(t,e.length-1),i(c(e).map(e=>((e,t=1)=>{let i=0
+return e=e.map(e=>(u[e]&&(i+=e.length),u[e]||e)),i>=t?s(e):""})(e,t)))),S=(e,t=!0)=>{let n=e.length>1?1:0
+return i(e.map(e=>{let i=[]
+const o=t?e.length():e.length()-1
+for(let t=0;t<o;t++)i.push(w(e.substrs[t]||"",n))
+return s(i)}))},_=(e,t)=>{for(const i of t){if(i.start!=e.start||i.end!=e.end)continue
+if(i.substrs.join("")!==e.substrs.join(""))continue
+let t=e.parts
+const s=e=>{for(const i of t){if(i.start===e.start&&i.substr===e.substr)return!1
+if(1!=e.length&&1!=i.length){if(e.start<i.start&&e.end>i.start)return!0
+if(i.start<e.start&&i.end>e.start)return!0}}return!1}
+if(!(i.parts.filter(s).length>0))return!0}return!1}
+class C{parts
+substrs
+start
+end
+constructor(){this.parts=[],this.substrs=[],this.start=0,this.end=0}add(e){e&&(this.parts.push(e),this.substrs.push(e.substr),this.start=Math.min(e.start,this.start),this.end=Math.max(e.end,this.end))}last(){return this.parts[this.parts.length-1]}length(){return this.parts.length}clone(e,t){let i=new C,s=JSON.parse(JSON.stringify(this.parts)),n=s.pop()
+for(const e of s)i.add(e)
+let o=t.substr.substring(0,e-n.start),r=o.length
+return i.add({start:n.start,end:n.start+r,length:r,substr:o}),i}}const x=e=>{void 0===u&&(u=y(d)),e=v(e)
+let t="",i=[new C]
+for(let s=0;s<e.length;s++){let n=e.substring(s).match(p)
+const o=e.substring(s,s+1),r=n?n[0]:null
+let l=[],a=new Set
+for(const e of i){const t=e.last()
+if(!t||1==t.length||t.end<=s)if(r){const t=r.length
+e.add({start:s,end:s+t,length:t,substr:r}),a.add("1")}else e.add({start:s,end:s+1,length:1,substr:o}),a.add("2")
+else if(r){let i=e.clone(s,t)
+const n=r.length
+i.add({start:s,end:s+n,length:n,substr:r}),l.push(i)}else a.add("3")}if(l.length>0){l=l.sort((e,t)=>e.length()-t.length())
+for(let e of l)_(e,i)||i.push(e)}else if(s>0&&1==a.size&&!a.has("3")){t+=S(i,!1)
+let e=new C
+const s=i[0]
+s&&e.add(s.last()),i=[e]}}return t+=S(i,!0),t},A=(e,t)=>{if(e)return e[t]},I=(e,t)=>{if(e){for(var i,s=t.split(".");(i=s.shift())&&(e=e[i]););return e}},k=(e,t,i)=>{var s,n
+return e?(e+="",null==t.regex||-1===(n=e.search(t.regex))?0:(s=t.string.length/e.length,0===n&&(s+=.5),s*i)):0},F=(e,t)=>{var i=e[t]
+if("function"==typeof i)return i
+i&&!Array.isArray(i)&&(e[t]=[i])},L=(e,t)=>{if(Array.isArray(e))e.forEach(t)
+else for(var i in e)e.hasOwnProperty(i)&&t(e[i],i)},E=(e,t)=>"number"==typeof e&&"number"==typeof t?e>t?1:e<t?-1:0:(e=v(e+"").toLowerCase())>(t=v(t+"").toLowerCase())?1:t>e?-1:0
+class T{items
+settings
+constructor(e,t){this.items=e,this.settings=t||{diacritics:!0}}tokenize(e,t,i){if(!e||!e.length)return[]
+const s=[],n=e.split(/\s+/)
+var o
+return i&&(o=new RegExp("^("+Object.keys(i).map(r).join("|")+"):(.*)$")),n.forEach(e=>{let i,n=null,l=null
+o&&(i=e.match(o))&&(n=i[1],e=i[2]),e.length>0&&(l=this.settings.diacritics?x(e)||null:r(e),l&&t&&(l="\\b"+l)),s.push({string:e,regex:l?new RegExp(l,"iu"):null,field:n})}),s}getScoreFunction(e,t){var i=this.prepareSearch(e,t)
+return this._getScoreFunction(i)}_getScoreFunction(e){const t=e.tokens,i=t.length
+if(!i)return function(){return 0}
+const s=e.options.fields,n=e.weights,o=s.length,r=e.getAttrFn
+if(!o)return function(){return 1}
+const l=1===o?function(e,t){const i=s[0].field
+return k(r(t,i),e,n[i]||1)}:function(e,t){var i=0
+if(e.field){const s=r(t,e.field)
+!e.regex&&s?i+=1/o:i+=k(s,e,1)}else L(n,(s,n)=>{i+=k(r(t,n),e,s)})
+return i/o}
+return 1===i?function(e){return l(t[0],e)}:"and"===e.options.conjunction?function(e){var s,n=0
+for(let i of t){if((s=l(i,e))<=0)return 0
+n+=s}return n/i}:function(e){var s=0
+return L(t,t=>{s+=l(t,e)}),s/i}}getSortFunction(e,t){var i=this.prepareSearch(e,t)
+return this._getSortFunction(i)}_getSortFunction(e){var t,i=[]
+const s=this,n=e.options,o=!e.query&&n.sort_empty?n.sort_empty:n.sort
+if("function"==typeof o)return o.bind(this)
+const r=function(t,i){return"$score"===t?i.score:e.getAttrFn(s.items[i.id],t)}
+if(o)for(let t of o)(e.query||"$score"!==t.field)&&i.push(t)
+if(e.query){t=!0
+for(let e of i)if("$score"===e.field){t=!1
+break}t&&i.unshift({field:"$score",direction:"desc"})}else i=i.filter(e=>"$score"!==e.field)
+return i.length?function(e,t){var s,n
+for(let o of i){if(n=o.field,s=("desc"===o.direction?-1:1)*E(r(n,e),r(n,t)))return s}return 0}:null}prepareSearch(e,t){const i={}
+var s=Object.assign({},t)
+if(F(s,"sort"),F(s,"sort_empty"),s.fields){F(s,"fields")
+const e=[]
+s.fields.forEach(t=>{"string"==typeof t&&(t={field:t,weight:1}),e.push(t),i[t.field]="weight"in t?t.weight:1}),s.fields=e}return{options:s,query:e.toLowerCase().trim(),tokens:this.tokenize(e,s.respect_word_boundaries,i),total:0,items:[],weights:i,getAttrFn:s.nesting?I:A}}search(e,t){var i,s,n=this
+s=this.prepareSearch(e,t),t=s.options,e=s.query
+const o=t.score||n._getScoreFunction(s)
+e.length?L(n.items,(e,n)=>{i=o(e),(!1===t.filter||i>0)&&s.items.push({score:i,id:n})}):L(n.items,(e,t)=>{s.items.push({score:1,id:t})})
+const r=n._getSortFunction(s)
+return r&&s.items.sort(r),s.total=s.items.length,"number"==typeof t.limit&&(s.items=s.items.slice(0,t.limit)),s}}const P=e=>null==e?null:N(e),N=e=>"boolean"==typeof e?e?"1":"0":e+"",D=e=>(e+"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"),V=(e,t)=>{var i
+return function(s,n){var o=this
+i&&(o.loading=Math.max(o.loading-1,0),clearTimeout(i)),i=setTimeout(function(){i=null,o.loadedSearches[s]=!0,e.call(o,s,n)},t)}},j=(e,t,i)=>{var s,n=e.trigger,o={}
+for(s of(e.trigger=function(){var i=arguments[0]
+if(-1===t.indexOf(i))return n.apply(e,arguments)
+o[i]=arguments},i.apply(e,[]),e.trigger=n,t))s in o&&n.apply(e,o[s])},$=(e,t=!1)=>{e&&(e.preventDefault(),t&&e.stopPropagation())},q=(e,t,i,s)=>{e.addEventListener(t,i,s)},R=(e,t)=>!!t&&(!!t[e]&&1===(t.altKey?1:0)+(t.ctrlKey?1:0)+(t.shiftKey?1:0)+(t.metaKey?1:0)),H=(e,t)=>{const i=e.getAttribute("id")
+return i||(e.setAttribute("id",t),t)},M=e=>e.replace(/[\\"']/g,"\\$&"),z=(e,t)=>{t&&e.append(t)},B=(e,t)=>{if(Array.isArray(e))e.forEach(t)
+else for(var i in e)e.hasOwnProperty(i)&&t(e[i],i)},K=e=>{if(e.jquery)return e[0]
+if(e instanceof HTMLElement)return e
+if(G(e)){var t=document.createElement("template")
+return t.innerHTML=e.trim(),t.content.firstChild}return document.querySelector(e)},G=e=>"string"==typeof e&&e.indexOf("<")>-1,U=(e,t)=>{var i=document.createEvent("HTMLEvents")
+i.initEvent(t,!0,!1),e.dispatchEvent(i)},W=(e,t)=>{Object.assign(e.style,t)},Q=(e,...t)=>{var i=X(t);(e=Y(e)).map(e=>{i.map(t=>{e.classList.add(t)})})},J=(e,...t)=>{var i=X(t);(e=Y(e)).map(e=>{i.map(t=>{e.classList.remove(t)})})},X=e=>{var t=[]
+return B(e,e=>{"string"==typeof e&&(e=e.trim().split(/[\t\n\f\r\s]/)),Array.isArray(e)&&(t=t.concat(e))}),t.filter(Boolean)},Y=e=>(Array.isArray(e)||(e=[e]),e),Z=(e,t,i)=>{if(!i||i.contains(e))for(;e&&e.matches;){if(e.matches(t))return e
+e=e.parentNode}},ee=(e,t=0)=>t>0?e[e.length-1]:e[0],te=(e,t)=>{if(!e)return-1
+t=t||e.nodeName
+for(var i=0;e=e.previousElementSibling;)e.matches(t)&&i++
+return i},ie=(e,t)=>{B(t,(t,i)=>{null==t?e.removeAttribute(i):e.setAttribute(i,""+t)})},se=(e,t)=>{e.parentNode&&e.parentNode.replaceChild(t,e)},ne=(e,t)=>{if(null===t)return
+if("string"==typeof t){if(!t.length)return
+t=new RegExp(t,"i")}const i=e=>3===e.nodeType?(e=>{var i=e.data.match(t)
+if(i&&e.data.length>0){var s=document.createElement("span")
+s.className="highlight"
+var n=e.splitText(i.index)
+n.splitText(i[0].length)
+var o=n.cloneNode(!0)
+return s.appendChild(o),se(n,s),1}return 0})(e):((e=>{1!==e.nodeType||!e.childNodes||/(script|style)/i.test(e.tagName)||"highlight"===e.className&&"SPAN"===e.tagName||Array.from(e.childNodes).forEach(e=>{i(e)})})(e),0)
+i(e)},oe="undefined"!=typeof navigator&&/Mac/.test(navigator.userAgent)?"metaKey":"ctrlKey"
+var re={options:[],optgroups:[],plugins:[],delimiter:",",splitOn:null,persist:!0,diacritics:!0,create:null,createOnBlur:!1,createFilter:null,clearAfterSelect:!1,highlight:!0,openOnFocus:!0,shouldOpen:null,maxOptions:50,maxItems:null,hideSelected:null,duplicates:!1,addPrecedence:!1,selectOnTab:!1,preload:null,allowEmptyOption:!1,refreshThrottle:300,loadThrottle:300,loadingClass:"loading",dataAttr:null,optgroupField:"optgroup",valueField:"value",labelField:"text",disabledField:"disabled",optgroupLabelField:"label",optgroupValueField:"value",lockOptgroupOrder:!1,sortField:"$order",searchField:["text"],searchConjunction:"and",mode:null,wrapperClass:"ts-wrapper",controlClass:"ts-control",dropdownClass:"ts-dropdown",dropdownContentClass:"ts-dropdown-content",itemClass:"item",optionClass:"option",dropdownParent:null,controlInput:'<input type="text" autocomplete="off" size="1" />',copyClassesToDropdown:!1,placeholder:null,hidePlaceholder:null,shouldLoad:function(e){return e.length>0},render:{}}
+function le(e,t){var i=Object.assign({},re,t),s=i.dataAttr,n=i.labelField,o=i.valueField,r=i.disabledField,l=i.optgroupField,a=i.optgroupLabelField,c=i.optgroupValueField,d=e.tagName.toLowerCase(),u=e.getAttribute("placeholder")||e.getAttribute("data-placeholder")
+if(!u&&!i.allowEmptyOption){let t=e.querySelector('option[value=""]')
+t&&(u=t.textContent)}var p={placeholder:u,options:[],optgroups:[],items:[],maxItems:null}
+return"select"===d?(()=>{var t,d=p.options,u={},h=1
+let g=0
+var f=e=>{var t=Object.assign({},e.dataset),i=s&&t[s]
+return"string"==typeof i&&i.length&&(t=Object.assign(t,JSON.parse(i))),t},m=(e,t)=>{var s=P(e.value)
+if(null!=s&&(s||i.allowEmptyOption)){if(u.hasOwnProperty(s)){if(t){var a=u[s][l]
+a?Array.isArray(a)?a.push(t):u[s][l]=[a,t]:u[s][l]=t}}else{var c=f(e)
+c[n]=c[n]||e.textContent,c[o]=c[o]||s,c[r]=c[r]||e.disabled,c[l]=c[l]||t,c.$option=e,c.$order=c.$order||++g,u[s]=c,d.push(c)}e.selected&&p.items.push(s)}}
+p.maxItems=e.hasAttribute("multiple")?null:1,B(e.children,e=>{var i,s,n
+"optgroup"===(t=e.tagName.toLowerCase())?((n=f(i=e))[a]=n[a]||i.getAttribute("label")||"",n[c]=n[c]||h++,n[r]=n[r]||i.disabled,n.$order=n.$order||++g,p.optgroups.push(n),s=n[c],B(i.children,e=>{m(e,s)})):"option"===t&&m(e)})})():(()=>{const t=e.getAttribute(s)
+if(t)p.options=JSON.parse(t),B(p.options,e=>{p.items.push(e[o])})
+else{var r,l,a=null!=(r=null==e||null==(l=e.value)?void 0:l.trim())?r:""
+if(!i.allowEmptyOption&&!a.length)return
+const t=a.split(i.delimiter)
+B(t,e=>{const t={}
+t[n]=e,t[o]=e,p.options.push(t)}),p.items=t}})(),Object.assign({},re,p,t)}var ae=0
+class ce extends(function(e){return e.plugins={},class extends e{constructor(...e){super(...e),this.plugins={names:[],settings:{},requested:{},loaded:{}}}static define(t,i){e.plugins[t]={name:t,fn:i}}initializePlugins(e){var t,i
+const s=this,n=[]
+if(Array.isArray(e))e.forEach(e=>{"string"==typeof e?n.push(e):(s.plugins.settings[e.name]=e.options,n.push(e.name))})
+else if(e)for(t in e)e.hasOwnProperty(t)&&(s.plugins.settings[t]=e[t],n.push(t))
+for(;i=n.shift();)s.require(i)}loadPlugin(t){var i=this,s=i.plugins,n=e.plugins[t]
+if(!e.plugins.hasOwnProperty(t))throw new Error('Unable to find "'+t+'" plugin')
+s.requested[t]=!0,s.loaded[t]=n.fn.apply(i,[i.plugins.settings[t]||{}]),s.names.push(t)}require(e){var t=this,i=t.plugins
+if(!t.plugins.loaded.hasOwnProperty(e)){if(i.requested[e])throw new Error('Plugin has circular dependency ("'+e+'")')
+t.loadPlugin(e)}return i.loaded[e]}}}(t)){constructor(e,t){var i
+super(),this.order=0,this.isOpen=!1,this.isDisabled=!1,this.isReadOnly=!1,this.isInvalid=!1,this.isValid=!0,this.isLocked=!1,this.isFocused=!1,this.isInputHidden=!1,this.isSetup=!1,this.isDropdownContentStale=!0,this.ignoreFocus=!1,this.ignoreHover=!1,this.hasOptions=!1,this.lastValue="",this.caretPos=0,this.loading=0,this.loadedSearches={},this.activeOption=null,this.activeItems=[],this.optgroups={},this.options={},this.userOptions={},this.items=[],this.refreshTimeout=null,ae++
+var s=K(e)
+if(s.tomselect)throw new Error("Tom Select already initialized on this element")
+s.tomselect=this,i=(window.getComputedStyle&&window.getComputedStyle(s,null)).getPropertyValue("direction")
+const n=le(s,t)
+this.settings=n,this.input=s,this.tabIndex=s.tabIndex||0,this.is_select_tag="select"===s.tagName.toLowerCase(),this.rtl=/rtl/i.test(i),this.inputId=H(s,"tomselect-"+ae),this.isRequired=s.required,this.sifter=new T(this.options,{diacritics:n.diacritics}),n.mode=n.mode||(1===n.maxItems?"single":"multi"),"boolean"!=typeof n.hideSelected&&(n.hideSelected="multi"===n.mode),"boolean"!=typeof n.hidePlaceholder&&(n.hidePlaceholder="multi"!==n.mode)
+var o=n.createFilter
+"function"!=typeof o&&("string"==typeof o&&(o=new RegExp(o)),o instanceof RegExp?n.createFilter=e=>o.test(e):n.createFilter=e=>this.settings.duplicates||!this.options[e]),this.initializePlugins(n.plugins),this.setupCallbacks(),this.setupTemplates()
+const r=K("<div>"),l=K("<div>"),a=this._render("dropdown"),c=K('<div role="listbox" tabindex="-1">'),d=this.input.getAttribute("class")||"",u=n.mode
+var p
+if(Q(r,n.wrapperClass,d,u),Q(l,n.controlClass),z(r,l),Q(a,n.dropdownClass,u),n.copyClassesToDropdown&&Q(a,d),Q(c,n.dropdownContentClass),z(a,c),K(n.dropdownParent||r).appendChild(a),G(n.controlInput)){p=K(n.controlInput)
+B(["autocorrect","autocapitalize","autocomplete","spellcheck","aria-label"],e=>{s.getAttribute(e)&&ie(p,{[e]:s.getAttribute(e)})}),p.tabIndex=-1,l.appendChild(p),this.focus_node=p}else n.controlInput?(p=K(n.controlInput),this.focus_node=p):(p=K("<input/>"),this.focus_node=l)
+this.wrapper=r,this.dropdown=a,this.dropdown_content=c,this.control=l,this.control_input=p,this.setup()}setup(){const e=this,t=e.settings,i=e.control_input,s=e.dropdown,n=e.dropdown_content,o=e.wrapper,l=e.control,a=e.input,c=e.focus_node,d={passive:!0},u=e.inputId+"-ts-dropdown"
+ie(n,{id:u}),ie(c,{role:"combobox","aria-haspopup":"listbox","aria-expanded":"false","aria-controls":u})
+const p=H(c,e.inputId+"-ts-control"),h="label[for='"+(e=>e.replace(/['"\\]/g,"\\$&"))(e.inputId)+"']",g=document.querySelector(h),f=e.focus.bind(e)
+if(g){q(g,"click",f),ie(g,{for:p})
+const t=H(g,e.inputId+"-ts-label")
+ie(c,{"aria-labelledby":t}),ie(n,{"aria-labelledby":t})}if(o.style.width=a.style.width,o.style.minWidth=a.style.minWidth,o.style.maxWidth=a.style.maxWidth,e.plugins.names.length){const t="plugin-"+e.plugins.names.join(" plugin-")
+Q([o,s],t)}(null===t.maxItems||t.maxItems>1)&&e.is_select_tag&&ie(a,{multiple:"multiple"}),t.placeholder&&ie(i,{placeholder:t.placeholder}),!t.splitOn&&t.delimiter&&(t.splitOn=new RegExp("\\s*"+r(t.delimiter)+"+\\s*")),t.load&&t.loadThrottle&&(t.load=V(t.load,t.loadThrottle)),q(s,"mousemove",()=>{e.ignoreHover=!1}),q(s,"mouseenter",t=>{var i=Z(t.target,"[data-selectable]",s)
+i&&e.onOptionHover(t,i)},{capture:!0}),q(s,"click",t=>{const i=Z(t.target,"[data-selectable]")
+i&&(e.onOptionSelect(t,i),$(t,!0))}),q(l,"click",t=>{var s=Z(t.target,"[data-ts-item]",l)
+s&&e.onItemSelect(t,s)?$(t,!0):""==i.value&&(e.onClick(),$(t,!0))}),q(c,"keydown",t=>e.onKeyDown(t)),q(i,"keypress",t=>e.onKeyPress(t)),q(i,"input",t=>e.onInput(t)),q(c,"blur",t=>e.onBlur(t)),q(c,"focus",t=>e.onFocus(t)),q(i,"paste",t=>e.onPaste(t))
+const m=t=>{const n=t.composedPath()[0]
+if(!o.contains(n)&&!s.contains(n))return e.isFocused&&e.blur(),void e.inputState()
+n==i&&e.isOpen?t.stopPropagation():$(t,!0)},v=()=>{e.isOpen&&e.positionDropdown()},O=()=>{e.isValid&&(e.isValid=!1,e.isInvalid=!0,e.refreshState())}
+q(a,"invalid",O),q(document,"mousedown",m),q(window,"scroll",v,d),q(window,"resize",v,d),this._destroy=()=>{a.removeEventListener("invalid",O),document.removeEventListener("mousedown",m),window.removeEventListener("scroll",v),window.removeEventListener("resize",v),g&&g.removeEventListener("click",f)},this.revertSettings={innerHTML:a.innerHTML,tabIndex:a.tabIndex},a.tabIndex=-1,a.insertAdjacentElement("afterend",e.wrapper),e.sync(!1),t.items=[],delete t.optgroups,delete t.options,e.refreshItems(),e.close(!1),e.inputState(),e.isSetup=!0,e.on("change",this.onChange),Q(a,"tomselected","ts-hidden-accessible"),e.trigger("initialize"),!0===t.preload&&e.preload()}setupOptions(e=[],t=[]){this.addOptions(e),B(t,e=>{this.registerOptionGroup(e)})}setupTemplates(){var e=this,t=e.settings.labelField,i=e.settings.optgroupLabelField,s={optgroup:e=>{let t=document.createElement("div")
+return t.className="optgroup",t.appendChild(e.options),t},optgroup_header:(e,t)=>'<div class="optgroup-header">'+t(e[i])+"</div>",option:(e,i)=>"<div>"+i(e[t])+"</div>",item:(e,i)=>"<div>"+i(e[t])+"</div>",option_create:(e,t)=>'<div class="create">Add <strong>'+t(e.input)+"</strong>&hellip;</div>",no_results:()=>'<div class="no-results">No results found</div>',loading:()=>'<div class="spinner"></div>',not_loading:()=>{},dropdown:()=>"<div></div>"}
+e.settings.render=Object.assign({},s,e.settings.render)}setupCallbacks(){var e,t,i={initialize:"onInitialize",change:"onChange",item_add:"onItemAdd",item_remove:"onItemRemove",item_select:"onItemSelect",clear:"onClear",option_add:"onOptionAdd",option_remove:"onOptionRemove",option_clear:"onOptionClear",optgroup_add:"onOptionGroupAdd",optgroup_remove:"onOptionGroupRemove",optgroup_clear:"onOptionGroupClear",dropdown_open:"onDropdownOpen",dropdown_close:"onDropdownClose",type:"onType",load:"onLoad",focus:"onFocus",blur:"onBlur"}
+for(e in i)(t=this.settings[i[e]])&&this.on(e,t)}sync(e=!0){const t=this,i=e?le(t.input,{delimiter:t.settings.delimiter,allowEmptyOption:t.settings.allowEmptyOption}):t.settings
+t.setupOptions(i.options,i.optgroups),t.setValue(i.items||[],!0),t.input.disabled?t.disable():t.input.readOnly?t.setReadOnly(!0):t.enable(),t.lastQuery=null}onClick(){var e=this
+if(e.activeItems.length>0)return e.clearActiveItems(),void e.focus()
+e.isFocused&&e.isOpen?e.blur():e.focus()}onMouseDown(){}onChange(){U(this.input,"input"),U(this.input,"change")}onPaste(e){var t=this
+t.isInputHidden||t.isLocked?$(e):t.settings.splitOn&&setTimeout(()=>{var e=t.inputValue()
+if(e.match(t.settings.splitOn)){var i=e.trim().split(t.settings.splitOn)
+B(i,e=>{P(e)&&(this.options[e]?t.addItem(e):t.createItem(e))})}},0)}onKeyPress(e){var t=this
+if(!t.isLocked){var i=String.fromCharCode(e.keyCode||e.which)
+return t.settings.create&&"multi"===t.settings.mode&&i===t.settings.delimiter?(t.createItem(),void $(e)):void 0}$(e)}onKeyDown(e){var t=this
+if(t.ignoreHover=!0,t.isLocked)9!==e.keyCode&&$(e)
+else{switch(e.keyCode){case 65:if(R(oe,e)&&""==t.control_input.value)return $(e),void t.selectAll()
+break
+case 27:return t.isOpen&&($(e,!0),t.close()),void t.clearActiveItems()
+case 40:if(!t.isOpen&&t.hasOptions)t.open()
+else if(t.activeOption){let e=t.getAdjacent(t.activeOption,1)
+e&&t.setActiveOption(e)}return void $(e)
+case 38:if(t.activeOption){let e=t.getAdjacent(t.activeOption,-1)
+e&&t.setActiveOption(e)}return void $(e)
+case 13:return void(t.canSelect(t.activeOption)?(t.onOptionSelect(e,t.activeOption),$(e)):(t.settings.create&&t.createItem()||document.activeElement==t.control_input&&t.isOpen)&&$(e))
+case 37:return void t.advanceSelection(-1,e)
+case 39:return void t.advanceSelection(1,e)
+case 9:return void(t.settings.selectOnTab&&(t.canSelect(t.activeOption)?(t.onOptionSelect(e,t.activeOption),$(e)):t.settings.create&&t.createItem()&&$(e)))
+case 8:case 46:return void t.deleteSelection(e)}t.isInputHidden&&!R(oe,e)&&$(e)}}onInput(e){if(this.isLocked)return
+const t=this.inputValue()
+this.lastValue!==t&&(this.lastValue=t,""!=t?(this.refreshTimeout&&window.clearTimeout(this.refreshTimeout),this.refreshTimeout=((e,t)=>t>0?window.setTimeout(e,t):(e.call(null),null))(()=>{this.refreshTimeout=null,this._onInput()},this.settings.refreshThrottle)):this._onInput())}_onInput(){const e=this.lastValue
+this.settings.shouldLoad.call(this,e)&&this.load(e),this.refreshOptions(),this.trigger("type",e)}onOptionHover(e,t){this.ignoreHover||this.setActiveOption(t,!1)}onFocus(e){var t=this,i=t.isFocused
+if(t.isDisabled||t.isReadOnly)return t.blur(),void $(e)
+t.ignoreFocus||(t.isFocused=!0,"focus"===t.settings.preload&&t.preload(),i||t.trigger("focus"),t.activeItems.length||(t.inputState(),t.refreshOptions(!!t.settings.openOnFocus)),t.refreshState())}onBlur(e){if(!1!==document.hasFocus()){var t=this
+if(t.isFocused){t.isFocused=!1,t.ignoreFocus=!1
+var i=()=>{t.close(),t.setActiveItem(),t.setCaret(t.items.length),t.trigger("blur")}
+t.settings.create&&t.settings.createOnBlur?t.createItem(null,i):i()}}}onOptionSelect(e,t){var i,s=this
+t.parentElement&&t.parentElement.matches("[data-disabled]")||(t.classList.contains("create")?s.createItem(null,()=>{s.settings.closeAfterSelect?s.close():s.settings.clearAfterSelect&&s.setTextboxValue()}):void 0!==(i=t.dataset.value)&&(s.isDropdownContentStale=s.settings.hideSelected,s.addItem(i),s.settings.closeAfterSelect?s.close():s.settings.clearAfterSelect&&s.setTextboxValue(),!s.settings.hideSelected&&e.type&&/click/.test(e.type)&&s.setActiveOption(t)))}canSelect(e){return!!(this.isOpen&&e&&this.dropdown_content.contains(e))}onItemSelect(e,t){var i=this
+return!i.isLocked&&"multi"===i.settings.mode&&($(e),i.setActiveItem(t,e),!0)}canLoad(e){return!!this.settings.load&&!this.loadedSearches.hasOwnProperty(e)}load(e){const t=this
+if(!t.canLoad(e))return
+Q(t.wrapper,t.settings.loadingClass),t.loading++
+const i=t.loadCallback.bind(t)
+t.settings.load.call(t,e,i)}loadCallback(e,t){const i=this
+i.loading=Math.max(i.loading-1,0),i.isDropdownContentStale=!0,i.clearActiveOption(),i.setupOptions(e,t),i.refreshOptions(i.isFocused&&!i.isInputHidden),i.loading||J(i.wrapper,i.settings.loadingClass),i.trigger("load",e,t)}preload(){var e=this.wrapper.classList
+e.contains("preloaded")||(e.add("preloaded"),this.load(""))}setTextboxValue(e=""){var t=this.control_input
+t.value!==e&&(t.value=e,U(t,"update"),this.lastValue=e)}getValue(){return this.is_select_tag&&this.input.hasAttribute("multiple")?this.items:this.items.join(this.settings.delimiter)}setValue(e,t){j(this,t?[]:["change"],()=>{this.clear(t),this.addItems(e,t)})}setMaxItems(e){0===e&&(e=null),this.settings.maxItems=e,this.refreshState()}setActiveItem(e,t){var i,s,n,o,r,l,a=this
+if("single"!==a.settings.mode){if(!e)return a.clearActiveItems(),void(a.isFocused&&a.inputState())
+if("click"===(i=t&&t.type.toLowerCase())&&R("shiftKey",t)&&a.activeItems.length){for(l=a.getLastActive(),(n=Array.prototype.indexOf.call(a.control.children,l))>(o=Array.prototype.indexOf.call(a.control.children,e))&&(r=n,n=o,o=r),s=n;s<=o;s++)e=a.control.children[s],-1===a.activeItems.indexOf(e)&&a.setActiveItemClass(e)
+$(t)}else"click"===i&&R(oe,t)||"keydown"===i&&R("shiftKey",t)?e.classList.contains("active")?a.removeActiveItem(e):a.setActiveItemClass(e):(a.clearActiveItems(),a.setActiveItemClass(e))
+a.inputState(),a.isFocused||a.focus()}}setActiveItemClass(e){const t=this,i=t.control.querySelector(".last-active")
+i&&J(i,"last-active"),Q(e,"active last-active"),t.trigger("item_select",e),-1==t.activeItems.indexOf(e)&&t.activeItems.push(e)}removeActiveItem(e){var t=this.activeItems.indexOf(e)
+this.activeItems.splice(t,1),J(e,"active")}clearActiveItems(){J(this.activeItems,"active"),this.activeItems=[]}setActiveOption(e,t=!0){e!==this.activeOption&&(this.clearActiveOption(),e&&(this.activeOption=e,ie(this.focus_node,{"aria-activedescendant":e.getAttribute("id")}),ie(e,{"aria-selected":"true"}),Q(e,"active"),t&&this.scrollToOption(e)))}scrollToOption(e,t){if(!e)return
+const i=this.dropdown_content,s=i.clientHeight,n=i.scrollTop||0,o=e.offsetHeight,r=e.getBoundingClientRect().top-i.getBoundingClientRect().top+n
+r+o>s+n?this.scroll(r-s+o,t):r<n&&this.scroll(r,t)}scroll(e,t){const i=this.dropdown_content
+t&&(i.style.scrollBehavior=t),i.scrollTop=e,i.style.scrollBehavior=""}clearActiveOption(){this.activeOption&&(J(this.activeOption,"active"),ie(this.activeOption,{"aria-selected":null})),this.activeOption=null,ie(this.focus_node,{"aria-activedescendant":null})}selectAll(){const e=this
+if("single"===e.settings.mode)return
+const t=e.controlChildren()
+t.length&&(e.inputState(),e.close(),e.activeItems=t,B(t,t=>{e.setActiveItemClass(t)}))}inputState(){var e=this
+e.control.contains(e.control_input)&&(ie(e.control_input,{placeholder:e.settings.placeholder}),e.activeItems.length>0||!e.isFocused&&e.settings.hidePlaceholder&&e.items.length>0?(e.setTextboxValue(),e.isInputHidden=!0):(e.settings.hidePlaceholder&&e.items.length>0&&ie(e.control_input,{placeholder:""}),e.isInputHidden=!1),e.wrapper.classList.toggle("input-hidden",e.isInputHidden))}inputValue(){return this.control_input.value.trim()}focus(){var e=this
+if(e.isDisabled||e.isReadOnly)return
+e.ignoreFocus=!0
+const t=this.control_input.offsetWidth?this.control_input:this.focus_node
+t.focus(),setTimeout(()=>{e.ignoreFocus=!1
+t.getRootNode().activeElement===t&&this.onFocus()},0)}blur(){this.focus_node.blur(),this.onBlur()}getScoreFunction(e){return this.sifter.getScoreFunction(e,this.getSearchOptions())}getSearchOptions(){var e=this.settings,t=e.sortField
+return"string"==typeof e.sortField&&(t=[{field:e.sortField}]),{fields:e.searchField,conjunction:e.searchConjunction,sort:t,nesting:e.nesting}}search(e){var t,i,s=this,n=this.getSearchOptions()
+if(s.settings.score&&"function"!=typeof(i=s.settings.score.call(s,e)))throw new Error('Tom Select "score" setting must be a function that returns a function')
+return s.isDropdownContentStale||e!==s.lastQuery?(s.lastQuery=e,/(.)\1{15,}/.test(e)&&(e=""),t=s.sifter.search(e,Object.assign(n,{score:i})),s.currentResults=t):t=Object.assign({},s.currentResults),s.settings.hideSelected&&(t.items=t.items.filter(e=>{let t=P(e.id)
+return!(null!==t&&-1!==s.items.indexOf(t))})),t}refreshOptions(e=!0){var t,i,s,n,o,r,l,a,c,d
+const u={},p=[]
+var h=this,g=h.inputValue()
+const f=g===h.lastQuery||""==g&&null==h.lastQuery
+var m=h.search(g),v=null,O=h.settings.shouldOpen||!1,b=h.dropdown_content
+f&&(v=h.activeOption)&&(c=v.closest("[data-group]")),n=m.items.length,"number"==typeof h.settings.maxOptions&&(n=Math.min(n,h.settings.maxOptions)),n>0&&(O=!0)
+const y=(e,t)=>{let i=u[e]
+if(void 0!==i){let e=p[i]
+if(void 0!==e)return[i,e.fragment]}let s=document.createDocumentFragment()
+return i=p.length,p.push({fragment:s,order:t,optgroup:e}),[i,s]}
+for(t=0;t<n;t++){let e=m.items[t]
+if(!e)continue
+let n=e.id,l=h.options[n]
+if(void 0===l)continue
+let a=N(n),d=h.getOption(a,!0)
+for(h.settings.hideSelected||d.classList.toggle("selected",h.items.includes(a)),o=l[h.settings.optgroupField]||"",i=0,s=(r=Array.isArray(o)?o:[o])&&r.length;i<s;i++){o=r[i]
+let e=l.$order,t=h.optgroups[o]
+var w
+if(void 0===t&&"function"==typeof h.settings.optionGroupRegister)(w=h.settings.optionGroupRegister.apply(h,[o]))&&h.registerOptionGroup(w)
+t=h.optgroups[o],void 0===t?o="":e=t.$order
+const[s,a]=y(o,e)
+i>0&&(d=d.cloneNode(!0),ie(d,{id:l.$id+"-clone-"+i,"aria-selected":null}),d.classList.add("ts-cloned"),J(d,"active"),h.activeOption&&h.activeOption.dataset.value==n&&c&&c.dataset.group===o.toString()&&(v=d)),a.appendChild(d),""!=o&&(u[o]=s)}}var S
+h.settings.lockOptgroupOrder&&p.sort((e,t)=>e.order-t.order),l=document.createDocumentFragment(),B(p,e=>{let t=e.fragment,i=e.optgroup
+if(!t||!t.children.length)return
+let s=h.optgroups[i]
+if(void 0!==s){let e=document.createDocumentFragment(),i=h.render("optgroup_header",s)
+z(e,i),z(e,t)
+let n=h.render("optgroup",{group:s,options:e})
+z(l,n)}else z(l,t)}),b.innerHTML="",z(b,l),h.isDropdownContentStale=!1,h.settings.highlight&&(S=b.querySelectorAll("span.highlight"),Array.prototype.forEach.call(S,function(e){var t=e.parentNode
+t.replaceChild(e.firstChild,e),t.normalize()}),m.query.length&&m.tokens.length&&B(m.tokens,e=>{ne(b,e.regex)}))
+var _=e=>{let t=h.render(e,{input:g})
+return t&&(O=!0,b.insertBefore(t,b.firstChild)),t}
+if(h.loading?_("loading"):h.settings.shouldLoad.call(h,g)?0===m.items.length&&_("no_results"):_("not_loading"),(a=h.canCreate(g))&&(d=_("option_create")),h.hasOptions=m.items.length>0||a,O){if(m.items.length>0){if(v||"single"!==h.settings.mode||null==h.items[0]||(v=h.getOption(h.items[0])),!b.contains(v)){let e=0
+d&&!h.settings.addPrecedence&&(e=1),v=h.selectable()[e]}}else d&&(v=d)
+e&&!h.isOpen&&(h.open(),h.scrollToOption(v,"auto")),h.setActiveOption(v)}else h.clearActiveOption(),e&&h.isOpen&&h.close(!1)}selectable(){return this.dropdown_content.querySelectorAll("[data-selectable]")}addOption(e,t=!1){const i=this
+if(Array.isArray(e))return i.addOptions(e,t),!1
+const s=P(e[i.settings.valueField])
+return null===s||i.options.hasOwnProperty(s)?(i.updateOption(e[i.settings.valueField],e),!1):(e.$order=e.$order||++i.order,e.$id=i.inputId+"-opt-"+e.$order,i.options[s]=e,i.isDropdownContentStale=!0,t&&(i.userOptions[s]=t,i.trigger("option_add",s,e)),s)}addOptions(e,t=!1){B(e,e=>{this.addOption(e,t)})}registerOption(e){return this.addOption(e)}registerOptionGroup(e){var t=P(e[this.settings.optgroupValueField])
+return null!==t&&(e.$order=e.$order||++this.order,this.optgroups[t]=e,t)}addOptionGroup(e,t){var i
+t[this.settings.optgroupValueField]=e,(i=this.registerOptionGroup(t))&&this.trigger("optgroup_add",i,t)}removeOptionGroup(e){this.optgroups.hasOwnProperty(e)&&(delete this.optgroups[e],this.clearCache(),this.trigger("optgroup_remove",e))}clearOptionGroups(){this.optgroups={},this.clearCache(),this.trigger("optgroup_clear")}updateOption(e,t){const i=this
+var s,n
+const o=P(e),r=P(t[i.settings.valueField])
+if(null===o)return
+const l=i.options[o]
+if(null==l)return
+if("string"!=typeof r)throw new Error("Value must be set in option data")
+const a=i.getOption(o),c=i.getItem(o)
+if(t.$order=t.$order||l.$order,delete i.options[o],i.uncacheValue(r),i.options[r]=t,a){if(i.dropdown_content.contains(a)){const e=i._render("option",t)
+se(a,e),i.activeOption===a&&i.setActiveOption(e)}a.remove()}c&&(-1!==(n=i.items.indexOf(o))&&i.items.splice(n,1,r),s=i._render("item",t),c.classList.contains("active")&&Q(s,"active"),se(c,s)),i.isDropdownContentStale=!0}removeOption(e,t){const i=this
+e=N(e),i.uncacheValue(e),delete i.userOptions[e],delete i.options[e],i.isDropdownContentStale=!0,i.trigger("option_remove",e),i.removeItem(e,t)}clearOptions(e){const t=(e||this.clearFilter).bind(this)
+this.loadedSearches={},this.userOptions={},this.clearCache()
+const i={}
+B(this.options,(e,s)=>{t(e,s)&&(i[s]=e)}),this.options=this.sifter.items=i,this.isDropdownContentStale=!0,this.trigger("option_clear")}clearFilter(e,t){return this.items.indexOf(t)>=0}getOption(e,t=!1){const i=P(e)
+if(null===i)return null
+const s=this.options[i]
+if(null!=s){if(s.$div)return s.$div
+if(t)return this._render("option",s)}return null}getAdjacent(e,t,i="option"){var s
+if(!e)return null
+s="item"==i?this.controlChildren():this.dropdown_content.querySelectorAll("[data-selectable]")
+for(let i=0;i<s.length;i++)if(s[i]==e)return t>0?s[i+1]:s[i-1]
+return null}getItem(e){if("object"==typeof e)return e
+var t=P(e)
+return null!==t?this.control.querySelector(`[data-value="${M(t)}"]`):null}addItems(e,t){var i=this,s=Array.isArray(e)?e:[e]
+const n=(s=s.filter(e=>-1===i.items.indexOf(e)))[s.length-1]
+s.forEach(e=>{i.isPending=e!==n,i.addItem(e,t)})}addItem(e,t){j(this,t?[]:["change","dropdown_close"],()=>{var i,s
+const n=this,o=n.settings.mode,r=P(e)
+if((!r||-1===n.items.indexOf(r)||("single"===o&&n.close(),"single"!==o&&n.settings.duplicates))&&null!==r&&n.options.hasOwnProperty(r)&&("single"===o&&n.clear(t),"multi"!==o||!n.isFull())){if(i=n._render("item",n.options[r]),n.control.contains(i)&&(i=i.cloneNode(!0)),s=n.isFull(),n.items.splice(n.caretPos,0,r),n.insertAtCaret(i),n.isSetup){if(!n.isPending&&n.settings.hideSelected){let e=n.getOption(r),t=n.getAdjacent(e,1)
+t&&n.setActiveOption(t)}n.settings.clearAfterSelect&&n.setTextboxValue(),n.isPending||n.settings.closeAfterSelect||n.refreshOptions(n.isFocused&&"single"!==o),0!=n.settings.closeAfterSelect&&n.isFull()?n.close():n.isPending||n.positionDropdown(),n.trigger("item_add",r,i),n.isPending||n.updateOriginalInput({silent:t})}(!n.isPending||!s&&n.isFull())&&(n.inputState(),n.refreshState())}})}removeItem(e=null,t){const i=this
+if(!(e=i.getItem(e)))return
+var s,n
+const o=e.dataset.value
+s=te(e),e.remove(),e.classList.contains("active")&&(n=i.activeItems.indexOf(e),i.activeItems.splice(n,1),J(e,"active")),i.items.splice(s,1),i.isDropdownContentStale=!0,!i.settings.persist&&i.userOptions.hasOwnProperty(o)&&i.removeOption(o,t),s<i.caretPos&&i.setCaret(i.caretPos-1),i.updateOriginalInput({silent:t}),i.refreshState(),i.positionDropdown(),i.trigger("item_remove",o,e)}createItem(e=null,t=()=>{}){3===arguments.length&&(t=arguments[2]),"function"!=typeof t&&(t=()=>{})
+var i,s=this,n=s.caretPos
+if(e=e||s.inputValue(),!s.canCreate(e)){return P(e)&&this.options[e]&&s.addItem(e),t(),!1}s.lock()
+var o=!1,r=e=>{if(s.unlock(),!e||"object"!=typeof e)return t()
+var i=P(e[s.settings.valueField])
+if("string"!=typeof i)return t()
+s.setTextboxValue(),s.addOption(e,!0),s.setCaret(n),s.addItem(i),t(e),o=!0}
+return i="function"==typeof s.settings.create?s.settings.create.call(this,e,r):{[s.settings.labelField]:e,[s.settings.valueField]:e},o||r(i),!0}refreshItems(){var e=this
+e.isDropdownContentStale=!0,e.isSetup&&e.addItems(e.items),e.updateOriginalInput(),e.refreshState()}refreshState(){const e=this
+e.refreshValidityState()
+const t=e.isFull(),i=e.isLocked
+e.wrapper.classList.toggle("rtl",e.rtl)
+const s=e.wrapper.classList
+var n
+s.toggle("focus",e.isFocused),s.toggle("disabled",e.isDisabled),s.toggle("readonly",e.isReadOnly),s.toggle("required",e.isRequired),s.toggle("invalid",!e.isValid),s.toggle("locked",i),s.toggle("full",t),s.toggle("input-active",e.isFocused&&!e.isInputHidden),s.toggle("dropdown-active",e.isOpen),s.toggle("has-options",(n=e.options,0===Object.keys(n).length)),s.toggle("has-items",e.items.length>0)}refreshValidityState(){var e=this
+e.input.validity&&(e.isValid=e.input.validity.valid,e.isInvalid=!e.isValid)}isFull(){return null!==this.settings.maxItems&&this.items.length>=this.settings.maxItems}updateOriginalInput(e={}){const t=this
+var i,s
+const n=t.input.querySelector('option[value=""]')
+if(t.is_select_tag){const o=[],r=t.input.querySelectorAll("option:checked").length
+function l(e,i,s){return e||(e=K('<option value="'+D(i)+'">'+D(s)+"</option>")),e!=n&&t.input.append(e),o.push(e),(e!=n||r>0||"multi"==t.settings.mode)&&(e.selected=!0),e}t.input.querySelectorAll("option:checked").forEach(e=>{e.selected=!1}),0==t.items.length&&"single"==t.settings.mode?l(n,"",""):t.items.forEach(e=>{if(i=t.options[e],s=i[t.settings.labelField]||"",o.includes(i.$option)){l(t.input.querySelector(`option[value="${M(e)}"]:not(:checked)`),e,s)}else i.$option=l(i.$option,e,s)})}else t.input.value=t.getValue()
+t.isSetup&&(e.silent||t.trigger("change",t.getValue()))}open(){var e=this
+e.isLocked||e.isOpen||"multi"===e.settings.mode&&e.isFull()||(e.isOpen=!0,ie(e.focus_node,{"aria-expanded":"true"}),e.refreshState(),W(e.dropdown,{visibility:"hidden",display:"block"}),e.positionDropdown(),W(e.dropdown,{visibility:"visible",display:"block"}),e.focus(),e.trigger("dropdown_open",e.dropdown))}close(e=!0){var t=this,i=t.isOpen
+e&&(t.setTextboxValue(),"single"===t.settings.mode&&t.items.length&&t.inputState()),t.isOpen=!1,ie(t.focus_node,{"aria-expanded":"false"}),W(t.dropdown,{display:"none"}),t.settings.hideSelected&&t.clearActiveOption(),t.refreshState(),i&&t.trigger("dropdown_close",t.dropdown)}positionDropdown(){if("body"===this.settings.dropdownParent){var e=this.control,t=e.getBoundingClientRect(),i=e.offsetHeight+t.top+window.scrollY,s=t.left+window.scrollX
+W(this.dropdown,{width:t.width+"px",top:i+"px",left:s+"px"})}}clear(e){var t=this
+if(t.items.length){var i=t.controlChildren()
+B(i,e=>{t.removeItem(e,!0)}),t.inputState(),e||t.updateOriginalInput(),t.trigger("clear")}}insertAtCaret(e){const t=this,i=t.caretPos,s=t.control
+s.insertBefore(e,s.children[i]||null),t.setCaret(i+1)}deleteSelection(e){var t,i,s,n,o,r=this
+t=e&&8===e.keyCode?-1:1,i={start:(o=r.control_input).selectionStart||0,length:(o.selectionEnd||0)-(o.selectionStart||0)}
+const l=[]
+if(r.activeItems.length)n=ee(r.activeItems,t),s=te(n),t>0&&s++,B(r.activeItems,e=>l.push(e))
+else if((r.isFocused||"single"===r.settings.mode)&&r.items.length){const e=r.controlChildren()
+let s
+t<0&&0===i.start&&0===i.length?s=e[r.caretPos-1]:t>0&&i.start===r.inputValue().length&&(s=e[r.caretPos]),void 0!==s&&l.push(s)}if(!r.shouldDelete(l,e))return!1
+for($(e,!0),void 0!==s&&r.setCaret(s);l.length;)r.removeItem(l.pop())
+return r.inputState(),r.positionDropdown(),r.refreshOptions(!1),!0}shouldDelete(e,t){const i=e.map(e=>e.dataset.value)
+return!(!i.length||"function"==typeof this.settings.onDelete&&!1===this.settings.onDelete.call(this,i,t))}advanceSelection(e,t){var i,s,n=this
+n.rtl&&(e*=-1),n.inputValue().length||(R(oe,t)||R("shiftKey",t)?(s=(i=n.getLastActive(e))?i.classList.contains("active")?n.getAdjacent(i,e,"item"):i:e>0?n.control_input.nextElementSibling:n.control_input.previousElementSibling)&&(s.classList.contains("active")&&n.removeActiveItem(i),n.setActiveItemClass(s)):n.moveCaret(e))}moveCaret(e){}getLastActive(e){let t=this.control.querySelector(".last-active")
+if(t)return t
+var i=this.control.querySelectorAll(".active")
+return i?ee(i,e):void 0}setCaret(e){this.caretPos=this.items.length}controlChildren(){return Array.from(this.control.querySelectorAll("[data-ts-item]"))}lock(){this.setLocked(!0)}unlock(){this.setLocked(!1)}setLocked(e=this.isReadOnly||this.isDisabled){this.isLocked=e,this.refreshState()}disable(){this.setDisabled(!0),this.close()}enable(){this.setDisabled(!1)}setDisabled(e){this.focus_node.tabIndex=e?-1:this.tabIndex,this.isDisabled=e,this.input.disabled=e,this.control_input.disabled=e,this.setLocked()}setReadOnly(e){this.isReadOnly=e,this.input.readOnly=e,this.control_input.readOnly=e,this.setLocked()}destroy(){var e=this,t=e.revertSettings
+e.trigger("destroy"),e.off(),e.wrapper.remove(),e.dropdown.remove(),e.input.innerHTML=t.innerHTML,e.input.tabIndex=t.tabIndex,J(e.input,"tomselected","ts-hidden-accessible"),e._destroy(),delete e.input.tomselect}render(e,t){var i,s
+const n=this
+if("function"!=typeof this.settings.render[e])return null
+if(!(s=n.settings.render[e].call(this,t,D)))return null
+if(s=K(s),"option"===e||"option_create"===e?t[n.settings.disabledField]?ie(s,{"aria-disabled":"true"}):ie(s,{"data-selectable":""}):"optgroup"===e&&(i=t.group[n.settings.optgroupValueField],ie(s,{"data-group":i}),t.group[n.settings.disabledField]&&ie(s,{"data-disabled":""})),"option"===e||"item"===e){const i=N(t[n.settings.valueField])
+ie(s,{"data-value":i}),"item"===e?(Q(s,n.settings.itemClass),ie(s,{"data-ts-item":""})):(Q(s,n.settings.optionClass),ie(s,{role:"option",id:t.$id}),t.$div=s,n.options[i]=t)}return s}_render(e,t){const i=this.render(e,t)
+if(null==i)throw"HTMLElement expected"
+return i}clearCache(){B(this.options,e=>{e.$div&&(e.$div.remove(),delete e.$div)})}uncacheValue(e){const t=this.getOption(e)
+t&&t.remove()}canCreate(e){return this.settings.create&&e.length>0&&this.settings.createFilter.call(this,e)}hook(e,t,i){var s=this,n=s[t]
+s[t]=function(){var t,o
+return"after"===e&&(t=n.apply(s,arguments)),o=i.apply(s,arguments),"instead"===e?o:("before"===e&&(t=n.apply(s,arguments)),t)}}}return ce.define("change_listener",function(){q(this.input,"change",()=>{this.sync()})}),ce.define("checkbox_options",function(e){var t=this,i=t.onOptionSelect
+t.settings.hideSelected=!1
+const s=Object.assign({className:"tomselect-checkbox",checkedClassNames:void 0,uncheckedClassNames:void 0},e)
+var n=function(e,t){t?(e.checked=!0,s.uncheckedClassNames&&e.classList.remove(...s.uncheckedClassNames),s.checkedClassNames&&e.classList.add(...s.checkedClassNames)):(e.checked=!1,s.checkedClassNames&&e.classList.remove(...s.checkedClassNames),s.uncheckedClassNames&&e.classList.add(...s.uncheckedClassNames))},o=function(e){setTimeout(()=>{var t=e.querySelector("input."+s.className)
+t instanceof HTMLInputElement&&n(t,e.classList.contains("selected"))},1)}
+t.hook("after","setupTemplates",()=>{var e=t.settings.render.option
+t.settings.render.option=(i,o)=>{var r=K(e.call(t,i,o)),l=document.createElement("input")
+s.className&&l.classList.add(s.className),l.addEventListener("click",function(e){$(e)}),l.type="checkbox"
+const a=P(i[t.settings.valueField])
+return n(l,!!(a&&t.items.indexOf(a)>-1)),r.prepend(l),r}}),t.on("item_remove",e=>{var i=t.getOption(e)
+i&&(i.classList.remove("selected"),o(i))}),t.on("item_add",e=>{var i=t.getOption(e)
+i&&o(i)}),t.hook("instead","onOptionSelect",(e,s)=>{if(s.classList.contains("selected"))return s.classList.remove("selected"),t.removeItem(s.dataset.value),t.refreshOptions(),void $(e,!0)
+i.call(t,e,s),o(s)})}),ce.define("clear_button",function(e){const t=this,i=Object.assign({className:"clear-button",title:"Clear All",role:"button",tabindex:0,html:e=>`<div class="${e.className}" title="${e.title}" role="${e.role}" tabindex="${e.tabindex}">&times;</div>`},e)
+t.on("initialize",()=>{var e=K(i.html(i))
+e.addEventListener("click",e=>{t.isLocked||(t.clear(),"single"===t.settings.mode&&t.settings.allowEmptyOption&&t.addItem(""),t.refreshOptions(!1),e.preventDefault(),e.stopPropagation())}),t.control.appendChild(e)})}),ce.define("drag_drop",function(){var e=this
+if("multi"!==e.settings.mode)return
+var t=e.lock,i=e.unlock
+let s,n=!0
+e.hook("after","setupTemplates",()=>{var t=e.settings.render.item
+e.settings.render.item=(i,o)=>{const r=K(t.call(e,i,o))
+ie(r,{draggable:"true"})
+const l=e=>{e.preventDefault(),r.classList.add("ts-drag-over"),a(r,s)},a=(e,t)=>{var i,s,n
+void 0!==t&&(((e,t)=>{do{var i
+if(e==(t=null==(i=t)?void 0:i.previousElementSibling))return!0}while(t&&t.previousElementSibling)
+return!1})(t,r)?(s=t,null==(n=(i=e).parentNode)||n.insertBefore(s,i.nextSibling)):((e,t)=>{var i
+null==(i=e.parentNode)||i.insertBefore(t,e)})(e,t))}
+return q(r,"mousedown",e=>{n||$(e),e.stopPropagation()}),q(r,"dragstart",e=>{s=r,setTimeout(()=>{r.classList.add("ts-dragging")},0)}),q(r,"dragenter",l),q(r,"dragover",l),q(r,"dragleave",()=>{r.classList.remove("ts-drag-over")}),q(r,"dragend",()=>{var t
+document.querySelectorAll(".ts-drag-over").forEach(e=>e.classList.remove("ts-drag-over")),null==(t=s)||t.classList.remove("ts-dragging"),s=void 0
+var i=[]
+e.control.querySelectorAll("[data-value]").forEach(e=>{if(e.dataset.value){let t=e.dataset.value
+t&&i.push(t)}}),e.setValue(i)}),r}}),e.hook("instead","lock",()=>(n=!1,t.call(e))),e.hook("instead","unlock",()=>(n=!0,i.call(e)))}),ce.define("dropdown_header",function(e){const t=this,i=Object.assign({title:"Untitled",headerClass:"dropdown-header",titleRowClass:"dropdown-header-title",labelClass:"dropdown-header-label",closeClass:"dropdown-header-close",html:e=>'<div class="'+e.headerClass+'"><div class="'+e.titleRowClass+'"><span class="'+e.labelClass+'">'+e.title+'</span><a class="'+e.closeClass+'">&times;</a></div></div>'},e)
+t.on("initialize",()=>{var e=K(i.html(i)),s=e.querySelector("."+i.closeClass)
+s&&s.addEventListener("click",e=>{$(e,!0),t.close()}),t.dropdown.insertBefore(e,t.dropdown.firstChild)})}),ce.define("caret_position",function(){var e=this
+e.hook("instead","setCaret",t=>{"single"!==e.settings.mode&&e.control.contains(e.control_input)?(t=Math.max(0,Math.min(e.items.length,t)))==e.caretPos||e.isPending||e.controlChildren().forEach((i,s)=>{s<t?e.control_input.insertAdjacentElement("beforebegin",i):e.control.appendChild(i)}):t=e.items.length,e.caretPos=t}),e.hook("instead","moveCaret",t=>{if(!e.isFocused)return
+const i=e.getLastActive(t)
+if(i){const s=te(i)
+e.setCaret(t>0?s+1:s),e.setActiveItem(),J(i,"last-active")}else e.setCaret(e.caretPos+t)})}),ce.define("dropdown_input",function(){const e=this
+e.settings.shouldOpen=!0,e.hook("before","setup",()=>{var t
+e.focus_node=e.control,Q(e.control_input,"dropdown-input")
+const i=K('<div class="dropdown-input-wrap">')
+i.append(e.control_input),e.dropdown.insertBefore(i,e.dropdown.firstChild)
+const s=K('<input class="items-placeholder" tabindex="-1" />')
+s.placeholder=e.settings.placeholder||"",e.control.append(s)
+const n=null==(t=e.input)?void 0:t.getAttribute("aria-label")
+n&&s.setAttribute("aria-label",n)}),e.on("initialize",()=>{e.control_input.addEventListener("keydown",t=>{switch(t.keyCode){case 27:return e.isOpen&&($(t,!0),e.close()),void e.clearActiveItems()
+case 9:e.focus_node.tabIndex=-1}return e.onKeyDown.call(e,t)}),e.on("blur",()=>{e.focus_node.tabIndex=e.isDisabled?-1:e.tabIndex}),e.on("dropdown_open",()=>{e.control_input.focus()})
+const t=e.onBlur
+e.hook("instead","onBlur",i=>{if(!i||i.relatedTarget!=e.control_input)return t.call(e)}),q(e.control_input,"blur",()=>e.onBlur()),e.hook("before","close",()=>{e.isOpen&&e.focus_node.focus({preventScroll:!0})})})}),ce.define("input_autogrow",function(){var e=this
+e.on("initialize",()=>{var t=document.createElement("span"),i=e.control_input
+t.style.cssText="position:absolute; top:-99999px; left:-99999px; width:auto; padding:0; white-space:pre; ",e.wrapper.appendChild(t)
+for(const e of["letterSpacing","fontSize","fontFamily","fontWeight","textTransform"])t.style[e]=i.style[e]
+var s=()=>{t.textContent=i.value,i.style.width=t.clientWidth+"px"}
+s(),e.on("update item_add item_remove",s),q(i,"input",s),q(i,"keyup",s),q(i,"blur",s),q(i,"update",s)})}),ce.define("no_backspace_delete",function(){var e=this,t=e.deleteSelection
+this.hook("instead","deleteSelection",i=>!!e.activeItems.length&&t.call(e,i))}),ce.define("no_active_items",function(){this.hook("instead","setActiveItem",()=>{}),this.hook("instead","selectAll",()=>{})}),ce.define("optgroup_columns",function(){var e=this,t=e.onKeyDown
+e.hook("instead","onKeyDown",i=>{var s,n,o,r
+if(!e.isOpen||37!==i.keyCode&&39!==i.keyCode)return t.call(e,i)
+e.ignoreHover=!0,r=Z(e.activeOption,"[data-group]"),s=te(e.activeOption,"[data-selectable]"),r&&(r=37===i.keyCode?r.previousSibling:r.nextSibling)&&(n=(o=r.querySelectorAll("[data-selectable]"))[Math.min(o.length-1,s)])&&e.setActiveOption(n)})}),ce.define("remove_button",function(e){const t=this,i=Object.assign({label:"×",title:"Remove",className:"remove",tabindex:-1,role:"button",html:e=>{var t
+const i=document.createElement("div")
+return i.className=e.className||"",i.title=e.title||"",i.setAttribute("role",e.role||"button"),i.tabIndex=null!=(t=e.tabindex)?t:-1,i.textContent=e.label||"",i}},e)
+t.hook("after","setupTemplates",()=>{var e=t.settings.render.item
+t.settings.render.item=(s,n)=>{var o=K(e.call(t,s,n)),r=K(i.html(i))
+return o.appendChild(r),q(r,"mousedown",e=>{$(e,!0)}),q(r,"click",e=>{t.isLocked||($(e,!0),t.isLocked||t.shouldDelete([o],e)&&(t.removeItem(o),t.refreshOptions(!1),t.inputState()))}),o}})}),ce.define("restore_on_backspace",function(e){const t=this,i=Object.assign({text:e=>e[t.settings.labelField]},e)
+t.on("item_remove",function(e){if(t.isFocused&&""===t.control_input.value.trim()){var s=t.options[e]
+s&&t.setTextboxValue(i.text.call(t,s))}})}),ce.define("virtual_scroll",function(){const e=this,t=e.canLoad,i=e.clearActiveOption,s=e.loadCallback
+var n,o,r,l={},a=!1,c=[],d=!1,u=[],p=[]
+if(e.settings.shouldLoadMore||(e.settings.shouldLoadMore=()=>{if(n.clientHeight/(n.scrollHeight-n.scrollTop)>.9)return!0
+if(e.activeOption){var t=e.selectable()
+if(Array.from(t).indexOf(e.activeOption)>=t.length-2)return!0}return!1}),!e.settings.firstUrl)throw"virtual_scroll plugin requires a firstUrl() method"
+e.settings.sortField=[{field:"$order"},{field:"$score"}]
+const h=t=>!(null!==e.settings.maxOptions&&"number"==typeof e.settings.maxOptions&&n.children.length>=e.settings.maxOptions)&&!(!(t in l)||!l[t]),g=(t,i)=>e.items.indexOf(i)>=0||c.indexOf(i)>=0
+e.setNextUrl=(e,t)=>{l[e]=t},e.getUrl=t=>{if(t in l){const e=l[t]
+return l[t]=!1,e}return e.clearPagination(),e.settings.firstUrl.call(e,t)},e.clearPagination=()=>{l={}},e.hook("instead","clearActiveOption",()=>{if(!a)return i.call(e)}),e.hook("instead","canLoad",i=>i in l?h(i):t.call(e,i)),e.hook("instead","loadCallback",(t,i)=>{if(a){if(o){const i=t[0]
+void 0!==i&&(o.dataset.value=i[e.settings.valueField])}}else{const t=""!==e.lastValue?(t,i)=>e.items.indexOf(i)>=0||p.indexOf(i)>=0:g
+e.clearOptions(t)}s.call(e,t,i),a||d||(d=!0,""===e.lastValue&&(c=Object.keys(e.options),r=l[""],u=Object.values(e.options))),a=!1}),e.hook("before","refreshOptions",()=>{e.activeOption&&"option"!==e.activeOption.getAttribute("role")&&e.setActiveOption(e.activeOption.previousElementSibling)}),e.hook("after","refreshOptions",()=>{const t=e.lastValue
+var i
+h(t)?(i=e.render("loading_more",{query:t}))&&(i.setAttribute("data-selectable",""),o=i):t in l&&!n.querySelector(".no-results")&&(i=e.render("no_more_results",{query:t})),i&&(Q(i,e.settings.optionClass),n.append(i))})
+const f=()=>{d&&(e.addOptions(u),e.clearOptions(g),r&&(l[""]=r))}
+e.on("type",t=>{""===t&&(f(),e.refreshOptions(!1))}),e.on("dropdown_close",f),e.on("initialize",()=>{p=Object.keys(e.options),c=Object.keys(e.options),n=e.dropdown_content,e.settings.render=Object.assign({},{loading_more:()=>'<div class="loading-more-results">Loading more results ... </div>',no_more_results:()=>'<div class="no-more-results">No more results</div>'},e.settings.render),n.addEventListener("scroll",()=>{e.settings.shouldLoadMore.call(e)&&h(e.lastValue)&&(a||(a=!0,e.load.call(e,e.lastValue)))})})}),ce})
+var tomSelect=function(e,t){return new TomSelect(e,t)}
+//# sourceMappingURL=tom-select.complete.min.js.map
+
 /*!
 HandStack Javascript Library v2026.8.11
 https://handshake.kr
@@ -69011,4 +69466,1594 @@ if (typeof module !== 'undefined' && module.exports) {
         }
     });
     syn.uicontrols.$element = $element;
+})(window);
+
+/// <reference path="/js/syn.js" />
+
+(function (window) {
+    'use strict';
+
+    syn.uicontrols = syn.uicontrols || new syn.module();
+    var $dropdowntextlist = syn.uicontrols.$dropdowntextlist || new syn.module();
+
+    $dropdowntextlist.extend({
+        name: 'syn.uicontrols.$dropdowntextlist',
+        version: 'v2026.10.14',
+        textListControls: [],
+        defaultSetting: {
+            optgroups: [],
+            optgroupField: 'class',
+            valueField: 'value',
+            labelField: 'name',
+            options: [],
+            items: [],
+            placeholder: '검색하여 선택...',
+            width: '100%',
+            dropdownWidth: 'auto',
+            dropdownHeight: 'auto',
+            maxItems: null,
+            hideSelected: true,
+            clearAfterSelect: true,
+            persist: true,
+            create: false,
+            defaultGroupID: '',
+            load: null,
+            loadThrottle: 300,
+            preload: false,
+            dataType: 'object',
+            belongID: null,
+            getter: false,
+            setter: false,
+            controlText: null,
+            validators: null,
+            transactConfig: null,
+            triggerConfig: null
+        },
+
+        operators: Object.freeze({
+            eq: '같음',
+            lte: '같거나작게',
+            gte: '같거나크게',
+            ne: '다름',
+            startsWith: '시작함',
+            endsWith: '끝남',
+            contains: '포함'
+        }),
+        eventCallbacks: {
+            initialize: 'onInitialize',
+            change: 'onChange',
+            focus: 'onFocus',
+            blur: 'onBlur',
+            item_add: 'onItemAdd',
+            item_remove: 'onItemRemove',
+            item_select: 'onItemSelect',
+            clear: 'onClear',
+            option_add: 'onOptionAdd',
+            option_remove: 'onOptionRemove',
+            option_clear: 'onOptionClear',
+            optgroup_add: 'onOptionGroupAdd',
+            optgroup_remove: 'onOptionGroupRemove',
+            optgroup_clear: 'onOptionGroupClear',
+            dropdown_open: 'onDropdownOpen',
+            dropdown_close: 'onDropdownClose',
+            type: 'onType',
+            load: 'onLoad',
+            destroy: 'onDestroy'
+        },
+
+        addModuleList(el, moduleList, setting, controlType) {
+            var elementID = el.getAttribute('id');
+            var dataField = el.getAttribute('syn-datafield');
+            var formDataField = el.closest('form') ? el.closest('form').getAttribute('syn-datafield') : '';
+            moduleList.push({
+                id: elementID,
+                formDataFieldID: formDataField,
+                field: dataField,
+                module: $dropdowntextlist.name,
+                type: controlType
+            });
+        },
+
+        controlLoad(elID, setting) {
+            var control = $dropdowntextlist.getControl(elID);
+            if (control) {
+                return control;
+            }
+            var el = syn.$l.get(elID);
+            if (!el) {
+                throw new Error('DropDownTextList: element not found: ' + elID);
+            }
+            if (typeof TomSelect === 'undefined') {
+                throw new Error('DropDownTextList: Tom Select must be loaded first');
+            }
+            setting = syn.$w.argumentsExtend($dropdowntextlist.defaultSetting, setting || {});
+            var mod = window[syn.$w.pageScript];
+            if (mod && mod.hook && mod.hook.controlInit) {
+                var moduleSettings = mod.hook.controlInit(elID, setting);
+                setting = syn.$w.argumentsExtend(setting, moduleSettings);
+            }
+            setting.elID = elID;
+            $dropdowntextlist.normalizeDropdownSize(setting.dropdownWidth, 'dropdownWidth');
+            $dropdowntextlist.normalizeDropdownSize(setting.dropdownHeight, 'dropdownHeight');
+            el.setAttribute('syn-options', JSON.stringify(setting));
+            try {
+                control = $dropdowntextlist.addControlSetting(el, setting);
+            } catch (error) {
+                $dropdowntextlist.textListControls = $dropdowntextlist.textListControls.filter(function (item) {
+                    return item.id !== elID;
+                });
+                throw error;
+            }
+            $dropdowntextlist.initialize(elID);
+            return control;
+        },
+
+        addControlSetting(el, setting) {
+            var control = {
+                id: el.id,
+                host: el,
+                settings: setting,
+                handlers: new Map(),
+                conditions: new Map(),
+                cleanups: [],
+                revision: 0,
+                loadSequence: 0,
+                destroyed: false,
+                ready: false,
+                originalEvents: el.getAttribute('syn-events'),
+                originalDisplay: el.style.display,
+                dispose: function () {
+                    $dropdowntextlist.textListControls = $dropdowntextlist.textListControls.filter(function (item) {
+                        return item.id !== control.id;
+                    });
+                },
+
+                on(event, handler) {
+                    return $dropdowntextlist.on(control.id, event, handler);
+                },
+
+                off(event, handler) {
+                    return $dropdowntextlist.off(control.id, event, handler);
+                },
+
+                trigger(event, ...args) {
+                    return $dropdowntextlist.trigger(control.id, event, ...args);
+                },
+
+                getValue() {
+                    return $dropdowntextlist.getValue(control.id);
+                },
+
+                setValue(value, silent) {
+                    return $dropdowntextlist.setValue(control.id, value, silent);
+                },
+
+                addOption(data, user_created) {
+                    return $dropdowntextlist.addOption(control.id, data, user_created);
+                },
+
+                addOptions(data, user_created) {
+                    return $dropdowntextlist.addOptions(control.id, data, user_created);
+                },
+
+                updateOption(value, data) {
+                    return $dropdowntextlist.updateOption(control.id, value, data);
+                },
+
+                removeOption(value) {
+                    return $dropdowntextlist.removeOption(control.id, value);
+                },
+
+                getOption(value, create) {
+                    return $dropdowntextlist.getOption(control.id, value, create);
+                },
+
+                clearFilter(option, value) {
+                    return $dropdowntextlist.clearFilter(control.id, option, value);
+                },
+
+                clearOptions(filter) {
+                    return $dropdowntextlist.clearOptions(control.id, filter);
+                },
+
+                clear(silent) {
+                    return $dropdowntextlist.clear(control.id, silent);
+                },
+
+                getItem(value) {
+                    return $dropdowntextlist.getItem(control.id, value);
+                },
+
+                addItem(value, silent) {
+                    return $dropdowntextlist.addItem(control.id, value, silent);
+                },
+
+                removeItem(value, silent) {
+                    return $dropdowntextlist.removeItem(control.id, value, silent);
+                },
+
+                refreshItems() {
+                    return $dropdowntextlist.refreshItems(control.id);
+                },
+
+                createItem(value, callback) {
+                    return $dropdowntextlist.createItem(control.id, value, callback);
+                },
+
+                load(query) {
+                    return $dropdowntextlist.load(control.id, query);
+                },
+
+                addOptionGroup(id, data) {
+                    return $dropdowntextlist.addOptionGroup(control.id, id, data);
+                },
+
+                removeOptionGroup(id) {
+                    return $dropdowntextlist.removeOptionGroup(control.id, id);
+                },
+
+                clearOptionGroups() {
+                    return $dropdowntextlist.clearOptionGroups(control.id);
+                },
+
+                lock() {
+                    return $dropdowntextlist.lock(control.id);
+                },
+
+                unlock() {
+                    return $dropdowntextlist.unlock(control.id);
+                },
+
+                disable() {
+                    return $dropdowntextlist.disable(control.id);
+                },
+
+                enable() {
+                    return $dropdowntextlist.enable(control.id);
+                },
+
+                sync() {
+                    return $dropdowntextlist.sync(control.id);
+                },
+
+                destroy() {
+                    if (control.destroyed) {
+                        return;
+                    }
+                    return $dropdowntextlist.destroy(control.id);
+                },
+
+                getAdjacent(element, direction) {
+                    return $dropdowntextlist.getAdjacent(control.id, element, direction);
+                },
+
+                refreshOptions(triggerDropdown) {
+                    return $dropdowntextlist.refreshOptions(control.id, triggerDropdown);
+                },
+
+                open() {
+                    return $dropdowntextlist.open(control.id);
+                },
+
+                close() {
+                    return $dropdowntextlist.close(control.id);
+                },
+
+                positionDropdown() {
+                    return $dropdowntextlist.positionDropdown(control.id);
+                },
+
+                focus() {
+                    return $dropdowntextlist.focus(control.id);
+                },
+
+                blur() {
+                    return $dropdowntextlist.blur(control.id);
+                },
+
+                setCaret(index) {
+                    return $dropdowntextlist.setCaret(control.id, index);
+                },
+
+                isFull() {
+                    return $dropdowntextlist.isFull(control.id);
+                },
+
+                clearCache() {
+                    return $dropdowntextlist.clearCache(control.id);
+                },
+
+                setTextboxValue(str) {
+                    return $dropdowntextlist.setTextboxValue(control.id, str);
+                }
+            };
+            $dropdowntextlist.textListControls.push(control);
+            var mod = window[syn.$w.pageScript];
+            var events = control.originalEvents ? $object.parseJsonValue(control.originalEvents, 'json') : [];
+            Object.keys($dropdowntextlist.eventCallbacks).forEach(function (event) {
+                if (typeof setting[$dropdowntextlist.eventCallbacks[event]] === 'function') {
+                    $dropdowntextlist.on(control.id, event, setting[$dropdowntextlist.eventCallbacks[event]]);
+                }
+                if (events.includes(event) && mod && mod.event && typeof mod.event[control.id + '_' + event] === 'function') {
+                    $dropdowntextlist.on(control.id, event, mod.event[control.id + '_' + event]);
+                }
+            });
+            // 컨트롤 이벤트는 직접 연결하여 공통 로더의 DOM 이벤트와 중복 호출되지 않게 한다.
+            if (control.originalEvents !== null) {
+                el.setAttribute('syn-events', JSON.stringify(events.filter(function (event) {
+                    return !$dropdowntextlist.hasProperty($dropdowntextlist.eventCallbacks, event);
+                })));
+            }
+            control.container = document.createElement('div');
+            control.container.className = 'syn-dropdowntextlist';
+            control.container.style.width = setting.width;
+            control.source = document.createElement('select');
+            control.source.multiple = true;
+            control.source.id = control.id + '_select';
+            control.source.setAttribute('aria-label', setting.controlText || setting.placeholder);
+            control.container.append(control.source);
+            if (/^(INPUT|SELECT)$/.test(el.tagName)) {
+                el.style.display = 'none';
+                el.insertAdjacentElement('afterend', control.container);
+            }
+            else {
+                el.append(control.container);
+            }
+            $dropdowntextlist.listen(control.id, control.source, 'change', function (event) {
+                return event.stopPropagation();
+            });
+            $dropdowntextlist.listen(control.id, control.source, 'input', function (event) {
+                return event.stopPropagation();
+            });
+            var options = (setting.options || []).map(function (data) {
+                return $dropdowntextlist.normalize(control.id, data);
+            });
+            var selectSetting = Object.assign({}, setting, {
+                options: options,
+                items: [],
+                preload: false,
+                mode: 'multi',
+                duplicates: false,
+                valueField: '_dttlID',
+                labelField: '_dttlLabel',
+                optgroupField: '_dttlGroup',
+                searchField: ['_dttlKey', '_dttlLabel'],
+                optgroupValueField: 'value',
+                optgroupLabelField: 'label',
+                plugins: ['caret_position'],
+                loadThrottle: null,
+                create: setting.create ? true : false,
+                render: {
+                    item: function (data, escape) {
+                        var condition = control.conditions.get(data._dttlID) || {
+                            logic: 'AND',
+                            operator: 'eq'
+                        };
+                        var group = control.picker ? control.picker.optgroups[data._dttlGroup] : null;
+                        var groupLabel = group && group.label != null ? String(group.label) : data._dttlGroup || '기타';
+                        var summary = groupLabel + ' · ' + data._dttlLabel + ' · ' + condition.logic + ' · ' + $dropdowntextlist.operators[condition.operator];
+
+                        return '<div class="dttl-item" data-dttl-logic="' + condition.logic + '" data-dttl-operator="' + condition.operator + '" title="' + escape(summary) + '">' +
+                            '<span class="dttl-logic-badge" aria-hidden="true">' + condition.logic + '</span>' +
+                            '<span class="dttl-group" role="button" tabindex="0" aria-label="' + escape(summary + ' 조건 편집') + '">' + escape(groupLabel) + '</span>' +
+                            '<button type="button" class="dttl-edit" aria-label="' + escape(summary + ' 조건 편집') + '"><span class="dttl-label">' + escape(data._dttlLabel) + '</span></button>' +
+                            '<button type="button" class="dttl-remove" aria-label="' + escape(data._dttlLabel + ' 삭제') + '">×</button></div>';
+                    },
+                    option: function (data, escape) {
+                        return '<div>' + escape(data._dttlLabel) + '</div>';
+                    },
+                    no_results: function () {
+                        return '<div class="no-results">검색 결과가 없습니다.</div>';
+                    }
+                }
+            });
+            Object.keys($dropdowntextlist.eventCallbacks).forEach(function (event) {
+                selectSetting[$dropdowntextlist.eventCallbacks[event]] = function (...args) {
+                    control.picker = this;
+                    $dropdowntextlist.relay(control.id, event, args);
+                };
+            });
+            control.picker = new TomSelect(control.source, selectSetting);
+            var originalPositionDropdown = control.picker.positionDropdown;
+            control.picker.positionDropdown = function () {
+                var result = originalPositionDropdown.call(control.picker);
+                if (!control.destroyed) {
+                    $dropdowntextlist.sizeDropdown(control.id);
+                }
+                return result;
+            };
+            var originalRefreshOptions = control.picker.refreshOptions;
+            control.picker.refreshOptions = function (triggerDropdown) {
+                var result = originalRefreshOptions.call(control.picker, triggerDropdown);
+                if (control.picker.isOpen && !control.destroyed) {
+                    $dropdowntextlist.sizeDropdown(control.id);
+                }
+                return result;
+            };
+            // 콜백과 Promise 방식 모두 같은 생성·조회 처리와 파괴 여부 검사를 사용한다.
+            control.picker.createItem = function (value, callback) {
+                return $dropdowntextlist.createItem(control.id, value, callback);
+            };
+            control.picker.load = function (query) {
+                return $dropdowntextlist.load(control.id, query);
+            };
+            $dropdowntextlist.listen(control.id, control.picker.control, 'click', function (event) {
+                return $dropdowntextlist.onTagClick(control.id, event);
+            }, true);
+            $dropdowntextlist.listen(control.id, control.picker.control, 'keydown', function (event) {
+                var target = event.target.closest('.dttl-group,.dttl-edit');
+                if (target && (event.key === 'Enter' || event.key === ' ' || event.key === 'F2')) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    $dropdowntextlist.editCondition(control.id, target.closest('[data-value]'));
+                    return;
+                }
+                if ((event.key === 'Enter' || event.key === 'F2') && control.picker.activeItems.length) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    $dropdowntextlist.editCondition(control.id, control.picker.activeItems[0]);
+                }
+            }, true);
+            $dropdowntextlist.listen(control.id, control.picker.control_input, 'compositionstart', function () {
+                control.composing = true;
+            });
+            $dropdowntextlist.listen(control.id, control.picker.control_input, 'compositionend', function () {
+                control.composing = false;
+            });
+            $dropdowntextlist.listen(control.id, control.picker.control_input, 'keydown', function (event) {
+                if (control.composing || event.isComposing) {
+                    event.stopImmediatePropagation();
+                }
+            }, true);
+            $dropdowntextlist.listen(control.id, document, 'pointerdown', function (event) {
+                if (control.editor && !control.editor.contains(event.target) && !control.picker.control.contains(event.target)) {
+                    $dropdowntextlist.closeEditor(control.id, false);
+                }
+            });
+            $dropdowntextlist.listen(control.id, window, 'resize', function () {
+                if (control.picker.isOpen) {
+                    control.picker.positionDropdown();
+                }
+                if (control.editor) {
+                    $dropdowntextlist.positionEditor(control.id);
+                }
+            });
+            $dropdowntextlist.listen(control.id, document, 'scroll', function (event) {
+                if (control.editor && !control.editor.contains(event.target)) {
+                    $dropdowntextlist.positionEditor(control.id);
+                }
+            }, true);
+            if (setting.items && setting.items.length) {
+                $dropdowntextlist.setValue(control.id, setting.items, true);
+            }
+            if (setting.disabled || el.disabled) {
+                $dropdowntextlist.disable(control.id);
+            }
+            if (setting.locked || el.readOnly) {
+                $dropdowntextlist.lock(control.id);
+            }
+            control.ready = true;
+            $dropdowntextlist.writeValue(control.id);
+            return control;
+        },
+
+        on(elID, event, handler) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            if (typeof handler !== 'function') {
+                throw new TypeError('DropDownTextList: handler must be a function');
+            }
+            event.split(/\s+/).forEach(function (name) {
+                if (!control.handlers.has(name)) {
+                    control.handlers.set(name, new Set());
+                }
+                control.handlers.get(name).add(handler);
+            });
+            return control;
+        },
+
+        off(elID, event, handler) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            if (!event) {
+                control.handlers.clear();
+            }
+            else {
+                event.split(/\s+/).forEach(function (name) {
+                    if (handler) {
+                        var handlers = control.handlers.get(name);
+                        if (handlers) {
+                            handlers.delete(handler);
+                        }
+                    }
+                    else {
+                        control.handlers.delete(name);
+                    }
+                });
+            }
+            return control;
+        },
+
+        trigger(elID, event, ...args) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            Array.from(control.handlers.get(event) || []).forEach(function (handler) {
+                return handler.apply(control, args);
+            });
+            return control;
+        },
+
+        getValue(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            return control.picker.items.filter(function (id) {
+                return $dropdowntextlist.hasProperty(control.picker.options, id);
+            }).map(function (id) {
+                var data = control.picker.options[id];
+                var condition = control.conditions.get(id) || {
+                    logic: 'AND',
+                    operator: 'eq'
+                };
+                return {
+                    groupID: data._dttlGroup,
+                    logic: condition.logic,
+                    operator: condition.operator,
+                    key: data._dttlKey,
+                    value: data._dttlLabel
+                };
+            });
+        },
+
+        setValue(elID, value, silent = false) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            // 거래 setter의 세 번째 인자는 메타데이터일 수 있으므로 true일 때만 change를 생략한다.
+            silent = silent === true;
+            var values = Array.isArray(value) ? value : [value];
+            var kind = values.length ? $dropdowntextlist.getValueType(values[0]) : 'key';
+            if (values.some(function (item) {
+                return $dropdowntextlist.getValueType(item) !== kind;
+            })) {
+                throw new TypeError('DropDownTextList: mixed arrays are not supported');
+            }
+            var prepared = [];
+            if (kind === 'condition') {
+                prepared = values.map(function (item) {
+                    return $dropdowntextlist.condition(control.id, item);
+                });
+            }
+            else if (kind === 'option') {
+                prepared = values.map(function (item) {
+                    return $dropdowntextlist.normalize(control.id, item);
+                });
+            }
+            else {
+                prepared = values.map(function (item) {
+                    var id = $dropdowntextlist.resolve(control.id, item);
+                    if (!id) {
+                        throw new Error('DropDownTextList: unknown key ' + item);
+                    }
+                    return id;
+                });
+            }
+
+            var before = JSON.stringify($dropdowntextlist.getValue(control.id));
+            var userOptions = Object.assign({}, control.picker.userOptions);
+            $dropdowntextlist.cancelPending(control.id);
+            $dropdowntextlist.closeEditor(control.id, false);
+            if (kind === 'option') {
+                var incoming = new Map(prepared.map(function (data) {
+                    return [data._dttlID, data];
+                }));
+                Object.keys(control.picker.options).forEach(function (id) {
+                    if (!incoming.has(id)) {
+                        control.picker.removeOption(id, true);
+                    }
+                });
+                incoming.forEach(function (data, id) {
+                    if ($dropdowntextlist.hasProperty(control.picker.options, id)) {
+                        control.picker.updateOption(id, data);
+                    }
+                    else {
+                        control.picker.addOption(data);
+                    }
+                });
+            }
+            else {
+                // 선택을 재설정할 때 persist=false로 제거되는 사용자 생성 후보도 보존한다.
+                var selectedOptions = kind === 'key' ? prepared.map(function (id) {
+                    return control.picker.options[id];
+                }) : [];
+                control.picker.clear(true);
+                control.conditions.clear();
+                var ids = [];
+                prepared.forEach(function (data, index) {
+                    var id = kind === 'condition' ? $dropdowntextlist.getOptionID(data.groupID, data.key) : data;
+                    if (ids.includes(id)) {
+                        return;
+                    }
+                    ids.push(id);
+                    if (kind === 'condition') {
+                        control.conditions.set(id, {
+                            logic: data.logic,
+                            operator: data.operator
+                        });
+                        var option = $dropdowntextlist.fromCondition(control.id, data);
+                        if ($dropdowntextlist.hasProperty(control.picker.options, id)) {
+                            control.picker.updateOption(id, option);
+                        }
+                        else {
+                            control.picker.addOption(option, $dropdowntextlist.hasProperty(userOptions, id));
+                        }
+                    }
+                    else if (!$dropdowntextlist.hasProperty(control.picker.options, id)) {
+                        control.picker.addOption(selectedOptions[index], $dropdowntextlist.hasProperty(userOptions, id));
+                    }
+                });
+                control.picker.addItems(ids, true);
+            }
+            $dropdowntextlist.refreshItems(control.id);
+            control.picker.refreshOptions(false);
+            $dropdowntextlist.notify(control.id, before, silent);
+        },
+
+        addOption(elID, data, user_created = false) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            control.picker.addOption($dropdowntextlist.normalize(control.id, data), user_created);
+        },
+
+        addOptions(elID, data, user_created = false) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            var options = data.map(function (item) {
+                return $dropdowntextlist.normalize(control.id, item);
+            });
+            options.forEach(function (item) {
+                return control.picker.addOption(item, user_created);
+            });
+        },
+
+        updateOption(elID, value, data) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            var id = $dropdowntextlist.resolve(control.id, value);
+            var option = $dropdowntextlist.normalize(control.id, data);
+            if (!id || !$dropdowntextlist.hasProperty(control.picker.options, id)) {
+                return;
+            }
+            if (id !== option._dttlID && $dropdowntextlist.hasProperty(control.picker.options, option._dttlID)) {
+                throw new Error('DropDownTextList: duplicate groupID + key');
+            }
+            var before = JSON.stringify($dropdowntextlist.getValue(control.id));
+            var condition = control.conditions.get(id);
+            control.conditions.delete(id);
+            if (condition) {
+                control.conditions.set(option._dttlID, condition);
+            }
+            var userCreated = $dropdowntextlist.hasProperty(control.picker.userOptions, id);
+            control.picker.updateOption(id, option);
+            if (userCreated) {
+                delete control.picker.userOptions[id];
+                control.picker.userOptions[option._dttlID] = true;
+            }
+            control.picker.updateOriginalInput({
+                silent: true
+            });
+            $dropdowntextlist.closeEditor(control.id, false);
+            $dropdowntextlist.notify(control.id, before, false);
+            if (control.picker.isOpen) {
+                control.picker.positionDropdown();
+            }
+        },
+
+        removeOption(elID, value) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            var id = $dropdowntextlist.resolve(control.id, value);
+            if (id) {
+                control.picker.removeOption(id);
+            }
+        },
+
+        getOption(elID, value, create = false) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            var id = $dropdowntextlist.resolve(control.id, value);
+            return id ? control.picker.getOption(id, create) : null;
+        },
+
+        clearFilter(elID, option, value) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            var id = $dropdowntextlist.resolve(control.id, value);
+            return control.picker.items.includes(id);
+        },
+
+        clearOptions(elID, filter) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            var users = Object.assign({}, control.picker.userOptions);
+            $dropdowntextlist.cancelPending(control.id);
+            control.picker.clearOptions(function (data, id) {
+                return control.picker.items.includes(id) || (filter ? filter.call(control, Object.assign({}, data._dttlRaw), $dropdowntextlist.getOptionReference(id)) === true : false);
+            });
+            Object.keys(users).forEach(function (id) {
+                if ($dropdowntextlist.hasProperty(control.picker.options, id)) {
+                    control.picker.userOptions[id] = true;
+                }
+            });
+        },
+
+        clear(elID, silent = false) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            $dropdowntextlist.cancelPending(control.id);
+            control.picker.clear(silent === true);
+            control.conditions.clear();
+            $dropdowntextlist.closeEditor(control.id, false);
+            $dropdowntextlist.writeValue(control.id);
+        },
+
+        getItem(elID, value) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            var id = $dropdowntextlist.resolve(control.id, value);
+            return id ? control.picker.getItem(id) : null;
+        },
+
+        addItem(elID, value, silent = false) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            var id = $dropdowntextlist.resolve(control.id, value);
+            if (id) {
+                control.picker.addItem(id, silent === true);
+            }
+            $dropdowntextlist.writeValue(control.id);
+        },
+
+        removeItem(elID, value, silent = false) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            var id = $dropdowntextlist.resolve(control.id, value);
+            if (id) {
+                control.picker.removeItem(id, silent === true);
+            }
+            $dropdowntextlist.writeValue(control.id);
+        },
+
+        refreshItems(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            // Tom Select가 기존 태그를 재사용하는 경우에도 조건 요약을 다시 렌더링한다.
+            control.picker.items.forEach(function (id) {
+                var old = control.picker.getItem(id);
+                var node = control.picker._render('item', control.picker.options[id]);
+                if (old) {
+                    old.replaceWith(node);
+                }
+            });
+            control.picker.clearActiveItems();
+            control.picker.updateOriginalInput({
+                silent: true
+            });
+            control.picker.refreshState();
+            $dropdowntextlist.updateButtons(control.id);
+            $dropdowntextlist.writeValue(control.id);
+        },
+
+        createItem(elID, value, callback) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            value = value == null ? control.picker.control_input.value : String(value);
+            if (!value || !control.settings.create || control.destroyed || control.picker.isLocked || !control.picker.canCreate(value)) {
+                if (callback) {
+                    callback();
+                }
+                return false;
+            }
+            var revision = control.revision;
+            var caret = control.picker.caretPos;
+            control.creating = true;
+            control.picker.lock();
+            var completed = false;
+            var done = function (data) {
+                if (completed || control.destroyed || revision !== control.revision) {
+                    return;
+                }
+                completed = true;
+                control.creating = false;
+                if (!control.explicitLock && !control.picker.isDisabled) {
+                    control.picker.unlock();
+                }
+                if (!data) {
+                    if (callback) {
+                        callback();
+                    }
+                    return;
+                }
+                var option;
+                try {
+                    option = $dropdowntextlist.normalize(control.id, data);
+                } catch (error) {
+                    console.warn(error);
+                    if (callback) {
+                        callback();
+                    }
+                    return;
+                }
+                control.picker.addOption(option, true);
+                control.picker.setCaret(caret);
+                control.picker.addItem(option._dttlID);
+                control.picker.setTextboxValue('');
+                if (callback) {
+                    callback(Object.assign({}, data));
+                }
+            };
+            try {
+                var result = typeof control.settings.create === 'function' ? control.settings.create.call(control, value, done) : {
+                    [control.settings.optgroupField]: control.settings.defaultGroupID,
+                    [control.settings.valueField]: value,
+                    [control.settings.labelField]: value
+                };
+                if (result && typeof result.then === 'function') {
+                    result.then(done, function (error) {
+                        console.warn(error);
+                        done();
+                    });
+                }
+                else if (result !== undefined) {
+                    done(result);
+                }
+            } catch (error) {
+                console.warn(error);
+                done();
+            }
+            return true;
+        },
+
+        load(elID, query) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            if (control.destroyed || typeof control.settings.load !== 'function') {
+                return;
+            }
+            query = String(query || '');
+            var sequence = ++control.loadSequence;
+            clearTimeout(control.loadTimer);
+            control.picker.loading = 1;
+            control.picker.wrapper.classList.add(control.picker.settings.loadingClass);
+            control.loadTimer = setTimeout(function () {
+                if (control.destroyed || sequence !== control.loadSequence) {
+                    return;
+                }
+                var completed = false;
+                var done = function (data = [], groups = []) {
+                    if (completed || control.destroyed || sequence !== control.loadSequence) {
+                        return;
+                    }
+                    completed = true;
+                    control.picker.loading = 0;
+                    control.picker.wrapper.classList.remove(control.picker.settings.loadingClass);
+                    try {
+                        var normalized = data.map(function (item) {
+                            return $dropdowntextlist.normalize(control.id, item);
+                        });
+                        groups.forEach(function (group) {
+                            return $dropdowntextlist.addOptionGroup(control.id, group.value, group);
+                        });
+                        normalized.forEach(function (option) {
+                            return control.picker.addOption(option);
+                        });
+                        control.picker.refreshOptions(control.picker.isFocused);
+                        $dropdowntextlist.trigger(control.id, 'load', data.map(function (item) {
+                            return Object.assign({}, item);
+                        }));
+                    } catch (error) {
+                        console.warn(error);
+                    }
+                };
+                try {
+                    var result = control.settings.load.call(control, query, done);
+                    if (result && typeof result.then === 'function') {
+                        result.then(function (data) {
+                            return done(data);
+                        }, function (error) {
+                            console.warn(error);
+                            done();
+                        });
+                    }
+                    else if (Array.isArray(result)) {
+                        done(result);
+                    }
+                } catch (error) {
+                    console.warn(error);
+                    done();
+                }
+            }, control.settings.loadThrottle || 0);
+        },
+
+        addOptionGroup(elID, id, data) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            control.picker.addOptionGroup(String(id), Object.assign({}, data, {
+                value: String(id)
+            }));
+            $dropdowntextlist.refreshItems(elID);
+        },
+
+        removeOptionGroup(elID, id) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            control.picker.removeOptionGroup(String(id));
+            $dropdowntextlist.refreshItems(elID);
+        },
+
+        clearOptionGroups(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            control.picker.clearOptionGroups();
+            $dropdowntextlist.refreshItems(elID);
+        },
+
+        lock(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            control.explicitLock = true;
+            $dropdowntextlist.closeEditor(control.id, false);
+            control.picker.lock();
+            $dropdowntextlist.updateButtons(control.id);
+        },
+
+        unlock(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            control.explicitLock = false;
+            if (!control.creating && !control.picker.isDisabled) {
+                control.picker.unlock();
+            }
+            $dropdowntextlist.updateButtons(control.id);
+        },
+
+        disable(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            $dropdowntextlist.closeEditor(control.id, false);
+            control.picker.disable();
+            $dropdowntextlist.updateButtons(control.id);
+        },
+
+        enable(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            control.picker.enable();
+            if (control.explicitLock || control.creating) {
+                control.picker.lock();
+            }
+            $dropdowntextlist.updateButtons(control.id);
+        },
+
+        sync(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            var before = JSON.stringify($dropdowntextlist.getValue(control.id));
+            var records = Array.from(control.source.options).map(function (option) {
+                var ref = $dropdowntextlist.getOptionReference(option.value);
+                var currentOption = control.picker.options[option.value];
+                var raw = Object.assign({}, currentOption ? currentOption._dttlRaw : undefined, {
+                    [control.settings.optgroupField]: ref.groupID,
+                    [control.settings.valueField]: ref.key,
+                    [control.settings.labelField]: option.text
+                });
+                return {
+                    data: $dropdowntextlist.normalize(control.id, raw),
+                    selected: option.selected
+                };
+            });
+            var conditions = new Map(control.conditions);
+            $dropdowntextlist.setValue(control.id, records.map(function (record) {
+                return record.data._dttlRaw;
+            }), true);
+            control.picker.clear(true);
+            control.conditions = conditions;
+            control.picker.addItems(records.filter(function (record) {
+                return record.selected;
+            }).map(function (record) {
+                return record.data._dttlID;
+            }), true);
+            $dropdowntextlist.refreshItems(control.id);
+            if (control.source.disabled) {
+                $dropdowntextlist.disable(control.id);
+            }
+            else {
+                $dropdowntextlist.enable(control.id);
+            }
+            $dropdowntextlist.notify(control.id, before, false);
+        },
+
+        destroy(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            if (control.destroyed) {
+                return;
+            }
+            $dropdowntextlist.trigger(control.id, 'destroy');
+            $dropdowntextlist.cancelPending(control.id);
+            control.destroyed = true;
+            clearTimeout(control.picker.refreshTimeout);
+            $dropdowntextlist.closeEditor(control.id, false);
+            control.cleanups.forEach(function (cleanup) {
+                return cleanup();
+            });
+            control.cleanups = [];
+            control.picker.destroy();
+            control.container.remove();
+            control.host.style.display = control.originalDisplay;
+            if (control.originalEvents !== null) {
+                control.host.setAttribute('syn-events', control.originalEvents);
+            }
+            control.handlers.clear();
+            control.conditions.clear();
+            control.dispose();
+        },
+
+        getAdjacent(elID, element, direction) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            return control.picker.getAdjacent(element, direction);
+        },
+
+        refreshOptions(elID, triggerDropdown) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            return control.picker.refreshOptions(triggerDropdown);
+        },
+
+        open(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            return control.picker.open();
+        },
+
+        close(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            return control.picker.close();
+        },
+
+        positionDropdown(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            control.picker.positionDropdown();
+            if (control.editor) {
+                $dropdowntextlist.positionEditor(elID);
+            }
+        },
+
+        focus(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            return control.picker.focus();
+        },
+
+        blur(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            return control.picker.blur();
+        },
+
+        setCaret(elID, index) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            return control.picker.setCaret(index);
+        },
+
+        isFull(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            return control.picker.isFull();
+        },
+
+        clearCache(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            return control.picker.clearCache();
+        },
+
+        setTextboxValue(elID, str) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            return control.picker.setTextboxValue(str);
+        },
+
+        getControl(elID) {
+            var result = null;
+            for (var i = 0, length = $dropdowntextlist.textListControls.length; i < length; i++) {
+                var control = $dropdowntextlist.textListControls[i];
+                if (control.id === elID) {
+                    result = control;
+                    break;
+                }
+            }
+            return result;
+        },
+
+        requireControl(elID) {
+            var control = $dropdowntextlist.getControl(elID);
+            if (!control) {
+                throw new Error('DropDownTextList: control not initialized: ' + elID);
+            }
+            return control;
+        },
+
+        hasProperty(object, key) {
+            return Object.prototype.hasOwnProperty.call(object, key);
+        },
+
+        getOptionID(groupID, key) {
+            return JSON.stringify([groupID, key]);
+        },
+
+        getOptionReference(id) {
+            var pair = JSON.parse(id);
+            return {
+                groupID: pair[0],
+                key: pair[1]
+            };
+        },
+
+        normalizeScalar(value, field, empty) {
+            if (typeof value !== 'string' && typeof value !== 'number' || !empty && String(value) === '') {
+                throw new TypeError('DropDownTextList: ' + field + ' must be a ' + (empty ? '' : 'nonempty ') + 'string or number');
+            }
+            return String(value);
+        },
+
+        initialize(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            $dropdowntextlist.trigger(control.id, 'initialize');
+            if (control.settings.preload === true && control.destroyed !== true) {
+                $dropdowntextlist.load(control.id, '');
+            }
+        },
+
+        listen(elID, element, event, handler, capture = false) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            element.addEventListener(event, handler, capture);
+            control.cleanups.push(function () {
+                return element.removeEventListener(event, handler, capture);
+            });
+        },
+
+        getValueType(value) {
+            var result = 'option';
+            if (typeof value === 'string' || typeof value === 'number') {
+                result = 'key';
+            }
+            else if (value && typeof value === 'object') {
+                var isCondition = ['groupID', 'logic', 'operator', 'key'].every(function (key) {
+                    return $dropdowntextlist.hasProperty(value, key);
+                });
+                if (isCondition) {
+                    result = 'condition';
+                }
+            }
+
+            return result;
+        },
+
+        normalize(elID, data) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            if (!data || typeof data !== 'object' || Array.isArray(data)) {
+                throw new TypeError('DropDownTextList: option must be an object');
+            }
+            var key = $dropdowntextlist.normalizeScalar(data[control.settings.valueField], 'key', false);
+            var groupID = $dropdowntextlist.normalizeScalar(data[control.settings.optgroupField] == null ? '' : data[control.settings.optgroupField], 'groupID', true);
+            var value = $dropdowntextlist.normalizeScalar(data[control.settings.labelField], 'value', true);
+            return {
+                _dttlID: $dropdowntextlist.getOptionID(groupID, key),
+                _dttlKey: key,
+                _dttlGroup: groupID,
+                _dttlLabel: value,
+                _dttlRaw: Object.assign({}, data)
+            };
+        },
+
+        condition(elID, data) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            var groupID = $dropdowntextlist.normalizeScalar(data.groupID, 'groupID', true);
+            var key = $dropdowntextlist.normalizeScalar(data.key, 'key', false);
+            var value = $dropdowntextlist.normalizeScalar(data.value, 'value', true);
+            if (!['AND', 'OR'].includes(data.logic) || !$dropdowntextlist.hasProperty($dropdowntextlist.operators, data.operator)) {
+                throw new TypeError('DropDownTextList: invalid logic or operator');
+            }
+            return {
+                groupID: groupID,
+                logic: data.logic,
+                operator: data.operator,
+                key: key,
+                value: value
+            };
+        },
+
+        fromCondition(elID, data) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            return $dropdowntextlist.normalize(control.id, {
+                [control.settings.optgroupField]: data.groupID,
+                [control.settings.valueField]: data.key,
+                [control.settings.labelField]: data.value
+            });
+        },
+
+        resolve(elID, value) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            if (value instanceof HTMLElement) {
+                return value.dataset.value;
+            }
+            if (value && typeof value === 'object') {
+                return $dropdowntextlist.getOptionID($dropdowntextlist.normalizeScalar(value.groupID, 'groupID', true), $dropdowntextlist.normalizeScalar(value.key, 'key', false));
+            }
+            var key = $dropdowntextlist.normalizeScalar(value, 'key', false);
+            var matches = Object.keys(control.picker.options).filter(function (id) {
+                return control.picker.options[id]._dttlKey === key;
+            });
+            if (matches.length > 1) {
+                throw new Error('DropDownTextList: ambiguous key; use {groupID, key}');
+            }
+            return matches[0];
+        },
+
+        relay(elID, event, args) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            if (event === 'initialize' || event === 'destroy' || !control.ready || control.destroyed) {
+                return;
+            }
+            if (event === 'change') {
+                $dropdowntextlist.writeValue(control.id);
+                args = [$dropdowntextlist.getValue(control.id)];
+            }
+            else if (event === 'item_add' || event === 'item_remove' || event === 'option_add' || event === 'option_remove') {
+                if (event === 'item_remove') {
+                    control.conditions.delete(args[0]);
+                    $dropdowntextlist.closeEditor(control.id, false);
+                }
+                args = args.slice();
+                args[0] = $dropdowntextlist.getOptionReference(args[0]);
+                if (event === 'option_add') {
+                    args[1] = Object.assign({}, args[1]._dttlRaw);
+                }
+            }
+            else if (event === 'clear') {
+                control.conditions.clear();
+                $dropdowntextlist.closeEditor(control.id, false);
+            }
+            $dropdowntextlist.writeValue(control.id);
+            $dropdowntextlist.trigger(control.id, event, ...args);
+            if (event === 'focus' && control.settings.preload === 'focus' && !control.preloaded && control.destroyed !== true) {
+                control.preloaded = true;
+                $dropdowntextlist.load(control.id, '');
+            }
+        },
+
+        writeValue(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            control.host.value = JSON.stringify($dropdowntextlist.getValue(control.id));
+            // 선택하지 않은 후보와 변경한 표시명도 기반 select에 반영하여 sync()에 사용한다.
+            Array.from(control.source.options).forEach(function (option) {
+                if (!$dropdowntextlist.hasProperty(control.picker.options, option.value)) {
+                    option.remove();
+                }
+            });
+            var nodes = new Map(Array.from(control.source.options).map(function (option) {
+                return [option.value, option];
+            }));
+            Object.keys(control.picker.options).forEach(function (id) {
+                var data = control.picker.options[id];
+                var option = nodes.get(id) || new Option(data._dttlLabel, id);
+                option.text = data._dttlLabel;
+                option.selected = control.picker.items.includes(id);
+                if (!option.parentElement) {
+                    control.source.add(option);
+                }
+                data.$option = option;
+            });
+            $dropdowntextlist.updateButtons(control.id);
+        },
+
+        notify(elID, before, silent) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            $dropdowntextlist.writeValue(control.id);
+            if (!silent && before !== JSON.stringify($dropdowntextlist.getValue(control.id))) {
+                control.picker.trigger('change', control.picker.getValue());
+            }
+        },
+
+        cancelPending(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            control.revision++;
+            control.loadSequence++;
+            clearTimeout(control.loadTimer);
+            control.picker.loading = 0;
+            control.picker.wrapper.classList.remove(control.picker.settings.loadingClass);
+            if (control.creating) {
+                control.creating = false;
+                if (!control.explicitLock && !control.picker.isDisabled) {
+                    control.picker.unlock();
+                }
+            }
+        },
+
+        updateButtons(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            control.picker.control.querySelectorAll('button').forEach(function (button) {
+                button.disabled = control.picker.isLocked || control.picker.isDisabled;
+            });
+            control.picker.control.querySelectorAll('.dttl-group').forEach(function (group) {
+                var disabled = control.picker.isLocked || control.picker.isDisabled;
+                group.tabIndex = disabled ? -1 : 0;
+                group.setAttribute('aria-disabled', String(disabled));
+            });
+        },
+
+        onTagClick(elID, event) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            var target = event.target.closest('.dttl-group,.dttl-edit,.dttl-remove');
+            if (!target || !control.picker.control.contains(target)) {
+                if (control.editor) {
+                    $dropdowntextlist.closeEditor(elID, false);
+                }
+                return;
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            if (control.picker.isLocked || control.picker.isDisabled) {
+                return;
+            }
+            var item = target.closest('[data-value]');
+            if (target.classList.contains('dttl-remove')) {
+                $dropdowntextlist.removeItem(control.id, item);
+                $dropdowntextlist.focus(control.id);
+            }
+            else {
+                $dropdowntextlist.editCondition(control.id, item);
+            }
+        },
+
+        editCondition(elID, item) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            if (control.picker.isLocked || control.picker.isDisabled) {
+                return;
+            }
+            $dropdowntextlist.closeEditor(control.id, false);
+            var id = item.dataset.value;
+            var current = control.conditions.get(id) || {
+                logic: 'AND',
+                operator: 'eq'
+            };
+            control.picker.close();
+            var editor = document.createElement('div');
+            editor.className = 'dttl-editor';
+            editor.setAttribute('role', 'dialog');
+            editor.setAttribute('aria-label', control.picker.options[id]._dttlLabel + ' 조건 편집');
+            var field = function (label, values, value, colorAttribute) {
+                var wrapper = document.createElement('label');
+                wrapper.append(document.createTextNode(label));
+                var select = document.createElement('select');
+                Object.keys(values).forEach(function (key) {
+                    var option = new Option(values[key], key);
+                    option.setAttribute(colorAttribute, key);
+                    select.add(option);
+                });
+                select.value = value;
+                select.setAttribute(colorAttribute, value);
+                select.addEventListener('change', function () {
+                    select.setAttribute(colorAttribute, select.value);
+                });
+                wrapper.append(select);
+                editor.append(wrapper);
+                return select;
+            };
+            var logic = field('연결', {
+                AND: 'AND',
+                OR: 'OR'
+            }, current.logic, 'data-dttl-logic');
+            var operator = field('비교', $dropdowntextlist.operators, current.operator, 'data-dttl-operator');
+            var apply = document.createElement('button');
+            apply.type = 'button';
+            apply.textContent = '적용';
+            apply.className = 'dttl-apply';
+            var cancel = document.createElement('button');
+            cancel.type = 'button';
+            cancel.textContent = '취소';
+            editor.append(apply, cancel);
+            apply.addEventListener('click', function () {
+                if (control.picker.isLocked || control.picker.isDisabled) {
+                    return;
+                }
+                var before = JSON.stringify($dropdowntextlist.getValue(control.id));
+                control.conditions.set(id, {
+                    logic: logic.value,
+                    operator: operator.value
+                });
+                $dropdowntextlist.refreshItems(control.id);
+                $dropdowntextlist.closeEditor(control.id, true);
+                $dropdowntextlist.notify(control.id, before, false);
+            });
+            cancel.addEventListener('click', function () {
+                return $dropdowntextlist.closeEditor(control.id, true);
+            });
+            editor.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    $dropdowntextlist.closeEditor(control.id, true);
+                }
+                if (event.key === 'Tab') {
+                    if (event.shiftKey && event.target === logic) {
+                        event.preventDefault();
+                        cancel.focus();
+                    }
+                    else if (!event.shiftKey && event.target === cancel) {
+                        event.preventDefault();
+                        logic.focus();
+                    }
+                }
+            });
+            control.editor = editor;
+            control.editingID = id;
+            control.container.append(editor);
+            $dropdowntextlist.positionEditor(elID);
+            logic.focus({ preventScroll: true });
+            control.picker.clearActiveItems();
+            control.picker.setActiveItemClass(item);
+        },
+
+        normalizeDropdownSize(value, name) {
+            var defaultValue = 'auto';
+            if (value == null || value === '') {
+                return defaultValue;
+            }
+            if (value === defaultValue || (name === 'dropdownWidth' && value === '100%')) {
+                return value;
+            }
+            if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+                return value + 'px';
+            }
+            if (typeof value === 'string' && /^\d+(?:\.\d+)?px$/.test(value) && parseFloat(value) > 0) {
+                return value;
+            }
+
+            throw new TypeError('DropDownTextList: ' + name + ' must be ' + defaultValue +
+                (name === 'dropdownWidth' ? ', 100%, or' : ' or') + ' a positive pixel value');
+        },
+
+        sizeDropdown(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+            var picker = control.picker;
+            var dropdown = picker.dropdown;
+            var content = picker.dropdown_content;
+            var width = $dropdowntextlist.normalizeDropdownSize(control.settings.dropdownWidth, 'dropdownWidth');
+            var height = $dropdowntextlist.normalizeDropdownSize(control.settings.dropdownHeight, 'dropdownHeight');
+
+            // 기본 높이는 Tom Select의 최대 높이 정책을 그대로 사용한다.
+            if (height === 'auto') {
+                dropdown.style.height = '';
+                content.style.height = '';
+                content.style.maxHeight = '';
+                content.style.boxSizing = '';
+            }
+            else {
+                dropdown.style.height = height;
+                content.style.height = '100%';
+                content.style.maxHeight = 'none';
+                content.style.boxSizing = 'border-box';
+            }
+
+            dropdown.style.maxWidth = '';
+            dropdown.style.overflowWrap = '';
+            if (width === '100%') {
+                if (picker.settings.dropdownParent !== 'body') {
+                    dropdown.style.width = '';
+                }
+            }
+            else if (width === 'auto') {
+                dropdown.style.width = 'max-content';
+                dropdown.style.overflowWrap = 'anywhere';
+                var left = picker.control.getBoundingClientRect().left;
+                var availableWidth = Math.max(1, document.documentElement.clientWidth - Math.max(0, left) - 8);
+                dropdown.style.maxWidth = availableWidth + 'px';
+                if (dropdown.getClientRects().length > 0) {
+                    var scrollbarWidth = content.offsetWidth - content.clientWidth;
+                    dropdown.style.width = Math.min(availableWidth, Math.ceil(dropdown.getBoundingClientRect().width) + scrollbarWidth) + 'px';
+                }
+            }
+            else {
+                dropdown.style.width = width;
+            }
+        },
+
+        positionEditor(elID) {
+            var control = $dropdowntextlist.requireControl(elID);
+            var editor = control.editor;
+            if (!editor) {
+                return;
+            }
+
+            var item = control.picker.getItem(control.editingID);
+            if (!item) {
+                $dropdowntextlist.closeEditor(elID, false);
+                return;
+            }
+
+            var itemRect = item.getBoundingClientRect();
+            var containerRect = control.container.getBoundingClientRect();
+            var viewportWidth = document.documentElement.clientWidth;
+            var viewportHeight = window.innerHeight;
+            var padding = 8;
+            var gap = 6;
+            if (itemRect.bottom < 0 || itemRect.top > viewportHeight || itemRect.right < 0 || itemRect.left > viewportWidth) {
+                $dropdowntextlist.closeEditor(elID, false);
+                return;
+            }
+
+            // 태그 바로 아래를 우선 사용하고, 화면 가장자리에서는 위치와 높이를 조정한다.
+            var spaceBelow = Math.max(0, viewportHeight - padding - itemRect.bottom - gap);
+            var spaceAbove = Math.max(0, itemRect.top - padding - gap);
+            editor.style.left = '0px';
+            editor.style.top = '0px';
+            editor.style.width = '';
+            editor.style.maxWidth = Math.max(0, Math.min(control.container.clientWidth, viewportWidth - padding * 2)) + 'px';
+            editor.style.maxHeight = Math.max(spaceBelow, spaceAbove) + 'px';
+            editor.style.width = Math.ceil(editor.getBoundingClientRect().width) + 'px';
+            var editorWidth = editor.offsetWidth;
+            var editorHeight = editor.offsetHeight;
+            var left = Math.max(padding, Math.min(itemRect.left, viewportWidth - padding - editorWidth));
+            var top = itemRect.bottom + gap;
+            if (editorHeight > spaceBelow && spaceAbove > spaceBelow) {
+                top = itemRect.top - gap - editorHeight;
+            }
+            top = Math.max(padding, Math.min(top, viewportHeight - padding - editorHeight));
+            editor.style.left = Math.round(left - containerRect.left - control.container.clientLeft + control.container.scrollLeft) + 'px';
+            editor.style.top = Math.round(top - containerRect.top - control.container.clientTop + control.container.scrollTop) + 'px';
+        },
+
+        closeEditor(elID, restoreFocus) {
+            var control = $dropdowntextlist.requireControl(elID);
+
+            if (!control.editor) {
+                return;
+            }
+            var id = control.editingID;
+            control.editor.remove();
+            control.editor = null;
+            control.editingID = null;
+            control.picker.clearActiveItems();
+            if (restoreFocus) {
+                var item = control.picker.getItem(id);
+                var button = item ? item.querySelector('.dttl-edit') : null;
+                if (button) {
+                    item.classList.add('active', 'last-active');
+                    control.picker.activeItems.push(item);
+                    button.focus({ preventScroll: true });
+                }
+            }
+        },
+
+        setLocale() {}
+    });
+
+    syn.uicontrols.$dropdowntextlist = $dropdowntextlist;
 })(window);

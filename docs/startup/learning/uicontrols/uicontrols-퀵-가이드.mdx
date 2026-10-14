@@ -31,6 +31,19 @@ syn.uicontrols.$select.setValue('ddlStatus', 'READY');
 var checked = syn.uicontrols.$checkbox.getValue('chkUse');
 ```
 
+검색어로 여러 항목을 선택하면서 AND/OR 및 비교 조건을 함께 수집하려면 [DropDownTextList](./drop-down-text-list.mdx)를 사용합니다.
+
+```html
+<syn_dropdowntextlist id="conditions" syn-datafield="Conditions" syn-options="{}"></syn_dropdowntextlist>
+```
+
+```js
+syn.uicontrols.$dropdowntextlist.setValue('conditions', [{class:'mammal',value:'dog',name:'Dog'}]);
+syn.uicontrols.$dropdowntextlist.addItem('conditions', 'dog');
+var conditions = syn.uicontrols.$dropdowntextlist.getValue('conditions');
+// [{groupID:'mammal',logic:'AND',operator:'eq',key:'dog',value:'Dog'}]
+```
+
 ## 날짜와 색상
 
 ```html

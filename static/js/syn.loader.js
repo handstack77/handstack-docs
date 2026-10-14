@@ -773,6 +773,18 @@
                         item.css = ['/uicontrols/PropertyPanel/PropertyPanel.css'];
                         item.js = ['/uicontrols/PropertyPanel/PropertyPanel.js'];
                         break;
+                    case 'dropdowntextlist':
+                        item.css = ['/lib/tom-select/dist/css/tom-select.bootstrap5.css', '/uicontrols/DropDownTextList/DropDownTextList.css'];
+                        item.js = ['/lib/tom-select/dist/js/tom-select.complete.min.js', '/uicontrols/DropDownTextList/DropDownTextList.js'];
+                        break;
+                    case 'signaturepad':
+                        item.css = ['/uicontrols/SignaturePad/SignaturePad.css'];
+                        item.js = ['/lib/signature_pad/dist/signature_pad.umd.min.js', '/uicontrols/SignaturePad/SignaturePad.js'];
+                        break;
+                    case 'filedropzone':
+                        item.css = ['/lib/dropzone/dist/dropzone.css', '/uicontrols/FileDropZone/FileDropZone.css'];
+                        item.js = ['/lib/dropzone/dist/dropzone-min.js', '/uicontrols/FileDropZone/FileDropZone.js'];
+                        break;
                 }
             }
 
@@ -1009,9 +1021,14 @@
                         '/uicontrols/DatePicker/DatePicker.css',
                         '/uicontrols/DropDownCheckList/DropDownCheckList.css',
                         '/uicontrols/DropDownList/DropDownList.css',
+                        '/lib/tom-select/dist/css/tom-select.bootstrap5.css',
+                        '/lib/dropzone/dist/dropzone.css',
+                        '/uicontrols/DropDownTextList/DropDownTextList.css',
                         '/uicontrols/FileClient/FileClient.css',
+                        '/uicontrols/FileDropZone/FileDropZone.css',
                         '/uicontrols/GridList/GridList.css',
                         '/uicontrols/RadioButton/RadioButton.css',
+                        '/uicontrols/SignaturePad/SignaturePad.css',
                         '/uicontrols/TextArea/TextArea.css',
                         '/uicontrols/TextBox/TextBox.css',
                         '/uicontrols/SourceEditor/SourceEditor.css',

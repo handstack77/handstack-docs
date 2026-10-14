@@ -55,12 +55,14 @@ HandStack 기반 에서는 비즈니스 앱 화면 개발에 필요한 다음과
 |syn.uicontrols.$select|DropDownList|단일 항목을 선택 할 수 있는 콤보박스를 제공합니다.|
 |syn.uicontrols.$element|Element|HTML 항목에서 getValue, setValue 기능을 제공합니다.|
 |syn.uicontrols.$fileclient|FileClient|파일 업로드/다운로드 기능을 제공합니다.|
+|syn.uicontrols.$filedropzone|FileDropZone|파일을 끌어다 놓아 repository 모듈로 업로드하고 목록에서 다운로드/삭제합니다.|
 |syn.uicontrols.$list|GridList|데이터 조회에 특화된 기능을 제공합니다.|
 |syn.uicontrols.$guide|Guide|화면 내 표시되는 도움말 기능을 제공합니다.|
 |syn.uicontrols.$htmleditor|HtmlEditor|파일 업로드/다운로드 기능이 통합된 HTML 편집기 기능을 제공합니다.|
 |syn.uicontrols.$organization|OrganizationView|조직도 데이터를 직관적으로 편집하는 기능을 제공합니다.|
 |syn.uicontrols.$echarts|ECharts|객체/객체 배열을 다양한 차트로 표현하고 선택한 원본 행을 거래 값으로 제공합니다.|
 |syn.uicontrols.$radio|RadioButton|브라우저마다 다르게 표시되는 라디오버튼을 일관되게 표현합니다.|
+|syn.uicontrols.$signaturepad|SignaturePad|마우스·터치로 서명을 입력받고 base64 data URL 문자열로 값을 관리합니다.|
 |syn.uicontrols.$sourceeditor|SourceEditor|소스 편집기에 특화된 에디터 기능을 제공합니다.|
 |syn.uicontrols.$textarea|TextArea|여러 텍스트 줄을 관리하기 위한 추가 기능을 제공합니다.|
 |syn.uicontrols.$textbox|TextBox|단일 텍스트을 관리하기 위한 추가 기능을 제공합니다.|
@@ -214,6 +216,21 @@ HandStack 기반 에서는 비즈니스 앱 화면 개발에 필요한 다음과
 }"></syn_fileclient>
 ```
 
+## FileDropZone
+
+파일을 끌어다 놓아 repository 모듈로 업로드하고 목록에서 다운로드/삭제합니다. 값은 업로드가 끝난 파일 항목 객체 배열입니다.
+
+#### 소스위치
+    * /lib/dropzone/dist/dropzone-min.js
+    * /lib/dropzone/dist/dropzone.css
+    * /uicontrols/FileDropZone/FileDropZone.css
+    * /uicontrols/FileDropZone/FileDropZone.js
+#### 다운로드: https://github.com/enyo/dropzone
+#### 사용법
+```html
+<syn_filedropzone id="fdzAttach" syn-datafield="Attachments" syn-options="{repositoryID: 'TSTLM01', applicationID: 'HDS', dependencyID: 'POST_0001'}"></syn_filedropzone>
+```
+
 ## HtmlEditor
 
 파일 업로드/다운로드 기능이 통합된 HTML 편집기 기능을 제공합니다.
@@ -243,6 +260,20 @@ HandStack 기반 에서는 비즈니스 앱 화면 개발에 필요한 다음과
 <input id="rdoUseYN1" name="rdoUseYN" type="radio" syn-datafield="RadioUseYN" value="value 1" syn-events="['change']" syn-options="{textContent: '사용', toSynControl: true}">
 <input id="rdoUseYN2" name="rdoUseYN" type="radio" syn-datafield="RadioUseYN" value="value 2" syn-events="['change']" syn-options="{textContent: '미사용', toSynControl: true}">
 <input id="rdoUseYN3" name="rdoUseYN" type="radio" syn-datafield="RadioUseYN" value="value 3" syn-events="['change']" checked="checked" syn-options="{textContent: '알수없음', toSynControl: true}">
+```
+
+## SignaturePad
+
+마우스·터치로 서명을 입력받고 base64 data URL 문자열(getValue/setValue)로 값을 관리합니다.
+
+#### 소스위치
+    * /lib/signature_pad/dist/signature_pad.umd.min.js
+    * /uicontrols/SignaturePad/SignaturePad.css
+    * /uicontrols/SignaturePad/SignaturePad.js
+#### 다운로드: https://github.com/szimek/signature_pad
+#### 사용법
+```html
+<syn_signaturepad id="sigReceiver" syn-datafield="ReceiverSignature" syn-events="['change']" syn-options="{height: '200px', penColor: '#1e3a8a'}"></syn_signaturepad>
 ```
 
 ## SourceEditor

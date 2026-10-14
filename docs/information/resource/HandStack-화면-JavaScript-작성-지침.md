@@ -2035,11 +2035,13 @@ JavaScript 내에서 컨트롤을 사용하기 위해 `syn.uicontrols.`와 약�
 | `$multiselect`| DropDownCheckList | 여러 항목 선택 콤보박스를 제공합니다. |
 | `$element` | Element | HTML 항목의 `getValue`, `setValue` 기능을 제공합니다. |
 | `$fileclient`| FileClient | 파일 업로드/다운로드 기능을 제공합니다. |
+| `$filedropzone` | FileDropZone | 파일을 끌어다 놓아 repository 로 업로드하고 목록에서 다운로드/삭제합니다. 값은 파일 항목 객체 배열입니다. |
 | `$list` | GridList | 데이터 조회에 특화된 기능을 제공합니다. |
 | `$guide` | Guide | 화면 내 표시되는 도움말 기능을 제공합니다. |
 | `$htmleditor`| HtmlEditor | 파일 업로드/다운로드 통합 HTML 편집기를 제공합니다. |
 | `$organization`| OrganizationView | 조직도 데이터를 직관적으로 편집하는 기능을 제공합니다. |
 | `$radio` | RadioButton | 브라우저마다 다른 라디오버튼을 일관되게 표현합니다. |
+| `$signaturepad` | SignaturePad | 마우스·터치 서명 입력을 제공하며 값을 base64 data URL 문자열로 관리합니다. |
 | `$sourceeditor`| SourceEditor | 소스 편집에 특화된 에디터 기능을 제공합니다. |
 | `$textarea` | TextArea | 여러 텍스트 줄 관리 기능을 제공합니다. |
 | `$textbox` | TextBox | 단일 텍스트 관리 기능을 제공합니다. |
@@ -2802,6 +2804,48 @@ let $files = {
 
 ```
 
+### $filedropzone FileDropZone 예제 코드
+```js
+'use strict';
+let $filedropzone = {
+    event: {
+        btnGetValue_click() {
+            // 업로드가 끝난 파일 항목 배열 [{ItemID, FileName, Size, Extension, DependencyID, ...}], 없으면 []
+            syn.$l.eventLog('btnGetValue_click', JSON.stringify(syn.uicontrols.$filedropzone.getValue('fdzAttach')));
+        },
+
+        async btnSetValue_click() {
+            // 항목 배열 또는 ItemID 배열로 화면 목록을 교체합니다(서버 업로드/삭제 없음). Promise<boolean>
+            await syn.uicontrols.$filedropzone.setValue('fdzAttach', savedItems);
+        },
+
+        async btnLoad_click() {
+            // 서버에서 dependencyID 의 파일을 다시 조회합니다.
+            await syn.uicontrols.$filedropzone.load('fdzAttach', 'POST_0001');
+        },
+
+        btnDownload_click() {
+            syn.uicontrols.$filedropzone.download('fdzAttach', itemID);
+        },
+
+        async btnSave_click() {
+            // 임시 키로 올린 파일을 업무 키로 옮깁니다.
+            await syn.uicontrols.$filedropzone.updateDependencyID('fdzAttach', 'POST_0001');
+        },
+
+        fdzAttach_uploadSuccess(evt) {
+            console.log('fdzAttach_uploadSuccess', evt.detail.item.FileName);
+        },
+
+        fdzAttach_change(evt) {
+            // 업로드 성공 / 삭제 시 발생. evt.detail.value 는 getValue() 와 같은 값
+            console.log('fdzAttach_change', evt.detail.value.length);
+        }
+    }
+}
+
+```
+
 ### $list GridList 예제 코드
 ```js
 'use strict';
@@ -3494,6 +3538,38 @@ let $radiobutton = {
 
         rdoUseYN3_change() {
             console.log('rdoUseYN3_change');
+        }
+    }
+}
+
+```
+
+### $signaturepad SignaturePad 예제 코드
+```js
+'use strict';
+let $signaturepad = {
+    event: {
+        btnGetValue_click() {
+            // 서명이 있으면 data:image/png;base64,... 문자열, 없으면 빈 문자열
+            syn.$l.eventLog('btnGetValue_click', syn.uicontrols.$signaturepad.getValue('sigReceiver'));
+        },
+
+        async btnSetValue_click() {
+            // data URL 또는 순수 base64 문자열을 그립니다. 이미지 로딩이 끝나면 완료되는 Promise<boolean> 을 반환합니다.
+            await syn.uicontrols.$signaturepad.setValue('sigReceiver', savedSignature);
+        },
+
+        btnUndo_click() {
+            syn.uicontrols.$signaturepad.undo('sigReceiver');
+        },
+
+        btnClear_click() {
+            syn.uicontrols.$signaturepad.clear('sigReceiver');
+        },
+
+        sigReceiver_change(evt) {
+            // 사용자가 획을 그리거나 undo 했을 때 발생. evt.detail.value 는 getValue() 와 같은 값
+            console.log('sigReceiver_change', evt.detail.value.length);
         }
     }
 }
