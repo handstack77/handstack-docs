@@ -120,9 +120,10 @@ HTTPS에서 일반 HTTP로 보내는 요청에는 `Referer`를 생략합니다. 
             "ExposeSecretValues": false,
             "WarnOnWildcardAllowClientIP": true,
             "MaxContractSyncFileBytes": 10485760,
-            "ApiAccess": {
+            "RequestOriginApiAccess": {
                 "Enabled": true,
                 "AllowLoopback": true,
+                "IsPortComparison": false,
                 "HeaderName": "X-Api-Key",
                 "AllowedReferers": [],
                 "ApiKeys": []
