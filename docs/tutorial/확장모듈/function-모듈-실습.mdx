@@ -22,6 +22,9 @@ contracts/function/csharp/HDS/BOD/BFN010
 
 `featureMain.cs`(또는 Node.js라면 `featureMain.js`)에 실제 실행 로직을 작성하고, `featureMeta.json`에 이 함수의 입출력 정보를 기술합니다.
 
+
+C# 함수 컴파일은 로드된 어셈블리의 메모리 메타데이터와 설치된 .NET 런타임 DLL을 참조합니다. 따라서 `rdy`를 단일 파일로 게시해도 포함된 모듈의 DLL 경로에 의존하지 않습니다.
+
 ## 거래 계약에서 function 호출하기
 
 ```json
