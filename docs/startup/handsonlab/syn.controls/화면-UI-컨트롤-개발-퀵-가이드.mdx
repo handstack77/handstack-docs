@@ -203,6 +203,23 @@ syn.uicontrols.$auigrid.visibleColumns('grdDataGrid', [1, 2], true);  // 표시
 syn.uicontrols.$auigrid.addCondition('grdDataGrid', 'Name', 'contains', '홍길동');
 ```
 
+`contains`는 부분 문자열 검색입니다. `empty`는 `null`·`undefined`·`''`만 빈 값으로 처리하며, `0`과 `false`는 `not_empty`에 해당합니다. `args`는 단일 값 또는 배열을 받으며 포함 조건은 OR, 제외 조건은 AND로 처리합니다. 범위 조건은 `args[i]`와 `args2[i]`를 한 쌍으로 묶고, 한쪽이 단일 값이면 공통 적용합니다. 전체 조건과 비교 규칙은 [AUIGrid 가이드](../../learning/uicontrols/aui-grid#addcondition-조건)를 참고하세요.
+
+##### addMultiCondition
+같은 컬럼에 여러 조건을 결합합니다. 마지막 인수는 기본 결합 방식(생략 시 OR)이며, 두 번째 이후 조건의 `logic`이 있으면 이를 우선 적용합니다. 해당 값이 생략되거나 `undefined`이면 기본값을 사용합니다. 첫 조건의 `logic`은 무시하며, 이후에는 앞까지 계산한 결과와 현재 조건을 왼쪽부터 순서대로 결합합니다. 각 조건의 `args`/`args2` 배열은 `addCondition`과 같은 규칙을 따릅니다.
+
+```javascript
+syn.uicontrols.$auigrid.addMultiCondition('grdDataGrid', 'Name', [
+    { name: 'contains', args: ['홍', '김'] },
+    { name: 'not_contains', args: ['테스트', '임시'], logic: 'AND' }
+]);
+syn.uicontrols.$auigrid.removeCondition('grdDataGrid', 'Name');
+```
+
+예를 들어 위 예제는 두 번째 조건의 `logic: 'AND'`가 기본 OR보다 우선하여 두 조건을 AND로 연결합니다. 세 조건 A, B(`logic: 'OR'`), C(`logic: 'AND'`)는 `(A OR B) AND C`로 평가합니다.
+
+`removeCondition`은 해당 컬럼의 조건 전체를 삭제합니다. 빈 조건 목록 `[]`도 해당 컬럼의 필터를 해제하며, 잘못된 조건이나 범위 배열 길이 불일치는 기존 필터를 유지합니다. 상세 입력 규칙은 [AUIGrid 가이드](../../learning/uicontrols/aui-grid#addmulticondition-조건)를 참고하세요.
+
 ##### clearConditions
 모든 필터 조건을 지웁니다.
 ```javascript
@@ -352,7 +369,7 @@ syn.uicontrols.$auigrid.setDataAtCell('grdDataGrid', 0, 1, '홍길순');
 syn.uicontrols.$auigrid.insertRow('grdDataGrid', {amount: 1});
 
 // 필터 적용
-syn.uicontrols.$auigrid.addCondition('grdDataGrid', 'Department', 'equals', '개발팀');
+syn.uicontrols.$auigrid.addCondition('grdDataGrid', 'Department', 'eq', '개발팀');
 ```
 
 ### 주의사항
