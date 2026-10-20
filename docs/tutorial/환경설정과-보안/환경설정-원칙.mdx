@@ -23,6 +23,8 @@ sidebar_position: 2
 
 [03. 프로젝트와 개발 서버](/docs/tutorial/프로젝트와-개발서버/환경-구성과-기동확인)에서 다룬 `.localhost.json`/`.development.json`/`.test.json`/`.staging.json`/`.production.json` 프리셋이 바로 이 계층을 환경별로 구분해 관리하는 방법입니다.
 
+Windows, Ubuntu, macOS처럼 **실행 OS에 따라** 경로·인증서·외부 주소를 달리해야 하면 `ack`와 `rdy`는 기본 `appsettings.json` 뒤에 `appsettings.windows.json`·`appsettings.linux.json`·`appsettings.macos.json` 중 현재 OS 파일 하나를 병합합니다. 모듈도 같은 규칙으로 `module.{os}.json`을 사용합니다. 객체는 키별로 합치지만 배열은 OS별 파일의 전체 값으로 교체되며, 환경별 설정 파일·환경 변수·실행 인자가 그 뒤에 적용됩니다. OS별 파일은 시작할 때만 읽으므로 수정 후에는 재시작해야 합니다. 파일 이름, 병합 규칙, 런타임 설정 감시의 제한은 [ack OS별 설정 파일](/docs/reference/api/ack-프로그램#os별-설정-파일)을 확인하세요.
+
 ## 실습: 지금 로드된 설정 확인하기
 
 새 기능을 만들기 전에는 항상 다음을 먼저 확인하는 습관을 들입니다.
