@@ -19,10 +19,12 @@ pagination_next: null
 | command | `.bas` | 명령행·웹 요청 | 명령 실행 |
 | function | `.fnc` | 함수·런타임 실행 | 함수 실행 |
 | graphclient | `.cyp` | Cypher 구문 | 쿼리 실행 |
-| prompter | `.pmt` | 프롬프트·모델 요청 | 프롬프트 실행 |
+| prompter | `.pmt` | 프롬프트·모델 요청, Jev·Ollama 판단 계약 | 프롬프트 실행 |
 | repository | `.rpo` | 파일 저장소 정책 | 계약 편집·저장소 관리 |
 
 확장자가 파일의 내부 형식을 뜻하지는 않습니다. 예를 들어 `.dbc`는 XML 계약이며 `.txn`은 JSON 계약입니다. 기존 파일을 다른 확장자로 일괄 변경하지 마세요. 정확한 계약 옵션은 [모듈 참조](/docs/reference/)에서 확인합니다.
+
+prompter 계약 화면은 `.pmt` 파일만 열고 저장합니다. 모듈 소스에서 직접 관리하는 같은 형식의 `.xml` 계약은 이 화면에서 지원하지 않습니다. 판단 계약(`<decision>`)은 구문의 **판단 계약 (Decision)** 섹션이나 **판단 구문** 버튼으로 편집하며, 질문 JSON 규칙은 [prompter 모듈 참조](/docs/reference/api/modules/prompter)를 따릅니다.
 
 IDE의 사용자 편집용 JSON 계약은 주석과 후행 쉼표를 허용합니다. 원본 편집 시 이를 오류로 단정해 제거하지 말고 계약 편집기의 검증 결과를 확인하세요.
 

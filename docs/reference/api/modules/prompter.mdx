@@ -49,6 +49,68 @@ ApplicationID|ProjectID|TransactionID|PromptID
 
 프롬프트 본문은 `${ParameterName}` 형태로 요청 값을 치환합니다. `authorization`, `headers`, `body` 속성처럼 값 전체를 파라미터로 받을 때는 `@ParameterName` 형식을 사용합니다. statement의 `role` 기본값은 `user`이며, 시스템 지시문으로 전달할 계약만 `role="system"`을 명시합니다. `<message>`의 `role`을 생략하면 statement role을 상속합니다.
 
+## Jev·Ollama 판단 계약
+
+`<decision>` statement는 TypeSafe Jev 또는 로컬 Ollama의 `/v1/systemone`을 호출합니다.
+기존 `CommandType=P`와 QueryID 형식을 사용하며, `<decision>`이 없는 Ollama 채팅 계약은 `/api/chat`을 유지합니다.
+
+```xml
+<statement id="GP02" seq="0" use="Y" datasource="DECISION_NIMBLE" timeout="60">
+  <decision state="@UserMessage"><![CDATA[
+  {"refund":{"type":"noul","instructions":"Does the customer request a refund?"}}
+  ]]></decision>
+  <param id="@UserMessage" type="String" length="-1" required="Y" value="" />
+  <outputmeta value="PromptResult:string" />
+</statement>
+```
+
+`state`는 선언된 입력 파라미터를 참조합니다. 입력은 독립적인 JSON 문자열로 직렬화되며, 질문 기준인 CDATA에는 문자열 치환을 적용하지 않습니다.
+질문은 Choice(2~26개 선택지), Score(2~10개 순서 있는 기준), Noul(참 확률)을 지원합니다. Noul에는 별도 confidence가 없습니다.
+판단 계약은 텍스트만 지원하고 `message/media/tools/body/headers/authorization`과 함께 선언할 수 없습니다. `Think/Stream`은 false여야 합니다.
+timeout은 1~300초이며 0 또는 생략은 30초입니다.
+
+| ServiceID | 데이터 소스 | LLMProvider | ModelID |
+| --- | --- | --- | --- |
+| GP01 | DECISION_JEV | TypeSafe | jev-latest |
+| GP02 | DECISION_NIMBLE | Ollama | nimble |
+| GP03 | DECISION_CLEF_FLASH | Ollama | clef-flash |
+| GP04 | DECISION_CLEF | Ollama | clef |
+| GP05 | DECISION_TEV1 | Ollama | tev1 |
+
+소스 `module.json`에는 위 데이터 소스가 포함되어 있습니다. 실제 실행 모듈 설정에도 해당 항목을 병합합니다.
+TypeSafe의 Endpoint는 `https://api.typesafe.ai`이며 ApiKey가 비어 있으면 호스트 프로세스의 `TYPESAFE_API_KEY`를 사용합니다. 기존 ApiKey 암호화 설정도 사용할 수 있습니다.
+Ollama 판단의 기본 Endpoint는 `http://127.0.0.1:11434`이며 루프백 주소만 허용하고 Authorization 헤더를 보내지 않습니다.
+허용 모델은 `ModuleConfig.AllowedOllamaDecisionModels` 배열에서 관리합니다. 배포 설정에는 네 모델의 기본/`:latest` 태그와 `tev1:4b`, `tev1:0.8b`가 등록되어 있습니다.
+새 모델은 허용 목록과 `LLMSource.ModelID`에 같은 값을 지정하면 코드 수정 없이 사용할 수 있습니다. `/v1/systemone`을 실제 지원하는 로컬 모델과 런타임을 호스트 컴퓨터에 준비해야 합니다.
+
+```json
+{
+  "AllowedOllamaDecisionModels": ["nimble", "nimble:latest", "tev1:4b"]
+}
+```
+
+위 설정은 `ModuleConfig` 안에 넣습니다. 모델명과 태그는 대소문자를 구분해 전체 문자열이 일치해야 하며 와일드카드는 지원하지 않습니다.
+앞뒤 공백·중복·빈 항목은 정리합니다. 목록 누락, null 또는 빈 배열은 Ollama 판단 호출을 차단하며 코드의 고정 목록으로 대체하지 않습니다.
+기존 설정에는 이 새 항목도 병합해야 합니다. TypeSafe 판단과 일반 Ollama 채팅은 영향을 받지 않습니다.
+호스트의 `AppSettings:IsConfigurationWatching=true`이면 변경 후 시작하는 모델 검사부터 새 목록을 적용합니다. 꺼져 있으면 호스트를 다시 시작합니다.
+모듈 설정 화면의 `AllowedOllamaDecisionModels` 입력란에서도 목록을 편집할 수 있습니다.
+
+전체 예제는 [JEV010.xml](/sample/prompter/decision/JEV010.xml), [거래 계약](/sample/prompter/decision/JEV010.json),
+[직접 호출 요청](/sample/prompter/decision/request.json), [데이터 소스 설정](/sample/prompter/decision/sources.json)입니다.
+XML은 `contracts/prompter/HDS/LLM/JEV010.xml`, 거래 JSON은 `contracts/transact/HDS/LLM/JEV010.json`에 배치합니다.
+모듈 `Contracts`에도 최신본을 반영하고 호스트를 다시 시작합니다. 기본 요청은 `HDS|LLM|JEV010|GP0200`을 실행합니다.
+
+직접 API에서는 `Acknowledge=1`과 빈 `ExceptionText`를 확인한 다음 `ResultJson[0].Value.PromptResult`를 JSON으로 역직렬화합니다.
+Form 행의 ID는 `FormData0`입니다. transact 경로에서는 `acknowledge`와 `result.dataSet[0].value.PromptResult`를 확인합니다.
+`PromptResult`는 검증된 전체 응답 문자열이며 `outputmeta`가 개별 JSON 경로를 숫자 필드에 매핑하지는 않습니다.
+
+확률 범위·합, 선택지, Score 가중합 등을 검증하고 429·500·타임아웃·잘못된 응답은 거래 실패로 처리합니다.
+임의 결과나 채팅으로 대체하지 않습니다. 사람 검토 정책과 입력 마스킹은 호출 앱이 담당합니다.
+prompter의 요청 로그는 decision state를 가리지만 transact·프록시 로그에도 필요한 보호 정책을 적용해야 합니다.
+실제 모델 품질 검증과 별개로, 개발 검증에서는 실제 ack/transact/prompter를 외부 제공자의 로컬 Postman 모의 서버에 연결해 성공·실패 경로를 확인했습니다.
+
+공식 형식: [TypeSafe Quick Start](https://docs.typesafe.ai/introduction/quickstart), [Ollama Decision](https://docs.ollama.com/capabilities/decision).
+
 ## 이미지·오디오 입력
 
 계약의 `<media>`는 `QueryObject.Parameters`에 담긴 Base64 원문을 텍스트와 분리하여 provider별 멀티모달 메시지로 전달합니다.
@@ -88,6 +150,7 @@ provider뿐 아니라 선택한 모델도 해당 modality를 지원해야 합니
 | 설정 | 설명 |
 | --- | --- |
 | `LLMSource` | provider, model, endpoint, API Key, stream/think 옵션을 정의합니다. |
+| `AllowedOllamaDecisionModels` | 로컬 Ollama 판단 계약에서 허용할 모델명·태그의 정확한 목록입니다. 미설정·빈 목록은 판단 호출을 차단합니다. |
 | `AllowedKernelPlugins` | 계약에서 호출 가능한 커널 플러그인과 함수 allowlist입니다. |
 | `AllowedMcpServers` | 계약에서 사용할 수 있는 MCP 서버 allowlist입니다. |
 | `AllowedCliTools` | 프롬프트 실행 중 사용할 수 있는 CLI 도구 allowlist입니다. |

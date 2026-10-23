@@ -1,0 +1,16 @@
+{
+  "ReturnType": "Json",
+  "DynamicObjects": [
+    {
+      "QueryID": "HDS|LLM|JEV010|GP0200",
+      "Parameters": [
+        {
+          "ParameterName": "UserMessage",
+          "Value": "중복 결제를 환불해 주세요.",
+          "DbType": "String",
+          "Length": -1
+        }
+      ]
+    }
+  ]
+}
