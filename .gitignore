@@ -12,6 +12,8 @@
 # Misc
 bin/
 obj/
+# MCP 서버의 실행 진입점(mcp/bin/serve.mjs)은 빌드 산출물이 아니라 소스입니다.
+!/mcp/bin/
 .vs/
 .DS_Store
 .env.local
