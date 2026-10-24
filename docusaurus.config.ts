@@ -33,6 +33,7 @@ const config: Config = {
         [require.resolve('./plugins/ide-downloads/index.cjs'), {
             serverUrl: process.env.HANDSTACK_IDE_RELEASE_SERVER_URL || 'https://stavlo.qrame.kr',
         }],
+        require.resolve('./plugins/agent-docs/index.cjs'),
     ],
     markdown: {
         hooks: { onBrokenMarkdownLinks: 'warn' },
@@ -111,6 +112,7 @@ const config: Config = {
                     type: 'dropdown', label: '더보기', position: 'right',
                     items: [
                         { to: '/docs/category/커뮤니티', label: '커뮤니티·추가 자료' },
+                        { to: '/docs/guides/에이전트에-문서-연결하기', label: 'AI 에이전트용 문서 (MCP)' },
                         { to: '/docs/category/바이브-코딩-지침', label: 'AI 활용 자료' },
                         { to: '/docs/category/강연세미나-문서', label: '발표 자료' },
                         { href: 'https://notebooklm.google.com/notebook/02e39cd7-bd8a-48ff-8ab1-12a985660a74', label: 'NotebookLM' },

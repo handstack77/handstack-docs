@@ -33,6 +33,16 @@ namespace handstack_docs
             builder.Services.AddSingleton<MarpService>();
             builder.Services.AddHostedService<MarpBackgroundService>();
 
+            // MCP 서버: 배포 폴더에 mcp/ 가 있으면 호스트가 직접 실행합니다.
+            var mcpLaunch = McpLaunch.Resolve(AppContext.BaseDirectory);
+            var mcpUpstream = new McpUpstream(mcpLaunch.ExternalAddress);
+            if (mcpLaunch.Mode == McpMode.Managed)
+            {
+                builder.Services.AddSingleton(mcpLaunch);
+                builder.Services.AddSingleton(mcpUpstream);
+                builder.Services.AddHostedService<McpServerService>();
+            }
+
             var app = builder.Build();
 
             string buildPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot");
@@ -55,6 +65,20 @@ namespace handstack_docs
             else
             {
                 Console.WriteLine($"buildPath: {buildPath} 확인 필요");
+            }
+
+            // /mcp 는 MCP 서버(mcp/ 폴더의 Node 서버)로 프록시합니다.
+            Console.WriteLine($"MCP: {mcpLaunch.Message}");
+            if (mcpLaunch.Mode != McpMode.Disabled)
+            {
+                // 앞단에 신뢰하는 프록시(NPM, nginx 등)가 있으면 HANDSTACK_MCP_TRUST_FORWARDED_FOR=true 로 켭니다.
+                // 프록시가 둘 이상(예: CDN + NPM)이면 HANDSTACK_MCP_FORWARDED_HOPS 에 그 수를 지정합니다.
+                int trustedProxyHops = 0;
+                if (string.Equals(Environment.GetEnvironmentVariable("HANDSTACK_MCP_TRUST_FORWARDED_FOR"), "true", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    trustedProxyHops = int.TryParse(Environment.GetEnvironmentVariable("HANDSTACK_MCP_FORWARDED_HOPS"), out var hops) == true && hops > 0 ? hops : 1;
+                }
+                McpProxy.Map(app, mcpUpstream, trustedProxyHops);
             }
 
             app.Run();

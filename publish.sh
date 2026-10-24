@@ -18,5 +18,8 @@ echo "os_mode: $os_mode, configuration_mode: $configuration_mode, arch_mode: $ar
 
 npm run build
 
+# MCP 서버(mcp/)가 실행에 쓰는 운영 의존성만 설치합니다. 사이트 호스트가 배포 폴더의 mcp/ 를 직접 실행합니다.
+npm ci --omit=dev --prefix mcp
+
 rm -rf ../publish/$os_mode-$arch_mode/handstack-docs
 dotnet build handstack-docs.csproj --configuration $configuration_mode --arch $arch_mode --os $os_mode --output ../publish/$os_mode-$arch_mode/handstack-docs

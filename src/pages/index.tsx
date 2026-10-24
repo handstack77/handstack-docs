@@ -46,6 +46,7 @@ export default function Home(): JSX.Element {
                     <p className={styles.moreLinks}>
                         필요한 작업만 찾으려면 <Link to="/docs/guides/">작업별 가이드</Link>,
                         구조와 원리가 궁금하다면 <Link to="/docs/reference/concept/">개념 이해</Link>를 확인하세요.
+                        AI 코딩 에이전트로 개발한다면 <Link to="/docs/guides/에이전트에-문서-연결하기">문서 MCP 서버를 연결</Link>해 보세요.
                     </p>
                 </section>
             </main>

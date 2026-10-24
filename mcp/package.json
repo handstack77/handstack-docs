@@ -1,0 +1,19 @@
+{
+    "name": "handstack-docs-mcp",
+    "version": "0.1.0",
+    "private": true,
+    "description": "HandStack 공식 문서를 AI 에이전트가 검색·조회하도록 제공하는 원격 MCP 서버 (Streamable HTTP)",
+    "type": "module",
+    "license": "MIT",
+    "scripts": {
+        "start": "node bin/serve.mjs",
+        "test": "node --test test/"
+    },
+    "engines": {
+        "node": ">=18.0"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.32.2",
+        "zod": "^4.6.7"
+    }
+}
