@@ -55,7 +55,9 @@ export function parseConfig(argv, env = {}) {
         allowedOrigins: list(env.HANDSTACK_DOCS_ALLOWED_ORIGINS),
         trustProxy: env.HANDSTACK_DOCS_TRUST_PROXY === 'true',
         rateLimit: { limit: numberOr(env.HANDSTACK_DOCS_RATE_LIMIT, 60), windowMs: 60 * 1000 },
-        publicUrl: env.HANDSTACK_DOCS_PUBLIC_URL ?? `http://localhost:${port}/mcp`,
+        // 지정하지 않으면 요청의 Host/X-Forwarded-* 로 알아내고, 그것도 없으면 defaultPublicUrl 을 씁니다.
+        publicUrl: env.HANDSTACK_DOCS_PUBLIC_URL,
+        defaultPublicUrl: `http://localhost:${port}/mcp`,
         reloadMinutes: numberOr(env.HANDSTACK_DOCS_RELOAD_MINUTES, 10),
     };
 }

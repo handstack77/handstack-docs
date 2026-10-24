@@ -94,6 +94,8 @@ dotnet handstack-docs.dll 8080     # 시작 로그의 "MCP: ..." 줄에서 동�
 
 `/mcp`가 열리지 않을 때는 시작 로그의 `MCP:` 줄을 확인하세요. `mcp/`가 없는 경우, `node_modules`가 없는 경우, `node`를 찾지 못한 경우를 각각 구분해서 알려 줍니다.
 
+상태 페이지(`GET /mcp`)의 등록 예시 주소(예: `https://handstack.kr/mcp`)는 사이트 호스트가 실제로 접속된 주소를 자식 서버에 알려 주어 자동으로 만들어집니다. NPM이 보내는 `Host`와 `X-Forwarded-Proto`를 쓰며, 클라이언트 IP 판정과 같은 기준으로 신뢰 대역의 프록시가 보낸 값만 믿습니다. 호스트 이름 형식이 아닌 값은 버립니다.
+
 프록시는 요청 본문을 64KB로 제한하고, 업스트림이 꺼져 있으면 `502`, 응답이 30초를 넘으면 `504`를 돌려줍니다.
 
 ### 2. 외부 서버 모드
@@ -122,7 +124,7 @@ HANDSTACK_MCP_UPSTREAM=http://127.0.0.1:8787 dotnet handstack-docs.dll 8080
 | `HANDSTACK_DOCS_ALLOWED_ORIGINS` | (없음) | 허용할 브라우저 `Origin` 목록(쉼표 구분, `*` 가능). `Origin`이 없는 일반 MCP 클라이언트는 영향이 없습니다 |
 | `HANDSTACK_DOCS_RATE_LIMIT` | `60` | IP당 분당 요청 수. `0`이면 제한하지 않습니다 |
 | `HANDSTACK_DOCS_TRUST_PROXY` | `false` | `true`이면 `X-Forwarded-For`의 마지막 값을 클라이언트 IP로 사용합니다. 신뢰하는 프록시 뒤에서만 켜세요 |
-| `HANDSTACK_DOCS_PUBLIC_URL` | `http://localhost:<port>/mcp` | 상태 페이지에 보여 줄 공개 주소 |
+| `HANDSTACK_DOCS_PUBLIC_URL` | (자동) | 상태 페이지의 등록 예시에 보여 줄 공개 주소. 지정하지 않으면 `HANDSTACK_DOCS_TRUST_PROXY=true`일 때 앞단 프록시가 보낸 `X-Forwarded-Host`/`X-Forwarded-Proto`로 만들고(사이트 호스트가 실행하면 자동), 그것도 없으면 `http://localhost:<port>/mcp`입니다. 지정하면 항상 이 값을 씁니다 |
 | `HANDSTACK_DOCS_RELOAD_MINUTES` | `10` | 인덱스 갱신 확인 주기. `0`이면 갱신하지 않습니다 |
 | `HANDSTACK_DOCS_PARENT_PID` | (없음) | 이 PID의 프로세스가 사라지면 서버도 종료합니다. 호스트가 자동으로 지정합니다 |
 | `HANDSTACK_DOCS_INDEX` | `https://handstack.kr/agent/docs-index.json` | 인덱스 주소 또는 파일 경로 |

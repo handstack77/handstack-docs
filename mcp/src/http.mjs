@@ -84,6 +84,33 @@ function clientAddress(request, trustProxy) {
     return request.socket.remoteAddress ?? 'unknown';
 }
 
+// 호스트 이름(또는 IPv4)과 [IPv6], 선택적 포트만 허용합니다.
+const HOST_LABEL = '[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?';
+const HOST_PATTERN = new RegExp(`^(?:${HOST_LABEL}(?:\\.${HOST_LABEL})*|\\[[0-9A-Fa-f:.]+\\])(?::\\d{1,5})?$`);
+
+function lastHeaderValue(value) {
+    const text = Array.isArray(value) ? value.join(',') : value;
+    return text?.split(',').map((item) => item.trim()).filter(Boolean).pop();
+}
+
+// 상태 페이지에 보여 줄 공개 주소를 정합니다. 명시한 publicUrl 이 있으면 그것을 쓰고,
+// 신뢰하는 프록시 뒤라면 프록시가 알려 준 Host/Proto 로 만들고, 그 외에는 기본 주소를 씁니다.
+// 헤더 값은 페이지에 그대로 표시되므로 호스트 이름 형식이 아니면 버립니다.
+function resolvePublicUrl(request, { publicUrl, defaultPublicUrl, trustProxy }) {
+    if (publicUrl) {
+        return publicUrl;
+    }
+
+    if (trustProxy) {
+        const host = lastHeaderValue(request.headers['x-forwarded-host']);
+        if (host && host.length <= 255 && HOST_PATTERN.test(host)) {
+            const proto = lastHeaderValue(request.headers['x-forwarded-proto'])?.toLowerCase();
+            return `${proto === 'https' ? 'https' : 'http'}://${host}${MCP_PATH}`;
+        }
+    }
+    return defaultPublicUrl;
+}
+
 function statusPage(status, mcpUrl) {
     const escaped = (value) => String(value).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
     return `<!doctype html>
@@ -110,7 +137,8 @@ function statusPage(status, mcpUrl) {
 export function createHttpHandler({
     getService,
     version = '0.0.0',
-    publicUrl = `http://localhost${MCP_PATH}`,
+    publicUrl = null,
+    defaultPublicUrl = `http://localhost${MCP_PATH}`,
     allowedOrigins = [],
     allowedHosts = null,
     trustProxy = false,
@@ -168,7 +196,7 @@ export function createHttpHandler({
                 }
                 if ((request.headers.accept ?? '').includes('text/html')) {
                     response.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', ...cors });
-                    return response.end(statusPage(status(), publicUrl));
+                    return response.end(statusPage(status(), resolvePublicUrl(request, { publicUrl, defaultPublicUrl, trustProxy })));
                 }
                 return sendJson(response, 200, status(), cors);
             }

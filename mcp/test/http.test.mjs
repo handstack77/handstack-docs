@@ -158,3 +158,59 @@ test('parseConfig: 인자가 환경 변수보다 우선하고, 외부 바인딩�
     assert.throws(() => parseConfig(['--bogus'], {}), /알 수 없는 옵션/);
     assert.throws(() => parseConfig(['--port', '99999'], {}), /포트/);
 });
+
+// 상태 페이지가 보여 주는 등록 예시 주소
+async function statusPageUrl(options, headers = {}) {
+    const handler = createHttpHandler({ getService: () => service, version: 'test', ...options });
+    const local = http.createServer(handler);
+    await new Promise((resolve) => local.listen(0, '127.0.0.1', resolve));
+    try {
+        const response = await fetch(`http://127.0.0.1:${local.address().port}/mcp`, { headers: { accept: 'text/html', ...headers } });
+        return (await response.text()).match(/claude mcp add --transport http handstack-docs (\S+)<\/pre>/)?.[1];
+    } finally {
+        local.close();
+    }
+}
+
+test('상태 페이지 주소: 프록시를 신뢰하면 X-Forwarded-Host/Proto 로 공개 주소를 만든다', async () => {
+    const forwarded = { 'x-forwarded-host': 'handstack.kr', 'x-forwarded-proto': 'https' };
+    assert.equal(await statusPageUrl({ trustProxy: true, defaultPublicUrl: 'http://localhost:1/mcp' }, forwarded), 'https://handstack.kr/mcp');
+    assert.equal(await statusPageUrl({ trustProxy: true }, { 'x-forwarded-host': 'docs.example.com:8443', 'x-forwarded-proto': 'http' }), 'http://docs.example.com:8443/mcp');
+    assert.equal(await statusPageUrl({ trustProxy: true }, { 'x-forwarded-host': '1.1.1.207:8080', 'x-forwarded-proto': 'http' }), 'http://1.1.1.207:8080/mcp');
+    assert.equal(await statusPageUrl({ trustProxy: true }, { 'x-forwarded-host': '[::1]:8080' }), 'http://[::1]:8080/mcp');
+});
+
+test('상태 페이지 주소: 여러 프록시가 덧붙인 값은 마지막 값을 쓴다', async () => {
+    assert.equal(await statusPageUrl({ trustProxy: true }, { 'x-forwarded-host': 'evil.example, handstack.kr', 'x-forwarded-proto': 'http, https' }), 'https://handstack.kr/mcp');
+});
+
+test('상태 페이지 주소: 프록시를 신뢰하지 않으면 헤더를 무시하고 기본 주소를 쓴다', async () => {
+    assert.equal(
+        await statusPageUrl({ trustProxy: false, defaultPublicUrl: 'http://localhost:9/mcp' }, { 'x-forwarded-host': 'handstack.kr', 'x-forwarded-proto': 'https' }),
+        'http://localhost:9/mcp',
+    );
+});
+
+test('상태 페이지 주소: 명시한 publicUrl 이 헤더보다 우선한다', async () => {
+    assert.equal(
+        await statusPageUrl({ trustProxy: true, publicUrl: 'https://docs.example.com/mcp' }, { 'x-forwarded-host': 'handstack.kr', 'x-forwarded-proto': 'https' }),
+        'https://docs.example.com/mcp',
+    );
+});
+
+test('상태 페이지 주소: 호스트 이름 형식이 아닌 값은 버린다 (HTML 삽입 방지)', async () => {
+    for (const bad of ['evil.example"><script>x</script>', 'a b', 'host/path', 'host:99999999', '-bad.example', '']) {
+        assert.equal(
+            await statusPageUrl({ trustProxy: true, defaultPublicUrl: 'http://localhost:9/mcp' }, { 'x-forwarded-host': bad, 'x-forwarded-proto': 'https' }),
+            'http://localhost:9/mcp',
+            `거부해야 하는 값: ${bad}`,
+        );
+    }
+});
+
+test('parseConfig: publicUrl 은 지정한 경우에만 값이 있고 기본 주소는 따로 둔다', () => {
+    const config = parseConfig(['--port=9000'], {});
+    assert.equal(config.publicUrl, undefined);
+    assert.equal(config.defaultPublicUrl, 'http://localhost:9000/mcp');
+    assert.equal(parseConfig([], { HANDSTACK_DOCS_PUBLIC_URL: 'https://handstack.kr/mcp' }).publicUrl, 'https://handstack.kr/mcp');
+});

@@ -76,6 +76,18 @@ namespace handstack_docs
                 string? forwardedFor = context.Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedHeader) == true ? string.Join(",", forwardedHeader.ToArray()) : null;
                 request.Headers.TryAddWithoutValidation("X-Forwarded-For", McpClientAddress.Resolve(context.Connection.RemoteIpAddress, forwardedFor, forwardedMode, forwardedHops, trustedNetworks));
 
+                // 상태 페이지가 사용자가 접속한 공개 주소(예: https://handstack.kr/mcp)를 보여 주도록 알려 줍니다.
+                bool trustedForwarder = McpClientAddress.IsTrustedForwarder(context.Connection.RemoteIpAddress, forwardedMode, trustedNetworks);
+                string? forwardedHost = context.Request.Headers["X-Forwarded-Host"].ToString();
+                string? forwardedProto = context.Request.Headers["X-Forwarded-Proto"].ToString();
+                if (string.IsNullOrEmpty(forwardedProto) == true)
+                {
+                    forwardedProto = context.Request.Headers["X-Forwarded-Scheme"].ToString();
+                }
+                var publicOrigin = McpClientAddress.ResolvePublicOrigin(context.Request.Scheme, context.Request.Host.ToUriComponent(), forwardedHost, forwardedProto, trustedForwarder);
+                request.Headers.TryAddWithoutValidation("X-Forwarded-Host", publicOrigin.Host);
+                request.Headers.TryAddWithoutValidation("X-Forwarded-Proto", publicOrigin.Scheme);
+
                 try
                 {
                     using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);

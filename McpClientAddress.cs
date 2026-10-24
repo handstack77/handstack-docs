@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 
 namespace handstack_docs
 {
@@ -200,9 +201,53 @@ namespace handstack_docs
         }
     }
 
-    // 요청 제한의 기준이 되는 클라이언트 IP를 정합니다.
+    // 앞단 프록시가 보낸 X-Forwarded-* 헤더를 어떻게 쓸지 정합니다. (클라이언트 IP, 공개 주소)
     public static class McpClientAddress
     {
+        // 호스트 이름(또는 IPv4)과 [IPv6], 선택적 포트만 허용합니다. 화면에 표시되는 값이므로 그 밖의 문자는 버립니다.
+        private static readonly Regex hostPattern = new Regex(
+            @"^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*|\[[0-9A-Fa-f:.]+\])(?::\d{1,5})?$",
+            RegexOptions.Compiled);
+
+        // 직접 접속한 상대(peer)가 X-Forwarded-* 헤더를 믿어도 되는 프록시인지 판단합니다.
+        public static bool IsTrustedForwarder(IPAddress? peer, McpForwardedMode mode, McpTrustedNetworks networks)
+        {
+            if (mode == McpForwardedMode.Never || peer == null)
+            {
+                return false;
+            }
+            return mode == McpForwardedMode.Always || networks.Contains(peer) == true;
+        }
+
+        // 사용자가 실제로 접속한 공개 주소(scheme, host)를 정합니다. MCP 서버의 상태 페이지가 등록 예시 주소를 보여 줄 때 씁니다.
+        // 신뢰하는 프록시가 보낸 X-Forwarded-Host / X-Forwarded-Proto 가 있으면 그 값을, 아니면 호스트가 받은 요청의 값을 씁니다.
+        // 값이 여러 개(프록시 여러 단)면 가장 가까운 프록시가 덧붙인 마지막 값을 씁니다.
+        public static (string Scheme, string Host) ResolvePublicOrigin(string requestScheme, string requestHost, string? forwardedHost, string? forwardedProto, bool trusted)
+        {
+            string scheme = requestScheme;
+            string host = requestHost;
+            if (trusted == true)
+            {
+                string? forwardedHostValue = LastEntry(forwardedHost);
+                if (string.IsNullOrEmpty(forwardedHostValue) == false && forwardedHostValue.Length <= 255 && hostPattern.IsMatch(forwardedHostValue) == true)
+                {
+                    host = forwardedHostValue;
+                }
+
+                string? forwardedProtoValue = LastEntry(forwardedProto);
+                if (string.Equals(forwardedProtoValue, "http", StringComparison.OrdinalIgnoreCase) == true || string.Equals(forwardedProtoValue, "https", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    scheme = forwardedProtoValue!.ToLowerInvariant();
+                }
+            }
+            return (scheme, host);
+        }
+
+        private static string? LastEntry(string? value)
+        {
+            return value?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).LastOrDefault();
+        }
+
         // peer: 사이트 호스트에 직접 접속한 상대(프록시가 있으면 프록시)
         // forwardedFor: X-Forwarded-For 헤더 값(여러 줄이면 쉼표로 이은 값)
         // hops: 호스트 앞에 있는 신뢰하는 프록시의 수. X-Forwarded-For 를 오른쪽에서 hops 번째 값을 클라이언트로 봅니다.
@@ -211,13 +256,13 @@ namespace handstack_docs
         {
             string remoteAddress = peer == null ? "unknown" : (peer.IsIPv4MappedToIPv6 == true ? peer.MapToIPv4() : peer).ToString();
 
-            if (mode == McpForwardedMode.Never || peer == null || string.IsNullOrWhiteSpace(forwardedFor) == true)
+            if (string.IsNullOrWhiteSpace(forwardedFor) == true)
             {
                 return remoteAddress;
             }
 
             // 신뢰 대역이 아닌 곳에서 직접 들어온 요청의 헤더는 위조일 수 있으므로 무시합니다.
-            if (mode == McpForwardedMode.Auto && networks.Contains(peer) == false)
+            if (IsTrustedForwarder(peer, mode, networks) == false)
             {
                 return remoteAddress;
             }

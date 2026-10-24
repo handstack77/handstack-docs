@@ -23,6 +23,7 @@ try {
         getService: holder.get,
         version,
         publicUrl: config.publicUrl,
+        defaultPublicUrl: config.defaultPublicUrl,
         allowedOrigins: config.allowedOrigins,
         allowedHosts: config.allowedHosts,
         trustProxy: config.trustProxy,
