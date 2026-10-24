@@ -1,0 +1,59 @@
+---
+sidebar_position: 5
+description: ack Docker 이미지가 무엇을 담고, 컨테이너 시작 때 마운트한 HandStack 홈에 무엇을 채우는지, compose 실행 조건과 갱신 방법을 정리합니다.
+---
+
+# Docker ack 이미지
+
+`1.WebHost/ack/Dockerfile`로 만드는 `ack` 이미지의 구조와 컨테이너가 시작할 때 하는 일입니다. 폴더 복사, 업데이트 패키지와 비교한 선택 기준은 [빌드·릴리즈·실행 절차](/docs/twelvefactor/빌드-릴리즈-실행/빌드-릴리즈-실행-절차)를, 자신의 앱을 컨테이너로 만드는 방법은 [ASP.NET Core 10 기반 Dockerfile 가이드](/docs/startup/handsonlab/ASP.NET-Core-8-기반-Dockerfile)를 보세요.
+
+## 이미지 구성
+
+빌드 컨텍스트는 저장소 루트이고 두 단계로 만듭니다.
+
+- **빌드 단계** (`dotnet/sdk:10.0`): `ack`, CLI(`handstack`), 모듈을 빌드해 `/opt/seed/handstack` 아래에 둡니다. 이미지에 들어가는 모듈은 `dbclient`, `function`, `logger`, `repository`, `transact`, `wwwroot`, `checkup` **7개**입니다. `graphclient`, `command`, `prompter`, `forwarder`는 들어 있지 않으므로 필요하면 이미지를 고치거나 마운트한 홈의 `modules/`에 직접 넣어야 합니다.
+- **실행 단계** (`dotnet/aspnet:10.0`): `curl`, `nodejs`, `npm`, `gulp-cli`를 설치하고 `ASPNETCORE_URLS=http://0.0.0.0:8421`, `HANDSTACK_HOME=/handstack`로 `8421`을 노출합니다. 빌드 중에 시드 폴더의 npm 의존성을 설치하고 `wwwroot` 모듈의 `lib`를 `lib.zip`에서 풀어 둡니다. 볼륨은 `/handstack`이고 진입점은 `docker-entrypoint.sh`입니다.
+
+빌드 인자는 `ACTION_MODE`(기본 `build`), `CONFIGURATION_MODE`(기본 `Debug`), `OS_MODE`, `ARCH_MODE`, `OPTIMIZE_FLAG`, `RID`입니다.
+
+## 시작할 때 채우는 것
+
+진입점은 `/handstack`(= `HANDSTACK_HOME`)에 마운트된 홈을 다음 규칙으로 채운 뒤 `dotnet app/ack.dll`을 실행하고, 컨테이너에 준 인자를 그대로 `ack`에 전달합니다.
+
+| 대상 | 규칙 |
+|---|---|
+| `app`, `modules`, `contracts`, `assemblies`, `node_modules` | 시드(`/opt/seed/handstack/…`)에서 **대상 디렉터리가 비어 있을 때만** 통째로 복사 |
+| `install.bat`, `install.ps1`, `install.sh`, `package.json`, `package-lock.json`, `lib.zip`, `.install.once` | 파일이 **없을 때만** 복사 |
+| `log`, `tenants`, `batchs`, `tmp/create_apps`, `modules`, `contracts` | 없으면 생성 |
+
+`tools/`는 시드에는 있지만 진입점이 홈으로 복사하지 않습니다. 시드가 한 번 채워진 홈은 이미지를 새로 만들어도 **갱신되지 않습니다.** 이미지를 교체하는 것만으로는 `app`, `modules`, `contracts`가 바뀌지 않는다는 뜻이므로, 새 버전을 반영하려면 해당 디렉터리를 비우거나 [업데이트 패키지](/docs/twelvefactor/빌드-릴리즈-실행/업데이트-패키지-배포)로 홈을 갱신하세요. 마운트한 홈을 지우기 전에는 계약, 로그, 저장소 파일이 함께 있는지 확인합니다.
+
+## compose 실행
+
+`1.WebHost/ack/docker-compose.yml`은 홈 전체를 컨테이너의 `/handstack` 한 곳에 마운트합니다.
+
+```yaml
+services:
+  ack:
+    image: handstack-ack:latest
+    container_name: handstack-ack
+    ports:
+      - "8421:8421"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ACK_ENVIRONMENT: P
+      HANDSTACK_HOME: /handstack
+    volumes:
+      - "${HANDSTACK_HOME_HOST:?…}:/handstack"
+```
+
+- `HANDSTACK_HOME_HOST`(호스트의 홈 경로)는 **필수**입니다. 설정하지 않으면 compose가 중단합니다. `.env` 파일에 두세요.
+- `ACK_ENVIRONMENT=P`이므로 홈의 `appsettings.P.json`이 있으면 적용됩니다([설정을 읽는 순서](/docs/reference/api/ack-프로그램#설정을-읽는-순서)). `RunningEnvironment`는 `D`, `S`, `P`만 지원합니다.
+- 컨테이너 로그는 `docker logs --tail 300 -f handstack-ack`로 보고, 파일 로그는 마운트한 홈의 `log/app*.log`입니다.
+- 기동 직후 `curl http://localhost:8421/checkip`로 응답을 확인하세요.
+
+:::warning 저장소 루트의 Dockerfile은 다른 용도입니다
+저장소 루트의 `Dockerfile`은 `aspnet:8.0` 기반이고 GitHub 최신 릴리스 ZIP(`linux-x64.zip`)을 내려받는 개발용 이미지입니다. `ack` 이미지는 `1.WebHost/ack/Dockerfile`을 쓰세요. 루트 `docker-compose.yml`의 볼륨 구성(`/opt/handstack` 아래 개별 마운트)도 `ack` compose와 다르니 섞어 쓰지 마세요.
+:::
+
+볼륨을 개별로 나눠 마운트하려면 위 시드 규칙(`app`, `modules`, `contracts`, `assemblies`를 각각 비어 있을 때만 채움)에 따라 어느 디렉터리가 비어 있는지 먼저 확인하세요. 컨테이너에서 `ack`에 디버거를 연결하는 방법은 [Docker 컨테이너에서 ack 연결 디버깅](/docs/twelvefactor/관리작업/Docker-컨테이너에서-ack-연결-디버깅)을 보세요.

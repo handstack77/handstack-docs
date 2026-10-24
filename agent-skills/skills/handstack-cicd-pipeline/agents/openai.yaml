@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack CI/CD"
+  short_description: "Design and audit build, package, deploy and rollback pipelines for HandStack"
+  default_prompt: "$handstack-cicd-pipeline 스킬로 현재 빌드·배포 스크립트를 점검하고 격리 스모크와 롤백을 포함한 파이프라인 단계를 설계해 줘."

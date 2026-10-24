@@ -1,0 +1,154 @@
+---
+sidebar_position: 4
+description: publish 산출물에서 업데이트 ZIP을 만들고 deploy 호스트에 올려 updater로 적용하는 절차와 각 단계의 규칙, 현재 구현의 제한을 정리합니다.
+---
+
+# 업데이트 패키지 배포
+
+게시한 HandStack 산출물을 폴더째 복사하지 않고 **변경분만 담은 ZIP**으로 서버에 적용하는 방식입니다. 폴더 복사, 업데이트 패키지, Docker 중 무엇을 쓸지는 [빌드·릴리즈·실행 절차](/docs/twelvefactor/빌드-릴리즈-실행/빌드-릴리즈-실행-절차)에서 정하고, Docker는 [Docker ack 이미지](/docs/twelvefactor/빌드-릴리즈-실행/Docker-ack-이미지)를 보세요.
+
+## 전체 흐름
+
+1. `publish.ps1`로 `../publish/<rid>/handstack` 배포 산출물을 만듭니다.
+2. `publish-package make`로 현재 배포 파일 목록 `deploy-filelist.txt`를 만듭니다.
+3. 이전 목록이 있으면 `deploy-diff`로 변경분 목록 `deploy-diff-filelist.txt`를 만듭니다.
+4. `publish-package compress`로 `deploy-YYYY.MM.NNN.zip`과 같은 이름의 목록 `.txt`를 만듭니다.
+5. [deploy 호스트](/docs/reference/api/운영-호스트#deploy)에 ZIP을 업로드하면 카탈로그에 등록되고 `/release/packages/*`로 공개됩니다.
+6. deploy가 등록된 카탈로그로 `/release/manifest.json`을 동적으로 만듭니다.
+7. `updater`가 `app/version.json`과 매니페스트를 비교해 더 높은 버전의 ZIP만 순서대로 내려받아 적용하고 `ack`를 다시 실행합니다.
+
+## 1. 기준 산출물 만들기
+
+```powershell
+./publish.ps1 win publish Release x64      # 기본 출력: ../publish/win-x64/handstack
+./publish.ps1 win build Debug x64          # 디버그 빌드만 빠르게 확인
+```
+
+산출물의 핵심 구조는 다음과 같습니다.
+
+```text
+handstack/
+├─ app/            ack 실행 파일
+├─ assemblies/     공통 인프라 DLL
+├─ modules/        checkup, dbclient, function, logger, repository, transact, wwwroot …
+├─ tools/          handstack(CLI), updater, publish-package …
+├─ contracts/
+├─ install.*
+└─ THIRD-PARTY-NOTICES.md
+```
+
+- 현재 `publish.ps1`은 `agent`, `deploy`, `forbes` 게시 구간이 주석 처리되어 있어 기본 산출물에는 `hosts/`가 없습니다. 이 호스트들은 `dotnet publish`로 따로 게시하세요.
+- 게시 스크립트는 대상 publish 폴더와 `HANDSTACK_HOME/contracts`를 **먼저 삭제**한 뒤 만듭니다. 운영 홈이 아닌 격리된 홈에서 실행하세요.
+- `publish-package`가 스캔하는 영역은 `app`, `assemblies`, `hosts`, `tools`, `modules` 다섯 곳뿐입니다. `contracts/`, 루트의 `install.*`, `THIRD-PARTY-NOTICES.md`는 표준 업데이트 ZIP에 **포함되지 않습니다**.
+
+## 2. publish-package로 목록과 ZIP 만들기
+
+| 명령 | 역할 |
+|---|---|
+| `make` | 현재 배포 파일 전체 목록 생성 |
+| `deploy-diff` | 이전 전체 목록과 현재 전체 목록 비교 |
+| `runtimes-diff` | `app`, `assemblies`, `hosts`, `tools` 범위만 비교 (검토용) |
+| `modules-diff` | `modules` 범위만 비교 (검토용) |
+| `compress` | 전체 또는 변경분 목록 기준으로 ZIP 생성 |
+
+`--publishpath`를 생략하면 현재 작업 디렉터리에서 위로 올라가며 `../publish/<rid>/handstack`를 찾습니다. 지정할 때는 `.../publish/win-x64`가 아니라 `.../publish/win-x64/handstack` 자체를 넘겨야 합니다.
+
+**목록 형식**: 한 줄이 `작업구분|상대경로|파일크기|MD5|변경일시`이고 작업구분은 `C`(신규), `U`(변경), `D`(삭제)입니다. `make`가 처음 만드는 전체 목록은 모두 `C`입니다. 비교는 `파일 크기 + MD5`가 같으면 같은 파일로 봅니다.
+
+**포함·제외**: `--includes`(쉼표 구분 경로), `--exclude`(상대 경로 glob), `--output`. `--includes`는 `app`, `assemblies`, `hosts`, `tools`, `modules`로 시작하면 그대로, 그 밖에는 `modules/<경로>`로 해석합니다(`--includes=transact/Contracts` → `modules/transact/Contracts`).
+
+**ZIP 이름**: `deploy-YYYY.MM.NNN.zip`. `YYYY.MM`은 현재 로컬 시각의 연월, `NNN`은 같은 월에 이미 있는 ZIP을 스캔해 001부터 올립니다. 같은 이름의 `.txt` 목록이 함께 만들어지고 ZIP 안에도 들어갑니다.
+
+```powershell
+# 최초 전체 패키지
+publish-package make --publishpath=..\publish\win-x64\handstack --output=.\artifacts\2026.04.001
+publish-package compress --publishpath=..\publish\win-x64\handstack --makefile=.\artifacts\2026.04.001\deploy-filelist.txt --output=.\artifacts\2026.04.001
+
+# 이후 증분 패키지
+publish-package make --publishpath=..\publish\win-x64\handstack --output=.\artifacts\2026.04.002
+publish-package deploy-diff --makefile=.\artifacts\2026.04.002\deploy-filelist.txt --prevfile=.\artifacts\2026.04.001\deploy-filelist.txt --output=.\artifacts\2026.04.002
+publish-package compress --publishpath=..\publish\win-x64\handstack --makefile=.\artifacts\2026.04.002\deploy-diff-filelist.txt --output=.\artifacts\2026.04.002
+```
+
+다음 배포의 `--prevfile`로는 변경분 목록이 아니라 **전체 목록 `deploy-filelist.txt`**를 써야 하므로 따로 보관하세요.
+
+## 3. deploy에 올리기
+
+[deploy 호스트](/docs/reference/api/운영-호스트#deploy)의 `POST /api/update-packages`로 ZIP을 올립니다. 올린 뒤 `/release/manifest.json`과 `/release/packages/<zip>`이 열리는지 확인합니다. `Deploy:ManagementKey`가 비어 있으면 이 업로드에 인증이 없으니 운영 전에 키를 설정하세요.
+
+## 4. updater가 적용하는 방식
+
+`updater`는 HandStack의 시작 진입점입니다. 설치 루트를 계산하고, `app/version.json`을 확인하거나 만들고, 매니페스트를 조회해 현재 버전보다 높은 패키지를 내려받아 적용한 뒤 `ack`를 다시 실행합니다.
+
+```powershell
+.\tools\updater\updater.exe `
+  --manifest-url=http://localhost:8520/release/manifest.json `
+  --error-url=http://localhost:8520/deploy-error `
+  -- --port=8421 --modules=wwwroot,transact,dbclient,function
+```
+
+`--` 뒤의 값은 `ack`에 그대로 전달됩니다.
+
+| 옵션 | 설명 |
+|---|---|
+| `--manifest-url` | 공개 매니페스트 URL 또는 로컬 JSON 파일 경로 |
+| `--error-url` | 실패 보고 URL |
+| `--install-root` | HandStack 설치 루트. 기본값은 `tools/updater` 기준 두 단계 위 |
+| `--ack-path` | `ack` 실행 파일. 기본값은 `app/ack`(Windows는 `.exe`) |
+| `--initial-version` | `version.json`이 없을 때의 기본 버전 (기본 `1.0.0`) |
+| `--ack-process-id` | 업데이트 대상으로 이미 실행 중인 `ack`의 프로세스 ID |
+| `--health-url` | 헬스 체크 URL. 값은 받지만 현재 업데이트 후 헬스체크 호출은 하지 않습니다 |
+
+**업데이트를 건너뛰고 바로 `ack`를 실행하는 경우**: `--manifest-url`이 없음, 매니페스트 조회 실패, 서버 최신 버전이 현재보다 낮음(다운그레이드 방지), 적용할 패키지가 없음. 패키지 적용 중 오류가 나면 **`ack`를 다시 실행하지 않고 종료**하며 자동 복원도 하지 않습니다. 백업은 `backup/<timestamp>/<version>/` 아래에 남습니다.
+
+**적용 순서**:
+
+1. `staging/update.lock`으로 잠급니다.
+2. 디스크 여유 용량을 검사합니다.
+3. `staging/apply/<timestamp>/downloads/<version>`에 ZIP을 내려받고 `extracted/<version>`에 풉니다. 버전이 낮은 순으로 모두 준비합니다.
+4. ZIP 옆 `.txt` 목록을 읽고 ZIP 크기와 SHA-256을 검증합니다. 매니페스트의 `maintenanceMode`가 `true`이면 SHA-256 검증을 건너뜁니다.
+5. 매니페스트의 `mandatory`가 `true`이고 `--ack-process-id`가 있으면 실행 중인 `ack`를 강제 종료합니다.
+6. 대상 파일이 있으면 백업한 뒤 `C`·`U` 항목은 복사하고 `D` 항목은 삭제하며, 비게 된 상위 디렉터리는 정리합니다.
+7. 버전별 마이그레이션 스크립트가 있으면 실행합니다.
+8. 성공하면 `app/version.json`을 최신 버전으로 저장하고 `ack`를 다시 시작합니다. 단 `mandatory`가 `false`이고 `--ack-process-id`로 이미 실행 중인 `ack`가 있으면 재기동은 건너뜁니다.
+
+**설치 허용 경로**: `app`, `assemblies`, `hosts`, `tools`, `modules`, `data`. `data`는 updater가 허용하지만 `publish-package`의 표준 대상에는 없습니다.
+
+**마이그레이션 스크립트**: Windows는 `tools/migrations/<version>/migration.cmd|bat|ps1` 또는 `tools/migrations/<version>.cmd|bat|ps1`, Linux·macOS는 `tools/migrations/<version>/migration.sh|ps1` 또는 `tools/migrations/<version>.sh|ps1`입니다.
+
+**로그와 오류 보고**: 로컬 로그는 `log/update/updater.log`입니다. `--error-url`이 있으면 `message`, `source=updater`, `version`, `updater.log`를 multipart form으로 `POST`합니다.
+
+:::note 소스와 가이드가 다른 부분
+저장소의 `PUBLISH.md`는 `--wait-for-process-id` 옵션과 "`mandatory`는 쓰이지 않는다"고 적고 있지만, 현재 updater 소스는 `--ack-process-id`를 받고 `mandatory`로 강제 종료와 재기동 여부를 정합니다. 위 설명은 소스 기준입니다.
+:::
+
+## 5. 실행 중인 ack에서 updater 시작
+
+`ack`는 `GET /manifest`로 `version.json` 값, 갱신 시각, 프로세스 ID, 실행 파일 경로, updater 경로를 돌려줍니다(인증 없음). `launch=true`를 주면 updater를 새 프로세스로 시작합니다.
+
+```text
+GET /manifest?launch=true&manifestUrl=http://localhost:8520/release/manifest.json&errorUrl=http://localhost:8520/deploy-error&hostAccessID=<해시>
+```
+
+- `AppSettings:IsAutoUpdate`가 `true`여야 합니다. 기본값 `false`이면 `403`입니다.
+- `hostAccessID`가 맞지 않으면 `401`, updater 실행 파일이 없으면 `404`이고, 시작하면 `202`와 `updaterProcessId`를 돌려줍니다.
+- updater에는 `--manifest-url`, `--ack-process-id`(현재 `ack` PID), 선택 `--error-url`, 그리고 현재 `ack`가 받은 명령행 인자 전체가 전달됩니다.
+- 이 호출은 updater를 시작할 뿐 현재 `ack`를 종료하지 않습니다. `mandatory`가 `true`이면 updater가 적용 직전에 `ack`를 강제 종료합니다. `false`이면 updater가 `ack`의 종료를 기다리지 않고 파일을 적용한 뒤 재기동도 하지 않으므로, 실행 중인 파일이 잠기지 않도록 `/stop?hostAccessID=<해시>` 등으로 먼저 `ack`를 종료하고 이후 시작은 운영자가 관리하세요.
+
+운영에서 가장 단순한 구성은 `ack` 대신 `updater`를 진입점으로 두는 것입니다(신규 기동: updater → 필요 시 업데이트 → `ack`). `ack` 자체에는 원격 배포 서버를 주기적으로 조회하는 로직이 없습니다.
+
+## 운영 체크리스트
+
+1. `./publish.ps1 win publish Release x64`로 기준 산출물을 만듭니다.
+2. `publish-package make`로 전체 목록을 만들고 이전 목록이 있으면 `deploy-diff`로 변경분을 만듭니다.
+3. `compress`로 `deploy-YYYY.MM.NNN.zip`을 만들고 전체 목록 `deploy-filelist.txt`를 보관합니다.
+4. deploy에 올리고 `/release/manifest.json`과 `/release/packages/<zip>`을 확인합니다.
+5. updater를 진입점으로 시작하거나 실행 중인 `ack`에 `/manifest?launch=true…`를 호출합니다.
+6. 적용 후 `app/version.json`, `log/update/updater.log`, deploy의 `errors` 폴더를 확인합니다.
+7. 적용에 실패하면 `backup/<timestamp>/` 백업으로 사람이 복원합니다. 자동 복원은 없습니다.
+
+## 현재 구현의 제한
+
+- `contracts/`는 표준 업데이트 ZIP에 포함되지 않습니다.
+- deploy의 `DefaultChannel`, `DefaultPlatform`은 설정에 있지만 동작에 쓰이지 않습니다.
+- 헬스체크 URL로 업데이트 후 상태를 확인하는 호출은 아직 없습니다(`PUBLISH.md` 기준, 소스에서 다시 확인하지 못했습니다).

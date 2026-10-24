@@ -1,0 +1,31 @@
+# 배포·공개 파일에 있으면 안 되는 표현(정규식, 대소문자 무시). 한 줄에 하나, # 주석.
+# 이 파일은 번들(zip)에 포함하지 않는다. 검사: python scripts/validate_bundle.py
+#
+# [all]    스킬 번들 + docs/ 전체에 적용한다. 비공개 프로젝트를 가리키는 표현만 둔다.
+# [skills] 스킬 번들에만 적용한다. 공개 문서에는 예제·회사 주소·IDE 설명으로 쓰이는 표현이다.
+#          특정 스킬에서만 허용하려면 패턴 뒤에 ";except=스킬이름,스킬이름"을 붙인다.
+#
+# 새 표현을 [all]에 넣기 전에 docs/에서 적중이 0건인지 확인한다(검증기가 docs를 함께 검사한다).
+
+[all]
+groupware
+bridal
+biztalk
+\bQWK\b
+\bBDL\b
+\bEWP\b
+\bDPS\b
+\bBTK\b
+resource-hub
+
+[skills]
+qcn
+winform
+stavlo
+qramework
+easywork
+devops
+\b(CDM|HRM|SYS|ATM|EST|SMP|TST|FHB|CRM|MSG|OFC|DSH|SQS|MPM|MPG|HAC)\d{3}\b
+[A-Za-z]:[\/]+projects
+2026-10-24
+workview

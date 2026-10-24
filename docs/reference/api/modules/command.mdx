@@ -23,6 +23,8 @@ sidebar_position: 25
 | `GET` | `/command/api/execution/meta` | 실행 계약의 입력/출력 메타 정보를 반환합니다. |
 | `POST` | `/command/api/execution` | CLI 또는 Web 요청 계약을 실행합니다. |
 
+`has`, `refresh`, `retrieve`, `meta`의 파라미터와 인증 규칙(실패 시 `400`)은 [transact 모듈의 계약 관리 API 공통 규칙](/docs/reference/api/modules/transact#계약-관리-api-공통-규칙)을 보세요.
+
 ## 핵심 구현
 
 - `Areas/command/Controllers/ExecutionController.cs`: 외부 API 진입점입니다.
@@ -45,6 +47,57 @@ ApplicationID|ProjectID|TransactionID|CommandID
 ```
 
 계약의 `<commands>`는 CLI 실행을, `<requests>`는 Web URL 호출을 정의합니다. `CommandID`는 계약의 `id`와 `seq` 조합으로 관리되므로, 같은 거래 파일 안에서 중복되지 않아야 합니다.
+
+## 계약 파일 형식 (.bas)
+
+한 계약에 CLI 프로세스(`<commands>`)와 외부 HTTP 호출(`<requests>`)을 정의합니다. 확장자는 `.xml` 또는 `.bas`입니다([계약 확장자](/docs/reference/식별자와-파일-경로#계약-확장자)).
+
+```xml
+<mapper xmlns="contract.xsd">
+    <header>
+        <application>HDS</application><project>ABC</project><transaction>ABC030</transaction>
+        <use>Y</use><timeout>30</timeout><maxOutputBytes>1048576</maxOutputBytes><desc>설명</desc>
+    </header>
+    <commands>
+        <command id="GC01" seq="0" use="Y" timeout="30" desc="버전 조회">
+            <executable>dotnet</executable>
+            <arguments>--info</arguments>
+            <workingDirectory>../</workingDirectory>
+            <environment><variable id="APP_USER">{@UserID}</variable></environment>
+            <successExitCodes>0</successExitCodes>
+            <param id="@UserID" type="String" length="255" value="NULL" />
+        </command>
+    </commands>
+    <requests>
+        <request id="GW01" seq="0" use="Y" timeout="30" desc="사용자 조회">
+            <method>POST</method>
+            <url>https://api.example.com/users</url>
+            <headers><header id="Accept">application/json</header></headers>
+            <querystrings><value id="userID">{@UserID}</value></querystrings>
+            <authorization type="Bearer">{@AccessToken}</authorization>
+            <body type="raw" contentType="application/json">{ "userID": {#UserID} }</body>
+            <param id="@UserID" type="String" length="255" value="NULL" />
+            <param id="@AccessToken" type="String" length="4000" value="NULL" />
+            <outputmeta value="Result:string" />
+        </request>
+    </requests>
+</mapper>
+```
+
+| 항목 | 의미 |
+|---|---|
+| `{@이름}` | 파라미터 값을 그대로 치환합니다 |
+| `{#이름}` | 값을 JSON 문자열 리터럴(따옴표 포함, 역슬래시·큰따옴표·개행 이스케이프)로 치환합니다. JSON 본문과 인자에 넣는 사용자 입력에 쓰세요 |
+| 없는 파라미터 | 빈 문자열이 됩니다 |
+| `authorization type` | `Bearer`, `JwtBearer`, `Basic`(username·password 속성), `ApiKey`(`name`, `in`은 `Header` 또는 `Query`) |
+| `body type` | `raw`, `form-data`(`<part type>`은 `text` 또는 `file`) |
+| `timeout`, `successExitCodes`, `maxOutputBytes` | 제한 시간, 성공으로 보는 종료 코드, 출력 최대 크기(초과분은 잘림) |
+
+계약을 쓸 때 확인할 것:
+
+- 실행 파일과 인자를 **셸 없이 분리해** 선언하고 문자열을 이어 붙여 명령줄을 만들지 않습니다. 실행 파일은 `Security.AllowedExecutableBasePaths` 허용 경로 안에 있어야 합니다.
+- 인증 키와 토큰은 계약에 고정하지 말고 파라미터나 서버 설정으로 주입합니다. 외부 URL과 계정은 환경별 값이므로 예제 도메인을 운영 값으로 바꿔 커밋하지 마세요.
+- 테스트에서 패키지 설치, 메일 발송, 운영 명령을 실행하지 않습니다. 실제 외부 API 호출이 필요하면 모의 서버나 승인된 대상으로 제한하세요.
 
 ## 주요 설정
 

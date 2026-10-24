@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack 업무 화면"
+  short_description: "Build and fix HandStack syn.js screens with AUIGrid and transaction binding"
+  default_prompt: "$handstack-screen-development 스킬로 요청한 화면을 이웃 화면 구조에 맞춰 구현하고 belongID·outputs 바인딩을 점검해 줘."

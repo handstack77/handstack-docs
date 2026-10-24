@@ -47,6 +47,7 @@ AI 활용, 강연, 조직·도입 배경은 보조 자료입니다. 처음 실�
 | 서버·모듈 설정 키와 기본값 | `docs/reference/api/`의 해당 문서 |
 | 그 외 syn·UI API | `docs/startup/learning/`의 해당 문서 |
 | Board DDL | `docs/tutorial/도메인모델과-데이터베이스/게시판-board-테이블-설계.mdx` |
+| 에이전트 스킬의 판단 절차·점검 순서·흔한 실수 | `agent-skills/skills/*/SKILL.md` (구문·값은 위 대표 문서를 인용) |
 
 실습은 필요한 코드만 발췌하고 정확한 명세로 링크합니다. 반복되는 옵션 표는 대표 문서 한 곳에서 관리합니다. 입문 설명과 전체 실행 예제에 같은 코드가 꼭 필요하면 목적과 원본을 밝히고 함께 검증합니다.
 
@@ -134,15 +135,39 @@ description: 이 실습으로 만들 결과 한 문장
 - 파일명·`id`·`slug`를 바꿀 때 기존 문서 URL과 절 주소를 유지하거나 이동 안내를 제공합니다.
 - 주제 카테고리는 `index.mdx`에 바로 연결합니다. 소개 페이지 앞에 내용이 같은 자동 목록을 추가하지 않습니다.
 - 기존 예제·스크린샷·코드·슬라이드가 연결하는 주소도 확인합니다.
-- `npm run typecheck`, `npm run build`, `node tests/docs-navigation.mjs`를 실행합니다.
+- `npm run typecheck`, `npm run build`를 실행합니다. 스킬이 인용하는 문서나 `agent-skills/`를 바꿨으면 `npm run check:agent`도 실행합니다.
 - 브라우저에서 데스크톱·모바일 메뉴와 처음 실행→첫 조회→참조 경로를 확인합니다.
 - 전체 설치나 DB 거래를 실행하지 않았다면 “실행 검증 완료”라고 쓰지 않습니다.
 
 문서 구조는 [Diátaxis](https://diataxis.fr/)의 학습·작업·참조·설명 구분을, 문체는 [Google 개발자 문서 스타일 가이드](https://developers.google.com/style/highlights)의 직접적인 표현과 설명적인 링크 원칙을 참고합니다. 특정 연도의 유행이라는 이유만으로 구조를 바꾸지 않습니다.
 
+## 에이전트 스킬 갱신
+
+`agent-skills/`는 AI 에이전트(Claude Code, Codex CLI)가 읽는 스킬·사용 가이드·점검 도구의 원본입니다. 위의 작성 기준(간결한 문장, 반복 금지, 확인하지 않은 것을 확인했다고 쓰지 않기)이 그대로 적용되고, 아래를 더합니다.
+
+**문서와 스킬의 역할**
+
+- 구문·옵션·기본값·식별자 표·설정 키는 위 대표 문서에만 둡니다. 스킬은 판단 절차, 점검 순서, 흔한 실수, 중단 조건을 쓰고 대표 문서를 인용합니다. 같은 표를 스킬에 복제하지 않습니다.
+- 인용은 `docs/` 기준 문서 id를 백틱에 씁니다(확장자와 폴더 앞 번호는 뺍니다). 예: `reference/거래-호출`, `twelvefactor/설정/*`. 문서의 파일명·폴더를 바꾸면 인용한 스킬도 함께 고칩니다. `rg "<문서 id>" agent-skills`로 영향받는 스킬을 찾습니다.
+- 범용 기준을 지킵니다. 특정 업무 저장소의 경로·모듈·업무 ID를 넣지 않고, 대상 저장소의 `AGENTS.md`/`CLAUDE.md`가 스킬의 일반 규칙보다 우선한다고 둡니다. 프로젝트 고유 정보는 그 저장소의 지침 파일에 둡니다.
+
+**스킬 형식**
+
+- 폴더 이름과 frontmatter `name`이 같고(소문자·숫자·하이픈, 64자 이하), `description`은 1,024자 이하에 꺾쇠 괄호 없이 언제 쓰는지(요청 문장·증상)를 담습니다.
+- `SKILL.md`는 500줄 이하이고 300줄을 넘는 참조 문서에는 목차를 둡니다. Codex용 `agents/openai.yaml`을 함께 둡니다.
+- 문서나 MCP에 연결되지 않은 환경에서는 확인하지 못한 것을 확인했다고 보고하지 않도록 스킬에 지시합니다.
+
+**금지어**
+
+`agent-skills/config/banned-terms.txt`에서 관리합니다. `[all]`은 스킬과 `docs/` 전체에, `[skills]`는 스킬에만 적용합니다. 공개 문서에서 회사 주소·예제·IDE 설명으로 쓰이는 표현은 `[skills]`에 둡니다. 새 표현을 `[all]`에 넣기 전에 `docs/`에서 적중이 없는지 확인합니다. 특정 스킬에서만 허용할 때는 패턴 뒤에 `;except=스킬이름`을 붙입니다.
+
+**검증**
+
+`npm run check:agent`가 번들 형식·링크·비밀 값 패턴·금지어, 문서 경로 인용, 단위 테스트를 차례로 실행합니다. 점검 도구(`hs_inspect.py`, `design_lint.py`, `pipeline_lint.py`)를 바꾸면 `agent-skills/tests`의 테스트를 함께 고칩니다. 배포용 zip은 `npm run package:agent`(검증을 통과한 뒤 `static/agent-skills/`에 생성)로 만들며 저장소에 커밋하지 않습니다. `publish.sh`와 `publish.bat`이 `npm run build` 앞에서 이 명령을 실행하고, 실패(검증 실패, Python 3.10 이상 없음)해도 경고만 남기고 사이트 배포를 계속합니다. 이때 이전 zip은 지워지므로 `/agent-skills/handstack-developer-skills.zip`이 404가 됩니다. 빌드 서버에는 Python 3.10 이상(`python3`, Windows는 `python`)이 필요합니다. `.github/workflows/check.yml`이 푸시와 풀 리퀘스트마다 `npm run typecheck`와 `npm run check:agent`를 실행합니다.
+
 ## IDE 사용 문서 갱신
 
-`docs/ide/`는 qcn.winform의 `0.Reference/resource-hub/2. 교육/`를 공개 웹용으로 재구성한 문서입니다. [원문·공개 문서 대응표](reports/ide-documentation-source-map.md)에서 영향 범위를 찾고, 실제 UI·저장 형식·템플릿을 먼저 대조합니다. 교육 원문과 현재 소스가 다르면 검증한 근거와 미확인 사항을 대응표에 남깁니다.
+`docs/ide/`는 qcn.winform의 `0.Reference/resource-hub/2. 교육/`를 공개 웹용으로 재구성한 문서입니다. 바꿀 때는 실제 UI·저장 형식·템플릿을 먼저 대조합니다. 교육 원문과 현재 소스가 다르면 검증한 근거와 미확인 사항을 변경 설명에 남깁니다.
 
 - IDE의 C# 프로젝트는 `1.DesktopHost/stavlo/stavlo.csproj`입니다. 이전 `winform` 프로젝트명과 구분하고, 그대로 유지되는 솔루션 디렉터리 `qcn.winform`·솔루션 파일 `winform.slnx`·API `/winform/instance`는 일괄 치환하지 않습니다. 공개 이름·경로의 대표 설명은 [IDE 자체 프로젝트](docs/ide/reference/파일과-저장-규칙.mdx#ide-host-project)에 둡니다.
 - `learn/`은 한 작업의 실행·확인·다음 단계만 설명합니다. 실습의 이전/다음 순서를 유지하세요.

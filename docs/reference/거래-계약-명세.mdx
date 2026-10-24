@@ -1,0 +1,207 @@
+---
+description: transact 거래 계약 파일의 구조, 서비스 항목, 입출력 계약, 접근 제어, 순차 거래와 출력 가공(Maskings·ValidateRules·FallbackTransaction) 명세입니다.
+---
+
+# 거래 계약 명세
+
+`transact` 모듈이 읽는 거래 계약(`.txn` 또는 `.json`)의 항목과 서버 동작을 정리합니다. 화면에서 거래를 호출하는 구문은 [거래 호출](/docs/reference/거래-호출), 식별자와 파일 배치는 [식별자와 파일 경로](/docs/reference/식별자와-파일-경로), 모듈 설정과 엔드포인트는 [transact 모듈](/docs/reference/api/modules/transact), 처음 만드는 과정은 [거래 계약 개념](/docs/tutorial/transact-거래계약/거래계약-개념)을 보세요.
+
+계약은 JSON이며 주석과 후행 쉼표를 허용합니다(IDE와 로더가 JSONC로 읽습니다). 검사할 때 엄격한 `JSON.parse`나 `eval`을 쓰지 마세요.
+
+## 파일 구조
+
+```jsonc
+{
+    "ApplicationID": "HDS",
+    "ProjectID": "BOD",
+    "TransactionProjectID": "BOD",     // 선택. 실제 실행 계약의 ProjectID가 다를 때
+    "TransactionID": "BOD010",
+    "Description": "게시판 > 게시글 목록",
+    "ModifiedDate": "2026-01-01 00:00:00",
+    "Services": [ /* 서비스 */ ],
+    "Models": []                         // 명시 모델(ModelID)을 쓸 때만. 대부분 비어 있음
+}
+```
+
+- 파일 이름은 `TransactionID`이고 기본적으로 화면 ID와 같습니다. 위치는 `Contracts/transact/{ApplicationID}/{ProjectID}/`입니다. 확장자는 [계약 확장자](/docs/reference/식별자와-파일-경로#계약-확장자)를 보세요.
+- 일부 파일은 최상위 `ApplicationID`·`ProjectID`·`TransactionID`를 생략하고 `Services`만 둡니다. 로더의 경로 보완 규칙을 확인하기 전에는 오류로 단정하지 마세요.
+- `ServiceID`는 한 파일 안에서 유일해야 합니다. 중복되면 `거래 매핑 중복 정보 확인 필요`로 거부됩니다.
+- `handstack contractpack --directory <Contracts>`는 모듈별로 `.json`→`.txn`, `.xml`→`.dbc`·`.bas`·`.cyp`·`.pmt`·`.fnc`, repository `.json`→`.rpo`로 **파일 이름을 바꿉니다**. 내용 형식은 그대로이고, 함수 폴더형(`featureMeta.json`+`featureMain.*`)은 단일 `.fnc`로 묶습니다. `--options true`(또는 `Y`, `1`)를 함께 주면 변환 전 백업 ZIP을 만듭니다. `publicTransactions.json`은 계약이 아니라 공개 거래 설정이어서 변환 대상이 아닙니다.
+
+## 서비스 항목 (`Services[]`)
+
+```jsonc
+{
+    "ServiceID": "MD01",
+    "Authorize": true,
+    "ReturnType": "Json",
+    "CommandType": "D",
+    "TransactionScope": true,
+    "AccessScreenID": ["BOD010", "BOD011"],
+    "Roles": ["Manager"],
+    "Policys": { "ApplicationRoleID": ["Bot"] },
+    "TransactionTokens": [],
+    "Inputs": [],
+    "Outputs": []
+}
+```
+
+| 이름 | 타입 | 기본값 | 의미·제약 |
+|---|---|---|---|
+| `ServiceID` | 문자열 | | 화면 `transaction` 키, SQL `statement id`, command `id`와 같은 이름 |
+| `CommandType` | 문자열 | | `D` dbclient, `F` function, `C` command, `G` graphclient, `P` prompter, `S` 순차 거래, `W` [워크플로](/docs/reference/워크플로-계약), `R` 더미 응답. 서버 라우팅은 이 값이 정하며 서비스 ID 접두 글자와 무관합니다. `D`·`G`·`F`·`C`·`P`는 서버 `RoutingCommandUri`에 해당 유형이 등록돼야 합니다 |
+| `RoutingCommandUri` | 문자열 | 빈 문자열 | 이 서비스만 대상 URL을 덮어씁니다 |
+| `ReturnType` | 문자열 | | 대부분 `Json`. `CodeHelp`(코드도움 전용 결과), `Xml`, `Scalar`, `NonQuery`, `SchemeOnly`는 해당 용도에만 씁니다 |
+| `TransactionScope` | 불리언 | `false` | `true`이면 한 요청의 모든 statement를 한 DB 트랜잭션으로 묶습니다. 여러 `seq`를 저장·삭제하는 서비스는 `true`, 조회는 `false` |
+| `Authorize` | 불리언 | `false` | `true`이면 인증된 사용자만 호출합니다. 로그인 전 화면에서 쓰는 서비스만 `false`로 두고 공개 거래 설정과 함께 검토합니다 |
+| `Roles`, `Policys` | | | 허용 역할·정책 클레임. 판정 방식은 아래 [접근 제어](#접근-제어)를 보세요 |
+| `AccessScreenID` | 문자열 배열 | 빈 배열 | **이 서비스를 호출할 수 있는 화면 ID 목록**. 생략하면 자기 `TransactionID`와 같은 화면만 호출할 수 있습니다. 팝업, 코드도움 공용 거래, 메인 셸처럼 다른 화면이 호출하면 그 화면 ID를 넣어야 하며, 빠지면 `ScreenID '…' 요청 가능화면 거래 매핑 정보 확인 필요`가 나옵니다 |
+| `TransactionTokens` | 문자열 배열 | | 토큰 전용 호출(외부 연계)에서 허용할 토큰 목록. 값을 소스에 쓰지 말고 설정이나 비밀 저장소에서 주입합니다 |
+| `AuthorizeMethod` | 문자열 배열 | 빈 배열(전체) | 인증 방식을 제한합니다. `Role`, `Policy`, `TransactionToken`, `TransactionTokenOnly`(토큰이 일치해야만 통과) |
+| `TransactionLog` | 불리언 | `false` | `true`이면 이 서비스의 요청·응답을 거래 로그로 남깁니다. 서버의 `IsTransactionLogging`과 별개입니다 |
+| `SequentialOption` | 배열 | | `CommandType: "S"`일 때 단계 정의. [순차 거래](#순차-거래-s) |
+| `WorkflowSteps` | 배열 | | `CommandType: "W"`일 때 단계 정의. [워크플로 계약](/docs/reference/워크플로-계약) |
+| `Comment` | 문자열 | | 설명 |
+
+**더미 응답(`R`)**: 서버의 `../tmp/{ApplicationID}/dummyfile/{ApplicationID}/{ProjectID}/{TransactionID}/{ServiceID}.dat` 파일 내용을 그대로 돌려주는 목업입니다.
+
+화면 `transactionAction`의 옵션(`authorize: 'N'`, `commandType: 'D'` 등)은 클라이언트 요청 값이며 계약의 `Authorize`·`CommandType`을 대체하지 않습니다. 다만 서버 `IsAllowDynamicRequest`가 `true`(기본값은 `false`)이고 해당 거래가 공개 거래이면 계약에 없는 서비스를 클라이언트 옵션(`authorize`, `commandType`, `returnType`, `transactionScope`)으로 합성할 수 있습니다. 업무 서비스는 항상 계약에 명시하고, 운영에서는 `IsAllowDynamicRequest`를 `false`로 유지하세요.
+
+## 입출력 계약 (`Inputs[]`, `Outputs[]`)
+
+### 빈 배열과 명시 계약
+
+**빈 배열**(대부분의 업무 서비스)이면 화면이 보낸 `dataMapInterface`(예 `Row,List|Form,Grid`)로 서버가 `ModelID: "Dynamic"` 입출력을 자동 구성합니다. 입력 `Row`는 `Rejected`(입력 필수), 그 밖의 입력은 `ByPassing`으로 취급합니다. 이 경우 화면의 inputs/outputs 선언이 실질적인 계약입니다.
+
+**명시 계약**을 채우면 서버가 개수를 검증합니다.
+
+```jsonc
+"Inputs": [
+    { "ModelID": "Dynamic", "Fields": [], "TestValues": [], "DefaultValues": [], "Type": "Row",
+      "BaseFieldMappings": [], "ParameterHandling": "Rejected" },
+    { "ModelID": "Dynamic", "Fields": [], "TestValues": [], "DefaultValues": [], "Type": "List",
+      "BaseFieldMappings": [], "ParameterHandling": "ByPassing" }
+],
+"Outputs": [
+    { "ModelID": "Dynamic", "Fields": [], "Type": "Grid" },
+    { "ModelID": "Dynamic", "Fields": [], "Type": "Form" }
+]
+```
+
+- `Inputs` 개수가 요청의 입력 묶음 수와 다르거나 `Type: "Row"`인데 건수가 1이 아니면 `거래 입력 항목이 계약과 동일한지 확인 필요`가 나옵니다.
+- `Type`은 입력 `Row`·`List`, 출력 `Form`·`Grid`(그 밖에 `Chart`, `DataSet`, `Dynamic`, `Addition`)입니다.
+- `ModelID`가 `Dynamic`·`Unknown`이 아니면 `Models`의 모델 필드와 요청 필드를 대조해 모르는 필드를 거부합니다(예외 `Flag`). `Dynamic`은 필드를 자유롭게 받겠다는 표시입니다.
+- 화면 `outputs` 개수와 서버가 돌려주는 결과 집합 수는 같아야 하고, 명시 `Outputs`가 있으면 그 개수와도 같아야 합니다.
+- 값이 이미 채워진 기존 계약을 그대로 두세요. 빈 `Inputs`·`Outputs`는 미구현이 아니라 자동 구성 표시일 수 있습니다.
+
+### 입력 항목
+
+| 이름 | 의미 |
+|---|---|
+| `ModelID`, `Fields`, `Type` | 모델 이름, 필드 목록, 입력 형태(`Row`·`List`) |
+| `TestValues`, `DefaultValues` | 테스트 값과 기본 값 |
+| `ParameterHandling` | 입력이 0건일 때의 처리. 아래 표 |
+| `BaseFieldMappings` | 앞선 statement의 결과 값을 이 입력의 파라미터로 전달 |
+| `IgnoreResult` | `true`이면 이 입력의 결과를 화면 응답에서 빼되 후속 매핑을 위해 마지막 행을 보관합니다. 그런 statement를 `NonQuery`로 바꾸지 마세요 |
+| `BearerFields` | 모델에 정의돼 있지만 현재 transact 컨트롤러가 참조하지 않습니다. 토큰 변수는 `Variable`이 모든 입력에 `$이름`으로 주입됩니다 |
+
+| `ParameterHandling` | 입력이 0건일 때 |
+|---|---|
+| `Rejected` | `필요한 입력 항목이 필요` 오류로 거부 |
+| `ByPassing` | 해당 입력을 건너뛰고 계속(List가 비었을 때 흔함) |
+| `DefaultValue` | `Fields`/`DefaultValues`로 만든 기본 한 건을 입력으로 사용 |
+
+### 앞선 결과를 입력으로 전달 (`BaseFieldMappings`)
+
+```jsonc
+"BaseFieldMappings": [ { "BaseSequence": 0, "SourceFieldID": "NewKey", "TargetFieldID": "ParentKey" } ]
+```
+
+- `BaseSequence`는 값을 가져올 이전 `seq`(그 결과의 마지막 행)이고, 비우면 직전 `seq`를 씁니다.
+- 원본 행이나 `SourceFieldID` 컬럼이 없으면 `BaseFieldMappings … 매핑 정보 필요`로 실패합니다.
+- 부모 키를 채번하는 statement(예: `INSERT … ; SELECT 새 키`)와 자식 저장을 한 서비스로 잇는 데 씁니다.
+
+### 계층형 출력 (`BaseFieldRelation`)
+
+여러 결과 집합을 부모-자식으로 중첩해 한 번에 반환합니다(트리, 마스터-상세를 한 번에 조회).
+
+```jsonc
+"Outputs": [
+    { "ModelID": "Dynamic", "Fields": [], "Type": "Grid" },                       // 0: 부모
+    { "ModelID": "Dynamic", "Fields": [], "Type": "Grid",
+      "BaseFieldRelation": {
+        "RelationFieldID": "Children",      // 부모 행에 생길 컬럼 이름
+        "BaseSequence": 0,                  // 붙일 대상 부모 결과의 순번
+        "RelationMappings": [ { "BaseFieldID": "ParentKey", "ChildrenFieldID": "ChildKey" } ],
+        "ColumnNames": [],                  // 비우면 자식의 모든 컬럼
+        "DisposeResult": true               // true이면 자식 집합을 최상위 응답에서 제거
+      } }
+]
+```
+
+화면은 중첩 컬럼을 받을 `syn_data`(해당 열 `dataType: 'object'`)나 트리 컨트롤로 받습니다. **화면 `outputs` 개수는 계약 `Outputs` 개수에서 `DisposeResult: true`인 항목 수를 뺀 값**입니다. 자식 집합이 부모에 합쳐져 응답에서 빠지기 때문입니다.
+
+### 출력 가공 (`Maskings`, `ValidateRules`, `FallbackTransaction`)
+
+```jsonc
+{ "ModelID": "Dynamic", "Fields": [], "Type": "Grid",
+  "Maskings": [ { "targetFieldID": "PhoneNo", "matchPattern": "[0-9]{4}$" } ],
+  "ValidateRules": [ "Count([GridData0]) > 0|조회 결과가 없습니다" ],
+  "FallbackTransaction": "HDS|ABC|ERR010|LD01" }
+```
+
+| 이름 | 동작 |
+|---|---|
+| `Maskings` | 서버 `IsDataMasking`이 `true`이고 `MaskingMethod`가 `Syn` 또는 `Aes`일 때만 동작합니다. `targetFieldID` 값을 `MaskingChar`로 가리고(`matchPattern` 정규식에 일치한 부분만, 비우면 전체) 원문은 암호화해 `{필드}_$MASKING` 컬럼에 담습니다. 복호화 키는 요청의 `correlationID`입니다. Form·Grid·DataSet 출력에 적용됩니다 |
+| `ValidateRules` | `"조건\|오류 메시지"` 문자열 목록. 조건은 응답 데이터맵 ID를 `[FormData0]`, `[GridData1]`처럼 대괄호로 참조하고 `and`·`or`·`&&`·`\|\|`, 비교 연산, 함수 `Count`, `HasProperty`, `GetProperty`, `GetElement`, `Sum`, `Average`, `Min`, `Max`, `GroupBy`를 쓸 수 있습니다. 조건이 거짓이면 거래가 실패하고 오류 메시지가 `exceptionText`에 들어갑니다 |
+| `FallbackTransaction` | 검증 실패 시 `ApplicationID\|ProjectID\|TransactionID\|ServiceID[\|서버URL]` 거래를 `CorrelationID`, `TransactionRequest`(요청 전문), `ExceptionText`를 입력으로 호출합니다(알림·감사용). 폴백이 실패하면 로그만 남깁니다 |
+
+## 순차 거래 (`S`)
+
+한 번의 호출로 서로 다른 거래의 서비스를 순서대로 실행하고 결과를 이어 줍니다.
+
+```jsonc
+{
+  "ServiceID": "GD04", "CommandType": "S", "ReturnType": "Json",
+  "SequentialOption": [
+    { "TransactionProjectID": "ABC", "TransactionID": "ABC010", "ServiceID": "GD04", "CommandType": "D",
+      "ServiceInputFields": [0],
+      "ServiceOutputs": [ { "ModelID": "Dynamic", "Fields": [], "Type": "Form" } ],
+      "ResultHandling": "FieldMapping", "TargetInputFields": [0], "ResultOutputFields": [] },
+    { "TransactionProjectID": "ABC", "TransactionID": "ABC010", "ServiceID": "IF01", "CommandType": "F",
+      "ServiceInputFields": [0],
+      "ServiceOutputs": [ { "ModelID": "Dynamic", "Fields": [], "Type": "Form" } ],
+      "ResultHandling": "ResultSet", "TargetInputFields": [], "ResultOutputFields": [0] }
+  ],
+  "Inputs": [ { "ModelID": "Dynamic", "Fields": [], "TestValues": [], "DefaultValues": [], "Type": "Row", "BaseFieldMappings": [], "ParameterHandling": "Rejected" } ],
+  "Outputs": [ { "ModelID": "Dynamic", "Fields": [], "Type": "Form" } ]
+}
+```
+
+| 이름 | 의미 |
+|---|---|
+| `TransactionProjectID`, `TransactionID`, `ServiceID`, `CommandType` | 단계에서 실행할 서비스 |
+| `ServiceInputFields` | 단계가 사용할 입력 묶음의 인덱스(호출 입력 기준) |
+| `ServiceOutputs` | 단계가 반환하는 모델 |
+| `ResultHandling` | `FieldMapping`이면 이 단계의 Form 결과를 `TargetInputFields`의 입력으로 전달하고, `ResultSet`이면 `ResultOutputFields`로 최종 응답을 구성합니다 |
+| `TargetInputFields`, `ResultOutputFields` | 결과를 넣을 입력 인덱스, 최종 응답에 쓸 출력 인덱스 |
+
+기본 라우팅 표(`D`·`G`·`F`·`C`·`P`)에는 `S`가 없고 서버의 순차 처리 경로가 따로 해석합니다. 인덱스는 단계마다 입력·출력의 개수와 타입에 맞춰 확인하세요. 전체가 한 DB 트랜잭션으로 롤백된다고 가정하지 마세요.
+
+## 접근 제어
+
+호출 허용 판정은 소스 기준으로 다음 순서입니다: 화면 ID(`AccessScreenID`, 자기 `TransactionID`, 공개 거래) → 인증(`Authorize`, 토큰) → `Roles`·`Policys` → 요청 출처 검사(`RequestOriginApiAccess`).
+
+- `Authorize`가 `true`일 때 `Roles`·`Policys`·`TransactionTokens` 세 검사는 **OR로 결합**되어, 세 가지가 모두 실패할 때만 거부됩니다. 이때 역할 검사와 정책 검사는 해당 목록이 **비어 있으면 통과 상태로 시작**합니다. 따라서 `Roles`만 지정하고 `Policys`를 비운 서비스는 역할이 맞지 않아도 거부되지 않는 것으로 읽힙니다(둘 다 지정해야 거부할 수 있습니다). 이는 소스를 읽은 결과이므로, 역할 제한에 의존하기 전에 권한 없는 계정으로 실제 거부되는지 반드시 테스트하세요. 계약만으로 해결되지 않는 권한은 SQL이나 함수 안에서 서버 변수(`@$` 사용자·역할)로 한 번 더 검증합니다.
+- 서버 `module.json`의 `SystemID`가 요청의 시스템 ID와 같고 신뢰 IP(`BypassAuthorizeIP`)에서 온 호출은 인증 검사를 건너뜁니다(내부 모듈 간 호출 경로).
+- 로그인 이전 화면(로그인, 비밀번호 찾기)의 서비스는 `Authorize: false`로 두고 `AccessScreenID`에 그 화면 ID를 넣습니다. 공개 거래 범위(`PublicTransactions`)와 함께 검토하고, 범위를 넓히는 방식으로 오류를 피하지 마세요. 개발 설정의 `PublicTransactions`가 `*`이면 화면 ID 검사가 사실상 열려 있으니 운영에 가져가지 않습니다.
+- 개발용 자동 로그인 계정으로 얻은 권한을 운영 계약 검증에 쓰지 마세요.
+
+## 변경 점검 목록
+
+- 화면의 `transaction` 키, 계약의 `ServiceID`, 실행 계약의 id가 대소문자까지 같습니다.
+- `ServiceID` 중복이 없고 JSONC 파싱이 됩니다.
+- 여러 `seq`를 저장·삭제하는 서비스는 `TransactionScope: true`입니다.
+- `Authorize`·`AccessScreenID`·`Roles`가 호출 화면 목록과 일치합니다.
+- 명시 `Inputs`·`Outputs`가 있으면 화면 선언 개수와 일치하고 결과 집합 순서를 확인했습니다.
+- 계약 캐시 갱신 방식(재시작, refresh, 파일 감시)을 확인했습니다. 갱신은 대상 환경과 요청 범위 안에서만 합니다.

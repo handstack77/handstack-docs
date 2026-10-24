@@ -2,9 +2,9 @@
 
 Handstack 개발용 플러그인 가이드
 
-Handstack 개발 시 유용한 Claude Code 및 에디터 플러그인 추천입니다.
+Handstack 개발에 쓸 수 있는 도구 아이디어입니다. 아래 "추천 Claude Code 플러그인" 세 가지는 구현체가 없는 구상이며 `/snippet` 명령도 제공되지 않습니다. 에디터 확장은 일반 도구라 그대로 쓸 수 있습니다.
 
-## 추천 Claude Code 플러그인
+## 구상: Claude Code 플러그인 아이디어
 
 ### 1. XML Formatter
 Handstack Contract 파일(`.xml`)의 포맷팅을 돕는 플러그인입니다.
@@ -12,7 +12,7 @@ Handstack Contract 파일(`.xml`)의 포맷팅을 돕는 플러그인입니다.
 
 ### 2. SQL Linter (for XML)
 XML 내 `CDATA` 섹션에 있는 SQL 문법을 검사합니다.
-- **기능**: MSSQL 문법 오류 탐지, 예약어 강조.
+- **기능**: 데이터 원본 DBMS 문법 오류 탐지, 예약어 강조.
 
 ### 3. Handstack Snippets
 자주 사용하는 패턴을 빠르게 입력할 수 있습니다.
@@ -26,7 +26,7 @@ XML 내 `CDATA` 섹션에 있는 SQL 문법을 검사합니다.
 Handstack 개발 시 VS Code에서 다음 확장 프로그램을 사용하면 좋습니다:
 - **XML Tools**: XML 검증 및 포맷팅.
 - **ESLint**: JS 코드 품질 검사.
-- **SQL Server (mssql)**: Contract에서 사용하는 쿼리 테스트.
+- **DBMS용 확장**: 사용하는 DBMS(SQL Server, PostgreSQL, SQLite 등)에서 Contract의 쿼리를 테스트.
 
 ## 커스텀 플러그인 아이디어
 

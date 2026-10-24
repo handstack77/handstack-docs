@@ -194,6 +194,86 @@ HTTPS에서 일반 HTTP로 보내는 요청에는 `Referer`를 생략합니다. 
 }
 ```
 
+## 실행 옵션
+
+```text
+ack --port=8421 --modules=wwwroot,transact,dbclient,function
+```
+
+| 옵션 | 설명 | 기본값 |
+|---|---|---|
+| `--port` | 수신 포트 | `8421` |
+| `--modules` | 시작할 모듈을 쉼표로 지정합니다. 지정하면 `appsettings.json`의 `AppSettings:LoadModules`를 합치지 않고 **대체**합니다 | 설정의 `LoadModules` |
+| `--appsettings`, `--key` | 두 옵션을 함께 주면 `--appsettings` 값을 `--key`로 AES 복호화한 JSON을 마지막 설정으로 추가하고, 이때 `appsettings.{ACK_ENVIRONMENT}.json`은 읽지 않습니다. `handstack configuration`이 이 방식으로 환경별 설정을 적용합니다 | |
+| `--pname` | 관리 목적으로 붙이는 프로세스 이름 | |
+| `--env` | `KEY=VALUE` 줄로 된 문자열을 환경 변수로 읽습니다 | |
+| `--showenv` | 시작할 때 적용되는 환경 설정을 출력합니다 | `false` |
+| `--debug`, `--delay` | 시작 전에 디버거가 연결될 시간(밀리초)을 기다립니다 | `--delay` 10000 |
+
+개발 중에는 필요한 모듈만 켜면 시작이 빠르고 원인을 나누기 쉽습니다. 화면 개발은 `wwwroot,transact,dbclient`에 `function`, `prompter` 등 쓰는 모듈을 더합니다.
+
+## 설정을 읽는 순서
+
+`ack`는 다음 순서로 설정을 쌓고 **뒤에 읽은 값이 앞의 값을 덮어씁니다**(소스의 `ConfigurationBuilder` 순서).
+
+1. `appsettings.json`
+2. OS별 설정 파일([OS별 설정 파일](#os별-설정-파일))
+3. 환경 변수(`AppSettings__키=값`)
+4. `--key`와 `--appsettings`로 받은 복호화 설정. 없으면 `ACK_ENVIRONMENT` 환경 변수 값에 해당하는 `appsettings.{ACK_ENVIRONMENT}.json`(파일이 있을 때만)
+
+따라서 같은 키라면 `appsettings.{ACK_ENVIRONMENT}.json`이 환경 변수보다 우선합니다. 모듈은 `module.json` 뒤에 `module.{os}.json`을 적용합니다. `RunningEnvironment`는 `D`, `S`, `P`만 지원합니다.
+
+## 실시간 반영과 재시작이 필요한 설정
+
+`AppSettings:IsConfigurationWatching`이 `true`이면 파일 변경을 감시해 아래 `appsettings.json` 키를 **재시작 없이** 반영합니다. 새 값이 유효할 때만 교체하고 오류면 이전 설정을 유지합니다. 로드된 모듈의 `module.json`(데이터 원본 `DataSource`, `LLMSource`, `FunctionSource`, `GraphDataSource` 포함)도 같은 방식으로 반영됩니다.
+
+- 실시간 반영: `BusinessServerUrl`, `FindGlobalIDServer`, `HostAccessID`, `IsTenantFunction`, `IsExceptionDetailText`, `ContractRequestPath`, `TenantAppRequestPath`, `CookiePrefixName`, `UserSignExpire`, `StaticFileCacheMaxAge`, `WithOnlyIPs`, `IsPermissionRoles`, `PermissionRoles`
+- **재시작 필요**: `UseContractSync`, `UseHttpLogging`, `UseForwardProxy`, `UseResponseComression`, `InstallType`, `ApplicationID`, `ProgramName`, `RunningEnvironment`, `HostName`, `SystemID`, `IsConfigurationWatching`, `IsSwaggerUI`, `IsModulePurgeContract`, `SessionState`, `ProxyBasePath`, `IsAntiforgeryToken`, `TenantAppBasePath`, `BatchProgramBasePath`, `CreateAppTempPath`, `ForbesBasePath`, `LoadModuleBasePath`, `LoadModules`, `LoadModuleLicenses`, `ModuleConfigurationUrl`, `DiscoveryApiServerUrl`, `DomainAPIServer`, `ComressionEnableForHttps`, `ComressionMimeTypes`, `ForwardProxyIP`, `UseSameIPProxy`, `AuthenticationLoginPath`, `AuthenticationLogoutPath`, `SqidsAlphabet`, `LicenseKey`, `LicenseSignature`, `WithOrigins`
+
+그 밖의 변경(DLL 추가·교체, 새 모듈 추가·삭제, DI·미들웨어, OS별 파일 변경, 환경 변수와 `appsettings.{환경}.json` 변경)도 재시작이 필요합니다. 철자 오류(`Comression`)는 소스의 설정 키 이름 그대로입니다.
+
+:::caution HostAccessID를 실시간 반영할 때
+시작할 때는 `HostAccessID`를 SHA-256 해시로 바꿔 보관하지만, 실시간 반영 경로(`RuntimeConfigurationService`)는 설정 값을 그대로 대입합니다. `HostAccessID`를 감시로 바꾼 뒤에는 관리 엔드포인트가 기대하는 값이 해시에서 원문으로 달라질 수 있으니, 바꾼 직후에는 호출이 거부되는지 확인하고 필요하면 재시작하세요(확인 필요).
+:::
+
+## 관리 엔드포인트
+
+`ack`가 모듈과 별개로 제공하는 엔드포인트입니다. `hostAccessID`가 필요한 항목은 아래 규칙을 따릅니다.
+
+| 경로 | 메서드 | 인증 | 설명 |
+|---|---|---|---|
+| `/checkip` | GET | 없음 | 호출자 IP를 텍스트로 돌려줍니다. 헬스체크와 프록시 뒤 IP 확인에 씁니다 |
+| `/diagnostics` | GET | `hostAccessID` | 프로세스·런타임·Kestrel 진단 JSON. 실패하면 `401` |
+| `/metrics` | GET | `hostAccessID` | Prometheus 형식 요청 지표. 실패하면 `401` |
+| `/globalconfiguration` | GET | `hostAccessID` | 적용 중인 전역 설정 스냅샷과 재시작 필요 키. 실패하면 `401` (오타 경로 `/globalconfigration`도 같은 동작) |
+| `/globalconfiguration/apply` | POST | `hostAccessID` | 실시간 반영 가능한 전역 설정을 적용. 오류가 있으면 `400` |
+| `/moduleconfiguration/mediatr` | GET | `hostAccessID` | 모듈별 `EventAction`·`SubscribeAction`(MediatR 발행·구독) 설정 조회 |
+| `/moduleconfiguration/mediatr/{moduleID}/apply` | POST | `hostAccessID` | 모듈의 `EventAction`·`SubscribeAction` 설정 적용. 모듈이 없으면 `404`, 오류가 있으면 `400` |
+| `/manifest` | GET | `launch=true`일 때 `hostAccessID` | 업데이트 매니페스트. `launch=true`는 `AppSettings:IsAutoUpdate`가 `true`일 때만 updater를 띄우고, `false`(기본)이면 `403` |
+| `/license-keys` | GET | `hostAccessID` | 로드된 모듈 라이선스 키 이름 목록 |
+| `/stop` | GET | `hostAccessID` | 프로세스를 종료합니다. 인증에 실패해도 응답이 `200`에 본문 없음이므로 종료 여부는 프로세스로 확인하세요 |
+| `/contractsync` | POST | `hostAccessID` | [계약 파일 동기화](#계약-파일-동기화) |
+| `/secrets` | GET·POST·DELETE | 클라이언트 정보 헤더(`HandStack-MachineID`, `HandStack-IP` 등) | 시크릿 저장소 API. 세부 규칙은 확인 필요 |
+
+**`hostAccessID` 전달**: 쿼리 문자열, 폼 필드, 경로 값, 헤더 순으로 찾습니다. 값은 `AppSettings:HostAccessID` **원문이 아니라 그 SHA-256 소문자 16진 해시**입니다. 해시가 맞지 않으면 `401`입니다.
+
+```powershell
+curl "http://localhost:8421/diagnostics?hostAccessID=<SHA-256 소문자 16진 해시>"
+```
+
+Docker에서는 설정한 `HostAccessID` 값을 해시합니다. 기본값(`HANDSTACK_HOSTACCESSID`)을 그대로 둔 Docker가 아닌 환경에서는 비교 값이 환경에 따라 달라질 수 있어 문서화하지 않습니다. 운영에서는 고유한 값을 설정하세요.
+
+## 계약 복사와 삭제
+
+모듈의 `Contracts` 폴더는 `ack`가 시작할 때 공유 계약 폴더(`contracts`)로 복사될 수 있습니다. 모듈 설정(`module.json`)의 다음 키가 제어합니다.
+
+| 키 | 기본값 | 동작 |
+|---|---|---|
+| `IsCopyContract` | `true` | 시작할 때 모듈의 `Contracts`를 공유 계약 폴더로 복사합니다 |
+| `IsPurgeContract` | `false` | 시작할 때 모듈 계약 경로의 파일과 같은 위치에 복사되어 있던 사본을 공유 계약 폴더에서 삭제해 중복 계약을 막습니다. 세부 조건은 소스 확인 필요 |
+
+`appsettings.json`의 `AppSettings:IsModulePurgeContract`(기본 `true`)는 전역 설정이며 재시작이 필요합니다. 수정이 반영되지 않으면 서버가 읽는 경로(원본인지 복사본인지), 파일 감시 또는 `refresh`, 같은 ID의 중복 계약, 재시작 순서로 확인하세요([수정했는데 예전 동작이 나옴](/docs/guides/문제-해결#수정했는데-예전-동작이-나옴)).
+
 ## OS별 설정 파일
 
 실행 중인 OS에 맞는 설정 파일이 있으면 기본 설정 위에 덮어씁니다. 같은 키를 Windows, Ubuntu, macOS에서 다르게 써야 할 때(경로, 인증서, 외부 주소 등) 사용합니다. 파일이 없으면 기본 설정을 그대로 사용합니다.

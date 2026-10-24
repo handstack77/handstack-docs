@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack IDE 연동·개발"
+  short_description: "Keep IDE round-trips intact and develop the HandStack IDE"
+  default_prompt: "$handstack-ide-development 스킬로 IDE 왕복 편집 보존 규칙과 IDE 소스 불변 규칙에 맞춰 요청한 작업을 처리해 줘."

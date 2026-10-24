@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack 업무 모듈 통합"
+  short_description: "Wire HandStack business modules: menus, settings, contracts and deployment"
+  default_prompt: "$handstack-module-development 스킬로 새 화면의 메뉴 등록과 모듈 설정·배포 경로를 확인하고 연결해 줘."

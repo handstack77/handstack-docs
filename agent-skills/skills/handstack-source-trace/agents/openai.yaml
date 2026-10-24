@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack 소스 추적"
+  short_description: "Trace HandStack screens through transactions to SQL and functions"
+  default_prompt: "$handstack-source-trace 스킬로 요청한 화면의 이벤트부터 거래·SQL·출력까지 호출 경로를 추적하고 불일치를 진단해 줘."

@@ -25,6 +25,8 @@ sidebar_position: 20
 | `GET` | `/dbclient/api/query/reports` | 계약 기반 보고용 정보를 조회합니다. |
 | `POST` | `/dbclient/api/query` | SQL 계약을 실행합니다. |
 
+`has`, `refresh`, `retrieve`, `meta`의 파라미터와 인증 규칙(실패 시 `400`)은 [transact 모듈의 계약 관리 API 공통 규칙](/docs/reference/api/modules/transact#계약-관리-api-공통-규칙)을 보세요.
+
 ## 핵심 구현
 
 - `Areas/dbclient/Controllers/QueryController.cs`: query API 진입점입니다.

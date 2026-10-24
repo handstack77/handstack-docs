@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack 프롬프트 계약"
+  short_description: "Develop HandStack prompter contracts and decision contracts"
+  default_prompt: "$handstack-prompt-contracts 스킬로 요청한 .pmt 프롬프트·판단 계약을 서버 규칙과 모델 설정에 맞춰 작성하거나 수정해 줘."

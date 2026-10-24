@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack 규칙·검증"
+  short_description: "Turn business rules into decision tables, concurrency-safe writes and test cases"
+  default_prompt: "$handstack-rules-and-verification 스킬로 요청한 업무 규칙을 규칙 표와 결정표로 정리하고, 강제 위치와 동시성, 테스트 케이스를 도출해 줘."

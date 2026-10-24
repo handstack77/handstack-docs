@@ -58,6 +58,51 @@ contracts/repository/{ApplicationID}/...
 | `XFrameOptions` | 다운로드 응답의 frame 허용 정책입니다. |
 | `ContentSecurityPolicy` | 다운로드 응답의 frame-ancestors 정책입니다. |
 
+## 저장소 선언 (.rpo)
+
+JSON 배열이며(주석과 후행 쉼표 허용) 항목 하나가 **RepositoryID** 하나입니다. 확장자는 `.json` 또는 `.rpo`입니다([계약 확장자](/docs/reference/식별자와-파일-경로#계약-확장자)). 거래 계약이 아니므로 `CommandType`으로 호출하지 않고 화면의 `repositoryID`로 연결합니다.
+
+```jsonc
+[
+  {
+    "ApplicationID": "HDS", "RepositoryID": "ABCATT01", "RepositoryName": "게시글 첨부",
+    "AccessID": "ABC", "StorageType": "FileSystem", "PhysicalPath": "../storage/HDS/ABCATT01",
+    "AccessMethod": "public", "IsMultiUpload": true, "IsFileOverWrite": false,
+    "IsFileNameEncrypt": true, "IsKeepFileExtension": false, "IsAutoPath": true, "PolicyPathID": "1",
+    "UploadTypeID": "Attachment", "UploadExtensions": "pdf;docx;xlsx;png;jpg",
+    "UploadCount": 10, "UploadSizeLimit": 10485760,
+    "TransactionGetItem": "HDS|ABC|FIL010|GD01",
+    "TransactionGetItems": "HDS|ABC|FIL010|LD01",
+    "TransactionDeleteItem": "HDS|ABC|FIL010|DD01",
+    "TransactionUpsertItem": "HDS|ABC|FIL010|MD01",
+    "TransactionUpdateDependencyID": "HDS|ABC|FIL010|UD01",
+    "TransactionUpdateFileName": "HDS|ABC|FIL010|UD02"
+  }
+]
+```
+
+| 항목 | 의미 |
+|---|---|
+| `PhysicalPath` | 파일을 저장하는 기준 경로. 환경별 값이므로 운영 경로를 소스에 새로 쓰지 마세요 |
+| `IsAutoPath`, `PolicyPathID` | `IsAutoPath`가 `true`이면 기준 경로 아래에 날짜 폴더를 만듭니다. `PolicyPathID`가 `1`이면 연도(`yyyy`), `2`이면 연월(`yyyy-MM`), `3`이면 연월일(`yyyy-MM-dd`)이고, 앞에 `CustomPath1~3`이 붙습니다 |
+| `IsMultiUpload` | `false`인 단일 파일 저장소는 새 파일을 올리면 이전 파일을 지웁니다 |
+| `AccessMethod` | 접근 방식. 다운로드 URL 노출 범위를 최소화하세요 |
+| `UploadSizeLimit`, `UploadCount`, `UploadExtensions`, `UploadTypeID` | 업로드 제한과 종류. 서버가 강제하는 범위는 아래를 보세요 |
+| `Transaction*` | 파일 정보를 DB에 기록·조회하는 dbclient 거래 ID(`ApplicationID\|ProjectID\|TransactionID\|ServiceID`) |
+
+**메타데이터 거래**: `Transaction*`이 가리키는 거래 계약과 SQL 계약이 모두 있어야 합니다. 파일을 물리적으로 복사하는 것만으로는 메타데이터가 생기지 않으므로 삭제·이관은 repository API로 하세요.
+
+**메타데이터 관리 방식**: `IsFileUploadDownloadOnly`가 `true`이면 메타데이터 없이 파일만 저장·다운로드합니다. `IsLocalDbFileManaged`가 `true`이면 모듈 로컬 SQLite 메타 SQL로, 아니면 `Transaction*` dbclient 거래로 목록과 건수를 조회합니다.
+
+**화면 연결**: `<syn_fileclient syn-options="{repositoryID: '…'}">`, `<syn_filedropzone … {repositoryID, applicationID, dependencyID}>`, `<syn_htmleditor … {repositoryID}>`로 연결합니다. `dependencyID`는 파일을 업무 키에 묶는 값입니다. 신규 작성 중에는 임시 키로 올리고, 저장에 성공한 뒤 `updateDependencyID`로 업무 키로 옮기세요.
+
+**서버가 강제하는 것**:
+
+- 파일 **크기**(`UploadSizeLimit`): 초과하면 업로드를 거부합니다.
+- 경로 안전성: `CustomPath1~3`의 `..`, 절대경로, 줄바꿈과 파일명 변경 시 경로 문자를 거부합니다.
+- 업로드 **건수**(`UploadCount`): 다중 업로드에서 이미 등록된 건수가 한도를 넘는 경우에 거부합니다(메타데이터를 관리하는 저장소일 때만).
+- **확장자(`UploadExtensions`)는 서버가 검사하지 않습니다.** 값은 클라이언트 컨트롤에 전달되어 업로드 전에 걸러질 뿐이므로, 서버 측 확장자 차단이 필요하면 업로드 후 검증 로직을 따로 두세요.
+
 ## 실행 흐름
 
 1. 모듈 초기화 시 `ContractBasePath`의 저장소 JSON 계약을 로드합니다.

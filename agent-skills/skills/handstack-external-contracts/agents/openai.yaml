@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack 외부 연동 계약"
+  short_description: "Develop HandStack command, graph and repository contracts"
+  default_prompt: "$handstack-external-contracts 스킬로 요청한 command(.bas)·graphclient(.cyp)·repository(.rpo) 계약을 허용 범위와 함께 작성하거나 수정해 줘."

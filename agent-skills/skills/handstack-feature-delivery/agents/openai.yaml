@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack 기능 구현"
+  short_description: "Deliver HandStack features end to end: SQL, transaction, screen and menu"
+  default_prompt: "$handstack-feature-delivery 스킬로 요청한 기능의 연결표를 먼저 작성하고 SQL·거래·화면·메뉴를 순서대로 구현한 뒤 검증해 줘."

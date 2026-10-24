@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack 문제 진단"
+  short_description: "Diagnose HandStack screen, transaction, SQL and function failures by layer"
+  default_prompt: "$handstack-troubleshooting 스킬로 증상과 오류 메시지를 계층별로 좁혀 첫 실패 지점과 원인을 확정해 줘."

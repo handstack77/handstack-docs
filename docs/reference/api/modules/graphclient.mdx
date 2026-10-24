@@ -25,6 +25,8 @@ sidebar_position: 35
 | `GET` | `/graphclient/api/query/reports` | 계약 기반 보고용 정보를 조회합니다. |
 | `POST` | `/graphclient/api/query/execute` | Cypher 계약을 실행합니다. |
 
+`has`, `refresh`, `retrieve`, `meta`의 파라미터와 인증 규칙(실패 시 `400`)은 [transact 모듈의 계약 관리 API 공통 규칙](/docs/reference/api/modules/transact#계약-관리-api-공통-규칙)을 보세요.
+
 ## 핵심 구현
 
 - `Areas/graphclient/Controllers/QueryController.cs`: query API 진입점입니다.
@@ -48,6 +50,27 @@ ApplicationID|ProjectID|TransactionID|StatementID
 ```
 
 statement에는 사용할 `DataSourceID`, 반환 형식, Cypher 본문, 입력 파라미터를 선언합니다. Cypher 안에서는 `$name` 형태의 named parameter를 사용합니다.
+
+## 계약 파일 형식 (.cyp)
+
+statement 하나가 Cypher 쿼리 하나입니다. 확장자는 `.xml` 또는 `.cyp`입니다([계약 확장자](/docs/reference/식별자와-파일-경로#계약-확장자)).
+
+```xml
+<statement id="LG04" seq="0" use="Y" timeout="30" transactionlog="Y" desc="공동 출연자 조회">
+    <![CDATA[
+MATCH (a:Person {name: $ActorName})-[:ACTED_IN]->(m:Movie)<-[:ACTED_IN]-(co:Person)
+WHERE co.name <> a.name
+RETURN m.title AS movieTitle, collect(co.name) AS coActors
+ORDER BY movieTitle
+    ]]>
+    <param id="$ActorName" value="" test="Tom Hanks" />
+</statement>
+```
+
+- 파라미터는 `$이름` named parameter입니다(SQL 계약의 `@`와 다릅니다). `test` 속성은 IDE의 테스트 값입니다. 데이터 원본은 header의 `<datasource>`이고 서버의 `GraphDataSource`와 대응합니다.
+- 반환 컬럼 별칭(`AS`)이 화면 컬럼 이름이 됩니다. 관계 방향과 라벨을 확인하세요.
+- 읽기와 쓰기(`CREATE`, `MERGE`, `DELETE`)를 구분하고, 쓰기는 필요한 계정 권한만 있는지 확인합니다. SQL 문법으로 바꾸지 마세요.
+- 결과가 크면 `LIMIT`이나 조건으로 범위를 제한하세요. 서버는 `AllowedGraphHosts`와 최대 timeout을 통제합니다.
 
 ## 주요 설정
 

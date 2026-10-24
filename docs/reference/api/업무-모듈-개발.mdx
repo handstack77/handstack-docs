@@ -1,0 +1,132 @@
+---
+description: 업무 모듈의 폴더 구성, ModuleInitializer와 설정 엔티티, 컨트롤러 접근 제어, 모듈 간 이벤트, 런타임 설정 반영을 정리합니다.
+---
+
+# 업무 모듈 개발
+
+업무 모듈은 화면(`wwwroot/{모듈}/view/…`), 계약(`Contracts/{종류}/…`), 설정(`module.json`)을 한 프로젝트로 묶은 .NET 라이브러리입니다. 호스트(`ack` 또는 `rdy`)가 `module.json`과 DLL을 읽고 `IModuleInitializer`를 실행합니다. 기본 모듈(`dbclient`, `transact` 등)도 같은 구조입니다. 모듈 설정은 [module.json](/docs/reference/api/module.json-환경설정), 메뉴는 [menus.json](/docs/reference/api/menus.json-메뉴설정)을 보세요.
+
+## 폴더 구성
+
+```text
+{Module}/
+├─ {Module}.csproj            # Library, 호스트가 로드합니다
+├─ module.json                # 모듈 설정 (비밀 포함)
+├─ ModuleInitializer.cs       # 서비스·미들웨어·정적 파일 등록
+├─ Areas/{Module}/Controllers # 모듈 API (Index, Managed …)
+├─ Entity/  Extensions/  Services/  Settings/
+├─ Contracts/
+│  ├─ transact/{App}/{Project}/{ID}.txn
+│  ├─ dbclient/{App}/{Project}/{ID}.dbc
+│  ├─ function|command|graphclient|prompter/…
+│  └─ repository/{App}/{Module}.rpo
+└─ wwwroot/{Module}/
+   ├─ main.html, main.js, main.css   # 업무 셸 (탭, 메뉴, 버튼)
+   ├─ menus.json                     # 메뉴
+   ├─ syn.config.json                # 화면 런타임 설정
+   └─ view/{App}/{Project}/{ID}.html|js
+```
+
+모듈마다 일부가 다릅니다. 화면 경로에 `{App}` 폴더가 없거나 `sample/` 아래에 화면을 두는 예제도 있으므로 새 파일은 같은 모듈의 기존 배치를 따르세요. 계약 확장자는 [계약 확장자](/docs/reference/식별자와-파일-경로#계약-확장자)를 보세요.
+
+## 식별자
+
+| 이름 | 의미 | 쓰이는 곳 |
+|---|---|---|
+| `ModuleID` | 모듈 폴더·어셈블리 이름 | `module.json`, 웹 경로 `/{ModuleID}/…`, `wwwroot/{ModuleID}/` |
+| `ApplicationID` | 최상위 애플리케이션(예 `HDS`) | 계약 폴더 1단계, 계약 header, `syn.config.json` |
+| `ProjectID` | 업무 묶음 코드 | 계약 폴더 2단계, 화면 폴더 |
+| `TransactionID` | 화면·거래 ID | 파일 이름 |
+| `DataSourceID`, `RepositoryID` | 서버 설정의 DB 원본, 파일 저장소 | 계약 header, 화면 컨트롤 |
+
+모듈 폴더 이름과 `ProjectID`는 다른 값입니다. 서로 바꿔 쓰지 마세요([식별자와 파일 경로](/docs/reference/식별자와-파일-경로)).
+
+## 로딩
+
+- `ModuleID`, 어셈블리 이름, 폴더 이름, `module.json`의 `ModuleID`가 같아야 합니다. 호스트는 `AppSettings:LoadModules`(또는 `--modules`)의 이름과 `modules/{이름}/module.json`을 맞춰 `{이름}.dll`을 로드합니다.
+- `ack`의 DLL 로딩 규칙(선택한 모듈의 진입 DLL만 기본 로드 컨텍스트에 로드하고 의존 DLL은 요청 시 해석)은 [모듈 DLL 로딩](/docs/reference/api/ack-프로그램#모듈-dll-로딩)을 보세요. 리플렉션으로 다른 모듈의 타입을 찾는 코드는 먼저 `Assembly.Load("이름")`을 호출합니다.
+- `rdy`는 `command`, `dbclient`, `function`, `graphclient`, `logger`, `prompter`, `repository`, `transact`, `wwwroot` 9개를 정적 결합하고 나머지는 동적으로 로드합니다([운영 호스트](/docs/reference/api/운영-호스트)).
+- 호스트는 `IModuleInitializer` 구현을 찾아 `ConfigureServices`(DI 등록)와 `Configure`(미들웨어, 정적 파일)를 호출합니다. MVC 컨트롤러는 ApplicationPart로 합성됩니다.
+
+## ModuleInitializer
+
+```csharp
+public class ModuleInitializer : IModuleInitializer
+{
+    public string? ModuleID;
+    public ModuleInitializer() { ModuleID = typeof(ModuleInitializer).Assembly.GetName().Name; }
+
+    public void ConfigureServices(IServiceCollection services, IWebHostEnvironment environment, IConfiguration configuration)
+    {
+        var module = GlobalConfiguration.Modules.FirstOrDefault(p => p.ModuleID == ModuleID);
+        if (module == null) { return; }
+
+        var configurationText = PlatformSettings.ReadAllText(module.ModuleSettingFilePath);   // module.{os}.json 병합 포함
+        var moduleConfigJson = JsonConvert.DeserializeObject<ModuleConfigJson>(configurationText);
+        // ModuleConfiguration의 static 필드에 값을 복사하고 경로는 GlobalConfiguration.GetBaseDirectoryPath(값, module.BasePath)로 해석
+        services.AddHttpClient<IMyService, MyService>();
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment? environment, ICorsService corsService, ICorsPolicyProvider corsPolicyProvider)
+    {
+        // wwwroot/{ModuleID}를 RequestPath "/{ModuleID}"로 UseDefaultFiles + UseStaticFiles
+        // OnPrepareResponse에서 WithOnlyIPFilter 검사와 CORS 정책 적용
+    }
+}
+```
+
+- 설정 파일 누락이나 역직렬화 실패는 `FileNotFoundException`·`FileLoadException`으로 **시작을 중단**하는 것이 기존 모듈의 방식입니다. 조용히 기본값으로 넘기지 마세요.
+- `AuthorizationKey`가 비어 있을 때 `SystemID + RunningEnvironment + HostName` 같은 파생 값을 쓰는 모듈이 많습니다. 운영에서는 명시 값을 환경 변수로 주입하세요.
+- 로그는 Serilog 구조화 로그로 카테고리를 첫 인자로 씁니다: `Log.Logger.Error("[{LogCategory}] 메시지", "{ModuleID} ModuleInitializer/ConfigureServices")`.
+
+## 설정 엔티티
+
+- `Entity/ModuleConfigJson.cs`: `module.json`의 스키마입니다. 새 옵션은 여기에 속성을 추가하고 기본값을 생성자에서 지정합니다.
+- `Entity/ModuleConfiguration.cs`: 런타임이 읽는 **static 필드**입니다. `ModuleConfig`와 이름·형식이 같은 필드는 호스트의 `IsConfigurationWatching`이 실시간으로 채우고, 대응 필드가 없거나 변환이 필요한 항목은 "재시작 필요"로 기록됩니다.
+- 새 옵션을 추가할 때는 `module.json`(기본값), `ModuleConfigJson`, `ModuleConfiguration`, 설정 화면(`module-settings.*`), 사용하는 코드, 템플릿의 `module.json`을 함께 고칩니다.
+
+## 컨트롤러와 접근 제어
+
+```csharp
+[Area("mymodule")]
+[Route("[area]/api/[controller]")]
+[ApiController]
+[EnableCors]
+[TypeFilter(typeof(RequestOriginActionFilter))]       // 관리 API: 요청 출처 / API 키 검사
+public partial class ManagedController(...) : BaseController
+{
+    [HttpGet("[action]")]
+    public ActionResult ResetContract()
+    {
+        if (HttpContext.IsAllowAuthorization() == false) { return BadRequest(); }
+        ...
+    }
+}
+```
+
+- 모듈 관리 API는 `RequestOriginActionFilter`(`AppSettings:Security:RequestOriginApiAccess`)와 모듈의 `IsAllowAuthorization()`을 모두 통과해야 합니다. 판정 규칙(`AuthorizationKey` 일치 또는 `AllowClientIP`, 실패 시 `400`)은 [계약 관리 API 공통 규칙](/docs/reference/api/modules/transact#계약-관리-api-공통-규칙)을 보세요.
+- `RequestOriginActionFilter`를 붙이는 위치는 모듈마다 다릅니다. 대부분 컨트롤러 클래스에 붙이지만 `checkup`의 `ManagedController`는 메서드에 붙입니다. 새 컨트롤러는 같은 모듈의 기존 패턴을 따르세요.
+- 업무 API(거래 실행 등)의 인증과 권한은 transact 계약(`Authorize`, `Roles`, `AccessScreenID`)에 둡니다. 인증 없이 데이터를 노출하는 컨트롤러를 만들지 마세요.
+- 장시간 작업에서 `lock`을 오래 잡지 말고, 예외는 로그에 남긴 뒤 일반 메시지로 응답하세요(스택·경로를 노출하지 않습니다).
+
+## 모듈 간 통신
+
+- 같은 프로세스의 모듈 사이는 Mediator `IRequest<object?>`/`IRequestHandler` 이벤트로 통신합니다. 이벤트 클래스를 `{모듈}.Events.{이름}`으로 노출하고, 호출 측은 `Assembly.Load(모듈).GetType("…")`로 인스턴스를 만들어 `mediator.Send`합니다. 발행·구독 이름은 `module.json`의 `EventAction`, `SubscribeAction`에 등록하며 실행 중에도 호스트의 MediatR 설정에 반영될 수 있습니다([`/moduleconfiguration/mediatr`](/docs/reference/api/ack-프로그램#관리-엔드포인트)). 개념은 [In-process / Out-process 메시징](/docs/reference/concept/In-process-Out-process-메시징)을 보세요.
+- 모듈이 거래를 실행하려면 `BusinessServerUrl`(transact 실행 URL)로 `TransactionClient.TransactionDirect`나 `ModuleApiClient`를 씁니다. 내부 호출도 요청 출처 검사와 인증 정책을 통과해야 합니다.
+- 로그는 `logger` 모듈로 보내는 `LogServerUrl`/`IsLogServer` 설정을 따르며 실패하면 로컬 로그로 대체합니다.
+
+## 런타임 설정 반영
+
+`IModuleRuntimeConfiguration.ReloadModuleConfiguration(ModuleInfo, string)`을 구현하면 `module.json` 변경을 모듈이 직접 처리합니다. 결과는 `ModuleConfigurationReloadResult`의 `AppliedKeys`, `RestartRequiredKeys`, `Errors`로 돌려줍니다. `IModuleRuntimeConfigurationPropertyHandler`(`CanHandleModuleConfigurationProperty`, `ApplyModuleConfigurationProperty`)는 특정 속성만 직접 처리할 때 씁니다. 데이터 원본 같은 캐시형 설정은 **새 목록 전체를 검증한 뒤 한 번에 교체**하고 실패하면 이전 설정을 유지하는 패턴을 따르세요.
+
+## 빌드와 배포 부작용
+
+모듈 `csproj`는 보통 `OutputType=Library`이고 `wwwroot/**`, `Contracts/**`, `module.json`을 출력으로 복사하며 `Contracts/function/**`를 `Compile`에서 제외합니다. PostBuild가 환경 변수가 가리키는 런타임 폴더를 **삭제한 뒤 다시 복사**하는 프로젝트가 흔하므로 빌드 한 번이 실행 중인 환경을 바꿀 수 있습니다. 원본 저장소를 빌드하기 전에 `csproj`의 PreBuild·PostBuild와 해당 환경 변수의 실제 값을 확인하세요. 빌드 성공은 계약 복사, 캐시 갱신, DB 접속 성공을 증명하지 않습니다(프로젝트마다 다르므로 확인 필요).
+
+## 체크리스트
+
+- `ModuleID` = 폴더 = 어셈블리 = `module.json` 이름이고 `LoadModules`에 등록했습니다(`rdy`로 정적 결합하려면 프로젝트 참조도).
+- 설정 누락 시 시작을 중단하고, 비밀은 환경 변수로 주입하며, 기본 `AllowClientIP`와 키를 운영에서 좁혔습니다.
+- 컨트롤러: Area·Route 규칙을 따르고 관리 API에 출처 필터와 `IsAllowAuthorization`을 적용했습니다.
+- 새 옵션이 `module.json`, 엔티티, `ModuleConfiguration`, 설정 화면, 템플릿에 모두 반영됐습니다.
+- 검증: `dotnet build <csproj>` → 필요한 모듈만으로 `ack --modules=…` 기동 → `/checkip` → 대상 API·거래 → 설정 변경이 실시간으로 반영되는지 재시작이 필요한지 확인.

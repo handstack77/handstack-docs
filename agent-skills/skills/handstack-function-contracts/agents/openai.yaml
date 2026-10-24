@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack 서버 함수"
+  short_description: "Develop HandStack CommandType F functions in C#, Node.js and Python"
+  default_prompt: "$handstack-function-contracts 스킬로 요청한 서버 함수를 .fnc 원본에 구현하고 호출 화면의 출력 순서와 Exception 처리를 맞춰 줘."

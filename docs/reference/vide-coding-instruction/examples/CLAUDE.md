@@ -124,4 +124,4 @@ Claude Code가 비밀정보 파일을 읽지 않도록 `.claude/settings.json`�
 
 - [AI 에이전트에 HandStack 문서 연결하기](/docs/guides/에이전트에-문서-연결하기): 등록 방법과 제공 도구
 - [handstack-rules](/docs/reference/vide-coding-instruction/rules/handstack-rules): 파일 명명과 화면 스크립트 작성 규칙
-- [handstack-scaffold](/docs/reference/vide-coding-instruction/commands/handstack-scaffold) 명령과 [handstack-developer](/docs/reference/vide-coding-instruction/agents/handstack-developer) 에이전트: 이 폴더의 명령·에이전트 예시는 `src/view`, `src/Contracts` 같은 특정 프로젝트 구조를 가정하므로 프로젝트의 계약 경로에 맞게 수정해 사용하세요.
+- [handstack-scaffold](/docs/reference/vide-coding-instruction/commands/handstack-scaffold) 명령과 [handstack-developer](/docs/reference/vide-coding-instruction/agents/handstack-developer) 에이전트: 구현체가 없는 예시이므로 프로젝트의 `.claude/commands/`, `.claude/agents/`로 복사한 뒤 계약 경로와 확장자(`.xml`/`.dbc`, `.json`/`.txn`)를 프로젝트에 맞게 고쳐 사용하세요.

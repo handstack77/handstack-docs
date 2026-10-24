@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack 거래·SQL 계약"
+  short_description: "Design and fix HandStack .txn transaction and .dbc SQL contracts"
+  default_prompt: "$handstack-transaction-contracts 스킬로 요청한 거래(.txn)와 SQL(.dbc)을 화면 입출력 순서에 맞춰 작성하거나 수정해 줘."

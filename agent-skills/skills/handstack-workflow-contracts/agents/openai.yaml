@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack 워크플로 계약"
+  short_description: "Design and debug HandStack transact workflow contracts (CommandType W)"
+  default_prompt: "$handstack-workflow-contracts 스킬로 요청한 서버 오케스트레이션을 WorkflowSteps·매핑·검증으로 설계하고 점검해 줘."

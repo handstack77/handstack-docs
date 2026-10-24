@@ -1,0 +1,63 @@
+---
+description: 모듈 폴더의 module.json 최상위 키와 ModuleConfig 공통 키, 계약 복사·삭제 설정, 환경별 파일과 실시간 반영 범위를 정리합니다.
+---
+
+# module.json 환경설정
+
+모든 모듈은 폴더(`modules/{모듈}`)에 `module.json`을 둡니다. 호스트(`ack`, `rdy`)가 이 파일과 DLL을 읽어 모듈을 로드합니다. 호스트 설정은 [ack 프로그램](/docs/reference/api/ack-프로그램), 화면 로더 설정은 [syn.config.json](/docs/reference/api/syn.config.json-환경설정), 모듈별 `ModuleConfig` 키는 각 모듈 문서(예: [dbclient](/docs/reference/api/modules/dbclient))를 보세요.
+
+:::warning module.json에는 비밀이 들어 있습니다
+접근 키(`ManagedAccessKey`, `AuthorizationKey`), AES 키(`EncryptionAES256Key`), 연결 문자열, 토큰이 이 파일에 있을 수 있습니다. 읽을 필요가 없으면 열지 말고, 열었다면 출력·로그·커밋에 복사하지 마세요. 새 값은 환경 변수나 비밀 저장소로 주입합니다.
+:::
+
+## 최상위 키
+
+```json
+{
+    "ModuleID": "checkup",
+    "Name": "checkup",
+    "IsBundledWithHost": false,
+    "Version": "1.0.0",
+    "ModuleConfig": { }
+}
+```
+
+| 키 | 기본값 | 의미 |
+|---|---|---|
+| `ModuleID` | | 모듈 식별자. **폴더 이름 = DLL(어셈블리) 이름 = `ModuleID` = `AppSettings:LoadModules`의 이름**이어야 합니다 |
+| `Name` | | 표시 이름 |
+| `ApplicationID` | `HDS` | 모듈이 속한 애플리케이션 |
+| `IsBundledWithHost` | `false` | `true`이면 모듈 폴더가 아니라 호스트 실행 폴더의 DLL을 씁니다 |
+| `IsRequiredLicense` | `false` | 모듈 라이선스가 필요한지. [모듈 라이선스 관리](/docs/reference/api/모듈%20라이선스%20관리)를 보세요 |
+| `IsCopyContract` | `true` | 호스트가 시작할 때 모듈의 `Contracts` 폴더를 공유 계약 폴더(`contracts`)로 복사합니다 |
+| `IsPurgeContract` | `false` | 시작할 때 모듈 계약 경로의 파일과 같은 위치에 복사되어 있던 사본을 공유 계약 폴더에서 삭제해 중복 계약을 막습니다 |
+| `Version` | | 모듈 버전 |
+| `ModuleConfig` | | 모듈 고유 설정. 모듈마다 키가 다릅니다 |
+| `LoadPassAssemblyPath` | | 모듈 로드 때 건너뛸 의존 어셈블리 경로 목록 |
+
+`IsCopyContract`와 `IsPurgeContract`는 의도하지 않게 런타임에서 편집한 계약을 덮어쓰거나 지울 수 있으니 값을 확인한 뒤 작업하세요. 계약이 반영되지 않을 때의 점검 순서는 [수정했는데 예전 동작이 나옴](/docs/guides/문제-해결#수정했는데-예전-동작이-나옴)을 보세요.
+
+## ModuleConfig 공통 키
+
+모듈 샘플(`checkup`)에서 공통으로 보이는 키입니다. 모듈마다 일부만 쓰고, 모듈 고유 키가 더 있습니다.
+
+| 키 | 의미 |
+|---|---|
+| `SystemID` | 시스템 식별자. 거래 요청의 시스템 ID와 비교합니다([인증과 권한](/docs/reference/거래-오류-메시지#서버-인증과-권한)) |
+| `ManagedAccessKey`, `AuthorizationKey` | 모듈 관리 API 접근 키. 비밀입니다 |
+| `EncryptionAES256Key` | AES-256 암호화 키. 비밀입니다 |
+| `ModuleConfigurationUrl` | 모듈 설정을 원격에서 받을 주소 |
+| `BusinessServerUrl` | 거래를 실행할 `transact` 주소(`…/transact/api/transaction/execute`) |
+| `ModuleLogFilePath` | 모듈 로그 파일 경로 |
+| `ModuleBasePath`, `WWWRootBasePath` | 모듈 폴더와 모듈 정적 파일 루트 |
+| `EventAction`, `SubscribeAction` | 다른 모듈로 발행하는 이벤트, 구독하는 이벤트 이름 (예: `repository.Events.RepositoryRequest`) |
+| `ConnectionString` | 모듈이 쓰는 데이터베이스 연결 문자열. 비밀입니다 |
+
+내부 주소(`http://localhost:{포트}`)는 호스트 포트와 맞아야 합니다. 포트를 바꿀 때는 한 파일만 바꾸지 말고 `module.json`들과 화면의 서버 주소를 함께 고치세요. 데이터 원본, 저장소, LLM 설정은 업무 모듈이 아니라 해당 실행 모듈(`dbclient`, `repository`, `prompter`)의 `module.json`에 있습니다.
+
+## 환경별 파일과 반영
+
+- 모듈은 `module.json` 뒤에 같은 폴더의 `module.windows.json`, `module.linux.json`, `module.macos.json` 중 실행 OS의 파일 하나를 병합합니다. 배열은 통째로 교체됩니다([OS별 설정 파일](/docs/reference/api/ack-프로그램#os별-설정-파일)).
+- 호스트의 `AppSettings:IsConfigurationWatching`이 `true`이면 로드된 모듈의 `module.json`(데이터 원본 `DataSource`, `LLMSource`, `FunctionSource`, `GraphDataSource` 포함)이 재시작 없이 반영됩니다. 반영하지 못하는 키는 재시작 필요 목록으로 알려 줍니다([실시간 반영과 재시작이 필요한 설정](/docs/reference/api/ack-프로그램#실시간-반영과-재시작이-필요한-설정)).
+- 모듈을 새로 추가하거나 삭제하는 변경, DLL 교체는 재시작이 필요합니다.
+- 모듈이 `IModuleRuntimeConfiguration`을 구현하면 `module.json` 변경을 모듈이 직접 처리합니다. [업무 모듈 개발](/docs/reference/api/업무-모듈-개발#런타임-설정-반영)을 보세요.

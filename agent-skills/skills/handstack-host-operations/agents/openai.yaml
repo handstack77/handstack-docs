@@ -1,0 +1,4 @@
+interface:
+  display_name: "HandStack 호스트·운영"
+  short_description: "Run, configure, build, deploy and diagnose HandStack hosts and CLI tools"
+  default_prompt: "$handstack-host-operations 스킬로 실행·설정·배포 작업의 파괴적 영향과 재시작 필요 여부를 먼저 확인한 뒤 처리해 줘."

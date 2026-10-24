@@ -27,6 +27,25 @@ sidebar_position: 60
 | `GET` | `/transact/api/transaction/cache-clear` | 코드 데이터 캐시를 초기화합니다. |
 | `GET` | `/transact/api/aggregate/summary` | 거래 집계 요약을 조회합니다. |
 
+## 계약 관리 API 공통 규칙
+
+`transact`, `dbclient`, `function`, `command`, `graphclient`, `prompter`는 계약을 조회·갱신하는 같은 이름의 관리 API(`has`, `refresh`, `retrieve`, `meta`)를 가집니다. 경로는 각 모듈 문서의 "주요 API" 표에 있고 파라미터와 인증 규칙은 다음과 같습니다.
+
+| API | 파라미터 | 응답 |
+|---|---|---|
+| `has` | `applicationID`, `projectID`, `transactionID`, `functionID` (`transact`는 `functionID` 없음) | 계약이 로드되어 있는지 JSON 불리언 |
+| `retrieve` | `applicationID`, 선택 `projectID`, `transactionID`, `functionID` | 계약 원문 또는 상세 정보 |
+| `meta` | 없음 | 로드된 계약 키 목록 |
+| `refresh` | `changeType`, `filePath`, 선택 `userWorkID`, `applicationID` | 변경된 계약 파일을 다시 읽어 캐시를 갱신 |
+
+`transact`에는 코드 데이터 캐시 키를 보는 `cache-keys`, 계약을 base64 JSON으로 조회하는 `get`, `test`도 있습니다.
+
+**인증**: 위 API는 `AuthorizationKey`가 모듈 설정 `AuthorizationKey`와 같거나, 호출 IP가 모듈 설정 `AllowClientIP`(`*` 포함)에 있으면 통과합니다. 통과하지 못하면 본문 없는 `400 Bad Request`가 돌아옵니다. `401`이 아니라 `400`이므로 키 불일치와 `AllowClientIP` 누락을 먼저 확인하세요. `AuthorizationKey` 값은 호출이 루프백(로컬)이면 쿼리, 폼, 경로 값, 헤더 순으로 찾고, 원격이면 요청 헤더에서만 읽습니다.
+
+- `AllowClientIP`의 기본값 `*`는 개발용입니다. 운영에서는 호출 IP로 좁히세요.
+- `transact`의 관리 API는 `SecurityHardening.LockdownMetadataEndpoints`가 `true`이면 `AllowClientIP`의 `*` 와일드카드만으로는 통과하지 못하고, 키가 일치하거나 명시적으로 등록한 IP여야 합니다.
+- `refresh`는 운영 캐시를 바꾸므로 승인된 환경과 요청 범위에서만 호출합니다. 인증을 우회하려고 `AllowClientIP`나 공개 거래 범위를 넓히지 마세요.
+
 ## 핵심 구현
 
 - `Areas/transact/Controllers/TransactionController.cs`: 단일 거래 API 진입점입니다.
@@ -148,7 +167,7 @@ curl -X POST http://localhost:8421/transact/api/transaction/execute \
 
 ## Workflow 실행
 
-workflow는 여러 거래 단계를 하나의 요청으로 묶습니다. 각 단계의 `CommandType`이 `D`, `G`, `F`, `C`, `P`이면 기존 `RoutingCommandUri` 규칙으로 실행 모듈에 전달됩니다.
+workflow는 여러 거래 단계를 하나의 요청으로 묶습니다. 계약 항목, 매핑, 검증 15종은 [워크플로 계약](/docs/reference/워크플로-계약), 일반 거래 계약의 항목은 [거래 계약 명세](/docs/reference/거래-계약-명세)에 있습니다. 각 단계의 `CommandType`이 `D`, `G`, `F`, `C`, `P`이면 기존 `RoutingCommandUri` 규칙으로 실행 모듈에 전달됩니다.
 
 개발자가 확인해야 할 핵심 규칙은 다음과 같습니다.
 

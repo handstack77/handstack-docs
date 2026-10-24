@@ -20,6 +20,15 @@ description: HDS, BOD, BOD010, LD01의 의미와 화면·거래·SQL 계약 파�
 
 `LD01`은 예제의 명명 관례로 **L(List) + D(Database) + 01(순번)**입니다. 명명 관례와 거래 계약의 `CommandType`은 구분하세요. 서버 라우팅은 실제 `CommandType` 설정으로 결정됩니다.
 
+### 서비스 ID 접두어 관례
+
+소스 저장소의 샘플 계약에서 두 글자 접두어가 다음 관례로 반복됩니다. 서버가 접두어를 해석하지는 않으며, 기존 프로젝트는 다른 규칙을 쓸 수 있습니다.
+
+| 자리 | 글자 | 의미 |
+|---|---|---|
+| 첫 글자 | `G` `L` `I` `U` `D` `M` | 단건 조회, 목록 조회, 등록, 변경, 삭제, 저장·수정(`Flag`로 분기하는 저장 포함) |
+| 둘째 글자 | `D` `G` `F` `P` | 실행하는 모듈: dbclient, graphclient, function, prompter. 계약의 `CommandType`과 같은 글자 |
+
 ## 파일 배치
 
 아래는 기본 contracts 경로를 사용하는 BOD 예제입니다.
@@ -39,6 +48,22 @@ contracts/
 | `BOD010.xml` | `header`의 application/project/transaction/datasource, `statement id` |
 
 이 예제의 거래 계약은 JSON입니다. 현재 `transact` 로더는 `.json`과 `.txn` 확장자를 읽습니다. SQL 계약의 `.xml`과 혼동하지 마세요.
+
+### 계약 확장자
+
+기본 배포본의 예제는 `.json`·`.xml`이고, IDE로 만든 프로젝트는 `.txn`·`.dbc` 같은 모듈별 확장자를 씁니다. 모듈은 두 확장자를 모두 읽으며 쌍이 되는 확장자는 내부 형식이 같습니다. 모듈 소스의 `ModuleConfiguration.ContractFileExtensions` 기준입니다.
+
+| 모듈 | 기존 확장자 | 모듈별 확장자 | 내부 형식 |
+|---|---|---|---|
+| transact | `.json` | `.txn` | JSON |
+| dbclient | `.xml` | `.dbc` | XML |
+| function | `.xml` | `.fnc` | XML |
+| command | `.xml` | `.bas` | XML |
+| graphclient | `.xml` | `.cyp` | XML |
+| prompter | `.xml` | `.pmt` | XML |
+| repository | `.json` | `.rpo` | JSON |
+
+확장자가 형식을 뜻하지는 않으므로 기존 파일의 확장자를 일괄 변경하지 마세요. `.fnc`는 기존 폴더형 함수(`featureMain.*`, `featureMeta.json`, `featureSQL.xml`)를 한 파일로 합친 형식입니다. IDE에서 여는 파일 기준의 설명은 [파일과 저장 규칙](/docs/ide/reference/파일과-저장-규칙#계약-확장자)에 있습니다.
 
 ## 소스와 실행 경로
 
