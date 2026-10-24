@@ -88,8 +88,9 @@ dotnet handstack-docs.dll 8080     # 시작 로그의 "MCP: ..." 줄에서 동�
 | `HANDSTACK_MCP_DIR` | `mcp` 폴더 위치. 기본은 실행 폴더의 `mcp` |
 | `HANDSTACK_NODE` | `node` 실행 파일 경로. 기본은 `PATH`에서 검색 |
 | `HANDSTACK_MCP_UPSTREAM` | 이미 실행 중인 서버 주소. 지정하면 직접 실행하지 않고 프록시만 합니다([외부 서버 모드](#2-외부-서버-모드)) |
-| `HANDSTACK_MCP_TRUST_FORWARDED_FOR` | `true`이면 앞단 프록시(Nginx Proxy Manager, nginx, IIS 등)가 보낸 `X-Forwarded-For`에서 클라이언트 IP를 읽어 요청 제한에 씁니다. 앞단이 없거나 호스트가 인터넷에 직접 노출되어 있으면 켜지 마세요(헤더를 위조해 요청 제한을 우회할 수 있습니다) |
-| `HANDSTACK_MCP_FORWARDED_HOPS` | 신뢰하는 프록시의 단수. 기본 `1`. CDN과 NPM이 모두 앞에 있으면 `2`처럼 지정합니다. `HANDSTACK_MCP_TRUST_FORWARDED_FOR=true`일 때만 의미가 있습니다 |
+| `HANDSTACK_MCP_TRUST_FORWARDED_FOR` | 앞단 프록시의 `X-Forwarded-For`를 클라이언트 IP로 쓸지 정합니다. **지정하지 않으면(기본) 자동**: 호스트에 직접 접속한 상대(앞단 프록시)가 루프백·사설망·이 호스트와 같은 서브넷에 있을 때만 믿습니다. `true`는 항상 믿고(호스트가 인터넷에 직접 노출되어 있으면 위조로 요청 제한을 우회당할 수 있습니다), `false`는 믿지 않습니다 |
+| `HANDSTACK_MCP_TRUSTED_PROXIES` | 자동 판단에서 추가로 신뢰할 앞단 프록시의 IP 또는 CIDR(쉼표 구분). 예: `203.0.113.0/24,198.51.100.7`. 프록시가 호스트와 다른 서브넷의 공인 IP에 있을 때 지정합니다 |
+| `HANDSTACK_MCP_FORWARDED_HOPS` | 신뢰하는 프록시의 단수. 기본 `1`. CDN과 NPM이 모두 앞에 있으면 `2`처럼 지정합니다 |
 
 `/mcp`가 열리지 않을 때는 시작 로그의 `MCP:` 줄을 확인하세요. `mcp/`가 없는 경우, `node_modules`가 없는 경우, `node`를 찾지 못한 경우를 각각 구분해서 알려 줍니다.
 
@@ -130,12 +131,13 @@ HANDSTACK_MCP_UPSTREAM=http://127.0.0.1:8787 dotnet handstack-docs.dll 8080
 
 사이트 도메인을 사이트 호스트로 프록시하고 있다면 `/mcp`도 같은 경로로 전달되므로 MCP를 위한 설정을 따로 추가할 필요가 없습니다. `/`가 다른 곳을 가리킬 때만 `/mcp`를 **사이트 호스트의 포트**로 전달하는 location을 추가하세요. MCP 서버 자체의 포트는 `127.0.0.1`에만 열려 있어 앞단이 접근할 수 없습니다. 응답이 JSON 하나이므로 Websockets나 스트리밍 설정은 필요 없습니다.
 
-클라이언트(사용자)별로 요청을 제한하려면 사이트 호스트에 알려 줘야 합니다. 그렇지 않으면 호스트가 보는 접속 IP가 앞단의 IP 하나뿐이라 **모든 사용자가 분당 요청 한도를 함께 씁니다.**
+클라이언트(사용자)별 요청 제한은 호스트가 앞단 프록시의 `X-Forwarded-For`를 읽어서 합니다. 호스트가 보는 접속 IP는 앞단의 IP 하나뿐이라, 이 헤더를 읽지 못하면 **모든 사용자가 분당 요청 한도를 함께 씁니다.**
 
 1. 앞단이 `X-Forwarded-For`에 클라이언트 IP를 담아 보내게 합니다. Nginx Proxy Manager와 nginx의 기본 설정(`proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)이면 충분합니다. 이 방식은 클라이언트가 보낸 값 **뒤에** 실제 접속 IP를 덧붙이므로 마지막 값이 항상 신뢰할 수 있는 값입니다.
-2. 사이트 호스트에 `HANDSTACK_MCP_TRUST_FORWARDED_FOR=true`를 지정합니다. 앞단 프록시가 둘 이상이면(예: CDN → NPM) `HANDSTACK_MCP_FORWARDED_HOPS=2`처럼 그 수를 함께 지정합니다.
+2. **호스트 설정은 보통 필요 없습니다.** 앞단 프록시가 호스트와 같은 서브넷이거나 사설망·루프백에 있으면 자동으로 헤더를 믿습니다. 시작 로그의 `MCP: 클라이언트 IP 판정: 자동 - …` 줄에 신뢰하는 서브넷이 표시됩니다.
+3. 프록시가 다른 서브넷의 공인 IP에 있다면 `HANDSTACK_MCP_TRUSTED_PROXIES`에 그 IP나 CIDR을 지정합니다. 호스트가 앞단을 거쳐서만 접근된다는 것을 방화벽 등으로 보장한다면 `HANDSTACK_MCP_TRUST_FORWARDED_FOR=true`로 항상 믿게 할 수도 있습니다. 앞단 프록시가 둘 이상(예: CDN → NPM)이면 `HANDSTACK_MCP_FORWARDED_HOPS=2`처럼 그 수를 함께 지정합니다.
 
-호스트는 `X-Forwarded-For`를 오른쪽에서 신뢰하는 단수만큼 센 값을 클라이언트 IP로 보고, IP 형식이 아니거나 항목이 부족하면 접속 IP를 씁니다. 왼쪽 값은 클라이언트가 위조할 수 있어서 쓰지 않습니다. MCP 서버에는 이렇게 판정한 IP 하나만 전달합니다.
+호스트는 `X-Forwarded-For`를 오른쪽에서 신뢰하는 단수만큼 센 값을 클라이언트 IP로 보고, IP 형식이 아니거나 항목이 부족하거나 접속한 상대가 신뢰 대역이 아니면 접속 IP를 씁니다. 왼쪽 값은 클라이언트가 위조할 수 있어서 쓰지 않습니다. MCP 서버에는 이렇게 판정한 IP 하나만 전달합니다.
 
 ```nginx
 location /mcp {

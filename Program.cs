@@ -71,14 +71,38 @@ namespace handstack_docs
             Console.WriteLine($"MCP: {mcpLaunch.Message}");
             if (mcpLaunch.Mode != McpMode.Disabled)
             {
-                // 앞단에 신뢰하는 프록시(NPM, nginx 등)가 있으면 HANDSTACK_MCP_TRUST_FORWARDED_FOR=true 로 켭니다.
-                // 프록시가 둘 이상(예: CDN + NPM)이면 HANDSTACK_MCP_FORWARDED_HOPS 에 그 수를 지정합니다.
-                int trustedProxyHops = 0;
-                if (string.Equals(Environment.GetEnvironmentVariable("HANDSTACK_MCP_TRUST_FORWARDED_FOR"), "true", StringComparison.OrdinalIgnoreCase) == true)
+                // 요청 제한의 기준이 되는 클라이언트 IP: 설정이 없으면(Auto) 호스트에 직접 접속한 상대가
+                // 루프백·사설망·이 호스트와 같은 서브넷일 때만 앞단 프록시(NPM, nginx 등)의 X-Forwarded-For 를 믿습니다.
+                //   HANDSTACK_MCP_TRUST_FORWARDED_FOR  true 항상 믿음 / false 믿지 않음 / (없음) 자동
+                //   HANDSTACK_MCP_FORWARDED_HOPS       신뢰하는 프록시 수. CDN + NPM 처럼 둘이면 2 (기본 1)
+                //   HANDSTACK_MCP_TRUSTED_PROXIES      자동 판단에 추가로 신뢰할 IP/CIDR (쉼표 구분)
+                string? trustSetting = Environment.GetEnvironmentVariable("HANDSTACK_MCP_TRUST_FORWARDED_FOR");
+                McpForwardedMode forwardedMode = McpForwardedMode.Auto;
+                if (string.Equals(trustSetting, "true", StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    trustedProxyHops = int.TryParse(Environment.GetEnvironmentVariable("HANDSTACK_MCP_FORWARDED_HOPS"), out var hops) == true && hops > 0 ? hops : 1;
+                    forwardedMode = McpForwardedMode.Always;
                 }
-                McpProxy.Map(app, mcpUpstream, trustedProxyHops);
+                else if (string.Equals(trustSetting, "false", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    forwardedMode = McpForwardedMode.Never;
+                }
+
+                int forwardedHops = int.TryParse(Environment.GetEnvironmentVariable("HANDSTACK_MCP_FORWARDED_HOPS"), out var hops) == true && hops > 0 ? hops : 1;
+                var trustedNetworks = new McpTrustedNetworks((Environment.GetEnvironmentVariable("HANDSTACK_MCP_TRUSTED_PROXIES") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries));
+                foreach (var invalid in trustedNetworks.InvalidEntries)
+                {
+                    Console.WriteLine($"HANDSTACK_MCP_TRUSTED_PROXIES 의 항목을 무시합니다(IP 또는 CIDR 형식이 아님): {invalid}");
+                }
+
+                string forwardedDescription = forwardedMode switch
+                {
+                    McpForwardedMode.Always => "X-Forwarded-For 를 항상 신뢰",
+                    McpForwardedMode.Never => "X-Forwarded-For 를 신뢰하지 않음(접속 IP 사용)",
+                    _ => $"자동 - 접속한 상대가 {trustedNetworks.Describe()}에 있을 때만 X-Forwarded-For 신뢰"
+                };
+                Console.WriteLine($"MCP: 클라이언트 IP 판정: {forwardedDescription}, 프록시 단수 {forwardedHops}");
+
+                McpProxy.Map(app, mcpUpstream, forwardedMode, forwardedHops, trustedNetworks);
             }
 
             app.Run();

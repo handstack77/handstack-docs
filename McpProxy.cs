@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -27,12 +26,11 @@ namespace handstack_docs
             "Access-Control-Allow-Origin", "Access-Control-Allow-Methods", "Access-Control-Allow-Headers", "Access-Control-Max-Age"
         };
 
-        // trustedProxyHops 는 사이트 호스트 앞에 있는 신뢰하는 프록시(NPM, nginx, CDN 등)의 수입니다.
-        //   0  앞단 프록시가 없습니다. 클라이언트가 보낸 X-Forwarded-For 는 버리고 접속 IP를 클라이언트로 봅니다.
-        //   N  X-Forwarded-For 를 오른쪽에서 N번째 값(신뢰하는 N번째 프록시가 본 클라이언트 IP)을 클라이언트로 봅니다.
-        //      왼쪽 값은 클라이언트가 위조할 수 있으므로 쓰지 않습니다.
+        // 요청 제한의 기준이 되는 클라이언트 IP는 McpClientAddress 가 정합니다.
+        //   forwardedMode  Auto(기본)는 호스트에 직접 접속한 상대가 신뢰 대역일 때만 X-Forwarded-For 를 믿습니다.
+        //   forwardedHops  호스트 앞에 있는 신뢰하는 프록시(NPM, nginx, CDN 등)의 수입니다.
         // MCP 서버에는 판정한 클라이언트 IP 하나만 X-Forwarded-For 로 전달합니다.
-        public static void Map(WebApplication app, McpUpstream upstream, int trustedProxyHops)
+        public static void Map(WebApplication app, McpUpstream upstream, McpForwardedMode forwardedMode, int forwardedHops, McpTrustedNetworks trustedNetworks)
         {
             app.Map(RoutePath, async (HttpContext context) =>
             {
@@ -75,7 +73,8 @@ namespace handstack_docs
                     }
                 }
 
-                request.Headers.TryAddWithoutValidation("X-Forwarded-For", ResolveClientAddress(context, trustedProxyHops));
+                string? forwardedFor = context.Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedHeader) == true ? string.Join(",", forwardedHeader.ToArray()) : null;
+                request.Headers.TryAddWithoutValidation("X-Forwarded-For", McpClientAddress.Resolve(context.Connection.RemoteIpAddress, forwardedFor, forwardedMode, forwardedHops, trustedNetworks));
 
                 try
                 {
@@ -110,27 +109,6 @@ namespace handstack_docs
                     await WriteError(context, exception is TaskCanceledException ? StatusCodes.Status504GatewayTimeout : StatusCodes.Status502BadGateway, "MCP 서버에 연결할 수 없습니다.");
                 }
             });
-        }
-
-        // 요청 제한의 기준이 되는 클라이언트 IP를 정합니다.
-        public static string ResolveClientAddress(HttpContext context, int trustedProxyHops)
-        {
-            var remoteAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            if (trustedProxyHops <= 0 || context.Request.Headers.TryGetValue("X-Forwarded-For", out var header) == false)
-            {
-                return remoteAddress;
-            }
-
-            var entries = string.Join(",", header.ToArray()).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            int index = entries.Length - trustedProxyHops;
-            if (index < 0)
-            {
-                // 기대한 만큼의 프록시를 거치지 않은 요청이므로 헤더를 믿지 않습니다.
-                return remoteAddress;
-            }
-
-            // IP 형식이 아닌 값은 요청 제한 기록을 부풀릴 수 있으므로 버립니다.
-            return IPAddress.TryParse(entries[index], out var clientAddress) == true ? clientAddress.ToString() : remoteAddress;
         }
 
         private static async Task WriteError(HttpContext context, int statusCode, string message)
