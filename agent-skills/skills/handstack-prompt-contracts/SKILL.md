@@ -60,7 +60,8 @@ USER: ${UserMessage}
 - `state`는 선언된 입력 파라미터를 가리킨다. 입력은 독립 JSON 문자열로 직렬화되고, 질문 기준(CDATA JSON)에는 **문자열 치환을 하지 않는다**. 사용자 입력을 기준 JSON에 끼워 넣지 않는다.
 - 질문 JSON(CDATA): 최상위 키가 질문 이름(`^[A-Za-z0-9_.-]{1,100}$`, 한 판단에 **1~64개**, 중복 이름 오류)이고 값은 `{ "type": "choice|score|noul", "instructions": "비어 있지 않은 문자열", "criteria": … }`다. `criteria` — choice: `{선택지이름: 설명}` 객체 2~26개, score: 단계 설명 문자열 배열 2~10개, noul: 생략하거나 `{ "true": 설명, "false": 설명 }` 정확히 둘. `<decision>`은 statement당 하나만 둔다.
 - 질문 유형: Choice(선택지 2~26개), Score(순서 있는 기준 2~10개), Noul(참일 확률; 별도 confidence 필드 없음).
-- 텍스트 전용이다. `message`/`media`/`tools`/`body`/`headers`/`authorization`과 함께 선언할 수 없고 `Think`/`Stream`은 `false`. `timeout`은 1~300초(0·생략은 30초).
+- 입력은 텍스트이고 이미지는 `<media type="Image">`(최대 4개, 모든 질문이 공유, 오디오 불가)로 함께 첨부한다. `message`/`tools`/`body`/`headers`/`authorization`과 함께 선언할 수 없고 `Think`/`Stream`은 `false`. `timeout`은 1~300초(0·생략은 30초).
+- 이미지 판단: Ollama는 `images` 배열(PNG·JPEG·WebP), TypeSafe는 `assets` 맵과 `TypeSafe-Danger-Zone-Images` 헤더(애니메이션 아닌 PNG·JPEG, 가로·세로 280~1568px, 16 MiB 이하)로 서버가 변환해 보낸다. 이미지를 지원하는 Ollama 모델은 `ModuleConfig.AllowedOllamaImageDecisionModels`(기본 clef, clef-flash)에 등록해야 하며 nimble·tev1에 이미지를 보내면 `decision_image_model_unsupported`로 차단된다. 이미지는 패턴 마스킹이 불가능하므로 개인정보 가능성이 있으면 외부 TypeSafe 대신 로컬 Ollama를 쓴다.
 - 제공자: TypeSafe Jev(엔드포인트·키는 서버 설정/환경변수), 로컬 Ollama(`/v1/systemone`, 루프백 주소만 허용, Authorization 헤더 없음). Ollama 모델은 `ModuleConfig.AllowedOllamaDecisionModels`에 **전체 문자열**(대소문자 구분, 와일드카드 없음, 태그 포함)로 등록돼야 하며 누락·빈 배열이면 호출이 차단된다. 코드에 고정 목록을 두지 않는다. 변경 반영은 `IsConfigurationWatching` 여부에 따라 즉시 또는 재시작 후이다.
 - 응답 해석: 직접 prompter API는 `Acknowledge=1`과 빈 `ExceptionText`를 확인한 뒤 `ResultJson[0].Value.PromptResult`(JSON 문자열)를 파싱한다. transact 경로는 `acknowledge`, `result.dataSet[0].value.PromptResult`다. 두 envelope는 다르다.
 - 확률 범위·합, 선택지 일치 등은 서버가 검증하고 429/500/타임아웃/잘못된 응답은 **거래 실패**다. 실패를 임의 점수나 일반 채팅 응답으로 대체하지 않는다. 사람이 검토해야 하는 상태는 호출 앱의 정책으로 남긴다.

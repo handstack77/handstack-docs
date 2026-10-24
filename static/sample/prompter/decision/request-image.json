@@ -1,0 +1,22 @@
+{
+  "ReturnType": "Json",
+  "DynamicObjects": [
+    {
+      "QueryID": "HDS|LLM|JEV010|GP0600",
+      "Parameters": [
+        {
+          "ParameterName": "UserMessage",
+          "Value": "첨부한 화면의 오류 때문에 결제가 진행되지 않습니다. 확인해 주세요.",
+          "DbType": "String",
+          "Length": -1
+        },
+        {
+          "ParameterName": "Image1",
+          "Value": "<PNG 파일의 Base64 원문(data: 접두사 없음)>",
+          "DbType": "String",
+          "Length": -1
+        }
+      ]
+    }
+  ]
+}

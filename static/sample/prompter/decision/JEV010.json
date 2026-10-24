@@ -128,6 +128,56 @@
                     "Type": "Form"
                 }
             ]
+        },
+        {
+            "ServiceID": "GP06",
+            "Authorize": false,
+            "ReturnType": "Json",
+            "CommandType": "P",
+            "TransactionScope": false,
+            "Inputs": [
+                {
+                    "ModelID": "Dynamic",
+                    "Fields": [],
+                    "TestValues": [],
+                    "DefaultValues": [],
+                    "Type": "Row",
+                    "BaseFieldMappings": [],
+                    "ParameterHandling": "Rejected"
+                }
+            ],
+            "Outputs": [
+                {
+                    "ModelID": "Dynamic",
+                    "Fields": [],
+                    "Type": "Form"
+                }
+            ]
+        },
+        {
+            "ServiceID": "GP07",
+            "Authorize": false,
+            "ReturnType": "Json",
+            "CommandType": "P",
+            "TransactionScope": false,
+            "Inputs": [
+                {
+                    "ModelID": "Dynamic",
+                    "Fields": [],
+                    "TestValues": [],
+                    "DefaultValues": [],
+                    "Type": "Row",
+                    "BaseFieldMappings": [],
+                    "ParameterHandling": "Rejected"
+                }
+            ],
+            "Outputs": [
+                {
+                    "ModelID": "Dynamic",
+                    "Fields": [],
+                    "Type": "Form"
+                }
+            ]
         }
     ],
     "Models": []

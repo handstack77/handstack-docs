@@ -68,7 +68,7 @@ ApplicationID|ProjectID|TransactionID|PromptID
 
 `state`는 선언된 입력 파라미터를 참조합니다. 입력은 독립적인 JSON 문자열로 직렬화되며, 질문 기준인 CDATA에는 문자열 치환을 적용하지 않습니다.
 질문은 Choice(2~26개 선택지), Score(2~10개 순서 있는 기준), Noul(참 확률)을 지원합니다. Noul에는 별도 confidence가 없습니다.
-판단 계약은 텍스트만 지원하고 `message/media/tools/body/headers/authorization`과 함께 선언할 수 없습니다. `Think/Stream`은 false여야 합니다.
+판단 입력은 텍스트이며, 이미지는 `<media type="Image">`로 함께 첨부할 수 있습니다([이미지 판단](#이미지-판단)). `message/tools/body/headers/authorization`과는 함께 선언할 수 없습니다. `Think/Stream`은 false여야 합니다.
 timeout은 1~300초이며 0 또는 생략은 30초입니다.
 
 | ServiceID | 데이터 소스 | LLMProvider | ModelID |
@@ -78,6 +78,8 @@ timeout은 1~300초이며 0 또는 생략은 30초입니다.
 | GP03 | DECISION_CLEF_FLASH | Ollama | clef-flash |
 | GP04 | DECISION_CLEF | Ollama | clef |
 | GP05 | DECISION_TEV1 | Ollama | tev1 |
+| GP06 | DECISION_CLEF_FLASH | Ollama | clef-flash (이미지 판단) |
+| GP07 | DECISION_JEV | TypeSafe | jev-latest (이미지 판단) |
 
 소스 `module.json`에는 위 데이터 소스가 포함되어 있습니다. 실제 실행 모듈 설정에도 해당 항목을 병합합니다.
 TypeSafe의 Endpoint는 `https://api.typesafe.ai`이며 ApiKey가 비어 있으면 호스트 프로세스의 `TYPESAFE_API_KEY`를 사용합니다. 기존 ApiKey 암호화 설정도 사용할 수 있습니다.
@@ -98,7 +100,7 @@ Ollama 판단의 기본 Endpoint는 `http://127.0.0.1:11434`이며 루프백 주
 모듈 설정 화면의 `AllowedOllamaDecisionModels` 입력란에서도 목록을 편집할 수 있습니다.
 
 전체 예제는 [JEV010.xml](/sample/prompter/decision/JEV010.xml), [거래 계약](/sample/prompter/decision/JEV010.json),
-[직접 호출 요청](/sample/prompter/decision/request.json), [데이터 소스 설정](/sample/prompter/decision/sources.json)입니다.
+[직접 호출 요청](/sample/prompter/decision/request.json), [이미지 첨부 요청](/sample/prompter/decision/request-image.json), [데이터 소스 설정](/sample/prompter/decision/sources.json)입니다.
 XML은 `contracts/prompter/HDS/LLM/JEV010.xml`, 거래 JSON은 `contracts/transact/HDS/LLM/JEV010.json`에 배치합니다.
 모듈 `Contracts`에도 최신본을 반영하고 호스트를 다시 시작합니다. 기본 요청은 `HDS|LLM|JEV010|GP0200`을 실행합니다.
 
@@ -112,6 +114,35 @@ prompter의 요청 로그는 decision state를 가리지만 transact·프록시 
 실제 모델 품질 검증과 별개로, 개발 검증에서는 실제 ack/transact/prompter를 외부 제공자의 로컬 Postman 모의 서버에 연결해 성공·실패 경로를 확인했습니다.
 
 공식 형식: [TypeSafe Quick Start](https://docs.typesafe.ai/introduction/quickstart), [Ollama Decision](https://docs.ollama.com/capabilities/decision).
+
+### 이미지 판단
+
+`<decision>` statement에 `<media type="Image">`를 함께 선언하면 첨부 이미지를 모든 질문이 공유하는 입력으로 판단합니다. 샘플 `JEV010.xml`의 GP06(Ollama clef-flash)과 GP07(TypeSafe jev-latest)이 예시이며, `@Image1`(image/png)과 `@Image2`(image/jpeg)를 선택 입력으로 받습니다. 값은 `data:` URI가 아닌 Base64 원문이고, 이미지가 없으면 텍스트만으로 판단합니다. media는 Image 형식만 최대 4개까지 선언할 수 있습니다.
+
+```xml
+<statement id="GP06" seq="0" use="Y" datasource="DECISION_CLEF_FLASH" timeout="120">
+  <decision state="@UserMessage"><![CDATA[ ... ]]></decision>
+  <param id="@UserMessage" type="String" length="-1" required="Y" value="" />
+  <media id="@Image1" type="Image" mimeType="image/png" required="N" />
+  <media id="@Image2" type="Image" mimeType="image/jpeg" required="N" />
+  <outputmeta value="PromptResult:string" />
+</statement>
+```
+
+| 항목 | Ollama (`/v1/systemone`) | TypeSafe |
+| --- | --- | --- |
+| 전송 형식 | 본문 `images: ["<Base64>"]` | 본문 `assets` 맵과 state 끝의 참조 키(요청마다 만든 UUID), `TypeSafe-Danger-Zone-Images: true` 헤더 자동 추가 |
+| 허용 형식 | PNG, JPEG, WebP | 애니메이션이 아닌 PNG, JPEG |
+| 크기 | 요청 전체 32 MiB 이하 | 파일 16 MiB 이하, 가로·세로 280~1568px, 요청 전체 32 MiB 이하 |
+| 지원 모델 | `AllowedOllamaImageDecisionModels`에 등록한 모델(기본 clef, clef-flash, Ollama 0.35.1 이상) | Jev 1.13 이상 |
+
+- `AllowedOllamaImageDecisionModels`는 `AllowedOllamaDecisionModels`와 같은 방식(정확한 문자열 비교, 모듈 설정 화면 편집, 실행 중 교체)으로 관리합니다. 이 목록에 없는 모델(nimble, tev1 등 텍스트 전용)에 이미지를 보내면 호출 전에 `decision_image_model_unsupported`로 실패합니다. 이미지를 무시한 판단이 정상 결과처럼 반환되는 일을 막기 위한 차단입니다.
+- 실제 형식과 크기는 파일 헤더로 호출 전에 검사합니다. 선언한 mimeType과 실제 형식이 다르거나 손상된 이미지는 `decision_image_invalid`, TypeSafe 형식 제한은 `decision_image_format_unsupported`, 크기 제한은 `decision_image_size_unsupported`, 요청 전체 32 MiB 초과는 `decision_image_too_large`입니다.
+- TypeSafe는 이미지 메타데이터(EXIF 포함)를 제거하고 회전을 적용하지 않으므로 이미지를 바로 세워서 보내고, GIF·HEIC는 PNG나 JPEG로 변환합니다. 이 기능은 공급자가 아직 production-ready가 아닌 기능으로 표시하며 형식과 한도가 바뀔 수 있습니다.
+- 이미지에는 패턴 마스킹을 적용할 수 없습니다. 개인정보가 담길 수 있는 이미지는 외부로 전송되는 TypeSafe(GP07) 대신 로컬 Ollama(GP06)로 판단합니다. prompter의 요청 로그는 이미지 값을 `[media:Image;base64-length:N]`로 가립니다.
+- 직접 호출은 이미지 파라미터를 추가합니다: `{ "ParameterName": "Image1", "Value": "<Base64 원문>", "DbType": "String", "Length": -1 }`.
+
+공식 형식: [TypeSafe Images](https://docs.typesafe.ai/images), [Ollama Decision](https://docs.ollama.com/capabilities/decision).
 
 ## 이미지·오디오 입력
 
@@ -153,6 +184,7 @@ provider뿐 아니라 선택한 모델도 해당 modality를 지원해야 합니
 | --- | --- |
 | `LLMSource` | provider, model, endpoint, API Key, stream/think 옵션을 정의합니다. |
 | `AllowedOllamaDecisionModels` | 로컬 Ollama 판단 계약에서 허용할 모델명·태그의 정확한 목록입니다. 미설정·빈 목록은 판단 호출을 차단합니다. |
+| `AllowedOllamaImageDecisionModels` | 위 목록 중 이미지 입력을 지원하는 모델(기본 `clef`, `clef-flash`와 `:latest`)의 목록입니다. 목록에 없는 모델에 이미지를 보내면 호출 전에 차단합니다. |
 | `AllowedKernelPlugins` | 계약에서 호출 가능한 커널 플러그인과 함수 allowlist입니다. |
 | `AllowedMcpServers` | 계약에서 사용할 수 있는 MCP 서버 allowlist입니다. |
 | `AllowedCliTools` | 프롬프트 실행 중 사용할 수 있는 CLI 도구 allowlist입니다. |

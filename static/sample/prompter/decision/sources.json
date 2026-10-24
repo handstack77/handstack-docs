@@ -72,5 +72,11 @@
     "tev1:latest",
     "tev1:4b",
     "tev1:0.8b"
+  ],
+  "AllowedOllamaImageDecisionModels": [
+    "clef-flash",
+    "clef-flash:latest",
+    "clef",
+    "clef:latest"
   ]
 }
