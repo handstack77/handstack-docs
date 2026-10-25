@@ -120,7 +120,7 @@ ApplicationID|ProjectID|CommandType|Environment
 
 `POST /transact/api/transaction/execute`와 `POST /transact/api/workflow/execute`는 `HandStack.Web`의 `RequestOriginActionFilter`(`[TypeFilter]`)로 요청 출처를 검사합니다. 설정은 호스트 `appsettings.json`의 `AppSettings:Security:RequestOriginApiAccess`입니다.
 
-같은 필터가 모든 모듈의 `ManagedController`(`/{module}/api/managed/*`)에도 적용됩니다. 단, 모듈이 시작할 때 호출하는 `checkup`의 `/checkup/api/managed/initialize-settings`는 제외됩니다. 기존 `AuthorizationKey`/`AllowClientIP` 검사(`IsAllowAuthorization`)는 그대로 유지되고, 필터는 그 앞에 추가되는 조건입니다. 원격에서 관리 API를 호출하려면 `X-Api-Key`가 필요합니다.
+같은 필터가 모든 모듈의 `ManagedController`(`/{module}/api/managed/*`)에도 적용됩니다. 기존 `AuthorizationKey`/`AllowClientIP` 검사(`IsAllowAuthorization`)는 그대로 유지되고, 필터는 그 앞에 추가되는 조건입니다. 원격에서 관리 API를 호출하려면 `X-Api-Key`가 필요합니다.
 
 ```json
 "Security": {

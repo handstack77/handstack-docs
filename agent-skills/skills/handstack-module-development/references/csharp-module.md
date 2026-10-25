@@ -12,7 +12,7 @@
 - 새 모듈을 `rdy`에 **정적으로** 결합해야 할 때만 csproj 참조와 정적 사전을 고친다. `rdy`는 정적 사전에 없는 모듈을 동적으로 로드한다.
 - 설정 파일 누락·역직렬화 실패는 시작을 중단하는 것이 기존 모듈의 방식이다. 조용히 기본값으로 넘기지 않는다. `AuthorizationKey`가 비었을 때 파생 값을 쓰는 모듈이 많으므로 운영에서는 명시 값을 환경 변수로 주입한다.
 - `Entity/ModuleConfiguration.cs`의 static 필드는 이름·형식이 `ModuleConfig`와 같을 때만 실시간 반영이 자동으로 채운다. 새 옵션은 `module.json`(기본값), `ModuleConfigJson`, `ModuleConfiguration`, 설정 화면(`module-settings.*`), 사용하는 코드, 템플릿의 `module.json`을 함께 갱신한다.
-- 관리 API는 `RequestOriginActionFilter`와 `IsAllowAuthorization()`을 모두 통과해야 하고 실패하면 `400`이다. 필터를 붙이는 위치(클래스 또는 메서드)는 모듈마다 다르다(`checkup`은 메서드). 로컬 호출은 `AuthorizationKey`를 쿼리·폼·경로·헤더에서, 원격은 헤더에서만 읽는다. `AllowClientIP` 기본 `*`는 개발용이다.
+- 관리 API는 `RequestOriginActionFilter`와 `IsAllowAuthorization()`을 모두 통과해야 하고 실패하면 `400`이다. 필터를 붙이는 위치(클래스 또는 메서드)는 모듈마다 다르다. 로컬 호출은 `AuthorizationKey`를 쿼리·폼·경로·헤더에서, 원격은 헤더에서만 읽는다. `AllowClientIP` 기본 `*`는 개발용이다.
 - 업무 API(거래 실행 등)의 인증·권한은 transact 계약(`Authorize`, `Roles`, `AccessScreenID`)에 둔다. 새 컨트롤러를 만들어 인증 없이 데이터를 노출하지 않는다.
 - 컨트롤러에서 장시간 작업은 `lock`을 오래 잡지 않고, 예외는 로그 후 일반 메시지로 응답한다(스택·경로 노출 금지).
 - 모듈 간 이벤트는 `module.json`의 `EventAction`/`SubscribeAction`에 등록하고, 거래를 실행하려면 `BusinessServerUrl`로 `TransactionClient.TransactionDirect`/`ModuleApiClient`를 쓴다. 내부 호출도 요청 출처 검사와 인증 정책을 통과해야 한다.

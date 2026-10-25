@@ -45,7 +45,7 @@
 
 ## 3. Docker (ack 이미지)
 
-`1.WebHost/ack/Dockerfile`은 빌드 단계에서 `ack`, CLI, 기본 모듈 7개(`dbclient`, `function`, `logger`, `repository`, `transact`, `wwwroot`, `checkup`), `contracts`, `assemblies`를 시드에 만들고, `docker-entrypoint.sh`가 시작할 때 시드를 `HANDSTACK_HOME`(`/handstack`)으로 복사한 뒤 `dotnet ack.dll`을 실행한다. **[소스 확인]**
+`1.WebHost/ack/Dockerfile`은 빌드 단계에서 `ack`, CLI, 기본 모듈 6개(`dbclient`, `function`, `logger`, `repository`, `transact`, `wwwroot`), `contracts`, `assemblies`를 시드에 만들고, `docker-entrypoint.sh`가 시작할 때 시드를 `HANDSTACK_HOME`(`/handstack`)으로 복사한 뒤 `dotnet ack.dll`을 실행한다. **[소스 확인]**
 
 핵심 주의:
 - **시드 복사는 대상 폴더가 비어 있을 때만** 일어난다(`app`, `modules`, `contracts`, `assemblies`, `node_modules` 각각). 이미 채워진 볼륨에는 새 이미지의 `ack`/모듈/계약이 복사되지 않으므로 **이미지 교체만으로 앱이 업데이트되지 않는다.** 볼륨 내용을 명시적으로 교체하거나, 새 볼륨을 쓰거나, `updater`/폴더 반영 방식을 병행하는 정책을 정한다.

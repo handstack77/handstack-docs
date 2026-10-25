@@ -309,10 +309,10 @@ HandStack은 모놀리식의 단순함과 마이크로서비스의 장점을 결
 
 
 - 단일 호스트
-  - ack + (wwwroot/transact/dbclient/graphclient/function/command/prompter/repository/logger/checkup/forwarder)
+  - ack + (wwwroot/transact/dbclient/graphclient/function/command/prompter/repository/logger/forwarder)
 
 - 2 개 호스트
-  - ack + (wwwroot/transact/checkup)
+  - ack + (wwwroot/transact)
   - ack + (dbclient/graphclient/function/command/prompter/repository/logger/forwarder)
 
 ---
@@ -326,7 +326,7 @@ HandStack은 모놀리식의 단순함과 마이크로서비스의 장점을 결
 - 3 개 호스트
   - ack + (wwwroot/transact)
   - ack + (dbclient/graphclient/function/command/prompter)
-  - ack + (repository/logger/checkup/forwarder)
+  - ack + (repository/logger/forwarder)
 
 > 한 머신에서도 포트를 나눠 여러 호스트를 실행할 수 있습니다. 프로세스 분리만으로 데이터·배포·장애 경계가 자동 분리되지는 않습니다.
 
@@ -404,7 +404,6 @@ HandStack은 이러한 애플리케이션을 개발하기 위한 부분을 논�
 
 |module명|설명|
 |---|---|
-|checkup|테넌트 앱 개발 및 운영 기능 관리|
 |command|계약 기반 CLI 프로세스와 Web URL 호출 실행|
 |dbclient|SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite SQL을 관리|
 |forwarder|requestKey 기반 화이트리스트 포워드 프록시 제공|

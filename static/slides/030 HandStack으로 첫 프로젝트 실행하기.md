@@ -317,7 +317,6 @@ HandStack은 웹 개발 프레임워크 기능을 제공하는 업무 모듈을 
 
 |module명|설명|
 |---|---|
-|checkup|태넌트 앱 개발 및 운영 기능 관리|
 |dbclient|SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite SQL을 관리|
 |function|C# 또는 Node.js 기반 Function 개발 기능 관리|
 |repository|단일, 다중, 이미지, 첨부파일 등등 파일 업로드/다운로드 관리|

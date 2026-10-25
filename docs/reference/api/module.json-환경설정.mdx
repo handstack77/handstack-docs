@@ -14,8 +14,8 @@ description: 모듈 폴더의 module.json 최상위 키와 ModuleConfig 공통 �
 
 ```json
 {
-    "ModuleID": "checkup",
-    "Name": "checkup",
+    "ModuleID": "wwwroot",
+    "Name": "wwwroot",
     "IsBundledWithHost": false,
     "Version": "1.0.0",
     "ModuleConfig": { }
@@ -39,7 +39,7 @@ description: 모듈 폴더의 module.json 최상위 키와 ModuleConfig 공통 �
 
 ## ModuleConfig 공통 키
 
-모듈 샘플(`checkup`)에서 공통으로 보이는 키입니다. 모듈마다 일부만 쓰고, 모듈 고유 키가 더 있습니다.
+모듈 샘플에서 공통으로 보이는 키입니다. 모듈마다 일부만 쓰고, 모듈 고유 키가 더 있습니다.
 
 | 키 | 의미 |
 |---|---|
@@ -50,7 +50,7 @@ description: 모듈 폴더의 module.json 최상위 키와 ModuleConfig 공통 �
 | `BusinessServerUrl` | 거래를 실행할 `transact` 주소(`…/transact/api/transaction/execute`) |
 | `ModuleLogFilePath` | 모듈 로그 파일 경로 |
 | `ModuleBasePath`, `WWWRootBasePath` | 모듈 폴더와 모듈 정적 파일 루트 |
-| `EventAction`, `SubscribeAction` | 다른 모듈로 발행하는 이벤트, 구독하는 이벤트 이름 (예: `repository.Events.RepositoryRequest`) |
+| `EventAction`, `SubscribeAction` | 다른 모듈로 발행하는 이벤트, 구독하는 이벤트 이름 (예: `repository.Events.StorageRefreshRequest`) |
 | `ConnectionString` | 모듈이 쓰는 데이터베이스 연결 문자열. 비밀입니다 |
 
 내부 주소(`http://localhost:{포트}`)는 호스트 포트와 맞아야 합니다. 포트를 바꿀 때는 한 파일만 바꾸지 말고 `module.json`들과 화면의 서버 주소를 함께 고치세요. 데이터 원본, 저장소, LLM 설정은 업무 모듈이 아니라 해당 실행 모듈(`dbclient`, `repository`, `prompter`)의 `module.json`에 있습니다.

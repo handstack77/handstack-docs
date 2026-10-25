@@ -1,40 +1,12 @@
 ---
-description: 업무 셸이 읽는 menus.json의 평면 배열 형식과 IDE 메뉴 편집기의 데이터셋 형식, menuType·functions·roles 규칙과 메뉴가 보이지 않을 때의 점검을 정리합니다.
+description: IDE 메뉴 편집기가 읽는 menus.json 데이터셋과 메뉴·화면 연결, 표시되지 않을 때의 점검 순서를 정리합니다.
 ---
 
 # menus.json 메뉴설정
 
-모듈의 업무 셸은 `wwwroot/{모듈ID}/menus.json`으로 왼쪽 메뉴와 탭을 구성합니다. 메뉴 항목은 화면 파일(`view/{App}/{Project}/{ID}.html`)을 가리키고, 메뉴를 등록한다고 해서 화면의 이벤트나 거래가 구현되지는 않습니다. 화면은 [거래 호출](/docs/reference/거래-호출), 거래 권한은 [거래 계약 명세](/docs/reference/거래-계약-명세#접근-제어)를 보세요.
+업무 모듈은 `wwwroot/{모듈ID}/menus.json`에 메뉴를 정의하고 자체 업무 셸에서 표시합니다. 메뉴 항목은 화면 파일(`view/{App}/{Project}/{ID}.html`)을 가리키고, 메뉴를 등록한다고 해서 화면의 이벤트나 거래가 구현되지는 않습니다. 화면은 [거래 호출](/docs/reference/거래-호출), 거래 권한은 [거래 계약 명세](/docs/reference/거래-계약-명세#접근-제어)를 보세요.
 
-파일은 두 형식 중 하나입니다. **파일이 쓰는 형식을 그대로 따르고 서로 변환하지 마세요.**
-
-## 평면 배열 (셸이 직접 읽는 형식)
-
-`checkup` 모듈 셸이 쓰는 형식입니다.
-
-```json
-[
-  { "menuID": "ABC", "menuName": "게시판", "parentMenuID": "000", "parentMenuName": "홈",
-    "showYN": "Y", "menuType": "D", "functions": null, "projectID": null, "fileID": null,
-    "roles": "BM", "depth": 1, "icon": "point", "badge": null, "sortingNo": 10 },
-  { "menuID": "ABC010", "menuName": "게시글", "parentMenuID": "ABC", "parentMenuName": "게시판",
-    "showYN": "Y", "menuType": "U", "functions": "search|new|save|delete|cancel|link",
-    "projectID": "ABC", "fileID": "ABC010", "roles": "DBOM", "depth": 2, "icon": null, "badge": null, "sortingNo": 1 }
-]
-```
-
-| 키 | 의미 |
-|---|---|
-| `menuID` | 메뉴 고유 식별자. 중복되면 안 됩니다 |
-| `menuName`, `parentMenuID`, `parentMenuName`, `depth`, `sortingNo` | 트리 위치와 표시 순서. 최상위 항목의 `parentMenuID`는 `null`입니다 |
-| `showYN` | `Y`이면 표시 |
-| `menuType` | `D` 디렉터리, `U` 화면, `P` 루트(프로그램). 셸은 `F`(파일 편집 탭)도 처리하지만 업무 메뉴 파일에는 보통 쓰지 않습니다 |
-| `projectID`, `fileID` | 화면 항목(`U`)이 가리키는 화면. `view/{App}/{projectID}/{fileID}.html` |
-| `functions` | `\|`로 구분한 셸 기능 이름(예 `search\|new\|save`). 셸이 이름마다 해당 기능 버튼(`fab_{이름}`)을 보이게 하므로 화면이 처리하는 `actionID`와 일치시키세요 |
-| `roles` | 노출 역할 코드 문자열. `checkup` 샘플에는 `BM`, `DBM`, `DBOM`, `DM`, 루트 항목의 `P`가 있습니다. 코드의 의미는 셸 소스로 확인하고 기존 항목의 값을 따르세요 |
-| `icon`, `badge` | 아이콘과 배지 |
-
-`checkup` 샘플의 화면 항목 `functions`는 대부분 `search|new|save|delete|cancel|link|refresh`입니다.
+IDE 메뉴 편집기는 다음 데이터셋 형식을 읽고 씁니다. 업무 셸의 메뉴 표시와 버튼 처리는 해당 업무 모듈에서 구현합니다.
 
 ## IDE 메뉴 편집기 형식 (데이터셋)
 
@@ -52,26 +24,11 @@ IDE 모듈 템플릿이 만드는 형식입니다. IDE 메뉴 편집기가 읽�
 
 `DirectoryID`는 `view/HDS/{DirectoryID}/` 폴더, `ItemID`는 그 안의 `{ItemID}.html`을 가리키고 `FolderYN: "Y"`는 폴더 항목입니다. 편집기가 계산하는 필드와 읽기 전용 필드는 [IDE 파일과 저장 규칙의 메뉴 연결](/docs/ide/reference/파일과-저장-규칙#메뉴-연결)을 보세요.
 
-## 두 형식의 대응
-
-| 평면 배열 | 데이터셋 |
-|---|---|
-| `menuID`, `menuName` | `MenuID`, `MenuName` |
-| `parentMenuID` | `ParentMenuID` |
-| `showYN` | `ViewYN` |
-| `menuType` `D` / `U` | `FolderYN` `Y` / `N` |
-| `projectID`, `fileID` | `DirectoryID`, `ItemID` |
-| `functions`(`search\|save`…) | `FnSearch`, `FnSave`, `FnDelete`, `FnPrint`, `FnExport`, `FnRefresh` (`Y`/`N`) |
-| `icon` | `IconID` |
-| `sortingNo`, `depth` | `SortingNo`, `Step` |
-
-이 대응은 필드의 의미를 비교한 것이며 두 형식 사이에 자동 변환은 없습니다. 값 표기(`D`/`U`, `Y`/`N`)와 `depth`·`Step`의 기준이 같다는 보장도 없으니 변환하지 말고 파일이 쓰는 형식을 유지하세요.
-
 ## 메뉴가 보이지 않거나 동작하지 않을 때
 
 | 증상 | 확인 순서 |
 |---|---|
-| 메뉴에 안 보임 | 파일 형식과 `showYN`/`ViewYN` → 부모 연결 → `roles` → 브라우저 세션의 메뉴 캐시 |
-| 메뉴는 보이는데 화면 404 | `projectID`+`fileID`(또는 `DirectoryID`+`ItemID`)와 실제 `view/` 경로·대소문자, 호스트가 서빙하는 `WWWRootBasePath` |
-| 버튼이 켜지지 않음 | `functions` 이름과 화면의 `actionID` 처리 |
+| 메뉴에 안 보임 | 파일 형식과 `ViewYN` → 부모 연결 → 업무 셸의 권한 필터 → 브라우저 세션의 메뉴 캐시 |
+| 메뉴는 보이는데 화면 404 | `DirectoryID`+`ItemID`와 실제 `view/` 경로·대소문자, 호스트가 서빙하는 `WWWRootBasePath` |
+| 버튼이 켜지지 않음 | `FnSearch`·`FnSave` 같은 기능 표시 값과 업무 셸의 버튼 처리 |
 | 화면은 열리는데 거래가 거부됨 | 메뉴 표시 권한과 거래 인가는 별개입니다. 계약의 `AccessScreenID`·`Roles`를 확인하세요([거래 오류 메시지](/docs/reference/거래-오류-메시지#서버-계약-조회)) |

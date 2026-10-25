@@ -49,7 +49,6 @@ HandStack에서는 공식 module로서 다음과 같이 기본 제공됩니다.
 
 |module명|설명|
 |---|---|
-|checkup|태넌트 앱 개발 및 운영 기능 관리|
 |command|계약 기반으로 CLI 프로세스와 Web URL 호출을 실행|
 |dbclient|SQL Server, Oracle, MySQL & MariaDB, PostgreSQL, SQLite SQL을 관리|
 |forwarder|Playwright 기반 세션 유지형 포워드 프록시 제공|
@@ -144,16 +143,6 @@ module
 
 비즈니스 앱을 개발하기 위해 제공되는 기본 modules API 목록은 다음과 같습니다.
 
-### Account
-
-* GET: /checkup/api/account
-* GET: /checkup/api/account/invite-member
-* GET: /checkup/api/account/login
-* GET: /checkup/api/account/sign-in
-* GET: /checkup/api/account/signal-event
-* GET: /checkup/api/account/is-authenticated
-* GET: /checkup/api/account/logout
-
 ### Aggregate
 
 * GET: /transact/api/aggregate/transaction-list
@@ -192,19 +181,6 @@ module
 
 # Index
 
-* GET: /checkup/api/index
-* GET: /checkup/api/index/has-key
-* GET: /checkup/api/index/create-id
-* POST: /checkup/api/index/create-id
-* GET: /checkup/api/index/client-ip
-* GET: /checkup/api/index/sha256hash
-* GET: /checkup/api/index/get-session
-* GET: /checkup/api/index/set-session
-* GET: /checkup/api/index/session-key
-* GET: /checkup/api/index/id
-* GET: /checkup/api/index/guid
-* GET: /checkup/api/index/encode-no
-* GET: /checkup/api/index/decode-no
 * GET: /dbclient/api/index
 * GET: /function/api/index
 * GET: /logger/api/index
@@ -227,14 +203,9 @@ module
 
 ### Managed
 
-* GET: /checkup/api/managed/initailize-settings
 * GET: /dbclient/api/managed/reset-contract
-* GET: /dbclient/api/managed/reset-app-contract
 * GET: /function/api/managed/reset-contract
-* GET: /function/api/managed/reset-app-contract
-* GET: /repository/api/managed/reset-app-contract
 * GET: /transact/api/managed/reset-contract
-* GET: /transact/api/managed/reset-app-contract
 * GET: /transact/api/managed/string-encrypt
 * GET: /transact/api/managed/string-decrypt
 
@@ -300,7 +271,6 @@ module
 * POST: /transact/api/transaction/execute
 
 ## 참고자료
-* [checkup 모듈 참고하기](/docs/reference/api/modules/checkup)
 * [command 모듈 참고하기](/docs/reference/api/modules/command)
 * [dbclient 모듈 참고하기](/docs/reference/api/modules/dbclient)
 * [forwarder 모듈 참고하기](/docs/reference/api/modules/forwarder)

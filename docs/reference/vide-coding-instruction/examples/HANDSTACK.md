@@ -2,7 +2,7 @@
 
 HandStack 기본 배포본의 게시판 샘플(`BOD010`)에서 발췌한 코드 스타일 예시입니다. AI 에이전트에게 "이 스타일을 따르라"고 보여 줄 때 쓰고, 프로젝트 지침 전체 템플릿은 [AGENTS.md](/docs/reference/vide-coding-instruction/examples/AGENTS)와 [CLAUDE.md](/docs/reference/vide-coding-instruction/examples/CLAUDE) 예시를 쓰세요. 파일 위치와 식별자는 [식별자와 파일 경로](/docs/reference/식별자와-파일-경로), 화면 호출 구문은 [거래 호출](/docs/reference/거래-호출)을 따릅니다.
 
-샘플 원본은 소스 저장소의 `1.WebHost/ack/AppTempletes/handstack.apps.board`(화면 `wwwroot/view/BOD/`, 거래 `transact/BOD/`, SQL `dbclient/BOD/`)에 있습니다. 기본 배포본에서는 `contracts/wwwroot/HDS/BOD/`, `contracts/transact/HDS/BOD/`, `contracts/dbclient/HDS/BOD/`로 복사되어 쓰입니다.
+이 문서는 게시판 화면과 거래·SQL 계약을 함께 작성하는 예제입니다. 배포본의 `contracts/wwwroot/HDS/BOD`, `contracts/transact/HDS/BOD`, `contracts/dbclient/HDS/BOD`에 같은 식별자로 배치합니다.
 
 :::note 이 예시를 복사할 때
 아래 코드는 서로 이름이 맞물립니다. 화면의 `syn-datafield`와 JS의 `dataFieldID`, 컨트롤의 `belongID`와 거래 ID(`LD01`), 거래 계약의 `ServiceID`와 SQL의 `statement id`를 함께 바꾸세요. 하나만 바꾸면 요청이 가지 않거나 값이 비어 전달됩니다.

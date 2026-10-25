@@ -105,7 +105,7 @@ public partial class ManagedController(...) : BaseController
 ```
 
 - 모듈 관리 API는 `RequestOriginActionFilter`(`AppSettings:Security:RequestOriginApiAccess`)와 모듈의 `IsAllowAuthorization()`을 모두 통과해야 합니다. 판정 규칙(`AuthorizationKey` 일치 또는 `AllowClientIP`, 실패 시 `400`)은 [계약 관리 API 공통 규칙](/docs/reference/api/modules/transact#계약-관리-api-공통-규칙)을 보세요.
-- `RequestOriginActionFilter`를 붙이는 위치는 모듈마다 다릅니다. 대부분 컨트롤러 클래스에 붙이지만 `checkup`의 `ManagedController`는 메서드에 붙입니다. 새 컨트롤러는 같은 모듈의 기존 패턴을 따르세요.
+- `RequestOriginActionFilter`를 붙이는 위치는 모듈마다 다릅니다. 컨트롤러 클래스 또는 보호할 메서드에 붙입니다. 새 컨트롤러는 같은 모듈의 기존 패턴을 따르세요.
 - 업무 API(거래 실행 등)의 인증과 권한은 transact 계약(`Authorize`, `Roles`, `AccessScreenID`)에 둡니다. 인증 없이 데이터를 노출하는 컨트롤러를 만들지 마세요.
 - 장시간 작업에서 `lock`을 오래 잡지 말고, 예외는 로그에 남긴 뒤 일반 메시지로 응답하세요(스택·경로를 노출하지 않습니다).
 

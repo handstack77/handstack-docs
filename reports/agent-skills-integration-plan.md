@@ -224,7 +224,7 @@ handstack-docs/
 - rdy 기본 포트는 8420(forbes와 충돌). rdy 정적 결합 모듈은 9개이고 나머지는 동적 로드.
 - `handstack stop`은 인자가 없으면 모든 `ack`·`dotnet` 프로세스를 종료. `--pid`, `--port` 지원.
 - 모듈 관리 API는 인증 실패 시 `401`이 아니라 `400`. 키는 로컬이면 쿼리·폼·경로·헤더, 원격이면 헤더.
-- `제한된 거래 요청`은 `AllowTenantTransactionCommands`, `인증 자격 증명 확인 필요`는 `PermissionRoles` 정규식 때문. 토큰 오류는 별도 문구.
+- `인증 자격 증명 확인 필요`는 `PermissionRoles` 정규식 때문. 토큰 오류는 별도 문구.
 - 설정 읽는 순서는 `appsettings.{ACK_ENVIRONMENT}.json`이 환경 변수보다 뒤(우선).
 - updater는 `--ack-process-id`를 받고 `mandatory`로 강제 종료·재기동을 정함(`PUBLISH.md`는 낡음). `/manifest?launch=true`는 `IsAutoUpdate=true`(기본 false)가 전제.
 - deploy는 `ManagementKey`가 비면 업로드가 인증 없이 열림. agent는 키가 없으면 거부.

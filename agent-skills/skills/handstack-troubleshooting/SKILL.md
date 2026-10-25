@@ -35,7 +35,6 @@ HTTP 200이어도 거래 응답 본문에 오류가 있을 수 있고, 브라우
 | ④ | `인증 자격 증명 확인 필요` | 토큰 만료가 아니다. 서버 `IsPermissionRoles`가 켜진 상태에서 `PermissionRoles` 정규식(공개 경로·사용자 역할)이 요청 경로와 맞지 않음. 토큰 문제는 `거래 액세스 토큰 유효기간 만료`/`유효성 오류`/`IP 유효성 오류` 또는 `BearerToken …` 문구 |
 | ④ | `역할 또는 정책 권한 확인 필요` (`앱 사용자 …` 쿠키 / `BearerToken …`) | `Roles`/`Policys`/`TransactionTokens` 세 검사가 모두 실패. 메뉴 권한과 별개 |
 | ④ | `환경정보 구분코드 허용 안됨`, `애플리케이션 ID … 요청 가능 거래 매핑 정보 확인 필요` | 서버 `AvailableEnvironment`(비어 있어도 거부), `AllowRequestTransactions` |
-| ④ | `제한된 거래 요청입니다.` | 테넌트 앱 경로(Referer)에서 온 호출인데 서비스 `CommandType`이 `AllowTenantTransactionCommands`(코드 기본 빈 목록, 배포 `module.json`은 `["D","G"]`)에 없음 |
 | ④ | `잘못된 요청`, `요청 만료`(180초), `중복 요청` | 서버 `IsValidationRequest`(기본 꺼짐)가 켜짐 — `GlobalID`가 분산 캐시에 시딩돼야 하고 1회용이며 `System.Routes`가 비어 있어도 `잘못된 요청`. 화면 로더 경로가 아닌 직접 호출(curl 등)은 `BypassGlobalIDTransactions`나 설정 확인. `중복 요청`은 `IsValidationGlobalID`도 필요 |
 | ④ | `요청 한도 초과`, `… 한도 초과(… > …)` | `SecurityHardening.RateLimit`가 `Enforce`, 또는 `MaxRoutes`/`MaxDataMapSetCount` 상한 |
 | ⑤ | `거래 Transaction 입력 전문 확인 필요`, `FunctionID '…' 거래 매핑 정보 확인 필요`(`… 중복 정보`) | `.txn`이 서버에 없음(파일 위치/이름, ID 3종, 배포·refresh) / `ServiceID` 없음(오타·대소문자)·중복 |

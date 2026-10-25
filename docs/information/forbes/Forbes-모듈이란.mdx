@@ -8,19 +8,6 @@ HandStack Forbes는 HandStack의 확장 기능으로서, 오픈소스 커뮤니�
 
 확장 기능은 새로운 기능을 추가하거나, 기존 기능을 변경할 때, 기존 코드를 건드리지 않고 새로운 기능을 추가하거나 변경할 수 있어야 합니다.
 
-## 태넌트 앱 (tenantapps)
-
-태넌트 앱은 여러 테넌트(tenant)가 동일한 애플리케이션 인스턴스를 공유하지만, 각 테넌트의 데이터는 격리된 상태로 유지하는 멀티테넌시(multi-tenancy) 애플리케이션을 의미합니다. 이를 통해 각 테넌트는 자신만의 데이터를 안전하게 관리하고 사용할 수 있습니다.
-
-HandStack 에서 제공하는 테넌트 템플릿은 다음과 같으며, checkup 모듈을 통해 나만의 테넌트 앱을 만들 수 있습니다.
-
-* [handstack.apps.board](https://github.com/handstack77/handstack/tree/master/1.WebHost/ack/AppTempletes/handstack.apps.board)
-* [handstack.apps.empty](https://github.com/handstack77/handstack/tree/master/1.WebHost/ack/AppTempletes/handstack.apps.empty)
-* [handstack.apps.helloworld](https://github.com/handstack77/handstack/tree/master/1.WebHost/ack/AppTempletes/handstack.apps.helloworld)
-* [handstack.apps.uicontrols](https://github.com/handstack77/handstack/tree/master/1.WebHost/ack/AppTempletes/handstack.apps.uicontrols)
-
-태넌트 앱은 비즈니스 앱을 만들기 위한 기본 템플릿을 제공합니다. 이를 통해 사용자는 쉽게 애플리케이션을 만들고, 테스트할 수 있습니다.
-
 ## 업무 모듈 (modules)
 
 업무 모듈은 특정 업무 기능을 수행하기 위한 코드의 집합을 의미합니다. 이는 애플리케이션의 기능을 논리적으로 분리하여 코드의 재사용성을 높이고, 유지보수를 용이하게 합니다.

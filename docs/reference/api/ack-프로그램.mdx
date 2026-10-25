@@ -14,7 +14,7 @@ ack 프로그램은 ASP.NET Core 앱의 In-Process HTTP 서버 구현을 사용�
 * 확장성: 사용자 지정 모듈 운영이 가능한 구성, 미들웨어 기능을 제공합니다.
 * 성능 진단: 로깅 및 메트릭과 같은 기본 성능 진단 기능을 제공합니다.
 
-HandStack 에서 제공되는 dbclient, function, logger, repository, transact, wwwroot, checkup 과 같은 모듈은 ack 프로그램 위에서 동작합니다. 이러한 모듈은 각각의 기능을 제공하며, 이러한 모듈을 조합하여 최적의 화면과 기능을 구성합니다.
+HandStack 에서 제공되는 dbclient, function, logger, repository, transact, wwwroot 과 같은 모듈은 ack 프로그램 위에서 동작합니다. 이러한 모듈은 각각의 기능을 제공하며, 이러한 모듈을 조합하여 최적의 화면과 기능을 구성합니다.
 
 Kestrel 서버 프로그램은 크게 2가지로 웹 서비스를 호스팅 합니다.
 
@@ -83,15 +83,9 @@ HTTPS에서 일반 HTTP로 보내는 요청에는 `Referer`를 생략합니다. 
         "ForwardProxyIP": [],
         "IsAutoUpdate": false,
         "IsConfigurationWatching": false,
-        "IsTenantFunction": true,
         "IsExceptionDetailText": true,
         "IsEnabledDevAutoSignIn": false,
         "ContractRequestPath": "view",
-        "TenantAppRequestPath": "app",
-        "TenantAppBasePath": "../tenants",
-        "BatchProgramBasePath": "../batchs",
-        "CreateAppTempPath": "../tmp/create_apps",
-        "ForbesBasePath": "../forbes",
         "IsModulePurgeContract": true,
         "IsEnabledCSP": false,
         "LoadModuleBasePath": "../modules",
@@ -105,7 +99,6 @@ HTTPS에서 일반 HTTP로 보내는 요청에는 `Referer`를 생략합니다. 
             "prompter",
             "repository",
             "logger",
-            "checkup",
             "forwarder"
         ],
         "ModuleConfigurationUrl": [
@@ -227,8 +220,8 @@ ack --port=8421 --modules=wwwroot,transact,dbclient,function
 
 `AppSettings:IsConfigurationWatching`이 `true`이면 파일 변경을 감시해 아래 `appsettings.json` 키를 **재시작 없이** 반영합니다. 새 값이 유효할 때만 교체하고 오류면 이전 설정을 유지합니다. 로드된 모듈의 `module.json`(데이터 원본 `DataSource`, `LLMSource`, `FunctionSource`, `GraphDataSource` 포함)도 같은 방식으로 반영됩니다.
 
-- 실시간 반영: `BusinessServerUrl`, `FindGlobalIDServer`, `HostAccessID`, `IsTenantFunction`, `IsExceptionDetailText`, `ContractRequestPath`, `TenantAppRequestPath`, `CookiePrefixName`, `UserSignExpire`, `StaticFileCacheMaxAge`, `WithOnlyIPs`, `IsPermissionRoles`, `PermissionRoles`
-- **재시작 필요**: `UseContractSync`, `UseHttpLogging`, `UseForwardProxy`, `UseResponseComression`, `InstallType`, `ApplicationID`, `ProgramName`, `RunningEnvironment`, `HostName`, `SystemID`, `IsConfigurationWatching`, `IsSwaggerUI`, `IsModulePurgeContract`, `SessionState`, `ProxyBasePath`, `IsAntiforgeryToken`, `TenantAppBasePath`, `BatchProgramBasePath`, `CreateAppTempPath`, `ForbesBasePath`, `LoadModuleBasePath`, `LoadModules`, `LoadModuleLicenses`, `ModuleConfigurationUrl`, `DiscoveryApiServerUrl`, `DomainAPIServer`, `ComressionEnableForHttps`, `ComressionMimeTypes`, `ForwardProxyIP`, `UseSameIPProxy`, `AuthenticationLoginPath`, `AuthenticationLogoutPath`, `SqidsAlphabet`, `LicenseKey`, `LicenseSignature`, `WithOrigins`
+- 실시간 반영: `BusinessServerUrl`, `FindGlobalIDServer`, `HostAccessID`, `IsExceptionDetailText`, `ContractRequestPath`, `CookiePrefixName`, `UserSignExpire`, `StaticFileCacheMaxAge`, `WithOnlyIPs`, `IsPermissionRoles`, `PermissionRoles`
+- **재시작 필요**: `UseContractSync`, `UseHttpLogging`, `UseForwardProxy`, `UseResponseComression`, `InstallType`, `ApplicationID`, `ProgramName`, `RunningEnvironment`, `HostName`, `SystemID`, `IsConfigurationWatching`, `IsSwaggerUI`, `IsModulePurgeContract`, `SessionState`, `ProxyBasePath`, `IsAntiforgeryToken`, `LoadModuleBasePath`, `LoadModules`, `LoadModuleLicenses`, `ModuleConfigurationUrl`, `DiscoveryApiServerUrl`, `DomainAPIServer`, `ComressionEnableForHttps`, `ComressionMimeTypes`, `ForwardProxyIP`, `UseSameIPProxy`, `AuthenticationLoginPath`, `AuthenticationLogoutPath`, `SqidsAlphabet`, `LicenseKey`, `LicenseSignature`, `WithOrigins`
 
 그 밖의 변경(DLL 추가·교체, 새 모듈 추가·삭제, DI·미들웨어, OS별 파일 변경, 환경 변수와 `appsettings.{환경}.json` 변경)도 재시작이 필요합니다. 철자 오류(`Comression`)는 소스의 설정 키 이름 그대로입니다.
 

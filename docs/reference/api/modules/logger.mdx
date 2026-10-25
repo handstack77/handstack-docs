@@ -34,7 +34,6 @@ sidebar_position: 40
 
 | 설정 | 설명 |
 | --- | --- |
-| `IsSQLiteCreateOnNotSettingRequest` | 설정되지 않은 애플리케이션 로그 요청을 받을 때 SQLite 저장소를 자동 생성할지 결정합니다. |
 | `LogDeleteRepeatSecond` | 로그 삭제 백그라운드 작업 반복 주기입니다. |
 | `DataSource` | 애플리케이션별 저장소, provider, 테이블, 보관 기간 설정입니다. |
 | `DataSource.Schema` | 동적 schema를 사용할 때 컬럼과 역할 매핑을 정의합니다. |
@@ -57,13 +56,13 @@ sidebar_position: 40
 
 1. 호출 모듈이 `LogServerUrl`로 로그를 전송하거나 내부 이벤트로 로그 저장을 요청합니다.
 2. `logger`는 `ApplicationID` 기준으로 `DataSource`를 찾습니다.
-3. 저장소가 없고 `IsSQLiteCreateOnNotSettingRequest=true`이면 기본 SQLite 저장소를 생성합니다.
+3. 로그 저장소는 `DataSource`에 명시적으로 등록합니다. 등록되지 않은 애플리케이션은 로그를 저장하지 않습니다.
 4. 로그를 저장하고, 조회 API는 같은 저장소에서 목록/상세 데이터를 반환합니다.
 5. 삭제 서비스는 `RemovePeriod`와 `LogDeleteRepeatSecond`를 기준으로 오래된 로그를 정리합니다.
 
 ## 운영 주의사항
 
-- 설정되지 않은 애플리케이션 저장소 자동 생성은 개발에는 편리하지만 운영에서는 로그 저장소 난립을 만들 수 있습니다.
+- 운영에서는 로그를 수집할 애플리케이션의 `DataSource`를 명시적으로 등록하고 로그 보존 기간을 관리합니다.
 - `RemovePeriod`가 음수이면 보관 기간 기준 삭제가 적용됩니다. 장기 보관이 필요한 로그는 별도 저장소나 백업 정책을 둡니다.
 - 로그에는 요청/응답 전문과 예외 정보가 포함될 수 있으므로 개인정보와 비밀 값 마스킹 정책을 상위 모듈과 함께 설계합니다.
 - 실시간 모니터링은 운영 환경에 맞는 로그 수집 도구와 파일 권한 정책을 사용합니다.
