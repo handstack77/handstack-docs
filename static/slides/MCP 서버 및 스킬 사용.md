@@ -6,7 +6,7 @@ footer: MCP 서버 및 스킬 사용
 paginate: true
 backgroundColor: #fff
 title: MCP 서버 및 스킬 사용
-description: Claude Code와 Codex CLI에서 MCP와 스킬을 관리하고 HandStack 게시판 개발에 적용하는 입문 실습
+description: Claude Code와 Codex CLI에서 MCP와 handstack-docs 스킬을 설치·호출·점검하는 입문 실습
 ---
 
 <style>
@@ -58,7 +58,7 @@ section.compact table { font-size: 22px; }
 
 Claude Code · Codex CLI로 시작하는 HandStack 개발
 
-문서 연결 → 관리 → 스킬 사용 → 게시판 검색 조건 추가
+문서 연결 → 관리 → 스킬 설치 → 스킬 호출·점검
 
 **초보자 실습 발표**
 
@@ -70,17 +70,17 @@ Claude Code · Codex CLI로 시작하는 HandStack 개발
 
 ---
 
-## 오늘 다룰 업무: 게시판 검색 개선
+## 오늘 다룰 업무: handstack-docs 스킬 사용
 
-“기존 제목 검색이 어떻게 동작하는지 읽고,
-**작성자로도 검색**할 수 있게 바꿔 주세요.”
+“handstack-docs의 스킬을 설치하고,
+**`handstack-source-trace`로 화면 연결 경로**를 확인해 주세요.”
 
 1. 문서 MCP를 연결해 HandStack 규칙을 찾습니다.
-2. 스킬로 화면·거래·SQL 연결을 확인합니다.
-3. 기존 조건을 보존하며 작성자 조건을 추가합니다.
-4. 코드 검사와 실제 조회 결과를 나눠 확인합니다.
+2. handstack-docs 스킬 번들을 프로젝트에 설치합니다.
+3. 스킬을 명시 호출해 읽은 문서·파일을 확인합니다.
+4. 점검기 결과와 실제 소스 확인을 나눠 봅니다.
 
-<!-- 발표자: 처음부터 새 앱 전체를 생성하지 않는다. BOD010의 작은 변경 하나로 모든 과정을 연결한다. -->
+<!-- 발표자: 처음부터 새 앱 전체를 생성하지 않는다. 스킬 하나의 설치·호출·점검으로 모든 과정을 연결한다. -->
 
 ---
 
@@ -88,13 +88,14 @@ Claude Code · Codex CLI로 시작하는 HandStack 개발
 
 | 입력 위치 | 입력 예 | 하는 일 |
 |---|---|---|
-| PowerShell 터미널 | `codex mcp list` | CLI 설정 조회 |
-| Claude Code 대화창 | `/mcp` | 연결 상태 확인 |
-| Codex 대화창 | `$handstack-source-trace …` | 스킬 지정 |
-| 두 도구의 대화창 | `handstack-docs MCP로 …` | AI에게 작업 요청 |
+| 터미널 | `codex mcp list` · `claude mcp list` | CLI 설정 조회 |
+| 두 도구의 대화창 | `/mcp` | 연결 상태 확인 |
+| Claude Code 대화창 | `/handstack-source-trace …` | 스킬 직접 지정 |
+| Codex 대화창 | `$handstack-source-trace …` | 스킬 직접 지정 |
+| 두 도구의 대화창 | `handstack-source-trace 스킬로 …` | 스킬 지정·작업 요청 |
 
-`/mcp`와 `$스킬이름`은 **대화창에** 입력합니다.
-코드 블록의 `#` 줄은 PowerShell 설명 주석입니다.
+`/mcp`, `/스킬이름`, `$스킬이름`, 요청 문장은 **대화창에** 입력합니다.
+코드 블록의 `#` 줄은 명령의 설명 주석입니다.
 
 <!-- 출처: https://developers.openai.com/codex/mcp/ ; https://developers.openai.com/codex/skills/ ; https://code.claude.com/docs/en/mcp ; https://code.claude.com/docs/en/skills -->
 
@@ -181,27 +182,27 @@ MCP를 연결하면 스킬이 필요한 문서도 조회할 수 있습니다.
 ## 실습 준비
 
 - Claude Code 또는 Codex CLI 설치·로그인
-- PowerShell에서 본인이 작업할 **프로젝트 루트** 열기
+- 터미널에서 본인이 작업할 **프로젝트 루트** 열기
 - 인터넷에서 `https://handstack.kr` 접근 가능
 - 스킬 점검기를 쓸 경우 Python 3.10 이상
-- 게시판 변경 실습: BOD010 원본과 **분리된 테스트 DB**
+- 스킬 호출 실습: 화면·거래 계약이 있는 **HandStack 프로젝트**(읽기 전용 분석)
 
-```powershell
+```bash
 # 설치된 도구만 확인합니다.
 codex --version
 claude --version
 python --version
 ```
 
-<!-- 발표자: C:\work\handstack 등 이후 경로는 예시이므로 학습자의 실제 경로로 바꾼다. BOD010의 LD01에도 CREATE TABLE IF NOT EXISTS가 포함되어 있으므로 테스트 DB를 준비한다. -->
+<!-- 발표자: C:\work\handstack 등 이후 경로는 예시이므로 학습자의 실제 경로로 바꾼다. 코드 블록의 명령은 PowerShell 문법으로 작성되어 있다. 이번 실습의 스킬 호출은 파일을 수정하지 않는 분석 요청으로 진행한다. -->
 
 ---
 
 ## Codex CLI: 문서 MCP 추가
 
-**PowerShell 터미널**에서 실행합니다.
+**터미널**에서 실행합니다.
 
-```powershell
+```bash
 # 같은 사용자 계정에서 사용할 문서 서버를 등록합니다.
 codex mcp add handstack-docs --url https://handstack.kr/mcp
 
@@ -219,9 +220,9 @@ codex mcp get handstack-docs
 
 ## Claude Code: 문서 MCP 추가
 
-**작업할 프로젝트 루트의 PowerShell**에서 실행합니다.
+**작업할 프로젝트 루트의 터미널**에서 실행합니다.
 
-```powershell
+```bash
 # 이 프로젝트에서 개인적으로 사용할 연결을 등록합니다.
 claude mcp add --transport http --scope local handstack-docs https://handstack.kr/mcp
 
@@ -262,7 +263,7 @@ handstack-docs MCP의 search_docs로 belongID를 찾아 줘.
 | `search_docs` | 관련 문서 찾기 | `belongID` 검색 |
 | `get_doc` | 본문·특정 절 읽기 | `reference/거래-호출`의 입출력 연결 |
 | `list_docs` | 문서 목록 확인 | `reference` 영역 목록 |
-| `get_sample` | 예제 자료 찾기 | `BOD010` 관련 예제 검색 |
+| `get_sample` | 예제 자료 찾기 | prompter decision 예제 검색 |
 
 먼저 핵심 단어로 검색하고 필요한 본문만 읽습니다.
 질문에 맞는 도구가 호출됐는지도 확인합니다.
@@ -271,17 +272,17 @@ handstack-docs MCP의 search_docs로 belongID를 찾아 줘.
 
 ---
 
-## 문서 검색을 개발 요청으로 바꾸기
+## 문서 검색을 스킬 요청으로 이어 가기
 
 ```text
-handstack-docs MCP로 reference/거래-호출의 입출력 연결을 읽어 줘.
-내 프로젝트의 BOD010.html과 BOD010.js를 찾아 대조해 줘.
-MainForm, Title, LD01, Board가 어떻게 연결되는지 설명해 줘.
+handstack-docs MCP로 reference/식별자와-파일-경로를 읽어 줘.
+ServiceID와 statement id가 어떤 역할인지 문서 URL과 함께 알려 줘.
+내 프로젝트에서 이 규칙을 확인할 수 있는 파일 후보를 찾아 줘.
 문서와 실제 코드가 다르면 각각의 근거를 보여 줘.
 지금은 파일을 수정하지 마.
 ```
 
-확인할 결과: **문서 URL + 실제 파일 경로 + 연결 설명**
+확인할 결과: **문서 URL + 규칙 요약 + 실제 파일 경로**
 
 문서 MCP는 내 PC의 소스·DB를 자동으로 읽지 않습니다.
 로컬 소스는 코딩 도구의 파일 읽기 기능으로 확인합니다.
@@ -370,7 +371,7 @@ CLI로 재등록할 때는 **기존 범위에서 제거 → 새 주소로 추가
 **이 서버의 도구를 더 이상 사용할 수 없게 됩니다.**
 다음은 앞에서 CLI로 등록한 범위를 제거하는 명령입니다.
 
-```powershell
+```bash
 # Claude: 앞 실습의 local 등록을 제거합니다.
 claude mcp remove handstack-docs --scope local
 claude mcp list
@@ -392,7 +393,7 @@ codex mcp list
 이후 HandStack 실습을 계속하려면 **본인의 도구 하나**로
 문서 MCP를 다시 등록합니다.
 
-```powershell
+```bash
 # Codex CLI: 사용자 범위
 codex mcp add handstack-docs --url https://handstack.kr/mcp
 
@@ -487,7 +488,7 @@ handstack-source-trace/
 | C#·JavaScript·Python 서버 함수 수정 | `handstack-function-contracts` |
 | 증상에서 첫 실패 지점 찾기 | `handstack-troubleshooting` |
 
-첫 실습에는 **추적·화면·거래 스킬**을 사용합니다.
+첫 실습에는 **추적 스킬**과 **문제 진단 스킬**을 사용합니다.
 전체 목록과 설치기는 [스킬 목록과 설치](https://handstack.kr/docs/guides/ai/스킬-목록)에서 확인합니다.
 
 <!-- 출처: agent-skills/README.md ; docs/guides/ai/스킬-목록.md -->
@@ -498,9 +499,9 @@ handstack-source-trace/
 
 1. [HandStack 스킬 ZIP](https://handstack.kr/agent-skills/handstack-developer-skills.zip)을 내려받아 새 폴더에 풉니다.
 2. `Install-Skills.ps1`과 `skills/` 폴더가 있는지 확인합니다.
-3. PowerShell에서 **설치기가 있는 폴더**로 이동합니다.
+3. 터미널에서 **설치기가 있는 폴더**로 이동합니다.
 
-```powershell
+```bash
 # 아래 경로를 실제 압축 해제 위치로 바꾸세요.
 Set-Location C:\work\handstack-developer-skills
 Get-ChildItem .\Install-Skills.ps1, .\skills
@@ -519,11 +520,10 @@ ZIP을 받을 수 없으면 [저장소의 agent-skills](https://github.com/hands
 
 `C:\work\handstack`은 **이미 존재하는 개발 프로젝트**로 바꿉니다.
 
-```powershell
+```bash
 # 설치기 폴더에서 실행합니다. 경로와 설치할 스킬을 지정합니다.
 $ProjectRoot = 'C:\work\handstack'
-$Skills = @('handstack-source-trace',
-  'handstack-screen-development', 'handstack-transaction-contracts')
+$Skills = @('handstack-source-trace', 'handstack-troubleshooting')
 
 # 먼저 변경될 경로를 확인하고, 같은 인자로 실제 설치합니다.
 .\Install-Skills.ps1 -Tool Both -Scope Project `
@@ -545,7 +545,7 @@ $Skills = @('handstack-source-trace',
 | Claude Code | `<프로젝트>/.claude/skills/` | `~/.claude/skills/` |
 | Codex CLI | `<프로젝트>/.agents/skills/` | `~/.agents/skills/` |
 
-```powershell
+```bash
 # 앞 슬라이드에서 지정한 프로젝트의 설치 결과를 확인합니다.
 Get-ChildItem "$ProjectRoot/.claude/skills" -Directory
 Get-ChildItem "$ProjectRoot/.agents/skills" -Directory
@@ -560,21 +560,18 @@ Set-Location $ProjectRoot
 
 ## 스킬을 명시해서 요청하기
 
-**Claude Code 대화창**
+**Claude Code · Codex CLI 공통 대화창**
 
 ```text
-/handstack-source-trace BOD010 조회 버튼에서 SQL까지 추적해 줘.
+handstack-source-trace 스킬로 이 프로젝트의 조회 화면 하나를 골라
+버튼에서 SQL까지 추적해 줘.
 handstack-docs MCP로 관련 문서도 읽어 줘. 파일은 수정하지 마.
 ```
 
-**Codex 대화창**
-
-```text
-$handstack-source-trace BOD010 조회 버튼에서 SQL까지 추적해 줘.
-handstack-docs MCP로 관련 문서도 읽어 줘. 파일은 수정하지 마.
-```
-
+요청에 **스킬 이름을 글로 적으면** 두 도구에서 같은 문장을 씁니다.
 사용한 스킬과 읽은 파일·문서가 답변에 드러나는지 확인합니다.
+
+선택: Claude는 `/스킬이름`, Codex는 `$스킬이름`으로도 지정할 수 있습니다.
 
 <!-- 출처: docs/guides/ai/스킬-목록.md ; agent-skills/skills/handstack-source-trace/SKILL.md ; https://code.claude.com/docs/en/skills -->
 
@@ -585,7 +582,7 @@ handstack-docs MCP로 관련 문서도 읽어 줘. 파일은 수정하지 마.
 **기존 설치 내용이 교체됩니다.** 새 ZIP은 별도 폴더에 풉니다.
 그 폴더에서 앞과 같은 대상 경로·스킬 목록을 지정합니다.
 
-```powershell
+```bash
 # 실제 새 ZIP 압축 해제 위치로 이동합니다.
 Set-Location C:\work\handstack-developer-skills-new
 
@@ -620,219 +617,128 @@ Set-Location C:\work\handstack-developer-skills-new
 
 ---
 
-## 사례 1: 기존 게시판 흐름 읽기
+## 사례 1: 설치한 스킬 읽어 보기
 
-기본 예제의 원본은 HandStack 소스 저장소의
-**`2.Modules/wwwroot/Contracts`** 아래에 있습니다.
+스킬은 `SKILL.md`의 이름·설명을 보고 선택됩니다.
+설치한 스킬이 **언제 쓰이고 무엇을 하는지** 먼저 읽습니다.
 
 ```text
-wwwroot/HDS/BOD/BOD010.html   입력·버튼·목록
-wwwroot/HDS/BOD/BOD010.js     이벤트·거래 설정
-transact/HDS/BOD/BOD010.json  LD01 거래 계약
-dbclient/HDS/BOD/BOD010.xml   목록 SQL·파라미터
+handstack-source-trace 스킬의 SKILL.md를 읽고
+어떤 요청에 쓰는 스킬인지 요약해 줘.
+점검기가 코드·SQL을 실행하는지, 어떤 파일을 읽는지도 알려 줘.
+파일을 수정하거나 스크립트를 실행하지 마.
 ```
 
-다른 프로젝트는 `.txn/.dbc`를 쓸 수 있습니다.
-실제 파일과 서버의 계약 경로를 확인하고 기존 확장자를 유지합니다.
+예상 결과: 사용 시점 + **읽기 전용 점검기**라는 설명 + 읽은 파일 경로
 
-<!-- 출처: docs/reference/식별자와-파일-경로.mdx ; https://github.com/handstack77/handstack/tree/master/2.Modules/wwwroot/Contracts ; 2.Modules/transact/Entity/ModuleConfiguration.cs ; 2.Modules/dbclient/Entity/ModuleConfiguration.cs -->
+<!-- 출처: agent-skills/skills/handstack-source-trace/SKILL.md (2. 점검기 실행: 코드·SQL·HTTP를 실행하지 않고 module.json 같은 설정 파일을 읽지 않는다). 발표자: 스킬이 설치된 위치(.claude/skills 또는 .agents/skills)의 SKILL.md를 읽게 한다. -->
 
 ---
 
-## 사례 1: 분석 요청과 예상 결과
+## 사례 2: 점검기로 화면 목록 확인
 
 ```text
-handstack-source-trace 스킬로 BOD010의 LD01을 분석해 줘.
-프로젝트 지침을 읽고, 실제 파일에서 조회 버튼부터 SQL까지 추적해 줘.
-입력 필드, 서비스 ID, SQL 파라미터, 출력 순서를 표로 써 줘.
-문서 MCP로 거래 호출과 식별자 규칙을 확인해 줘.
+handstack-source-trace 스킬로 점검기의 --list를 실행해
+이 프로젝트의 화면 ID 목록을 보여 줘.
+그중 조회 화면 하나를 골라 --screen으로 연결표를 만들어 줘.
+서비스 ID, 입력 필드, SQL 파라미터, 출력 순서를 표로 써 줘.
 파일을 수정하거나 거래·SQL을 실행하지 마.
 ```
 
-예상 결과: `MainForm → LD01 → SQL → Board` 연결표
-및 각 항목의 실제 파일 위치
+예상 결과: 화면 ID 목록 + `서비스 | 입력 | 출력 순서 | 실행 | callback` 연결표
 
 문서 근거와 로컬 구현 근거를 함께 읽습니다.
 
-<!-- 출처: agent-skills/skills/handstack-source-trace/SKILL.md ; docs/reference/거래-호출.mdx -->
+<!-- 출처: agent-skills/skills/handstack-source-trace/SKILL.md ; docs/guides/ai/점검-도구.md ; docs/reference/거래-호출.mdx. 발표자: 화면이 있는 HandStack 프로젝트 루트에서 시연한다. 같은 화면 ID가 여러 모듈에 있으면 후보를 모두 보여 주고 묻게 한다. -->
 
 ---
 
-## BOD010에서 확인할 연결
+## 점검기 출력은 이렇게 읽습니다
 
-| 단계 | 실제 예제의 연결 |
+| 열 | 의미 |
 |---|---|
-| 조회 버튼 | `syn-events`의 click → `btnSearch_click` |
-| JS 호출 | `syn.$w.transactionAction('LD01')` |
-| 입력 | `MainForm`의 `Title`, `Category`, 기간·정렬 조건 |
-| 거래 → SQL | `ServiceID: LD01`, `CommandType: D` → `LD01`, seq 0 |
-| 출력 | SQL 결과 → `Grid` → HTML의 `Board` |
+| 서비스 | 화면 `transaction` 키와 거래의 `ServiceID` |
+| 입력 | `type:dataField=전송 필드` |
+| 출력 순서 | 화면 `outputs` 순서와 결과 집합 순서 |
+| 실행 | `.dbc#id seq` 또는 함수 계약 |
+| callback | 연결된 콜백 함수 |
 
-화면의 `dataFieldID`와 서버의 모든 필드를 같은 이름으로
-복제하는 규칙은 아닙니다. **각 연결 지점**을 대조합니다.
+불일치 후보는 **정규식 기반 근사치**입니다.
+`ERROR`도 소스를 직접 열어 확정한 뒤 보고합니다.
 
-<!-- 출처: HandStack 2.Modules/wwwroot/Contracts/wwwroot/HDS/BOD/BOD010.html 및 .js ; Contracts/transact/HDS/BOD/BOD010.json ; Contracts/dbclient/HDS/BOD/BOD010.xml ; docs/reference/거래-호출.mdx -->
-
----
-
-## 제목 조건은 어떻게 전송되나요?
-
-HTML의 기존 입력 항목 발췌입니다.
-
-```html
-<input id="txtTitle" syn-datafield="Title"
-  syn-options="{editType: 'text', belongID: ['LD01']}"
-  type="text" class="form-control" maxlengthB="256">
-```
-
-JS의 `transaction` 객체 안에 있는 기존 설정입니다.
-
-```javascript
-LD01: {
-    inputs: [{ type: 'Row', dataFieldID: 'MainForm' }],
-    outputs: [{ type: 'Grid', dataFieldID: 'Board' }]
-}
-```
-
-<!-- 출처: HandStack 2.Modules/wwwroot/Contracts/wwwroot/HDS/BOD/BOD010.html 및 .js ; syn.webform.js의 belongID 검사. 발표자: 두 코드 모두 발췌이며 독립 실행 파일이 아니다. -->
+<!-- 출처: docs/guides/ai/점검-도구.md ; agent-skills/skills/handstack-source-trace/references/finding-codes.md -->
 
 ---
 
-## 사례 2: 작성자 검색 추가 요청
+## 점검기 직접 실행하기
 
-```text
-handstack-screen-development와 handstack-transaction-contracts를 사용해
-BOD010에 작성자 부분 일치 검색을 추가해 줘.
-Board의 Author 컬럼과 현재 SQLite SQL을 먼저 확인해 줘.
-빈 값은 작성자 제한 없이 조회하고 기존 조건·정렬·출력은 유지해 줘.
-HTML, JS, 거래, SQL의 변경 필요 여부부터 표로 정리해 줘.
-인증 설정은 유지하고, 테스트 DB 실행은 환경 확인 뒤 진행해 줘.
-```
+**개발 프로젝트 루트의 터미널**에서 실행합니다.
 
-Claude에서는 `/스킬이름`, Codex에서는 `$스킬이름`으로
-각 스킬을 지정하거나 위처럼 이름을 명시할 수 있습니다.
-
-<!-- 출처: agent-skills/skills/handstack-screen-development/SKILL.md ; agent-skills/skills/handstack-transaction-contracts/SKILL.md ; HandStack BOD010.xml (Board.Author, SQLite 문자열 연결) -->
-
----
-
-## 작성자 조건의 변경 연결표
-
-| 위치 | 이번에 확인·추가할 내용 |
-|---|---|
-| HTML | `MainForm` 안에 `txtAuthor`, `Author`, `belongID: LD01` |
-| JS | 기존 `Row: MainForm`, `Grid: Board` 매핑 확인 |
-| 거래 계약 | LD01 입력 제한·명시 필드가 있는지 확인 |
-| SQL 계약 | `@Author` 파라미터와 WHERE 조건 추가 |
-| DB | 기존 `Board.Author` 사용, 새 컬럼 불필요 |
-
-기본 예제의 거래 입력은 `Dynamic`이며 `Fields`가 비어 있습니다.
-명시 필드가 있는 업무 계약은 필요한 입력 정의도 함께 고칩니다.
-
-<!-- 출처: HandStack Contracts/transact/HDS/BOD/BOD010.json (LD01 Inputs) ; Contracts/dbclient/HDS/BOD/BOD010.xml ; docs/reference/거래-계약-명세.mdx -->
-
----
-
-## 작성자 입력 항목 예시
-
-**학습용 추가 예시**: `BOD010.html`의 기존 `MainForm`
-검색 조건 영역에 주변 레이아웃을 따라 삽입합니다.
-
-```html
-<div class="input-group">
-  <label for="txtAuthor"
-    class="w:86 col-form-label px-2">작성자</label>
-  <input id="txtAuthor" syn-datafield="Author"
-    syn-options="{editType: 'text', belongID: ['LD01']}"
-    type="text" class="form-control" maxlengthB="256">
-</div>
-```
-
-화면에 입력란이 생겨도 서버에 값이 전송되는지 따로 확인합니다.
-
-<!-- 근거: HandStack BOD010.html의 txtTitle·MainForm 구조 ; docs/reference/거래-호출.mdx. 이 조각은 새 학습 예시이며 저장소에 이미 있는 코드라고 설명하지 않는다. -->
-
----
-
-## SQLite SQL 조건 예시
-
-**학습용 발췌**: `BOD010.xml`의 LD01 SQL에서
-기존 WHERE 조건 뒤, **ORDER BY 앞**에 추가합니다.
-
-```sql
-AND (@Author = '' OR B.Author LIKE ('%' || @Author || '%'))
-```
-
-CDATA 밖의 LD01 `statement` 안에는 파라미터를 추가합니다.
-
-```xml
-<param id="@Author" type="String" length="-1" value="" />
-```
-
-입력값은 바인딩합니다. `%`, `_`는 LIKE의 패턴 문자입니다.
-다른 DB 공급자는 해당 SQL 문법에 맞춰 작성합니다.
-
-<!-- 근거: HandStack BOD010.xml의 SQLite LIKE·param 구조 ; docs/reference/api/modules/dbclient.mdx. 이 SQL은 새 학습 예시이다. 빈 문자열·부분 일치·무일치 동작을 테스트 DB에서 확인한다. -->
-
----
-
-## 파일 검사와 연결표 재확인
-
-**개발 프로젝트 루트**에서 실행합니다.
-
-```powershell
+```bash
 # Codex 프로젝트 설치 기준입니다. Claude는 .claude/skills를 씁니다.
 $SkillRoot = '.agents/skills'
-python "$SkillRoot/handstack-source-trace/scripts/hs_inspect.py" `
-  --root . --screen BOD010 --fail-on ERROR
+python "$SkillRoot/handstack-source-trace/scripts/hs_inspect.py" --root . --list
 
-# 아래 경로는 기본 HandStack 소스 예제 기준입니다.
-node --check ./2.Modules/wwwroot/Contracts/wwwroot/HDS/BOD/BOD010.js
-git diff --check
-git diff
+# --list에서 확인한 화면 ID로 바꾸세요.
+$ScreenId = '조회-화면-ID'
+python "$SkillRoot/handstack-source-trace/scripts/hs_inspect.py" `
+  --root . --screen $ScreenId --fail-on ERROR
 ```
 
 점검기는 정적 분석의 후보를 보여 줍니다.
 SQL 실행·서버 반영·브라우저 성공을 보장하지 않습니다.
 
-<!-- 출처: agent-skills/skills/handstack-source-trace/SKILL.md ; scripts/hs_inspect.py. 발표자: 중복 BOD010 후보가 나오면 --root를 해당 모듈로 좁힌다. 배포본 contracts 구조는 경로를 바꾼다. 이 실습에서 JS 변경이 없더라도 기존 구문 확인 용도로 실행할 수 있다. -->
+<!-- 출처: agent-skills/skills/handstack-source-trace/SKILL.md ; docs/guides/ai/점검-도구.md. 발표자: 중복 화면 ID 후보가 나오면 --module로 모듈 폴더를 좁힌다. --fail-on ERROR는 오류가 있을 때 종료 코드가 0이 아니다. -->
 
 ---
 
-## 테스트 환경에서 확인할 결과
+## 결과는 세 가지로 나눠 읽습니다
 
-작성자 `김개발`, `이운영`인 게시글이 있는 **테스트 데이터**를 준비합니다.
-다른 조회 조건도 이 게시글을 포함하도록 설정합니다.
-
-| 작성자 입력 | 예상 결과 |
+| 구분 | 예 |
 |---|---|
-| 빈 값 | 작성자 조건이 결과를 제한하지 않음 |
-| `김` | 작성자에 `김`이 포함된 게시글 |
-| 존재하지 않는 값 | 빈 목록 |
-| 작성자 + 제목·분류 | 기존 조건과 작성자 조건을 모두 만족 |
+| 확인한 것 | 파일을 직접 읽고 확인한 연결 |
+| 추정한 것 | 정규식·이름 규칙으로 얻은 점검기 후보 |
+| 확인하지 못한 것 | 동적 호출, 외부 모듈, 실제 실행 |
 
-요청 데이터에 `Author`가 있는지, 응답이 `Board`에 표시되는지 봅니다.
-예제의 **테이블 초기화 버튼은 데이터를 지우므로 누르지 않습니다.**
+비활성 코드와 **실제 호출 경로**를 구분합니다.
+설정 파일의 키·연결 문자열은 답변에 복사하지 않게 합니다.
 
-<!-- 근거: 학습용 SQLite SQL 예시. 발표자: LD01에도 CREATE TABLE IF NOT EXISTS가 포함된다. 운영 DB를 실습에 쓰지 않는다. 서버가 읽는 계약 경로·감시/refresh 정책을 먼저 확인하고 반영한다. -->
+**“스킬이 답했다”와 “업무 기능이 실행됐다”는 별개입니다.**
+
+<!-- 출처: agent-skills/skills/handstack-source-trace/SKILL.md (4. 보고 형식) -->
 
 ---
 
-## 사례 3: 입력했는데 결과가 그대로예요
+## 사례 3: 스킬이 선택되지 않을 때
 
 ```text
-작성자로 검색해도 결과가 같습니다.
-handstack-source-trace로 Author 입력이 실제 전송되는지부터 추적해 줘.
-HTML의 MainForm·belongID, JS 입력, 거래 입력, @Author를 대조해 줘.
-원본과 서버가 읽는 계약 경로도 확인해 줘.
-정적 확인과 실제 요청 확인을 나눠 보고하고,
-원인을 확인하기 전에는 인증·권한 설정을 바꾸지 마.
+handstack-source-trace 스킬로 화면 목록을 보여 달라고 했는데 스킬이 사용되지 않아.
+설치 경로, 스킬 폴더 이름, 사용자·프로젝트 범위의 중복 설치를 확인해 줘.
+새 세션에서 목록에 보이는지도 알려 줘.
+Install-Skills.ps1은 -WhatIf로만 실행하고 파일은 바꾸지 마.
 ```
 
-확인 순서: **입력 수집 → 전송 → 계약 → SQL → 응답·표시**
-처음 끊어진 지점부터 고칩니다.
+확인 순서: **설치 경로 → 폴더·이름 → 중복 범위 → 새 세션 → 명시 호출**
+처음 어긋난 지점부터 고칩니다.
 
-<!-- 출처: agent-skills/skills/handstack-source-trace/SKILL.md ; agent-skills/skills/handstack-troubleshooting/SKILL.md ; docs/reference/식별자와-파일-경로.mdx -->
+<!-- 출처: docs/guides/ai/스킬-목록.md (설치 절) ; agent-skills/Install-Skills.ps1 ; agent-skills/README.md. 발표자: 개인(User)과 프로젝트(Project) 범위에 중복 설치하면 같은 이름이 여러 위치에서 발견되므로 한쪽만 쓴다. -->
+
+---
+
+## 스킬 원본을 고쳤다면: 번들 검증
+
+**`handstack-docs` 저장소 루트의 터미널**에서 실행합니다.
+
+```bash
+# 번들 검증 → 문서 경로 인용 확인 → 단위 테스트를 순서대로 실행합니다.
+npm run check:agent
+```
+
+- 스킬의 frontmatter, 링크, 스크립트 경로를 확인합니다.
+- 스킬이 인용한 `docs/` 문서 ID가 실제로 있는지 확인합니다.
+- **모델이 스킬을 실제로 선택하는 품질**은 검증하지 않습니다.
+
+<!-- 출처: agent-skills/README.md (검증 절) ; agent-skills/scripts/check.mjs ; AGENTS.md. 발표자: 스킬을 사용하는 학습자가 아니라 handstack-docs 저장소를 수정하는 사람을 위한 슬라이드다. 배포용 zip 생성(npm run package:agent)은 필요할 때만 한다. -->
 
 ---
 
@@ -871,14 +777,14 @@ HTML의 MainForm·belongID, JS 입력, 거래 입력, @Author를 대조해 줘.
 ## 직접 해 볼 과제
 
 1. 문서 MCP로 `transactionAction`의 입출력 연결을 읽습니다.
-2. 추적 스킬로 본인 프로젝트의 조회 화면 하나를 분석합니다.
-3. 기존 DB 컬럼 하나를 골라 검색 조건 추가 계획을 만듭니다.
-4. 테스트 환경에서 조건을 추가하고 정상·빈 결과를 확인합니다.
+2. handstack-docs 스킬 하나를 설치하고 요청에 스킬 이름을 적어 호출합니다.
+3. 점검기 `--list`로 본인 프로젝트의 화면 하나를 골라 연결표를 만듭니다.
+4. 점검기 결과를 소스와 비교해 확인한 것과 추정한 것을 나눕니다.
 5. 개인 설치 스킬 하나를 백업·갱신하고 다시 호출합니다.
 
-제출할 것: **연결표, 변경 diff, 검증 결과, 미확인 항목**
+제출할 것: **연결표, 설치 확인 결과, 확인·추정 구분, 미확인 항목**
 
-<!-- 발표자: BOD010을 쓸 수 없는 학습자는 2번부터 본인의 기존 조회 화면을 사용한다. DB 환경이 없으면 변경 계획과 정적 검사까지만 기록하며 실행 성공으로 쓰지 않는다. -->
+<!-- 발표자: HandStack 프로젝트가 없는 학습자는 1·2·5번과 SKILL.md 읽기까지만 진행한다. 점검기 통과를 실행 성공으로 쓰지 않는다. -->
 
 ---
 
@@ -888,7 +794,7 @@ HTML의 MainForm·belongID, JS 입력, 거래 입력, @Author를 대조해 줘.
 - [ ] 추가·삭제·비활성화·갱신의 차이를 설명할 수 있다.
 - [ ] 스킬 설치 위치와 호출 방법을 확인했다.
 - [ ] 화면·거래·SQL의 입력·출력 연결표를 만들었다.
-- [ ] 변경한 코드와 기존 조건 보존 여부를 검토했다.
+- [ ] 스킬이 읽은 문서·파일과 점검기 후보를 구분해 확인했다.
 - [ ] 실제 실행한 검사와 실행하지 못한 항목을 구분했다.
 
 다음 작업에서도 **문서 확인 → 소스 대조 → 작은 변경 → 결과 확인**을
@@ -905,7 +811,7 @@ HTML의 MainForm·belongID, JS 입력, 거래 입력, @Author를 대조해 줘.
 | 추가 | `mcp add --transport http` | `mcp add … --url …` |
 | 삭제 | `mcp remove … --scope …` | `mcp remove …` |
 | 대화에서 연결 확인 | `/mcp` | `/mcp` |
-| 스킬 지정 | `/handstack-source-trace` | `$handstack-source-trace` |
+| 스킬 지정 | `handstack-source-trace 스킬로 …` | `handstack-source-trace 스킬로 …` |
 | 스킬 갱신 | 설치기 `-Update` | 설치기 `-Update` |
 
 실제 복사할 명령은 앞의 해당 실습 슬라이드를 사용하세요.
@@ -914,16 +820,16 @@ HTML의 MainForm·belongID, JS 입력, 거래 입력, @Author를 대조해 줘.
 
 ---
 
-## HandStack 문서와 예제
+## HandStack 문서와 스킬
 
 - [AI 에이전트에 문서 연결하기](https://handstack.kr/docs/guides/에이전트에-문서-연결하기): 등록·해제·도구·문제 해결
 - [스킬 목록과 설치](https://handstack.kr/docs/guides/ai/스킬-목록): 설치기와 작업별 스킬
 - [화면에서 거래 호출하기](https://handstack.kr/docs/reference/거래-호출): 입력·출력 매핑
-- [식별자와 파일 경로](https://handstack.kr/docs/reference/식별자와-파일-경로): BOD010 파일·계약 연결
-- [게시판 프로젝트 시작하기](https://handstack.kr/docs/startup/handsonlab/게시판-프로젝트-시작하기): 기본 예제 전체
+- [식별자와 파일 경로](https://handstack.kr/docs/reference/식별자와-파일-경로): 화면·거래·SQL 파일과 계약 연결
+- [점검 도구](https://handstack.kr/docs/guides/ai/점검-도구): `hs_inspect.py` 옵션과 한계
 - [스킬 원본 저장소](https://github.com/handstack77/handstack-docs/tree/master/agent-skills): 설치기·지침·점검기
 
-<!-- 발표자: 문서 URL을 통해 최신 대표 설명을 확인한다. 이 발표의 SQL·HTML 추가 예시는 기존 예제 위에 적용하는 학습용 조각이다. -->
+<!-- 발표자: 문서 URL을 통해 최신 대표 설명을 확인한다. -->
 
 ---
 
@@ -938,43 +844,3 @@ HTML의 MainForm·belongID, JS 입력, 거래 입력, @Author를 대조해 줘.
 명령 예시 기준: **Codex CLI 0.164.0 · Claude Code 2.1.310**
 공식 안내 확인일: **2026-10-26**
 설치 버전이 다르면 먼저 `mcp --help`로 지원 옵션을 확인하세요.
-
----
-
-## 부록: 로컬 문서 개발 서버 연결
-
-**문서를 직접 수정하는 사람을 위한 선택 실습**입니다.
-`handstack-docs` 저장소와 Node.js 의존성이 준비되어 있어야 합니다.
-
-```powershell
-# handstack-docs 루트에서, MCP 의존성이 없을 때 한 번 실행합니다.
-npm ci --prefix mcp
-
-# 사이트 개발 서버와 문서 MCP를 실행합니다.
-npm run start
-```
-
-기본 개발 주소는 `http://localhost:3000/mcp`입니다.
-터미널을 열어 둔 채 실제 표시된 서버 주소를 확인합니다.
-
-<!-- 출처: mcp/README.md ; plugins/agent-docs/dev-mcp.cjs. 발표자: 루트 의존성은 잠금 파일 기준으로 준비되어 있어야 하며 저장소 Node.js engines를 따른다. 개발 서버 포트를 바꿨다면 MCP URL도 맞춘다. 공개 문서를 사용하는 일반 학습자에게는 필요 없다. -->
-
----
-
-## 부록: 공개 문서와 로컬 문서 구분
-
-**새 PowerShell 터미널**에서 사용하는 도구 하나만 등록합니다.
-
-```powershell
-# Codex CLI
-codex mcp add handstack-docs-dev --url http://localhost:3000/mcp
-
-# Claude Code: 문서 프로젝트에서 사용할 개인 연결
-claude mcp add --transport http --scope local handstack-docs-dev http://localhost:3000/mcp
-```
-
-대화에서 `handstack-docs-dev`를 명시하고 수정한 문서를 검색합니다.
-개발 인덱스는 기본적으로 **1분 주기**로 다시 읽습니다.
-서버를 종료하면 로컬 MCP도 사용할 수 없습니다.
-
-<!-- 출처: mcp/README.md ; plugins/agent-docs/dev-mcp.cjs ; docs/guides/에이전트에-문서-연결하기.md. 발표자: 등록 해제는 각 도구의 remove로 handstack-docs-dev만 지정한다. 공개 문서 서버 handstack-docs와 구분한다. -->

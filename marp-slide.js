@@ -9,6 +9,29 @@ class MarpServer {
         this.watcher = null;
         this.isProcessing = new Set();
         this.marpCommand = null;
+        this.targetFile = null;
+    }
+
+    // 인자로 파일을 지정하면 해당 슬라이드만 변환·감시합니다. 인자가 없으면 slides 폴더 전체를 처리합니다.
+    resolveTargetFile(argument) {
+        if (!argument) {
+            return null;
+        }
+
+        const withExtension = argument.endsWith('.md') ? argument : `${argument}.md`;
+        const candidates = [path.resolve(withExtension), path.join(this.slidesDir, withExtension)];
+        const found = candidates.find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
+
+        if (!found) {
+            throw new Error(`대상 슬라이드를 찾을 수 없습니다: ${argument}`);
+        }
+
+        const relativePath = path.relative(this.slidesDir, found);
+        if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+            throw new Error(`slides 폴더 밖의 파일은 처리하지 않습니다: ${found}`);
+        }
+
+        return found;
     }
 
     async findMarpCommand() {
@@ -156,6 +179,10 @@ class MarpServer {
             return;
         }
 
+        if (this.targetFile && path.resolve(filePath) !== this.targetFile) {
+            return;
+        }
+
         this.isProcessing.add(filePath);
 
         try {
@@ -179,6 +206,17 @@ class MarpServer {
 
     async processExistingFiles() {
         console.log('\n기존 마크다운 파일 검색 중...');
+
+        if (this.targetFile) {
+            try {
+                await this.executeMarp(this.targetFile);
+            } catch (error) {
+                console.error(`대상 파일 처리 실패: ${path.basename(this.targetFile)}`, error.message);
+            }
+
+            console.log('대상 파일 처리 완료\n');
+            return;
+        }
 
         try {
             const files = fs.readdirSync(this.slidesDir);
@@ -220,20 +258,32 @@ class MarpServer {
 
         this.ensureDirectoryExists();
 
+        try {
+            this.targetFile = this.resolveTargetFile(process.argv[2]);
+        } catch (error) {
+            console.error(error.message);
+            console.log('사용법: node marp-slide.js ["슬라이드 파일명(.md)"]');
+            process.exit(1);
+        }
+
+        if (this.targetFile) {
+            console.log(`대상 슬라이드: ${this.targetFile}`);
+        }
+
         await this.processExistingFiles();
 
-        const watchPath = path.join(this.slidesDir, '**/*.md');
+        const watchPath = this.targetFile || path.join(this.slidesDir, '**/*.md');
 
         console.log('파일 감시 시작...');
         console.log('감시 경로 (Glob 패턴 포함):', watchPath);
         console.log('감시 디렉토리 절대 경로:', path.resolve(this.slidesDir));
-        console.log('대상 파일: *.md');
+        console.log(`대상 파일: ${this.targetFile ? path.basename(this.targetFile) : '*.md'}`);
         console.log('서버가 실행 중입니다. Ctrl+C로 종료하세요.\n');
 
         this.watcher = chokidar.watch(watchPath, {
             ignored: /(^|[\/\\])\../,
             persistent: true,
-            ignoreInitial: false,
+            ignoreInitial: Boolean(this.targetFile),
             usePolling: true,
             interval: 300,
             awaitWriteFinish: {
