@@ -12,7 +12,8 @@ sidebar_position: 60
 - `RoutingCommandUri`를 사용해 `dbclient`, `graphclient`, `function`, `command`, `prompter`로 요청을 전달합니다.
 - 요청 검증, 공개 거래 허용 범위, 환경 구분, 코드 데이터 캐시를 적용합니다.
 - 거래 로그와 집계 데이터를 저장하고 필요 시 `logger` 모듈로 전송합니다.
-- workflow 계약을 실행하고 단계 간 입력/출력 매핑, assertion, fallback 흐름을 처리합니다.
+- workflow 계약의 단계 간 입력/출력 매핑과 assertion을 처리하고 단계 실패 시 실행을 중단합니다.
+- 외부 위임 호스트의 서명된 사용자 위임을 기존 Execute 경로에서 검증할 수 있습니다. `ModuleConfig.McpDelegation`은 기본 비활성화입니다.
 
 ## 주요 API
 
@@ -183,4 +184,4 @@ workflow는 여러 거래 단계를 하나의 요청으로 묶습니다. 계약 
 - `RoutingCommandUri`가 누락되면 해당 `CommandType` 거래는 실행 모듈을 찾지 못합니다.
 - 거래 로그에는 요청/응답 데이터가 포함될 수 있으므로 `IsDataMasking`과 로그 보관 정책을 함께 설계합니다.
 - `wwwroot`의 개발용 테스트 계정 자동 로그인(`/wwwroot/api/dev-account/sign-in`)이 발급한 요청은 `IsDevAutoSignIn` claim으로 표시됩니다. `TransactionController`/`WorkflowController`는 이 claim을 감지하면 경고 로그를 남기고, `AppSettings:IsEnabledDevAutoSignIn`이 `false`이거나 `RunningEnvironment`가 `D`가 아닌데도 claim이 존재하면(위조 의심) 요청을 거부합니다.
-- workflow는 강력하지만 장애 범위도 넓어집니다. 단계별 timeout, fallback, assertion을 계약에 명시합니다.
+- workflow의 assertion과 단계 실패를 검증합니다. 현재 WorkflowController는 전체 단계의 일괄 롤백이나 취소 전파를 보장하지 않으므로 실행 모듈의 시간 제한과 재시도 여부를 별도로 확인합니다.
