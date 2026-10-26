@@ -21,7 +21,8 @@ REM 에이전트 스킬 배포 zip(static/agent-skills/)을 만듭니다. 실패
 call npm run package:agent
 if errorlevel 1 echo [경고] npm run package:agent 실패: handstack-developer-skills.zip 없이 계속합니다.
 
-call npm run build
+REM 사이트 호스트·MCP 서버 응답을 우선하도록 빌드 우선순위를 낮춥니다(publish.sh의 nice -n 19에 해당). 빌드 시간은 늘어날 수 있습니다.
+start "" /b /wait /low cmd /c npm run build
 
 REM MCP 서버(mcp/)가 실행에 쓰는 운영 의존성만 설치합니다. 사이트 호스트가 배포 폴더의 mcp/ 를 직접 실행합니다.
 call npm ci --omit=dev --prefix mcp

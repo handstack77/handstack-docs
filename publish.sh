@@ -19,7 +19,8 @@ echo "os_mode: $os_mode, configuration_mode: $configuration_mode, arch_mode: $ar
 # 에이전트 스킬 배포 zip(static/agent-skills/)을 만듭니다. 실패해도 사이트 배포는 계속합니다(Python 3.10 이상 필요).
 npm run package:agent || echo "[경고] npm run package:agent 실패: handstack-developer-skills.zip 없이 계속합니다."
 
-npm run build
+# 운영 서버의 사이트 호스트·MCP 서버 응답을 우선하도록 빌드 우선순위를 낮춥니다. 빌드 시간은 늘어날 수 있습니다.
+nice -n 19 npm run build
 
 # MCP 서버(mcp/)가 실행에 쓰는 운영 의존성만 설치합니다. 사이트 호스트가 배포 폴더의 mcp/ 를 직접 실행합니다.
 npm ci --omit=dev --prefix mcp
