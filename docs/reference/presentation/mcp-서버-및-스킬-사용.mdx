@@ -1,0 +1,36 @@
+---
+sidebar_position: 50
+title: MCP 서버 및 스킬 사용
+description: Claude Code와 Codex CLI의 MCP 연결·관리, HandStack 스킬 설치·갱신과 게시판 검색 조건 추가를 따라 하는 초보자용 발표 자료입니다.
+---
+
+# MCP 서버 및 스킬 사용
+
+HandStack 문서 MCP를 연결하고 스킬을 설치한 뒤, 기존 게시판의 조회 흐름을 읽고 작성자 검색 조건을 추가하는 과정을 따라 합니다. Claude Code 또는 Codex CLI 중 사용하는 도구의 실습을 선택하세요.
+
+[발표 화면 열기](pathname:///slides/MCP%20서버%20및%20스킬%20사용.html) · [Markdown 원본 내려받기](pathname:///slides/MCP%20서버%20및%20스킬%20사용.md)
+
+<iframe src="/slides/MCP 서버 및 스킬 사용.html" width="100%" height="538" style={{ border: '1px solid #ccc', borderRadius: '8px' }} title="MCP 서버 및 스킬 사용" allow="fullscreen">
+  <a href="/slides/MCP 서버 및 스킬 사용.html" target="_blank" rel="noopener noreferrer">
+    MCP 서버 및 스킬 사용 발표 화면을 새 창에서 확인하세요.
+  </a>
+</iframe>
+
+## 준비와 실습 범위
+
+- 설치·로그인을 마친 Claude Code 또는 Codex CLI, PowerShell, 인터넷 연결이 필요합니다. 스킬 점검기는 Python 3.10 이상을 사용합니다.
+- 문서 검색과 연결 관리는 업무 DB 없이 따라 할 수 있습니다. 게시판 변경·조회 실습은 BOD010 예제 또는 기존 조회 화면과 분리된 테스트 DB를 준비합니다.
+- MCP 개념, 추가·조회·범위별 공유·설정 변경·삭제·비활성화·갱신, 스킬 설치·호출·백업·갱신·제외를 다룹니다.
+- 기본 게시판 예제의 `.json/.xml` 계약과 프로젝트별 `.txn/.dbc` 계약을 구분하고, 기존 경로·확장자·입출력 계약을 보존합니다.
+- 작성자 검색 HTML·SQL은 학습용 추가 예시입니다. 코드 검사와 실제 서버·브라우저·DB 검증을 나눠 확인합니다.
+
+명령 예시는 Codex CLI 0.164.0과 Claude Code 2.1.310 기준입니다. 다른 버전에서는 해당 도구의 `mcp --help`와 공식 안내를 확인하세요.
+
+## 함께 읽을 문서
+
+- [AI 에이전트에 HandStack 문서 연결하기](/docs/guides/에이전트에-문서-연결하기)
+- [스킬 목록과 설치](/docs/guides/ai/스킬-목록)
+- [AI 에이전트 개발자 가이드](/docs/guides/ai/개발자-가이드)
+- [화면에서 거래 호출하기](/docs/reference/거래-호출)
+- [식별자와 파일 경로](/docs/reference/식별자와-파일-경로)
+- [게시판 프로젝트 시작하기](/docs/startup/handsonlab/게시판-프로젝트-시작하기)

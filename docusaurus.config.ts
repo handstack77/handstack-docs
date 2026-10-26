@@ -28,7 +28,23 @@ const config: Config = {
         defaultLocale: 'ko',
         locales: ['ko'],
     },
-    themes: ['@docusaurus/theme-mermaid'],
+    themes: [
+        '@docusaurus/theme-mermaid',
+        [
+            require.resolve('@easyops-cn/docusaurus-search-local'),
+            {
+                hashed: true,
+                language: ['ko', 'en'],
+                docsRouteBasePath: '/docs',
+                blogRouteBasePath: '/blog',
+                indexDocs: true,
+                indexBlog: true,
+                indexPages: false,
+                highlightSearchTermsOnTargetPage: true,
+                explicitSearchResultPath: true,
+            },
+        ],
+    ],
     plugins: [
         [require.resolve('./plugins/ide-downloads/index.cjs'), {
             serverUrl: process.env.HANDSTACK_IDE_RELEASE_SERVER_URL || 'https://stavlo.qrame.kr',
@@ -51,6 +67,9 @@ const config: Config = {
             return result;
         },
     },
+    clientModules: [
+        require.resolve('./src/clientModules/clearSearchHighlight.ts'),
+    ],
     scripts: [
         '/lib/master-css/master-css.min.js'
     ],
