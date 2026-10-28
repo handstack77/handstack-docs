@@ -26,6 +26,12 @@ Kestrel 서버 프로그램은 크게 2가지로 웹 서비스를 호스팅 합�
 
 ![](img/kestrel-to-internet.png)
 
+## 시작 완료 로그
+
+`ack`와 `rdy`는 수신 시작 후 Serilog 시작 로그 건수(경고·오류 및 치명 오류), 실제 수신 주소와 와일드카드 수신의 로컬·네트워크 접속 후보를 기록합니다. 로거 구성 전 콘솔 출력과 별도 로깅 공급자의 이벤트는 건수에 포함되지 않으며, 시작 요약 이후에도 로그가 발생할 수 있습니다. 네트워크 접속 가능 여부는 방화벽과 네트워크 설정에 따라 달라집니다.
+
+`AppSettings:UseForwardProxy`가 켜져 있으면 설정된 `ForwardProxyIP` 목록도 표시합니다. 이는 접속 주소가 아니라 신뢰할 프록시 IP 또는 네트워크입니다. 적용된 `WithOrigins`와 `WithOnlyIPs` 목록은 값이 있을 때만 표시하며, 시작 시점의 스냅샷입니다.
+
 ## 모듈 DLL 로딩
 
 `ack`는 `AppSettings:LoadModules` 또는 `--modules`로 선택한 모듈의 의존성 탐색 경로를 등록한 후, 각 모듈의 `<ModuleID>.dll`을 먼저 로드합니다. `IsBundledWithHost=true`인 모듈은 호스트 실행 디렉터리의 DLL을 사용합니다.
@@ -71,15 +77,6 @@ HTTPS에서 일반 HTTP로 보내는 요청에는 `Referer`를 생략합니다. 
         "InstallType": "L",
         "BusinessServerUrl": "http://localhost:8421/transact/api/transaction/execute",
         "FindGlobalIDServer": "",
-        "DomainAPIServer": {
-            "ServerID": "SERVERD01",
-            "ServerType": "D",
-            "Protocol": "http",
-            "IP": "localhost",
-            "Port": "8421",
-            "Path": "/transact/api/transaction/execute",
-            "ClientIP": "127.0.0.1"
-        },
         "ForwardProxyIP": [],
         "IsAutoUpdate": false,
         "IsConfigurationWatching": false,
@@ -221,7 +218,7 @@ ack --port=8421 --modules=wwwroot,transact,dbclient,function
 `AppSettings:IsConfigurationWatching`이 `true`이면 파일 변경을 감시해 아래 `appsettings.json` 키를 **재시작 없이** 반영합니다. 새 값이 유효할 때만 교체하고 오류면 이전 설정을 유지합니다. 로드된 모듈의 `module.json`(데이터 원본 `DataSource`, `LLMSource`, `FunctionSource`, `GraphDataSource` 포함)도 같은 방식으로 반영됩니다.
 
 - 실시간 반영: `BusinessServerUrl`, `FindGlobalIDServer`, `HostAccessID`, `IsExceptionDetailText`, `ContractRequestPath`, `CookiePrefixName`, `UserSignExpire`, `StaticFileCacheMaxAge`, `WithOnlyIPs`, `IsPermissionRoles`, `PermissionRoles`
-- **재시작 필요**: `UseContractSync`, `UseHttpLogging`, `UseForwardProxy`, `UseResponseComression`, `InstallType`, `ApplicationID`, `ProgramName`, `RunningEnvironment`, `HostName`, `SystemID`, `IsConfigurationWatching`, `IsSwaggerUI`, `IsModulePurgeContract`, `SessionState`, `ProxyBasePath`, `IsAntiforgeryToken`, `LoadModuleBasePath`, `LoadModules`, `LoadModuleLicenses`, `ModuleConfigurationUrl`, `DiscoveryApiServerUrl`, `DomainAPIServer`, `ComressionEnableForHttps`, `ComressionMimeTypes`, `ForwardProxyIP`, `UseSameIPProxy`, `AuthenticationLoginPath`, `AuthenticationLogoutPath`, `SqidsAlphabet`, `LicenseKey`, `LicenseSignature`, `WithOrigins`
+- **재시작 필요**: `UseContractSync`, `UseHttpLogging`, `UseForwardProxy`, `UseResponseComression`, `InstallType`, `ApplicationID`, `ProgramName`, `RunningEnvironment`, `HostName`, `SystemID`, `IsConfigurationWatching`, `IsSwaggerUI`, `IsModulePurgeContract`, `SessionState`, `ProxyBasePath`, `IsAntiforgeryToken`, `LoadModuleBasePath`, `LoadModules`, `LoadModuleLicenses`, `ModuleConfigurationUrl`, `DiscoveryApiServerUrl`, `ComressionEnableForHttps`, `ComressionMimeTypes`, `ForwardProxyIP`, `UseSameIPProxy`, `AuthenticationLoginPath`, `AuthenticationLogoutPath`, `SqidsAlphabet`, `LicenseKey`, `LicenseSignature`, `WithOrigins`
 
 그 밖의 변경(DLL 추가·교체, 새 모듈 추가·삭제, DI·미들웨어, OS별 파일 변경, 환경 변수와 `appsettings.{환경}.json` 변경)도 재시작이 필요합니다. 철자 오류(`Comression`)는 소스의 설정 키 이름 그대로입니다.
 

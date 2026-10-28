@@ -50,7 +50,7 @@
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="4" data-footer="QCN" data-paginate="true" data-background-color="#fff" data-class="reference-page" data-theme="gaia" lang="en-US" class="reference-page" data-marpit-pagination="4" style="--footer:QCN;--paginate:true;--background-color:#fff;--class:reference-page;--theme:gaia;background-color:#fff;background-image:none;" data-marpit-pagination-total="57">
 <h2 id="%EC%84%A4%EC%A0%95-%ED%8C%8C%EC%9D%BC-%EA%B5%AC%EC%A1%B0-%EC%82%B4%ED%8E%B4%EB%B3%B4%EA%B8%B0-22">설정 파일 구조 살펴보기 (2/2)</h2>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-text">1.WebHost/ack
-|   appsettings.json               // 기본 ack 설정 (AppSettings:LoadModules, DomainAPIServer 등)
+|   appsettings.json               // 기본 ack 설정 (AppSettings:LoadModules, BusinessServerUrl 등)
 |   appsettings.Production.json    // ACK_ENVIRONMENT=Production 일 때 병합되는 재정의 설정
 
 2.Modules/&lt;module&gt;
@@ -68,7 +68,7 @@
 <li><code>1.WebHost/ack/appsettings.json</code>
 <ul>
 <li>HandStack 서버의 <mark>기본이 되는 핵심 설정 파일</mark>입니다.</li>
-<li><code>AppSettings:LoadModules</code>로 로드할 모듈 목록을, <code>AppSettings:DomainAPIServer</code>로 거래 API 서버 접속 정보를 담고 있습니다.</li>
+<li><code>AppSettings:LoadModules</code>로 로드할 모듈 목록을, <code>AppSettings:BusinessServerUrl</code>로 서버 간 거래 API 주소를 담고 있습니다.</li>
 </ul>
 </li>
 </ul>

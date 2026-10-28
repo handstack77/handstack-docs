@@ -163,7 +163,7 @@ section.reference-page img { max-height: 440px; max-width: 100%; object-fit: con
 
 ```text
 1.WebHost/ack
-|   appsettings.json               // 기본 ack 설정 (AppSettings:LoadModules, DomainAPIServer 등)
+|   appsettings.json               // 기본 ack 설정 (AppSettings:LoadModules, BusinessServerUrl 등)
 |   appsettings.Production.json    // ACK_ENVIRONMENT=Production 일 때 병합되는 재정의 설정
 
 2.Modules/<module>
@@ -183,7 +183,7 @@ section.reference-page img { max-height: 440px; max-width: 100%; object-fit: con
 
 - `1.WebHost/ack/appsettings.json`
     - HandStack 서버의 <mark>기본이 되는 핵심 설정 파일</mark>입니다.
-    - `AppSettings:LoadModules`로 로드할 모듈 목록을, `AppSettings:DomainAPIServer`로 거래 API 서버 접속 정보를 담고 있습니다.
+    - `AppSettings:LoadModules`로 로드할 모듈 목록을, `AppSettings:BusinessServerUrl`로 서버 간 거래 API 주소를 담고 있습니다.
 
 ---
 
