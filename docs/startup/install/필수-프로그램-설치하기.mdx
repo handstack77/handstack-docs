@@ -29,6 +29,25 @@ Node.js의 최소 요구 버전과 지원 종료 여부는 다릅니다. [Node.j
 
 이미 구성이 끝난 framework-dependent 배포본을 실행할 때는 ASP.NET Core Runtime이 필요합니다. 그러나 이 학습 경로의 구성 스크립트는 LibMan 같은 .NET 도구도 설치하므로 **SDK 10**을 준비합니다. 서버 소스를 빌드할 때도 SDK가 필요합니다.
 
+### install 스크립트의 자동 설치 {#install-스크립트의-자동-설치}
+
+`install.bat`·`install.ps1`·`install.sh`는 구성을 시작하기 전에 필수 도구를 확인하고, 없는 도구를 자동으로 설치한 뒤 중단 없이 이어서 진행합니다.
+
+| 도구 | 확인 기준 | 자동 설치 방법 |
+|---|---|---|
+| .NET | 소스 저장소: SDK `10.0.x`<br />배포본: `Microsoft.AspNetCore.App`·`Microsoft.NETCore.App` `10.0.x` | 없으면 **SDK 10**을 설치합니다. Windows는 WinGet(없으면 공식 설치 파일), Linux는 apt 패키지(없으면 `dotnet-install.sh`로 `~/.dotnet`), macOS는 `dotnet-install.sh`로 `~/.dotnet`에 설치합니다. |
+| Node.js·npm | v20.12.2 이상 | 없거나 24 미만이면 Node.js 24 LTS 최신 패치를 설치합니다. Windows는 공식 MSI, Ubuntu·Debian은 NodeSource, macOS는 Homebrew `node@24`를 사용합니다. 현재 Node.js를 nvm-windows·nvm이 관리하면 nvm으로 24.x를 설치하고 사용(기본) 버전으로 전환합니다. |
+| gulp-cli | `gulp` 명령 | `npm install --global gulp-cli` |
+| curl | `curl` 명령 | Windows는 기본 포함(없으면 WinGet), Linux는 apt, macOS는 Homebrew |
+| rsync | 소스 저장소의 `install.sh`만 확인 | Linux는 apt, macOS는 Homebrew |
+
+- `install.bat`은 필수 도구 단계를 `install.ps1 -PrerequisitesOnly`에 맡기고, 끝나면 현재 명령 프롬프트의 PATH를 다시 읽어 방금 설치한 도구를 바로 사용합니다.
+- Windows에서 .NET이나 Node.js를 설치해야 하면 UAC 권한 상승을 **한 번만** 요청합니다. gulp-cli 같은 사용자 도구는 스크립트를 실행한 계정에 설치됩니다. Linux에서는 설치 전에 `sudo` 인증을 한 번 받고, root로 실행하면 sudo 없이 설치합니다.
+- 기존 Node.js가 24 미만이면 다른 프로젝트에 영향을 줄 수 있음을 안내한 뒤 24 LTS 최신 패치로 업그레이드를 시도합니다. 설치 후에도 기존 버전이 실행되면 PATH 또는 버전 관리 도구 설정을 확인하고 다시 실행하세요.
+- macOS에서 Homebrew가 필요한데 Xcode Command Line Tools가 없으면 `xcode-select --install`을 먼저 진행하라는 안내와 함께 중단합니다. apt를 쓰지 않는 Linux 배포판에서는 Node.js·curl·rsync를 자동 설치하지 않고 공식 안내를 표시합니다.
+- 필수 도구를 자동으로 설치하거나 업그레이드하지 않으려면 `install.bat --check-only`, `./install.ps1 -CheckOnly`, `bash ./install.sh --check-only`로 실행하거나 환경 변수 `HANDSTACK_SKIP_PREREQUISITES=1`을 지정합니다. 이때 Node.js는 최소 요구 버전 20.12.2 이상인지 확인하며, 필수 조건이 충족되지 않으면 공식 안내를 표시하고 중단합니다.
+- 설치 프로그램이 재부팅을 요청하면 설치는 계속 진행하고, 완료 후 Windows를 다시 시작하라는 경고를 표시합니다.
+
 <span id="한-번에-설치하기" />
 <span id="windows-11" />
 <span id="macos" />
@@ -98,7 +117,7 @@ curl --version
 
 ## HandStack 추가 도구
 
-`install.bat`·`install.sh`는 LibMan이 없으면 .NET 전역 도구 설치를 시도합니다. 직접 관리하려면 [LibMan CLI 안내](https://learn.microsoft.com/en-us/aspnet/core/client-side/libman/libman-cli?view=aspnetcore-10.0)를 참고하세요.
+`install.bat`·`install.sh`는 LibMan이 없으면 .NET 전역 도구 설치를 시도합니다. 현재 구성 단계에서는 `libman restore`를 실행하지 않으므로 SDK가 없거나 설치에 실패해도 경고만 남기고 계속 진행합니다. 직접 관리하려면 [LibMan CLI 안내](https://learn.microsoft.com/en-us/aspnet/core/client-side/libman/libman-cli?view=aspnetcore-10.0)를 참고하세요.
 
 PowerShell 스크립트(`.ps1`)로 빌드·운영할 때는 [PowerShell 설치 안내](https://learn.microsoft.com/ko-kr/powershell/scripting/install/install-powershell)를 확인하세요. `.bat` 또는 `.sh`로 진행하는 첫 실습의 별도 필수 단계는 아닙니다.
 
