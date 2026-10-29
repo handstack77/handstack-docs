@@ -13,7 +13,7 @@ description: 여러 개발 도구를 함께 준비하는 기존 OS별 자동 설
 
 | 대상 | 파일 | 준비 사항 |
 |---|---|---|
-| Windows 11 x64 | <a href="/install/windows-bootstrapper.ps1" download="windows-bootstrapper.ps1">windows-bootstrapper.ps1</a> | Windows PowerShell 5.1, WinGet |
+| Windows 10 1809·Windows Server 2019 이상 x64 | <a href="/install/windows-bootstrapper.ps1" download="windows-bootstrapper.ps1">windows-bootstrapper.ps1</a> | Windows PowerShell 5.1, WinGet이 없으면 관리자 권한 |
 | macOS 14 이상 | <a href="/install/macos-bootstrapper.sh" download="macos-bootstrapper.sh">macos-bootstrapper.sh</a> | 현재 사용자로 실행, Apple Silicon(arm64) 또는 Intel(x64) |
 | Ubuntu 26.04 amd64 | <a href="/install/ubuntu-bootstrapper.sh" download="ubuntu-bootstrapper.sh">ubuntu-bootstrapper.sh</a> | 현재 사용자로 실행, 필요한 패키지 설치 시 sudo |
 
@@ -28,6 +28,8 @@ Windows PowerShell:
 ~~~powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\windows-bootstrapper.ps1
 ~~~
+
+WinGet이 있으면 WinGet으로 설치합니다. Windows Server 2019처럼 WinGet이 없으면 .NET SDK는 `builds.dotnet.microsoft.com`, Node.js LTS는 `nodejs.org`, Git은 Git for Windows GitHub 릴리스에서 설치 파일을 받아 해시를 확인한 뒤 자동으로 설치합니다. 이 경우 관리자 권한 PowerShell에서 실행하고, 서버에서 해당 주소에 접속할 수 있어야 합니다. curl은 Windows에 포함된 `C:\Windows\System32\curl.exe`를 사용합니다. gulp-cli·LibMan·PowerShell 같은 사용자 도구는 스크립트를 실행한 계정에 설치됩니다.
 
 macOS:
 
