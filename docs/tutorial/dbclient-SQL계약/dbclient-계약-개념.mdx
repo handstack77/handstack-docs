@@ -56,6 +56,8 @@ ORDER BY B.ID DESC;
 
 `@Category`, `@StartDate`처럼 `param`으로 선언한 값은 SQL 문자열에 직접 이어붙이지 않고 매개변수로 바인딩합니다. 이 예제의 입력값은 SQL 구문이 아닌 데이터로 처리됩니다. 컬럼명·정렬 방향처럼 바인딩할 수 없는 구문을 동적으로 만들 때는 별도의 허용 목록 검증이 필요합니다.
 
+`length="-1"`은 공급자별 MAX 정책으로 입력값 전체를 전달합니다. 컬럼의 실제 길이 제한은 유지되며, Oracle의 큰 데이터는 LOB 타입을 명시해야 합니다. 자세한 규칙은 [파라미터의 MAX 길이](/docs/reference/api/modules/dbclient#파라미터의-max-길이)를 보세요.
+
 ## 자주 하는 오해
 
 **"WHERE 절의 CASE 문은 왜 필요한가요? 그냥 `@Category = @Category`로 하면 안 되나요?"**
