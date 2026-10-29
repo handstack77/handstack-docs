@@ -202,7 +202,7 @@ cd handstack
 install.bat
 ```
 
-> https://handstack.kr/docs/startup/빠른-시작
+> https://handstack.kr/docs/startup/install/필수-프로그램-설치하기
 
 ---
 

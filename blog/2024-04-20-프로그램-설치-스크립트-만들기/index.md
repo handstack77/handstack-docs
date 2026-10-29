@@ -25,7 +25,7 @@ Windows에서는 `winget`, macOS에서는 `Homebrew`, Linux에서는 `apt-get` �
 
 > 제가 Windows 기반에서 HandStack 을 개발하는 데 필요한 개발 및 도구 프로그램을 설치하는 스크립트를 추가로 정리했습니다. 매번 공식 웹 사이트가 가서 프로그램을 받고 설치하고 하는 과정없이 명령 프롬프트에서 동일한 프로그램을 빠르게 설치합니다. 자세한 내용은 [Winget 추천 개발 도구 설치하기](https://handstack.kr/docs/information/resource/Winget-추천-개발-도구-설치하기) 문서를 확인하세요.
 
-개선된 프로그램 설치 스크립트는 [빠른 시작](https://handstack.kr/docs/startup/빠른-시작)에서 확인 가능합니다.
+개선된 프로그램 설치 스크립트는 [필수 프로그램 설치하기](https://handstack.kr/docs/startup/install/필수-프로그램-설치하기)에서 확인 가능합니다.
 
 ---
 

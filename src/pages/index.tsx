@@ -19,7 +19,7 @@ export default function Home(): JSX.Element {
                     <Heading as="h1" className="hero__title">HTML·JavaScript·SQL로<br />업무 웹 앱을 만드세요</Heading>
                     <p className="hero__subtitle">HandStack으로 화면과 데이터를 연결하고, 조회부터 저장까지 직접 만들어 봅니다.</p>
                     <div className={styles.buttons}>
-                        <Link className="button button--secondary button--lg" to="/docs/startup/빠른-시작">내 PC에서 실행하기</Link>
+                        <Link className="button button--secondary button--lg" to="/docs/startup/install/필수-프로그램-설치하기">필수 프로그램 설치하기</Link>
                         <Link className="button button--secondary button--lg" to="/ide">IDE 설치하기</Link>
                         <Link className="button button--secondary button--lg" to="/docs/tutorial/첫-조회">게시판 예제 살펴보기</Link>
                     </div>

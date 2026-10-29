@@ -107,7 +107,7 @@ export default function IdeDownloads(): JSX.Element {
                 </aside>
                 <section className={styles.nextSteps} aria-labelledby="ide-next-steps">
                     <Heading as="h2" id="ide-next-steps">설치 후에는 무엇을 하나요?</Heading>
-                    <p><Link to="/docs/ide/">IDE 사용하기</Link>에서 작업 영역 열기부터 화면·계약 검증까지 익혀 보세요. HandStack 서버 실행 환경은 <Link to="/docs/startup/빠른-시작">빠른 시작</Link>에서 확인할 수 있습니다.</p>
+                    <p><Link to="/docs/ide/">IDE 사용하기</Link>에서 작업 영역 열기부터 화면·계약 검증까지 익혀 보세요. HandStack 서버 실행 환경은 <Link to="/docs/startup/install/필수-프로그램-설치하기">필수 프로그램 설치하기</Link>에서 확인할 수 있습니다.</p>
                 </section>
             </main>
         </Layout>

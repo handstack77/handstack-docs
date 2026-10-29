@@ -1,13 +1,16 @@
 ---
 sidebar_position: 21
-description: HandStack에 필요한 도구와 선택 기준을 확인하고 공식 설치 안내로 이동합니다.
+description: 필수 도구를 준비하고 HandStack 배포본을 구성해 서버 실행을 확인합니다.
 pagination_prev: startup/개요
-pagination_next: startup/빠른-시작
+pagination_next: tutorial/첫-조회
 ---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 # 필수 프로그램 설치하기
 
-먼저 설치된 도구를 확인하고 부족한 것만 준비하세요. 일반적인 설치 절차는 공식 문서에서 확인하고, 이 페이지에서는 HandStack에 필요한 선택과 완료 기준을 안내합니다.
+필수 도구를 준비한 뒤 HandStack 배포본을 구성하고 서버를 실행합니다. 브라우저에서 호스트 기동 확인 페이지가 응답하면 완료됩니다.
 
 > 운영체제 별로 여러 도구를 한 번에 준비하는 설치 스크립트는 [개발 도구 자동 설치](/docs/startup/install/자동-설치)에 있습니다. 수동으로 직접 설치는 **공식 설치 안내** 에 있는 각 공식 링크에서 확인하세요.
 
@@ -47,6 +50,106 @@ Node.js의 최소 요구 버전과 지원 종료 여부는 다릅니다. [Node.j
 - macOS에서 Homebrew가 필요한데 Xcode Command Line Tools가 없으면 `xcode-select --install`을 먼저 진행하라는 안내와 함께 중단합니다. apt를 쓰지 않는 Linux 배포판에서는 Node.js·curl·rsync를 자동 설치하지 않고 공식 안내를 표시합니다.
 - 필수 도구를 자동으로 설치하거나 업그레이드하지 않으려면 `install.bat --check-only`, `./install.ps1 -CheckOnly`, `bash ./install.sh --check-only`로 실행하거나 환경 변수 `HANDSTACK_SKIP_PREREQUISITES=1`을 지정합니다. 이때 Node.js는 최소 요구 버전 20.12.2 이상인지 확인하며, 필수 조건이 충족되지 않으면 공식 안내를 표시하고 중단합니다.
 - 설치 프로그램이 재부팅을 요청하면 설치는 계속 진행하고, 완료 후 Windows를 다시 시작하라는 경고를 표시합니다.
+
+## 내 PC에서 실행하기 {#ack-실행-환경-설정}
+
+기존 프로젝트와 분리된 실습 디렉터리를 사용하세요. 여기서는 압축 안의 `handstack` 디렉터리를 Windows의 `C:/projects/handstack`, Linux·macOS의 사용자 디렉터리 아래 `projects/handstack`에 둡니다.
+
+## 배포본 받기
+
+[HandStack 릴리스](https://github.com/handstack77/handstack/releases/latest)에서 OS와 CPU에 맞는 파일을 내려받으세요. 파일명에 `win`, `linux`, `osx`와 `x64`, `arm64` 등의 대상이 표시됩니다. 실제 제공되는 파일과 요구사항은 해당 릴리스 설명을 따릅니다.
+
+압축을 풀고 아래 항목이 있는 디렉터리를 찾으세요. 이 문서에서는 그 위치를 **HandStack 기본 경로**라고 부릅니다.
+
+~~~text
+handstack/
+├─ app/       # ack 실행 파일과 설정
+├─ modules/   # 서버 모듈과 화면 자원
+├─ install.bat
+└─ install.sh
+~~~
+
+운영체제와 배포본의 아키텍처를 맞추는 방법은 [지원 환경 확인](/docs/startup/install/지원-운영체제)을 참고하세요.
+
+## 구성하고 실행하기
+
+<span id="windows-운영체제에서-실행하기" />
+<span id="linux-또는-macos-운영체제에서-실행하기" />
+
+<Tabs groupId="operating-system" queryString="os">
+<TabItem value="windows" label="Windows" default>
+
+### Windows에서 실행
+
+PowerShell에서 HandStack 기본 경로로 이동해 구성 스크립트를 실행합니다.
+
+~~~powershell
+Set-Location C:/projects/handstack
+.\install.bat
+~~~
+
+완료 메시지를 확인한 뒤 서버를 실행하세요. 오류가 나면 먼저 누락된 도구나 다운로드 실패를 해결합니다.
+
+~~~powershell
+Set-Location C:/projects/handstack/app
+.\ack.exe
+~~~
+
+</TabItem>
+<TabItem value="linux" label="Linux">
+
+### Linux에서 실행
+
+일반 사용자 터미널에서 구성합니다. 압축을 다른 위치에 풀었다면 첫 경로를 바꾸세요.
+
+~~~bash
+cd ~/projects/handstack
+bash ./install.sh
+~~~
+
+완료 후 서버를 실행합니다.
+
+~~~bash
+cd ~/projects/handstack/app
+chmod +x ack
+./ack
+~~~
+
+배포본에 `ack.dll`이 있으면 `dotnet ack.dll`로도 실행할 수 있습니다.
+
+</TabItem>
+<TabItem value="macos" label="macOS">
+
+### macOS에서 실행 {#macos에서-실행}
+
+일반 사용자 터미널에서 구성합니다. Apple Silicon과 Intel용 배포본·.NET의 아키텍처가 맞는지 먼저 확인하세요.
+
+~~~bash
+cd ~/projects/handstack
+bash ./install.sh
+~~~
+
+완료 후 서버를 실행합니다.
+
+~~~bash
+cd ~/projects/handstack/app
+chmod +x ack
+./ack
+~~~
+
+배포본에 `ack.dll`이 있으면 `dotnet ack.dll`로도 실행할 수 있습니다.
+
+</TabItem>
+</Tabs>
+
+## 브라우저에서 확인하기 {#웹-브라우저로-handstack-실행-확인하기}
+
+서버 터미널을 열어 둔 채 [호스트 기동 확인 페이지](http://localhost:8421/checkip)에 접속하세요. 기본 포트는 `8421`이며 설정을 바꿨다면 실행 로그에 표시된 주소를 사용합니다.
+
+기동 확인 페이지가 응답하고 서버에 기동 오류가 없으면 이 단계가 완료됩니다. 업무 화면은 `/view/{ProjectID}/{화면ID}.html` 경로로 엽니다.
+
+
+접속되지 않으면 [실행·화면·거래 문제 해결](/docs/guides/문제-해결#서버에-접속되지-않음)을 확인하세요.
 
 <span id="한-번에-설치하기" />
 <span id="windows-11" />
@@ -123,7 +226,7 @@ PowerShell 스크립트(`.ps1`)로 빌드·운영할 때는 [PowerShell 설치 �
 
 ## 다음 단계
 
-[내 PC에서 실행하기](/docs/startup/빠른-시작)에서 배포본을 구성하세요. 서버 소스 자체를 수정하려면 [소스 개발 환경](/docs/startup/install/개발-환경-설정하기)으로 이동합니다.
+[게시판 첫 조회](/docs/tutorial/첫-조회)를 진행하세요. 서버 소스 자체를 수정하려면 [소스 개발 환경](/docs/startup/install/개발-환경-설정하기)으로 이동합니다.
 
 {/* 배포된 설치 스크립트가 사용하는 이전 절 주소를 유지합니다. */}
 <span id="winget-을-이용한-net-core-설치" />

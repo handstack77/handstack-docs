@@ -12,7 +12,6 @@ const sidebars: SidebarsConfig = {
     startupSidebar: [
         'startup/개요',
         'startup/install/필수-프로그램-설치하기',
-        'startup/빠른-시작',
         { type: 'ref', id: 'tutorial/첫-조회' },
         { type: 'ref', id: 'guides/문제-해결' },
         {

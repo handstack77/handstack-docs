@@ -133,7 +133,7 @@ section.tinytext>blockquote {
 
 ## 첫 학습 경로
 
-[내 PC에서 실행하기](/docs/startup/빠른-시작) → [게시판 첫 조회](/docs/tutorial/첫-조회) → [조회 조건 바꾸기](/docs/tutorial/조회-조건-바꾸기)
+[배포본 구성과 실행](/docs/startup/install/필수-프로그램-설치하기#ack-실행-환경-설정) → [게시판 첫 조회](/docs/tutorial/첫-조회) → [조회 조건 바꾸기](/docs/tutorial/조회-조건-바꾸기)
 
 그다음 프로젝트·DB 준비 → 화면 구현 → SQL·거래 연결 → 실패 진단 순서로 확장합니다.
 

@@ -82,4 +82,4 @@ CLI는 게시 산출물의 `tools/handstack`에 있다. 명령(`list`, `start`/`
 
 ## 문서
 
-MCP `reference/api/ack-프로그램`, `reference/api/운영-호스트`, `startup/HandStack-CLI-사용법`, `reference/api/module.json-환경설정`, `startup/빠른-시작`, `startup/learning/ack-프로그램-가이드`, `twelvefactor/빌드-릴리즈-실행/*`(절차, 업데이트 패키지 배포, Docker ack 이미지), `startup/handsonlab/ack-배치-스크립트-만들기`. 저장소 내: `1.WebHost/*/README.md`, `4.Tool/CLI/handstack/README.md`, `PUBLISH.md`.
+MCP `reference/api/ack-프로그램`, `reference/api/운영-호스트`, `startup/HandStack-CLI-사용법`, `reference/api/module.json-환경설정`, `startup/install/필수-프로그램-설치하기`, `startup/learning/ack-프로그램-가이드`, `twelvefactor/빌드-릴리즈-실행/*`(절차, 업데이트 패키지 배포, Docker ack 이미지), `startup/handsonlab/ack-배치-스크립트-만들기`. 저장소 내: `1.WebHost/*/README.md`, `4.Tool/CLI/handstack/README.md`, `PUBLISH.md`.
