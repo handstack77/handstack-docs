@@ -58,6 +58,8 @@ ORDER BY B.ID DESC;
 
 `length="-1"`은 공급자별 MAX 정책으로 입력값 전체를 전달합니다. 컬럼의 실제 길이 제한은 유지되며, Oracle의 큰 데이터는 LOB 타입을 명시해야 합니다. 자세한 규칙은 [파라미터의 MAX 길이](/docs/reference/api/modules/dbclient#파라미터의-max-길이)를 보세요.
 
+로그인 사용자의 소속 번호처럼 클라이언트가 바꾸면 안 되는 값은 `param`의 `source` 속성으로 Bearer 토큰 값에서 채울 수 있습니다. 자세한 규칙은 [토큰 값으로 채우는 입력 파라미터](/docs/reference/api/modules/dbclient#토큰-값으로-채우는-입력-파라미터)를 보세요.
+
 ## 자주 하는 오해
 
 **"WHERE 절의 CASE 문은 왜 필요한가요? 그냥 `@Category = @Category`로 하면 안 되나요?"**

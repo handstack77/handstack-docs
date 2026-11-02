@@ -89,6 +89,19 @@ C#에서 공급자별 `DbParameter`를 직접 만들 때는 `HandStack.Data.Exte
 
 양수 `length`는 기존 명시 길이를 유지합니다. 요청의 `Length` 기본값은 `-1`이며, 기존 동작과 같이 실제 바인딩 길이는 SQL 계약의 `length`를 우선합니다. `length` 생략 및 `0` 이하 값은 dbclient의 기존 처리대로 MAX 경로를 사용합니다.
 
+## 토큰 값으로 채우는 입력 파라미터
+
+`param`에 `source`를 선언하면 Bearer 토큰 `Variable`의 필드로 입력을 채웁니다. `transact`는 `Variable`의 각 항목을 `$` 접두사 입력 필드(예: `$AgencyNo`)로 거래 입력에 추가하므로, 계약에서 그 필드를 바인드 이름으로 바꿔 받을 수 있습니다.
+
+```xml
+<param id=":I_AGENCY_NO" type="Decimal" direction="Input" source="$AgencyNo" length="-1" value="NULL" />
+```
+
+- `source` 이름의 입력 값이 있으면 요청이 보낸 `I_AGENCY_NO`가 있어도 토큰 값을 씁니다. 토큰 값은 서버가 주입하므로 클라이언트가 바꿀 수 없습니다. 소속 번호처럼 사용자가 임의로 바꾸면 안 되는 조건에 사용합니다.
+- 토큰 값이 없거나 비어 있으면 아무것도 바꾸지 않고 요청 값과 `value` 기본값 규칙을 그대로 따릅니다. 소속이 없는 사용자(예: 본사 관리자)가 화면에서 값을 직접 고르는 경우에 쓰입니다.
+- `direction`에 `Input`이 포함된 파라미터에만 적용합니다. `source`의 이름은 `$` 접두사까지 포함해 씁니다.
+- `type`을 생략하면 토큰 입력의 `DbType`을, `length`는 `param`에 선언한 값을 사용합니다.
+
 ## JSON 배열 필터 SQL
 
 SQL의 `WHERE` 필수 조건 뒤에 `<filters>`를 선언하면 해당 위치에 `AND (...)` 조건을 생성합니다. 요청의 `Filters`는 객체 배열을 JSON으로 직렬화한 문자열입니다. SQL을 직접 전달하지 않습니다.
