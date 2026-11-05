@@ -63,7 +63,7 @@ public class ModuleInitializer : IModuleInitializer
 
         var configurationText = PlatformSettings.ReadAllText(module.ModuleSettingFilePath);   // module.{os}.json 병합 포함
         var moduleConfigJson = JsonConvert.DeserializeObject<ModuleConfigJson>(configurationText);
-        // ModuleConfiguration의 static 필드에 값을 복사하고 경로는 GlobalConfiguration.GetBaseDirectoryPath(값, module.BasePath)로 해석
+        // ModuleConfiguration의 static 필드에 값을 복사하고 경로는 GlobalConfiguration.GetBaseDirectoryPath(값, module.BasePath)로 해석 (%NAME%, $NAME, ${NAME} 환경 변수 표기를 치환하며, 값이 없으면 원문을 유지하고 경고 로그를 남김)
         services.AddHttpClient<IMyService, MyService>();
     }
 
