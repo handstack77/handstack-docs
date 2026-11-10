@@ -270,7 +270,9 @@ const created = await syn.$r.httpFetch('/api/users').send({ name: 'hong' }, { me
 ### httpRequest(method, url, data, callback, options)
 
 `XMLHttpRequest` 기반으로 http 요청을 수행합니다. `data.body`가 있으면 `GET`은 queryString으로,
-그 외 메서드는 `FormData`로 전송합니다. `callback`을 생략하면 `Promise`를 반환합니다.
+그 외 메서드는 `FormData`로 전송합니다. 이때 queryString의 키와 값은 `encodeURIComponent`로 인코딩됩니다.
+`callback`을 생략하면 `Promise`를 반환하며, 네트워크 오류·`options.timeout`(ms) 초과·요청 취소 시에도
+`{ status, response }`로 resolve되므로(`status`가 `0`) `status`로 성공 여부를 확인해야 합니다.
 
 ```js
 const result = await syn.$r.httpRequest('GET', '/api/users');
@@ -290,7 +292,8 @@ syn.$r.httpSubmit('/upload', 'form1', 'POST');
 
 ### httpDataSubmit(formData, url, callback, options)
 
-`FormData` 객체를 `XMLHttpRequest`로 `POST` 전송합니다. `callback`을 생략하면 `Promise`를 반환합니다.
+`FormData` 객체를 `XMLHttpRequest`로 `POST` 전송합니다. `callback`을 생략하면 `Promise`를 반환하며,
+네트워크 오류·`options.timeout`(ms) 초과·요청 취소 시에도 `{ status, response }`로 resolve됩니다(`status`가 `0`).
 
 ```js
 const formData = new FormData();
