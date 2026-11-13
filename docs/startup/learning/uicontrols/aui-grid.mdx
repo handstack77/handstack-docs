@@ -37,6 +37,20 @@ syn.uicontrols.$auigrid.setValue('grdMain', [
 ]);
 ```
 
+## 컬럼 배치 저장
+
+컬럼 순서, 너비, 표시 상태를 이 브라우저에 저장하고 다음에 화면을 열 때 복원합니다. 기본 저장 키는 출처, 페이지 스크립트, 컨트롤 이름, 그리드 ID를 결합한 `location.origin + '.' + syn.$w.pageScript + '.' + $auigrid.name.replace('syn.uicontrols.$', '') + '.' + elID`입니다. 이 값들이 바뀌면 저장 키도 달라집니다. `syn-options` 또는 `controlInit`에 `layoutStorageKey`를 명시하면 그 값을 우선합니다. 컬럼을 드래그해 이동하려면 `enableMovingColumn`도 켭니다.
+
+```html
+<syn_auigrid id="grdMain" syn-options="{
+    layoutStorageKey: 'myapp.product.grdMain',
+    enableMovingColumn: true,
+    columns: [['ProdName', '제품명', 200, false, 'text', false, 'left']]
+}"></syn_auigrid>
+```
+
+저장된 상태는 헤더 우클릭 메뉴의 **상태 정보 초기화**로 삭제할 수 있습니다. 사용자 정의 `contextMenu`를 사용하는 화면에서는 `syn.uicontrols.$auigrid.resetColumnLayout('grdMain')`을 직접 호출하세요. 그룹 컬럼과 중복 `dataField`는 저장·복원하지 않으며, 컬럼 구성이 달라지거나 저장소에 접근할 수 없으면 기본 배치로 동작합니다.
+
 ## 예제 실행하기
 
 `example/` 폴더의 각 HTML 파일을 handstack의 wwwroot 정적 서버(rdy 프로젝트) 경로 아래에 두고 브라우저로 열면 바로 동작을 확인할 수 있습니다.
